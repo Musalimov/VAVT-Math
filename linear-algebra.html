@@ -1,0 +1,1340 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Linear algebra</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,wght@0,400;0,600;1,400;1,600&family=Manrope:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box}
+:root{
+  --bg:#eef1f5;--panel:#ffffff;--ink:#16202c;--muted:#5d6876;--line:#d8dee6;--chip:#e6eaf0;--accent:#1f7ea3;--accent-ink:#fff;--shadow:0 14px 40px rgba(20,30,45,.18);
+  --side-w:340px;--side-h:44%;
+  --s-bg:#0b0c10;--s-axis:#f2f2f2;--s-i:#83c167;--s-j:#fc6255;--s-k:#58c4dd;--s-det:#f4d345;--s-eigen:#c77dff;--s-vec:#ff9f43;
+  color-scheme:light;box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);
+  background:var(--bg);
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){--bg:#0e131b;--panel:#151c27;--ink:#e6ebf2;--muted:#8d99a8;--line:#253041;--chip:#1d2633;--accent:#58c4dd;--accent-ink:#06222c;--shadow:0 14px 40px rgba(0,0,0,.5);color-scheme:dark}
+}
+:root[data-theme="dark"]{--bg:#0e131b;--panel:#151c27;--ink:#e6ebf2;--muted:#8d99a8;--line:#253041;--chip:#1d2633;--accent:#58c4dd;--accent-ink:#06222c;--shadow:0 14px 40px rgba(0,0,0,.5);color-scheme:dark}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+html,body{height:100%;margin:0}
+body{background:var(--bg);color:var(--ink);font-family:"Manrope",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;font-size:.9rem;overflow:hidden;-webkit-tap-highlight-color:transparent}
+button,input,select{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.serif{font-family:"Source Serif 4",Georgia,"Times New Roman",serif}
+.app{height:100%;display:flex;flex-direction:column}
+.top{display:flex;align-items:center;gap:.5rem;padding:.5rem .75rem;background:var(--panel);border-bottom:1px solid var(--line);flex:none}
+.brand{min-width:0;flex:0 1 auto;font-family:"Source Serif 4",Georgia,serif;font-size:1.2rem;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;letter-spacing:-.01em}
+.brand .sub{font-style:italic;font-weight:400;color:var(--muted)}
+.spacer{flex:1}
+.seg{display:inline-flex;flex-wrap:wrap;gap:2px;background:var(--chip);border-radius:10px;padding:3px}
+.seg button{border:0;background:transparent;color:var(--muted);font-weight:600;font-size:.82rem;padding:.35rem .75rem;border-radius:8px;cursor:pointer}
+.seg button.on{background:var(--panel);color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.18)}
+.btn{display:inline-flex;align-items:center;gap:.35rem;border:1px solid var(--line);background:var(--panel);color:var(--ink);border-radius:9px;padding:.42rem .75rem;cursor:pointer;font-weight:600;font-size:.84rem;white-space:nowrap}
+.btn:hover{border-color:var(--accent)}
+.btn.sm{padding:.3rem .6rem;font-size:.8rem}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.btn.ghost{border-color:transparent;background:transparent}
+.btn.ghost:hover{background:var(--chip)}
+.btn .ic{font-family:"Source Serif 4",serif;font-size:1.05rem;line-height:1}
+.main{flex:1;min-height:0;display:flex;position:relative}
+.stage{position:relative;flex:1;min-width:0;min-height:0;overflow:hidden;background:var(--s-bg)}
+canvas{display:block;width:100%;height:100%;touch-action:none;cursor:grab}
+.side{width:var(--side-w);flex:none;overflow-y:auto;background:var(--bg);border-left:1px solid var(--line);padding:.6rem;display:flex;flex-direction:column;gap:.55rem;overscroll-behavior:contain}
+.main[data-dock="left"]{flex-direction:row-reverse}
+.main[data-dock="left"] .side{border-left:0;border-right:1px solid var(--line)}
+.main[data-dock="bottom"]{flex-direction:column}
+.main[data-dock="bottom"] .side{width:auto;height:var(--side-h);border-left:0;border-top:1px solid var(--line)}
+.main[data-dock="float"] .side{position:absolute;z-index:6;width:min(var(--side-w),calc(100% - 16px));max-height:calc(100% - 16px);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow)}
+.grip{display:none;align-items:center;justify-content:center;gap:.4rem;color:var(--muted);font-size:.78rem;padding:.2rem 0 .1rem;cursor:move;touch-action:none;user-select:none;flex:none}
+.grip::before{content:"";width:42px;height:4px;border-radius:2px;background:var(--line)}
+.main[data-dock="float"] .grip{display:flex}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:12px;flex:none}
+.panel.dragging{opacity:.45}
+.ph{display:flex;align-items:center;gap:.2rem;padding:.35rem .35rem .35rem .25rem}
+.handle{cursor:grab;color:var(--muted);padding:.2rem .3rem;user-select:none;font-size:1rem;line-height:1}
+.ph h3{margin:0;font-family:"Source Serif 4",Georgia,serif;font-size:1.02rem;font-weight:600;flex:1;cursor:pointer;user-select:none}
+.icon{width:28px;height:28px;display:inline-grid;place-items:center;border:0;background:transparent;color:var(--muted);border-radius:7px;cursor:pointer;font-size:.9rem;flex:none}
+.icon:hover{background:var(--chip);color:var(--ink)}
+.chev{transition:transform .15s}
+.pb{padding:.15rem .8rem .8rem}
+.panel.collapsed .pb{display:none}
+.panel.collapsed .chev{transform:rotate(-90deg)}
+.note{color:var(--muted);font-size:.8rem;line-height:1.45;margin:.55rem 0}
+.row{display:flex;flex-wrap:wrap;gap:.4rem;margin-top:.5rem}
+.q{display:inline-grid;place-items:center;width:18px;height:18px;border-radius:50%;border:1px solid var(--line);background:var(--chip);color:var(--muted);font-size:.68rem;font-weight:700;cursor:pointer;vertical-align:middle;padding:0;margin-left:.2rem}
+.q:hover{border-color:var(--accent);color:var(--accent)}
+.ci{color:var(--s-i)}.cj{color:var(--s-j)}.ck{color:var(--s-k)}
+.matwrap{display:flex;justify-content:center;padding-top:.35rem}
+.mat{display:inline-grid;gap:.35rem;padding:.4rem .7rem;position:relative}
+.mat::before,.mat::after{content:"";position:absolute;top:0;bottom:0;width:9px;border:2px solid var(--ink)}
+.mat::before{left:0;border-right:0}
+.mat::after{right:0;border-left:0}
+.mat input{width:3.9rem;text-align:center;font-family:"JetBrains Mono",ui-monospace,Menlo,monospace;font-size:.92rem;border:1px solid var(--line);border-bottom-width:3px;border-radius:8px;background:var(--bg);padding:.42rem .15rem}
+.mat input[data-c="0"]{border-bottom-color:var(--s-i)}
+.mat input[data-c="1"]{border-bottom-color:var(--s-j)}
+.mat input[data-c="2"]{border-bottom-color:var(--s-k)}
+.chips{display:flex;flex-wrap:wrap;gap:.35rem}
+.chip{border:1px solid var(--line);background:var(--bg);border-radius:999px;padding:.32rem .7rem;font-size:.8rem;font-weight:600;cursor:pointer}
+.chip:hover,.chip.on{border-color:var(--accent);color:var(--accent)}
+.chk{display:flex;align-items:center;gap:.45rem;margin-top:.65rem;font-size:.84rem;cursor:pointer}
+.chk input{accent-color:var(--accent);width:16px;height:16px;flex:none}
+.hist{margin-top:.55rem;font-size:.8rem;color:var(--muted);line-height:1.5}
+.hist b{color:var(--ink);font-weight:600}
+.tex textarea{width:100%;margin-top:.6rem;font-family:"JetBrains Mono",ui-monospace,Menlo,monospace;font-size:.78rem;border:1px solid var(--line);border-radius:8px;background:var(--bg);padding:.5rem;resize:vertical;color:var(--ink)}
+.tex .row{align-items:center}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.rel{display:flex;flex-wrap:wrap;gap:.35rem;align-items:center;margin-top:.8rem;font-family:"Manrope",system-ui,sans-serif;font-size:.8rem;color:var(--muted)}
+.keys{display:grid;grid-template-columns:auto 1fr;gap:.5rem .9rem;align-items:center;margin-top:.4rem}
+kbd{display:inline-block;min-width:1.6rem;text-align:center;padding:.15rem .45rem;border:1px solid var(--line);border-bottom-width:2px;border-radius:6px;background:var(--bg);font-family:"Manrope",system-ui,sans-serif;font-size:.8rem;font-weight:700;white-space:nowrap}
+.toast{position:absolute;left:50%;top:12px;transform:translateX(-50%);padding:.4rem .8rem;border-radius:9px;background:color-mix(in srgb,var(--s-bg) 88%,transparent);border:1px solid color-mix(in srgb,var(--s-axis) 18%,transparent);color:var(--s-axis);font-size:.85rem;font-weight:600;pointer-events:none;opacity:0;transition:opacity .2s}
+.toast.on{opacity:1}
+@media (max-width:560px),(hover:none){.hk{display:none}}
+.mulrow{display:flex;align-items:center;justify-content:center;gap:.6rem;margin-top:.55rem}
+.ml{font-family:"Source Serif 4",Georgia,serif;font-style:italic;font-size:1.05rem;min-width:3.4rem;text-align:right;white-space:nowrap}
+#mulA input,#mulB input{width:3.3rem;font-size:.85rem}
+.mulres .mini{font-family:"Source Serif 4",Georgia,serif;font-size:1.05rem;padding:.15rem .6rem;gap:.15rem .8rem}
+.steps summary{cursor:pointer;font-size:.82rem;color:var(--accent);font-weight:600;margin-top:.5rem}
+.steps div{font-family:"Source Serif 4",Georgia,serif;font-size:.92rem;line-height:1.7;margin-top:.3rem;overflow-x:auto}
+.chap h3{display:flex;align-items:baseline;gap:.6rem;margin:1.3rem 0 .1rem;font-family:"Source Serif 4",Georgia,serif;font-size:1.2rem;font-weight:600}
+.chap h3 .cnt{margin-left:auto;font-family:"Manrope",system-ui,sans-serif;font-size:.75rem;font-weight:600;color:var(--muted)}
+.prog{display:flex;align-items:center;gap:.7rem;font-size:.8rem;color:var(--muted);margin:.2rem 0 .3rem}
+.prog .bar{flex:1;min-width:60px;height:6px;border-radius:3px;background:var(--chip);overflow:hidden;display:block}
+.prog .bar i{display:block;height:100%;background:var(--accent);border-radius:3px}
+.linkbtn{border:0;background:none;color:var(--accent);font:inherit;font-weight:600;cursor:pointer;padding:0}
+.rd{color:var(--accent);margin-right:.4rem}
+.readbtn.on{border-color:var(--accent);color:var(--accent)}
+.ill{margin:0 0 .85rem;display:flex;justify-content:center}
+.ill svg{width:100%;max-width:300px;height:auto;display:block;border-radius:10px;border:1px solid var(--line)}
+.crm{margin-top:.35rem;font-size:.95rem;line-height:1.7}
+.top .seg{flex-wrap:nowrap;flex:none}
+@media (max-width:560px){#langSeg{display:none}.cap{font-size:.82rem;padding:.45rem 1.9rem .45rem .7rem}}
+.more summary{cursor:pointer;font-size:.82rem;color:var(--accent);font-weight:600;margin-top:.6rem}
+.kh{position:relative;display:inline-block;line-height:1}
+.kh::after{content:"";position:absolute;left:50%;top:-.13em;width:.2em;height:.2em;margin-left:-.1em;border-left:.06em solid currentColor;border-top:.06em solid currentColor;transform:rotate(45deg);pointer-events:none}
+.m .kh::after,i .kh::after{margin-left:-.02em}
+.shapebar{display:flex;align-items:center;justify-content:center;gap:.6rem;margin:.15rem 0 .35rem}
+.gtabs{margin:0 0 .75rem;font-family:"Manrope",system-ui,sans-serif}
+.pane[hidden]{display:none}
+.mm{vertical-align:middle;margin:.15rem .2rem;font-size:.92em;font-style:normal}
+.rng{display:grid;grid-template-columns:1fr auto;gap:.25rem .5rem;margin-top:.7rem;font-size:.82rem;color:var(--muted)}
+.rng output{color:var(--ink);font-weight:600;font-variant-numeric:tabular-nums}
+.rng input{grid-column:1/-1;width:100%;accent-color:var(--accent)}
+.props{display:grid;gap:.1rem}
+.prop{display:grid;grid-template-columns:auto 1fr;gap:.1rem .6rem;align-items:baseline;padding:.45rem 0;border-bottom:1px solid var(--line)}
+.prop:last-child{border-bottom:0}
+.prop .k{color:var(--muted);font-size:.8rem;white-space:nowrap}
+.prop .v{text-align:right;font-family:"Source Serif 4",Georgia,serif;font-size:1.02rem}
+.prop .s{grid-column:1/-1;font-size:.77rem;color:var(--muted)}
+.sw{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:.35rem;vertical-align:middle}
+.mini{display:inline-grid;gap:.05rem .6rem;padding:.05rem .5rem;border-left:1.5px solid var(--ink);border-right:1.5px solid var(--ink);border-radius:4px;font-size:.88rem;text-align:right}
+.vin{display:flex;gap:.45rem;align-items:center;flex-wrap:wrap}
+.vin label{display:flex;align-items:center;gap:.3rem;font-family:"Source Serif 4",serif;font-style:italic}
+.vin input{width:4rem;text-align:center;font-family:"JetBrains Mono",ui-monospace,monospace;border:1px solid var(--line);border-bottom:3px solid var(--s-vec);border-radius:8px;background:var(--bg);padding:.38rem .2rem}
+.vout{margin-top:.6rem;font-family:"Source Serif 4",serif;font-size:1rem;line-height:1.55}
+.toggles{display:grid;grid-template-columns:1fr 1fr;gap:.1rem .6rem}
+.toggles .chk{margin-top:.35rem;font-size:.8rem}
+.d3only{display:none}
+body.m3 .d3only{display:revert}
+body.m3 .d2only{display:none}
+.ov{position:absolute;left:10px;top:10px;padding:.45rem .7rem;border-radius:10px;background:color-mix(in srgb,var(--s-bg) 82%,transparent);border:1px solid color-mix(in srgb,var(--s-axis) 16%,transparent);color:var(--s-axis);font-family:"Source Serif 4",Georgia,serif;pointer-events:none;display:flex;align-items:center;gap:.5rem}
+.ov .bm{display:inline-grid;gap:.05rem .7rem;padding:.1rem .45rem;border-left:2px solid currentColor;border-right:2px solid currentColor;border-radius:5px;font-size:1.02rem;text-align:right;font-variant-numeric:tabular-nums}
+.ov .tt{font-size:.85rem;opacity:.75;font-style:italic}
+.cap{position:absolute;left:50%;bottom:12px;transform:translateX(-50%);width:min(560px,calc(100% - 90px));padding:.55rem 2rem .55rem .85rem;border-radius:10px;background:color-mix(in srgb,var(--s-bg) 84%,transparent);border:1px solid color-mix(in srgb,var(--s-axis) 16%,transparent);color:var(--s-axis);font-family:"Source Serif 4",Georgia,serif;font-size:.95rem;line-height:1.4}
+.cap[hidden]{display:none}
+.cap button{position:absolute;right:4px;top:4px;border:0;background:transparent;color:inherit;opacity:.6;font-size:1.1rem;cursor:pointer;width:26px;height:26px;border-radius:6px}
+.cap button:hover{opacity:1}
+.zoom{position:absolute;right:10px;top:10px;display:flex;flex-direction:column;gap:4px}
+.capOpen{position:absolute;left:10px;bottom:12px;display:inline-flex;align-items:center;gap:.4rem;height:34px;padding:0 .75rem;border-radius:9px;border:1px solid color-mix(in srgb,var(--s-axis) 18%,transparent);background:color-mix(in srgb,var(--s-bg) 82%,transparent);color:var(--s-axis);font-family:"Source Serif 4",Georgia,serif;font-size:.92rem;cursor:pointer}
+.capOpen:hover{border-color:color-mix(in srgb,var(--s-axis) 45%,transparent)}
+.capOpen[hidden]{display:none}
+.zoom button{width:34px;height:34px;border-radius:9px;border:1px solid color-mix(in srgb,var(--s-axis) 18%,transparent);background:color-mix(in srgb,var(--s-bg) 82%,transparent);color:var(--s-axis);font-size:1.05rem;cursor:pointer}
+.drawer{position:fixed;inset:0;z-index:50;display:none}
+.drawer.open{display:block}
+.scrim{position:absolute;inset:0;background:rgba(5,10,18,.45)}
+.sheet{position:absolute;top:0;right:0;bottom:0;width:min(460px,100%);background:var(--panel);overflow-y:auto;padding:calc(env(safe-area-inset-top,0px) + .9rem) 1.1rem calc(env(safe-area-inset-bottom,0px) + 2rem);box-shadow:var(--shadow);overscroll-behavior:contain}
+.sh-h{display:flex;align-items:center;gap:.5rem;margin-bottom:.6rem}
+.sh-h h2{margin:0;flex:1;font-family:"Source Serif 4",Georgia,serif;font-weight:600;font-size:1.45rem}
+.sheet h4{font-family:"Source Serif 4",Georgia,serif;font-size:1.05rem;font-weight:600;margin:1.3rem 0 .5rem}
+.search{width:100%;border:1px solid var(--line);background:var(--bg);border-radius:10px;padding:.6rem .8rem;margin-bottom:.6rem}
+.term{border-bottom:1px solid var(--line)}
+.term summary{list-style:none;cursor:pointer;padding:.75rem .1rem;display:flex;align-items:baseline;gap:.6rem}
+.term summary::-webkit-details-marker{display:none}
+.term summary span{font-family:"Source Serif 4",Georgia,serif;font-size:1.08rem;font-weight:600;flex:1}
+.term summary small{color:var(--muted);font-style:italic;font-family:"Source Serif 4",serif}
+.term[open] summary span{color:var(--accent)}
+.tb{padding:0 .1rem 1rem;font-family:"Source Serif 4",Georgia,serif;font-size:1rem;line-height:1.6;max-width:62ch}
+.tb p{margin:0 0 .6rem}
+.m{font-style:italic;white-space:nowrap}
+.colors{display:grid;grid-template-columns:1fr 1fr;gap:.45rem .8rem}
+.colors label{display:flex;align-items:center;gap:.5rem;font-size:.82rem}
+.colors input{width:32px;height:26px;border:1px solid var(--line);border-radius:6px;padding:0;background:none;cursor:pointer;flex:none}
+@media (max-width:560px){.top{gap:.3rem;padding:.45rem .5rem}.seg button{padding:.3rem .5rem}.btn.ghost{padding:.4rem .45rem}.brand .sub,.btn .lbl{display:none}.brand{font-size:1.05rem}.toggles{grid-template-columns:1fr}.cap{font-size:.85rem;bottom:8px;width:calc(100% - 60px);left:10px;transform:none}.colors{grid-template-columns:1fr 1fr}}
+@media (prefers-reduced-motion:reduce){.chev{transition:none}}
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="top">
+    <div class="brand" data-ih="brand"></div>
+    <div class="spacer"></div>
+    <div class="seg" id="langSeg"><button data-l="ru">RU</button><button data-l="en">EN</button></div>
+    <div class="seg" id="modeSeg" role="tablist"><button data-mode="2d" class="on">2D</button><button data-mode="3d">3D</button></div>
+    <button class="btn ghost" id="openGloss" data-it="glossT"><span class="ic">?</span><span class="lbl" data-i="gloss"></span></button>
+    <button class="btn ghost hk" id="openKeys" data-it="keys"><span class="ic">⌨</span></button>
+    <button class="btn ghost" id="openSet" data-it="settings"><span class="ic">⚙</span><span class="lbl" data-i="settings"></span></button>
+  </header>
+  <div class="main" id="main">
+    <div class="stage" id="stage">
+      <canvas id="cv"></canvas>
+      <div class="ov" id="ov"></div>
+      <div class="zoom"><button id="zIn" data-it="zIn">+</button><button id="zOut" data-it="zOut">−</button><button id="zHome" data-it="zHome">⌂</button></div>
+      <div class="toast" id="toast"></div>
+      <button class="capOpen" id="capOpen" hidden><span aria-hidden="true">💡</span><span data-i="capOpen"></span></button>
+      <div class="cap" id="cap"><span id="capT"></span><button id="capX" data-it="capX">×</button></div>
+    </div>
+    <aside class="side" id="side">
+      <div class="grip" id="grip" data-i="grip"></div>
+      <section class="panel" data-id="matrix">
+        <div class="pb">
+          <div class="shapebar"><span class="note" style="margin:0" data-i="shapeL"></span><div class="seg" id="shapeSeg"></div></div>
+          <div class="matwrap"><div class="mat" id="matIn"></div></div>
+          
+          <div class="row"><button class="btn sm" id="bT" data-i="bT"></button><button class="btn sm" id="bInv" data-i="bInv"></button><button class="btn sm" id="bI" data-i="bI"></button></div>
+          <details class="more"><summary data-i="cbMore"></summary><p class="note"><span data-ih="matNote"></span><button class="q" data-term="matrix">?</button></p></details>
+        </div>
+      </section>
+      <section class="panel" data-id="presets">
+        <div class="pb">
+          <div class="chips" id="pre"></div>
+          <label class="chk"><input type="checkbox" id="compose"> <span data-i="compose"></span><button class="q" data-term="composition">?</button></label>
+          <div class="hist" id="hist"></div>
+        </div>
+      </section>
+      <section class="panel" data-id="anim">
+        <div class="pb">
+          <div class="row" style="margin-top:.2rem"><button class="btn primary" id="bPlay" data-i="play"></button><button class="btn sm" id="bZero" data-i="zero"></button><button class="btn sm" id="bOne" data-i="one"></button></div>
+          <label class="rng"><span data-i="progress"></span><output id="tOut">1</output><input type="range" id="tR" min="0" max="1000" value="1000"></label>
+          <label class="rng"><span data-i="speed"></span><output id="spOut"></output><input type="range" id="spR" min="0.25" max="3" step="0.05"></label>
+        </div>
+      </section>
+      <section class="panel" data-id="props">
+        <div class="pb"><div class="props" id="props"></div></div>
+      </section>
+      <section class="panel" data-id="vector">
+        <div class="pb">
+          <div class="vin" id="vIn"></div>
+          <div class="vout" id="vOut"></div>
+          <details class="more"><summary data-i="cbMore"></summary>
+          <div class="note" id="vEq" style="margin-top:.4rem"></div>
+          <div class="d2only">
+            <div id="crCtl"><p class="note" style="margin:.7rem 0 .3rem" data-i="crLabel"></p><div style="display:flex;align-items:center;gap:.4rem"><div class="seg" id="slCr"><button data-cr="0" class="on" data-i="crOff"></button><button data-cr="1">x₁</button><button data-cr="2">x₂</button></div><button class="q" data-term="cramer">?</button></div></div>
+            <div class="vout" id="crOut"></div>
+            <p class="note" data-ih="vecNote"></p>
+          </div>
+          </details>
+        </div>
+      </section>
+      <section class="panel" data-id="show">
+        <div class="pb"><div class="toggles" id="tog"></div></div>
+      </section>
+      <section class="panel" data-id="mul">
+        <div class="pb">
+          <div class="mulrow"><span class="ml">A =</span><div class="mat" id="mulA"></div></div>
+          <div class="mulrow"><span class="ml">B =</span><div class="mat" id="mulB"></div></div>
+          <div class="mulrow"><span class="ml">A·B =</span><div class="mulres" id="mulC"></div><button class="q" data-term="composition">?</button></div>
+          <details class="steps"><summary data-i="mulWhat"></summary><div data-ih="mulNote"></div><div id="mulInfo" style="margin-top:.5rem"></div></details>
+          <details class="steps"><summary data-i="mulSteps"></summary><div id="mulSteps"></div></details>
+          <div class="row"><button class="btn sm primary" id="mulPlay" data-i="mulPlay"></button><button class="btn sm" id="mulSwap" data-i="mulSwap"></button><button class="btn sm" id="mulTake" data-i="mulTake"></button><button class="btn sm" id="mulTo" data-i="mulTo"></button></div>
+        </div>
+      </section>
+      <section class="panel" data-id="cob">
+        <div class="pb"><div class="d3only"><p class="note" style="margin-top:.2rem" data-i="only2d"></p><button class="btn sm" data-go2d data-i="go2d"></button></div>
+          <div class="d2only">
+            <label class="chk" style="margin-top:.2rem"><input type="checkbox" id="cbOn"> <span data-i="onScene"></span></label>
+            <div class="vin" style="margin-top:.6rem"><span class="ml" style="min-width:0">b₁ =</span><label>x<input type="text" inputmode="decimal" data-cb="b1:0" aria-label="b1 x"></label><label>y<input type="text" inputmode="decimal" data-cb="b1:1" aria-label="b1 y"></label></div>
+            <div class="vin" style="margin-top:.4rem"><span class="ml" style="min-width:0">b₂ =</span><label>x<input type="text" inputmode="decimal" data-cb="b2:0" aria-label="b2 x"></label><label>y<input type="text" inputmode="decimal" data-cb="b2:1" aria-label="b2 y"></label></div>
+            <div class="row"><button class="btn sm primary" id="cbEig" data-i="cbEig"></button><button class="btn sm" id="cbStd" data-i="cbStd"></button><button class="btn sm" id="cbTo" data-i="cbTo"></button></div>
+            <details class="steps"><summary data-i="cbMore"></summary><div class="vout" id="cbOut"></div><p class="note" data-ih="cbNote"></p></details>
+          </div>
+        </div>
+      </section>
+      <section class="panel" data-id="export">
+        <div class="pb">
+          <div class="row" style="margin-top:.2rem"><button class="btn sm" id="xPng" data-i="xPng" disabled></button><button class="btn sm" id="xVid" data-i="xVid" disabled></button></div>
+          <label class="chk"><input type="checkbox" id="xStamp" checked> <span data-i="xStamp"></span></label>
+          <p class="note" id="xNote"></p>
+          <div class="tex">
+            <div class="seg" id="xFmt"><button data-f="tex" class="on">LaTeX</button><button data-f="np">NumPy</button><button data-f="txt" data-i="fmtText"></button></div>
+            <textarea id="xTex" readonly rows="4" aria-label="Matrix"></textarea>
+            <div class="row"><button class="btn sm" id="xCopy" data-i="xCopy"></button></div>
+          </div>
+        </div>
+      </section>
+    </aside>
+  </div>
+</div>
+
+<div class="drawer" id="dGloss" role="dialog">
+  <div class="scrim" data-close></div>
+  <div class="sheet">
+    <div class="sh-h"><h2 data-i="gloss"></h2><button class="icon" data-close data-it="close">✕</button></div>
+    <input class="search" id="gq" type="search">
+    <div id="gl"></div>
+  </div>
+</div>
+
+<div class="drawer" id="dKeys" role="dialog">
+  <div class="scrim" data-close></div>
+  <div class="sheet">
+    <div class="sh-h"><h2 data-i="keys"></h2><button class="icon" data-close data-it="close">✕</button></div>
+    <p class="note" data-i="keysNote"></p>
+    <div class="keys" id="keysList"></div>
+  </div>
+</div>
+
+<div class="drawer" id="dSet" role="dialog">
+  <div class="scrim" data-close></div>
+  <div class="sheet">
+    <div class="sh-h"><h2 data-i="settings"></h2><button class="icon" data-close data-it="close">✕</button></div>
+    <h4 data-i="s_lang"></h4>
+    <div class="seg" id="langSeg2"><button data-l="ru">Русский</button><button data-l="en">English</button></div>
+    <h4 data-i="s_ui"></h4>
+    <div class="seg" id="uiSeg"><button data-v="auto" data-i="ui_auto"></button><button data-v="light" data-i="ui_light"></button><button data-v="dark" data-i="ui_dark"></button></div>
+    <h4 data-i="s_dock"></h4>
+    <div class="seg" id="dockSeg"><button data-v="auto" data-i="d_auto"></button><button data-v="right" data-i="d_right"></button><button data-v="left" data-i="d_left"></button><button data-v="bottom" data-i="d_bottom"></button><button data-v="float" data-i="d_float"></button></div>
+    <label class="rng"><span data-i="s_w"></span><output id="wOut"></output><input type="range" id="wR" min="240" max="560" step="10"></label>
+    <label class="rng"><span data-i="s_h"></span><output id="hOut"></output><input type="range" id="hR" min="25" max="75" step="1"></label>
+    <label class="rng"><span data-i="s_f"></span><output id="fOut"></output><input type="range" id="fR" min="80" max="130" step="5"></label>
+    <label class="rng"><span data-i="s_l"></span><output id="lOut"></output><input type="range" id="lR" min="0.5" max="2.5" step="0.1"></label>
+    <h4 data-i="s_pal"></h4>
+    <div class="chips" id="palChips"></div>
+    <p class="note" data-i="palNote"></p>
+    <div class="colors" id="colors"></div>
+    <h4 data-i="s_blocks"></h4>
+    <p class="note" data-i="blocksNote"></p>
+    <h4 data-i="keys"></h4>
+    <div class="row"><button class="btn sm" id="openKeys2" data-i="showKeys"></button></div>
+    <h4 data-i="s_reset"></h4>
+    <div class="row"><button class="btn sm" id="resetOrder" data-i="resetOrder"></button><button class="btn sm" id="resetAll" data-i="resetAll"></button></div>
+  </div>
+</div>
+
+<script>
+(()=>{
+'use strict';
+const $=s=>document.querySelector(s);
+const KEY='linal-viz-v1';
+const PAL={
+  classic:{name:'Классика',bg:'#0b0c10',bgGrid:'#262b33',grid:'#3a9ec4',axis:'#f2f2f2',i:'#83c167',j:'#fc6255',k:'#58c4dd',det:'#f4d345',eigen:'#c77dff',vec:'#ff9f43',span:'#b9f3fc',kernel:'#ff7aa8'},
+  paper:{name:'Бумага',bg:'#fbfaf7',bgGrid:'#e3e1da',grid:'#4a89b8',axis:'#23262b',i:'#3f9a3a',j:'#d1453b',k:'#2b6cb0',det:'#e0a800',eigen:'#8e44ad',vec:'#e67e22',span:'#16a085',kernel:'#c0398b'},
+  neon:{name:'Неон',bg:'#07020f',bgGrid:'#1f1533',grid:'#ff2fd0',axis:'#ffffff',i:'#39ff88',j:'#ff4d6d',k:'#4dd2ff',det:'#fff35c',eigen:'#ffa53d',vec:'#8f7bff',span:'#7af7ff',kernel:'#ff9ecf'},
+  nord:{name:'Норд',bg:'#2e3440',bgGrid:'#3b4252',grid:'#88c0d0',axis:'#eceff4',i:'#a3be8c',j:'#bf616a',k:'#81a1c1',det:'#ebcb8b',eigen:'#b48ead',vec:'#d08770',span:'#8fbcbb',kernel:'#e5a0c0'}
+};
+const TX={
+ru:{title:'Linear algebra',brand:'Linear algebra',gloss:'Справочник',glossT:'Справочник понятий',settings:'Настройки',canvas:'Сцена с преобразованием',
+ zIn:'Приблизить',zOut:'Отдалить',zHome:'Вернуть вид',capX:'Скрыть подсказки',capOpen:'Подсказки',grip:'перетащите панель',close:'Закрыть',drag:'Перетащить',up:'Выше',down:'Ниже',collapse:'Свернуть',
+ p_matrix:'Матрица',p_presets:'Готовые преобразования',p_anim:'Анимация',p_props:'Свойства матрицы',p_vector:'Вектор v',p_show:'Что показывать',
+ matNote:'Столбцы — это координаты, куда попадают базисные векторы <b class="ci">î</b>, <b class="cj">ĵ</b><span class="d3only"> и <b class="ck"><span class="kh">k</span></b></span>. <span class="d2only">Кончики <b class="ci">î</b> и <b class="cj">ĵ</b> можно тянуть прямо на сцене.</span>',
+ bT:'Транспонировать',bInv:'Применить A⁻¹',bI:'Сбросить к I',compose:'Применять поверх текущего (композиция)',play:'▶ Проиграть',zero:'До (t = 0)',one:'После (t = 1)',progress:'Прогресс t',speed:'Скорость',
+ vecNote:'Кончик <b style="color:var(--s-vec)">v</b> можно тянуть на сцене. Так решается уравнение <i>A</i>·<i>x</i> = <i>b</i>: тянете кончик в точку <i>b</i>, и в полях выше появляется решение <i>x</i> = <i>v</i>.',vSing:'det <i>A</i> = 0, поэтому тянуть <i>v</i> нельзя: <i>A</i>·<i>x</i> = <i>b</i> решается не для любого <i>b</i>, а только для <i>b</i> на прямой образа. Зато тогда решений бесконечно много: все векторы на пунктире через <i>v</i> (параллельно ядру) переходят в ту же точку <i>A</i>·<i>v</i>.',search:'Найти: базис, ядро, span…',noFound:'Ничего не нашлось. Попробуйте другое слово, например «ранг» или «eigen».',showDemo:'▶ Показать на сцене',
+ s_lang:'Язык',s_ui:'Тема интерфейса',ui_auto:'Как в системе',ui_light:'Светлая',ui_dark:'Тёмная',s_dock:'Где стоит панель',d_auto:'Авто',d_right:'Справа',d_left:'Слева',d_bottom:'Снизу',d_float:'Плавает',
+ s_w:'Ширина боковой панели',s_h:'Высота нижней панели',s_f:'Размер текста интерфейса',s_l:'Толщина линий на сцене',s_pal:'Палитра сцены',palNote:'Любой цвет можно поменять вручную, тогда палитра станет «Своя».',
+ p_export:'Экспорт',xPng:'Снимок PNG',xVid:'Видео анимации',xStamp:'Добавлять матрицу на изображение',xCopy:'Копировать',fmtText:'Текст',
+ xNoDl:'Сохранение файлов недоступно в этом окне. Откройте страницу в claude.ai.',xNoVid:'Этот браузер не умеет записывать видео с холста.',xRec:'Записываю анимацию…',xSaved:'Файл передан на сохранение.',xBusy:'Окно сохранения уже открыто, попробуйте чуть позже.',xFail:'Не удалось сохранить файл.',xCopied:'Скопировано.',xSelect:'Текст выделен: нажмите Ctrl+C или ⌘C.',
+ keys:'Горячие клавиши',keysNote:'Работают в любой раскладке и не срабатывают, пока курсор стоит в поле ввода.',showKeys:'Показать список',s_reset:'Сброс',seeAlso:'См. также:',on:'вкл',off:'выкл',
+ k_play:'проиграть анимацию',k_t:'шаг по t на 0,05',k_t2:'шаг по t на 0,25',k_t01:'t = 0 / t = 1',k_pre:'готовые преобразования по порядку',k_reset:'сбросить к I',k_tr:'транспонировать',k_inv:'применить A⁻¹',k_comp:'композиция вкл/выкл',k_mode:'переключить 2D / 3D',k_ghost:'состояние «до»',k_trails:'пути смещения',k_eig:'собственные векторы',k_ker:'ядро',k_vec:'вектор v',k_dec:'разложение v по базису',k_lab:'подписи',k_hint:'подсказки на сцене',k_zoom:'масштаб',k_home:'вернуть вид',k_png:'снимок PNG',k_vid:'видео анимации',k_gloss:'открыть справочник',k_keys:'этот список',k_esc:'закрыть окно',
+ p_mul:'Умножение матриц',mulNote:'<i>A</i>·<i>B</i> значит: сначала <i>B</i>, потом <i>A</i>. Элемент <i>c<sub>ij</sub></i> — строка <i>i</i> матрицы <i>A</i>, умноженная на столбец <i>j</i> матрицы <i>B</i>.',mulPlay:'▶ Показать: B, затем A',mulSwap:'Поменять A и B',mulTake:'A ← из сцены',mulTo:'Результат в сцену',mulSteps:'Как посчитано',mulWhat:'Что значит A·B',mulComm:'Здесь A·B = B·A: порядок не важен.',mulNon:'В обратном порядке получится другое: B·A =',mulDet:'det(A·B) = det A · det B',k_mul:'показать A·B из блока умножения',tabI:'Интуиция',tabF:'Строго',readOf:(a,b)=>`Прочитано ${a} из ${b}`,readReset:'Сбросить отметки',readMark:'Отметить прочитанным',readDone:'✓ Прочитано',
+ p_cob:'Смена базиса',only2d:'Этот инструмент работает в 2D.',go2d:'Перейти в 2D',onScene:'Показать на сцене',crLabel:'Площади Крамера:',crOff:'нет',
+ 
+ 
+ 
+ crEx:i=>`Площадь цветного параллелограмма до преобразования равна x${i==1?'₁':'₂'}, после — det A${i==1?'₁':'₂'}. Все площади умножаются на det A, отсюда x${i==1?'₁':'₂'} = det A${i==1?'₁':'₂'} / det A.`,
+ cbNote:'Кончики <b>b₁</b> и <b>b₂</b> можно тянуть на сцене. Пунктирная сетка — «чужая» система координат. Блок показывает, как то же преобразование <i>A</i> записывается в этом базисе.',
+ cbEig:'Собственный базис',cbMore:'Подробности',cbStd:'Стандартный',cbTo:'A′ → в сцену',cbBad:'b₁ и b₂ параллельны: это не базис.',
+ cbA:'Та же A в новом базисе:',cbDiag:'Матрица диагональная: в этом базисе A просто растягивает вдоль b₁ и b₂.',cbNoEig:'У A нет двух независимых вещественных собственных векторов.',
+ shapeL:'Размер',r_size:'Размер',r_rn:'dim Ker + ранг',rnNote:'теорема о ранге: сумма равна числу столбцов',img1:['точка','вся числовая прямая'],
+ nsqNote:'Определитель, след, собственные значения и обратная матрица есть только у квадратных матриц.',cbSq:'Смена базиса работает только для квадратной матрицы 2×2.',
+ s_blocks:'Блоки',blocksNote:'Порядок блоков меняется перетаскиванием за ⠿ или стрелками ↑ ↓ в заголовке. Нажатие на заголовок сворачивает блок. Всё запоминается в этом браузере.',resetOrder:'Вернуть порядок блоков',resetAll:'Сбросить все настройки',
+ pal:{classic:'Классика',paper:'Бумага',neon:'Неон',nord:'Норд'},
+ colors:{bg:'Фон сцены',bgGrid:'Исходная сетка',grid:'Новая сетка',axis:'Оси и текст',i:'Вектор î',j:'Вектор ĵ',k:'Вектор <span class="kh">k</span>',det:'Определитель',eigen:'Собственные',vec:'Вектор v',span:'Образ (span)',kernel:'Ядро'},
+ tog:{bgGrid:'Исходная сетка',grid:'Новая сетка',basis:'Базисные векторы',det:'Определитель',eigen:'Собственные векторы',span:'Образ (span)',kernel:'Ядро',vec:'Вектор v',decomp:'Разложение v по базису',labels:'Подписи',coords:'Числа на осях',snap:'Привязка к сетке',lattice:'Точки решётки',hints:'Подсказки на сцене',ghost:'Состояние «до»',trails:'Пути смещения'},
+ names:{lineDiag:'Прямая через (2, 1)',lineY:'На ось y',lineStretch:'Растянуть вдоль x',lineFlip:'Наклон влево',projX:'Только x',sumXY:'x + y',dot21:'2x + y',diffXY:'x − y',planeXY1:'Плоскость z = x + y',planeTilt:'Наклонная плоскость',planeXZ:'Вертикальная плоскость',toLine3:'В прямую',projXY:'Проекция на xy',oblique:'Косая проекция',sideView:'Вид сбоку',toLine2:'На прямую',rot90:'Поворот 90°',rot30:'Поворот 30°',shear:'Сдвиг',stretch:'Растяжение',scale:'Масштаб ×1,5',reflect:'Отражение',proj:'Проекция',singular:'Вырожденная',eig:'Собственные векторы',spiral:'Спираль',random:'Случайная',rotz:'Поворот вокруг z',rotx:'Поворот вокруг x',proj3:'Проекция на плоскость',rank1:'Ранг 1',custom:'Своя',newbasis:'Новый базис',dep:'Зависимые столбцы'},
+ cell:(r,c)=>`Строка ${r}, столбец ${c}`,coord:n=>`Координата ${n}`,image:'образ',kernel:'ядро',now:'Сейчас:',rtl:f=>`Читается справа налево: первым применено «${f}».`,
+ r_det:'Определитель',r_tr:'След',r_rank:'Ранг',r_ev:'Собств. значения',r_evec:'Собств. векторы',r_cp:'Хар. многочлен',r_inv:'Обратная',
+ detCol:n=>n===2?'плоскость схлопнулась, обратной матрицы нет':'пространство схлопнулось, обратной матрицы нет',
+ detNeg:(n,x)=>`ориентация перевёрнута, ${n===2?'площади':'объёмы'} ×${x}`,detPos:(n,x)=>`${n===2?'площади':'объёмы'} умножаются на ${x}`,
+ img:n=>n===2?['точка','прямая','вся плоскость']:['точка','прямая','плоскость','всё пространство'],ker:['только нулевой вектор','прямая','плоскость','всё пространство'],
+ rankNote:(i,k)=>`образ: ${i}; ядро: ${k}`,anyVec:'любой ненулевой вектор',noReal:'вещественных нет',complexNote:'комплексная пара означает вращение',traceNote:'сумма собственных значений',none:'не существует',
+ vecEq:'каждая координата <i>v</i> умножает свой столбец.',col:'',
+ invErr:'A⁻¹ не существует: det = 0, схлопнутое пространство нельзя однозначно развернуть обратно.',
+ cap:{id:n=>n===2?'Единичная матрица ничего не меняет. Потяните кончики î и ĵ или выберите готовое преобразование.':'Единичная матрица ничего не меняет. Выберите преобразование в панели; сцену можно вращать мышью или пальцем.',
+nsq:([m,n],r,kd)=>{if(r===0)return'Нулевая матрица: всё схлопнулось в одну точку. Определителя у неквадратной матрицы нет.';const full=r===Math.min(m,n);
+   const t=!full?`Матрица ${m}×${n} ранга ${r}: образ — прямая, а не ${m===3?'плоскость':'плоскость'}.`:m===3?'Матрица 3×2 переводит плоскость в пространство: вся плоскость ложится на плоскость образа в 3D.':n===3?'Матрица 2×3 сплющивает пространство на плоскость.':m===1?'Матрица 1×2 переводит плоскость на числовую прямую: каждому вектору — одно число. Это скалярное произведение со строкой матрицы.':'Матрица 2×1 переводит числовую прямую в плоскость: точки прямой ложатся на прямую через первый столбец.';
+   return t+(kd?(kd===1?' Векторы на пунктирной прямой (ядро) уходят в ноль.':' Целая плоскость ядра уходит в ноль.'):'')+' Определителя у неквадратной матрицы нет.'},
+  zero:'Нулевая матрица: всё схлопнулось в одну точку.',
+  sing:(n,r)=>n===2?'det = 0: плоскость схлопнулась в прямую. Векторы на пунктире (ядро) превращаются в ноль.':r===2?'det = 0: пространство сплющилось в плоскость. Векторы на пунктирной прямой (ядро) уходят в ноль.':'det = 0: всё легло на прямую. Целая плоскость ядра уходит в ноль.',
+  complex:d=>`Нет вещественных собственных векторов: каждый вектор сходит со своей прямой, значит, есть вращение. Площадь ×${d}.`,
+  neg:(n,d,a)=>`det = ${d} < 0: ${n===2?'плоскость перевёрнута':'пространство перевёрнуто'}, как в зеркале. ${n===2?'Любая площадь':'Любой объём'} умножается на |det| = ${a}.`,
+  pos:(n,d)=>`${n===2?'Любая площадь':'Любой объём'} умножается на det = ${d}.`,
+  eig:' Векторы на пунктирных прямых (λ) не сходят со своих прямых: они только растягиваются, сжимаются или переворачиваются.'}},
+en:{title:'Linear algebra',brand:'Linear algebra',gloss:'Glossary',glossT:'Glossary of concepts',settings:'Settings',canvas:'Transformation scene',
+ zIn:'Zoom in',zOut:'Zoom out',zHome:'Reset view',capX:'Hide hints',capOpen:'Hints',grip:'drag the panel',close:'Close',drag:'Drag',up:'Move up',down:'Move down',collapse:'Collapse',
+ p_matrix:'Matrix',p_presets:'Presets',p_anim:'Animation',p_props:'Matrix properties',p_vector:'Vector v',p_show:'Display',
+ matNote:'The columns are the coordinates where the basis vectors <b class="ci">î</b>, <b class="cj">ĵ</b><span class="d3only"> and <b class="ck"><span class="kh">k</span></b></span> land. <span class="d2only">Drag the tips of <b class="ci">î</b> and <b class="cj">ĵ</b> right on the scene.</span>',
+ bT:'Transpose',bInv:'Apply A⁻¹',bI:'Reset to I',compose:'Apply on top of current (composition)',play:'▶ Play',zero:'Before (t = 0)',one:'After (t = 1)',progress:'Progress t',speed:'Speed',
+ vecNote:'Drag the tip of <b style="color:var(--s-vec)">v</b> on the scene. This is how <i>A</i>·<i>x</i> = <i>b</i> gets solved: drag the tip to the point <i>b</i>, and the fields above show the solution <i>x</i> = <i>v</i>.',vSing:'det <i>A</i> = 0, so <i>v</i> can’t be dragged: <i>A</i>·<i>x</i> = <i>b</i> is solvable not for every <i>b</i> but only for <i>b</i> on the image line. Then, however, there are infinitely many solutions: every vector on the dashed line through <i>v</i> (parallel to the kernel) lands on the same point <i>A</i>·<i>v</i>.',search:'Search: basis, kernel, span…',noFound:'Nothing found. Try another word, such as “rank” or “eigen”.',showDemo:'▶ Show on the scene',
+ s_lang:'Language',s_ui:'Interface theme',ui_auto:'System',ui_light:'Light',ui_dark:'Dark',s_dock:'Panel position',d_auto:'Auto',d_right:'Right',d_left:'Left',d_bottom:'Bottom',d_float:'Floating',
+ s_w:'Side panel width',s_h:'Bottom panel height',s_f:'Interface text size',s_l:'Scene line thickness',s_pal:'Scene palette',palNote:'Change any color by hand and the palette becomes “Custom”.',
+ p_export:'Export',xPng:'PNG snapshot',xVid:'Animation video',xStamp:'Include the matrix in the image',xCopy:'Copy',fmtText:'Text',
+ xNoDl:'Saving files isn’t available in this view. Open the page in claude.ai.',xNoVid:'This browser can’t record video from the canvas.',xRec:'Recording the animation…',xSaved:'File handed over for saving.',xBusy:'A save prompt is already open; try again shortly.',xFail:'Couldn’t save the file.',xCopied:'Copied.',xSelect:'Text is selected: press Ctrl+C or ⌘C.',
+ keys:'Keyboard shortcuts',keysNote:'They work with any keyboard layout and are ignored while you type in a field.',showKeys:'Show the list',s_reset:'Reset',seeAlso:'See also:',on:'on',off:'off',
+ k_play:'play the animation',k_t:'step t by 0.05',k_t2:'step t by 0.25',k_t01:'t = 0 / t = 1',k_pre:'presets in order',k_reset:'reset to I',k_tr:'transpose',k_inv:'apply A⁻¹',k_comp:'toggle composition',k_mode:'switch 2D / 3D',k_ghost:'“before” state',k_trails:'displacement paths',k_eig:'eigenvectors',k_ker:'kernel',k_vec:'vector v',k_dec:'decompose v in basis',k_lab:'labels',k_hint:'on-scene hints',k_zoom:'zoom',k_home:'reset view',k_png:'PNG snapshot',k_vid:'animation video',k_gloss:'open the glossary',k_keys:'this list',k_esc:'close a panel',
+ p_mul:'Matrix multiplication',mulNote:'<i>A</i>·<i>B</i> means: first <i>B</i>, then <i>A</i>. Entry <i>c<sub>ij</sub></i> is row <i>i</i> of <i>A</i> times column <i>j</i> of <i>B</i>.',mulPlay:'▶ Show: B, then A',mulSwap:'Swap A and B',mulTake:'A ← from scene',mulTo:'Result to scene',mulSteps:'How it’s computed',mulWhat:'What A·B means',mulComm:'Here A·B = B·A: order doesn’t matter.',mulNon:'The other order gives something else: B·A =',mulDet:'det(A·B) = det A · det B',k_mul:'show A·B from the multiplication block',tabI:'Intuition',tabF:'Formal',readOf:(a,b)=>`${a} of ${b} read`,readReset:'Clear marks',readMark:'Mark as read',readDone:'✓ Read',
+ p_cob:'Change of basis',only2d:'This tool works in 2D.',go2d:'Switch to 2D',onScene:'Show on the scene',crLabel:'Cramer areas:',crOff:'off',
+ 
+ 
+ 
+ crEx:i=>`The colored parallelogram has area x${i==1?'₁':'₂'} before the transformation and det A${i==1?'₁':'₂'} after. Every area is scaled by det A, so x${i==1?'₁':'₂'} = det A${i==1?'₁':'₂'} / det A.`,
+ cbNote:'Drag the tips of <b>b₁</b> and <b>b₂</b> on the scene. The dashed grid is the “other” coordinate system. The block shows how the same transformation <i>A</i> is written in this basis.',
+ cbEig:'Eigenbasis',cbMore:'Details',cbStd:'Standard',cbTo:'A′ → to scene',cbBad:'b₁ and b₂ are parallel: not a basis.',
+ cbA:'The same A in the new basis:',cbDiag:'The matrix is diagonal: in this basis A just stretches along b₁ and b₂.',cbNoEig:'A doesn’t have two independent real eigenvectors.',
+ shapeL:'Size',r_size:'Size',r_rn:'dim Ker + rank',rnNote:'rank–nullity: the sum equals the number of columns',img1:['a point','the whole number line'],
+ nsqNote:'Determinant, trace, eigenvalues and the inverse exist only for square matrices.',cbSq:'Change of basis works only for a square 2×2 matrix.',
+ s_blocks:'Blocks',blocksNote:'Reorder blocks by dragging ⠿ or with the ↑ ↓ arrows in their headers. Click a header to collapse its block. Everything is remembered in this browser.',resetOrder:'Restore block order',resetAll:'Reset all settings',
+ pal:{classic:'Classic',paper:'Paper',neon:'Neon',nord:'Nord'},
+ colors:{bg:'Scene background',bgGrid:'Original grid',grid:'Transformed grid',axis:'Axes and text',i:'Vector î',j:'Vector ĵ',k:'Vector <span class="kh">k</span>',det:'Determinant',eigen:'Eigenvectors',vec:'Vector v',span:'Image (span)',kernel:'Kernel'},
+ tog:{bgGrid:'Original grid',grid:'Transformed grid',basis:'Basis vectors',det:'Determinant',eigen:'Eigenvectors',span:'Image (span)',kernel:'Kernel',vec:'Vector v',decomp:'Decompose v in basis',labels:'Labels',coords:'Axis numbers',snap:'Snap to grid',lattice:'Lattice points',hints:'On-scene hints',ghost:'“Before” state',trails:'Displacement paths'},
+ names:{lineDiag:'Line through (2, 1)',lineY:'Onto the y-axis',lineStretch:'Stretch along x',lineFlip:'Tilt left',projX:'Just x',sumXY:'x + y',dot21:'2x + y',diffXY:'x − y',planeXY1:'Plane z = x + y',planeTilt:'Tilted plane',planeXZ:'Vertical plane',toLine3:'Onto a line',projXY:'Project onto xy',oblique:'Oblique projection',sideView:'Side view',toLine2:'Onto a line',rot90:'Rotate 90°',rot30:'Rotate 30°',shear:'Shear',stretch:'Stretch',scale:'Scale ×1.5',reflect:'Reflection',proj:'Projection',singular:'Singular',eig:'Eigenvectors',spiral:'Spiral',random:'Random',rotz:'Rotate about z',rotx:'Rotate about x',proj3:'Project onto plane',rank1:'Rank 1',custom:'Custom',newbasis:'New basis',dep:'Dependent columns'},
+ cell:(r,c)=>`Row ${r}, column ${c}`,coord:n=>`Coordinate ${n}`,image:'image',kernel:'kernel',now:'Current:',rtl:f=>`Read right to left: “${f}” was applied first.`,
+ r_det:'Determinant',r_tr:'Trace',r_rank:'Rank',r_ev:'Eigenvalues',r_evec:'Eigenvectors',r_cp:'Char. polynomial',r_inv:'Inverse',
+ detCol:n=>n===2?'the plane collapsed, no inverse':'space collapsed, no inverse',
+ detNeg:(n,x)=>`orientation flipped, ${n===2?'areas':'volumes'} ×${x}`,detPos:(n,x)=>`${n===2?'areas':'volumes'} are scaled by ${x}`,
+ img:n=>n===2?['a point','a line','the whole plane']:['a point','a line','a plane','all of space'],ker:['only the zero vector','a line','a plane','all of space'],
+ rankNote:(i,k)=>`image: ${i}; kernel: ${k}`,anyVec:'any nonzero vector',noReal:'no real ones',complexNote:'a complex pair means rotation',traceNote:'sum of the eigenvalues',none:'does not exist',
+ vecEq:'each coordinate of <i>v</i> scales its own column.',
+ invErr:'A⁻¹ does not exist: det = 0, and a collapsed space can’t be uniquely unfolded.',
+ cap:{id:n=>n===2?'The identity matrix changes nothing. Drag the tips of î and ĵ or pick a preset.':'The identity matrix changes nothing. Pick a transformation in the panel; drag to rotate the scene.',
+nsq:([m,n],r,kd)=>{if(r===0)return'Zero matrix: everything collapses to a single point. A non-square matrix has no determinant.';const full=r===Math.min(m,n);
+   const t=!full?`A ${m}×${n} matrix of rank ${r}: the image is a line, not a plane.`:m===3?'A 3×2 matrix takes the plane into space: the whole plane lands on the image plane in 3D.':n===3?'A 2×3 matrix squashes space onto a plane.':m===1?'A 1×2 matrix maps the plane onto the number line: one number per vector. It is the dot product with the matrix row.':'A 2×1 matrix maps the number line into the plane: its points land on the line through the first column.';
+   return t+(kd?(kd===1?' Vectors on the dashed line (the kernel) land on zero.':' A whole plane (the kernel) lands on zero.'):'')+' A non-square matrix has no determinant.'},
+  zero:'Zero matrix: everything collapses to a single point.',
+  sing:(n,r)=>n===2?'det = 0: the plane is squished onto a line. Vectors on the dashed line (the kernel) land on zero.':r===2?'det = 0: space is flattened onto a plane. Vectors on the dashed line (the kernel) land on zero.':'det = 0: everything lies on a line. A whole plane (the kernel) lands on zero.',
+  complex:d=>`No real eigenvectors: every vector is knocked off its own line, so there is rotation. Area ×${d}.`,
+  neg:(n,d,a)=>`det = ${d} < 0: ${n===2?'the plane':'space'} is flipped like a mirror image. Every ${n===2?'area':'volume'} is scaled by |det| = ${a}.`,
+  pos:(n,d)=>`Every ${n===2?'area':'volume'} is scaled by det = ${d}.`,
+  eig:' Vectors on the dashed lines (λ) stay on their lines: they only stretch, shrink or flip.'}}
+};
+const T=()=>TX[P.lang]||TX.ru;
+const nm=id=>id.endsWith('ᵀ')?nm(id.slice(0,-1))+'ᵀ':(T().names[id]||id);
+const PANELS=['matrix','presets','anim','props','vector','mul','cob','show','export'];
+const DEF={palette:'classic',colors:{...PAL.classic},dock:'auto',width:340,bottomH:44,ui:'auto',font:100,speed:1,lw:1,order:PANELS.slice(),collapsed:{mul:true,cob:true,export:true},read:{},float:{x:12,y:12},
+  show:{bgGrid:true,grid:true,basis:true,det:true,eigen:true,span:true,kernel:true,vec:false,decomp:false,labels:true,coords:true,snap:true,lattice:false,hints:true,ghost:true,trails:false}};
+const clone=o=>JSON.parse(JSON.stringify(o));
+function load(){
+  let r=null; try{r=JSON.parse(localStorage.getItem(KEY)||'null')}catch(e){}
+  const p=clone(DEF); if(!r||typeof r!=='object') return p;
+  Object.assign(p,r); p.colors={...DEF.colors,...(r.colors||{})}; p.show={...DEF.show,...(r.show||{})};
+  const ord=Array.isArray(r.order)?r.order.filter(x=>PANELS.includes(x)):[]; PANELS.forEach(x=>{if(!ord.includes(x))ord.push(x)}); p.order=ord;
+  p.collapsed=r.collapsed||{}; p.float=r.float||{x:12,y:12}; return p;
+}
+let P=load(); if(!P.lang)P.lang=(navigator.language||'').toLowerCase().startsWith('ru')?'ru':'en'; let saveT=0;
+function save(){clearTimeout(saveT);saveT=setTimeout(()=>{try{localStorage.setItem(KEY,JSON.stringify(P))}catch(e){}},250)}
+
+/* ---------- математика ---------- */
+const I=n=>n===2?[1,0,0,1]:[1,0,0,0,1,0,0,0,1];
+const lerp=(A,B,t)=>A.map((x,i)=>x+(B[i]-x)*t);
+function mul(A,B,n){const R=new Array(n*n).fill(0);for(let i=0;i<n;i++)for(let j=0;j<n;j++)for(let k=0;k<n;k++)R[i*n+j]+=A[i*n+k]*B[k*n+j];return R}
+function ap(M,v,n){if(n===2)return[M[0]*v[0]+M[1]*v[1],M[2]*v[0]+M[3]*v[1]];return[M[0]*v[0]+M[1]*v[1]+M[2]*v[2],M[3]*v[0]+M[4]*v[1]+M[5]*v[2],M[6]*v[0]+M[7]*v[1]+M[8]*v[2]]}
+function det(M,n){if(n===2)return M[0]*M[3]-M[1]*M[2];const[a,b,c,e,f,g,h,i,j]=M;return a*(f*j-g*i)-b*(e*j-g*h)+c*(e*i-f*h)}
+function inv(M,n){const d=det(M,n);if(Math.abs(d)<1e-12)return null;if(n===2)return[M[3]/d,-M[1]/d,-M[2]/d,M[0]/d];const[a,b,c,e,f,g,h,i,j]=M;
+  return[(f*j-g*i)/d,(c*i-b*j)/d,(b*g-c*f)/d,(g*h-e*j)/d,(a*j-c*h)/d,(c*e-a*g)/d,(e*i-f*h)/d,(b*h-a*i)/d,(a*f-b*e)/d]}
+const tr=(M,n)=>n===2?M[0]+M[3]:M[0]+M[4]+M[8];
+function transpose(M,n){const R=[];for(let i=0;i<n;i++)for(let j=0;j<n;j++)R[i*n+j]=M[j*n+i];return R}
+const col=(M,j,n)=>n===2?[M[j],M[2+j]]:[M[j],M[3+j],M[6+j]];
+const norm=v=>Math.hypot(...v);
+const nz=v=>{const L=norm(v)||1;return v.map(x=>x/L)};
+const isI=(M,n)=>M.every((x,i)=>Math.abs(x-I(n)[i])<1e-9);
+const add=(a,b)=>a.map((x,i)=>x+b[i]);
+const sc=(a,s)=>a.map(x=>x*s);
+function nullspace(A,n,tol){
+  const m=[];for(let i=0;i<n;i++)m.push(A.slice(i*n,i*n+n));
+  const T=tol*Math.max(1,...A.map(Math.abs));let r=0;const piv=[];
+  for(let c=0;c<n&&r<n;c++){
+    let b=r;for(let i=r+1;i<n;i++)if(Math.abs(m[i][c])>Math.abs(m[b][c]))b=i;
+    if(Math.abs(m[b][c])<T)continue;
+    [m[r],m[b]]=[m[b],m[r]];const pv=m[r][c];for(let j=0;j<n;j++)m[r][j]/=pv;
+    for(let i=0;i<n;i++)if(i!==r){const f=m[i][c];if(f)for(let j=0;j<n;j++)m[i][j]-=f*m[r][j]}
+    piv.push(c);r++;
+  }
+  const free=[];for(let c=0;c<n;c++)if(!piv.includes(c))free.push(c);
+  const basis=free.map(fc=>{const v=new Array(n).fill(0);v[fc]=1;piv.forEach((pc,ri)=>{v[pc]=-m[ri][fc]});return nz(v)});
+  return{rank:r,piv,basis};
+}
+function cubicRoots(A){
+  const T=tr(A,3),c2=(A[0]*A[4]-A[1]*A[3])+(A[0]*A[8]-A[2]*A[6])+(A[4]*A[8]-A[5]*A[7]),D=det(A,3);
+  const a=-T,b=c2,c=-D,p=b-a*a/3,q=2*a*a*a/27-a*b/3+c,sh=-a/3,disc=(q/2)**2+(p/3)**3;
+  const scale=Math.max(1,Math.abs(a),Math.abs(b),Math.abs(c));
+  if(Math.abs(p)<1e-12*scale&&Math.abs(q)<1e-12*scale)return[{re:sh,im:0},{re:sh,im:0},{re:sh,im:0}];
+  if(disc>1e-12*scale**3){const s=Math.sqrt(disc),u=Math.cbrt(-q/2+s),v=Math.cbrt(-q/2-s);const re=-(u+v)/2+sh,im=(u-v)*Math.sqrt(3)/2;return[{re:u+v+sh,im:0},{re,im},{re,im:-im}]}
+  if(disc>=-1e-12*scale**3){const u=Math.cbrt(-q/2);return[{re:2*u+sh,im:0},{re:-u+sh,im:0},{re:-u+sh,im:0}]}
+  const r=Math.sqrt(-p/3),phi=Math.acos(Math.max(-1,Math.min(1,-q/(2*r*r*r))));
+  return[0,1,2].map(k=>({re:2*r*Math.cos((phi-2*Math.PI*k)/3)+sh,im:0}));
+}
+function eigen(A,n){
+  let roots;
+  if(n===2){const T=tr(A,2),D=det(A,2),disc=T*T-4*D;
+    if(disc>=-1e-12){const s=Math.sqrt(Math.max(0,disc));roots=[{re:(T+s)/2,im:0},{re:(T-s)/2,im:0}]}
+    else{const s=Math.sqrt(-disc);roots=[{re:T/2,im:s/2},{re:T/2,im:-s/2}]}}
+  else roots=cubicRoots(A);
+  roots.forEach(r=>{if(Math.abs(r.im)<1e-7*(1+Math.abs(r.re)))r.im=0});
+  const real=[];roots.filter(r=>r.im===0).forEach(r=>{if(!real.some(x=>Math.abs(x-r.re)<1e-6))real.push(r.re)});
+  const vecs=[];
+  real.forEach(l=>{const B=A.slice();for(let i=0;i<n;i++)B[i*n+i]-=l;const ns=nullspace(B,n,1e-6);ns.basis.forEach(v=>vecs.push({l,v,dim:ns.basis.length}))});
+  return{roots,vecs};
+}
+function fmt(x,d=2){if(!isFinite(x))return'∞';if(Math.abs(x)<5e-10)x=0;let s=String(+x.toFixed(d));if(s==='-0')s='0';return s.replace('-','−')}
+function sigmaMin2(M){const[a,b,c,d]=M,s=a*a+b*b+c*c+d*d,dt=a*d-b*c,q=Math.sqrt(Math.max(0,s*s-4*dt*dt));return Math.sqrt(Math.max(0,(s-q)/2))}
+
+/* ---------- состояние ---------- */
+const S={mode:'2d',compose:false,anim:null,
+  d2:{from:I(2),to:I(2),t:1,hist:[],v:[2,1],shape:[2,2]},
+  d3:{from:I(3),to:I(3),t:1,hist:[],v:[1,1,1],shape:[3,3]},
+  V:{scale:60,ox:0,oy:0},cam:{yaw:-2.3,pitch:0.5,zoom:1},K:null};
+const D=()=>S.mode==='2d'?S.d2:S.d3;
+S.cr=0;S.cob={on:false,b1:[2,1],b2:[-1,1]};
+const SH=()=>D().shape;
+const isSq=()=>SH()[0]===SH()[1];
+const shapeKey=()=>isSq()?S.mode:SH().join('x');
+function baseM(){const n=N(),k=SH()[1],B=new Array(n*n).fill(0);for(let i=0;i<k;i++)B[i*n+i]=1;return B}
+function maskM(M){const n=N(),[r,c]=SH();return M.map((x,k)=>(Math.floor(k/n)<r&&k%n<c)?x:0)}
+const eqM=(A,B)=>A.every((x,i)=>Math.abs(x-B[i])<1e-9);
+const padR=(rows,n)=>{const M=new Array(n*n).fill(0);rows.forEach((r,i)=>r.forEach((x,j)=>{M[i*n+j]=x}));return M};
+const N=()=>S.mode==='2d'?2:3;
+const cur=()=>{const d=D();return lerp(d.from,d.to,d.t)};
+
+const rot2=a=>[Math.cos(a),-Math.sin(a),Math.sin(a),Math.cos(a)];
+const rz=a=>[Math.cos(a),-Math.sin(a),0,Math.sin(a),Math.cos(a),0,0,0,1];
+const rx=a=>[1,0,0,0,Math.cos(a),-Math.sin(a),0,Math.sin(a),Math.cos(a)];
+const PRE={
+  '2d':[['rot90',rot2(Math.PI/2)],['rot30',rot2(Math.PI/6)],['shear',[1,1,0,1]],['stretch',[2,0,0,0.5]],['scale',[1.5,0,0,1.5]],['reflect',[-1,0,0,1]],['proj',[1,0,0,0]],['singular',[1,2,0.5,1]],['eig',[3,1,0,2]],['spiral',[1,-1,1,1]],['random',null]],
+  '3d':[['rotz',rz(Math.PI/2)],['rotx',rx(Math.PI/4)],['shear',[1,0,1,0,1,0,0,0,1]],['stretch',[2,0,0,0,1,0,0,0,0.5]],['reflect',[1,0,0,0,1,0,0,0,-1]],['proj3',[1,0,0,0,1,0,0,0,0]],['rank1',[1,1,0,0.5,0.5,0,1,1,0]],['eig',[2,0,0,1,3,0,0,0,0.5]],['random',null]]
+};
+PRE['2x1']=[['lineDiag',padR([[2],[1]],2)],['lineY',padR([[0],[1.5]],2)],['lineStretch',padR([[2],[0]],2)],['lineFlip',padR([[-1],[1]],2)],['random',null]];
+PRE['1x2']=[['projX',padR([[1,0]],2)],['sumXY',padR([[1,1]],2)],['dot21',padR([[2,1]],2)],['diffXY',padR([[1,-1]],2)],['random',null]];
+PRE['3x2']=[['planeXY1',padR([[1,0],[0,1],[1,1]],3)],['planeTilt',padR([[1,0],[0,1],[0,0.8]],3)],['planeXZ',padR([[1,0],[0,0],[0,1]],3)],['toLine3',padR([[1,0.5],[1,0.5],[1,0.5]],3)],['random',null]];
+PRE['2x3']=[['projXY',padR([[1,0,0],[0,1,0]],3)],['oblique',padR([[1,0,0.6],[0,1,0.6]],3)],['sideView',padR([[0,1,0],[0,0,1]],3)],['toLine2',padR([[1,1,1],[0.5,0.5,0.5]],3)],['random',null]];
+function randShape(){if(isSq())return randM(N());let M;do{M=maskM(Array.from({length:N()*N()},()=>Math.round(Math.random()*4-2)))}while(M.every(x=>x===0));return M}
+function randM(n){let M;do{M=Array.from({length:n*n},()=>Math.round(Math.random()*4-2))}while(Math.abs(det(M,n))<0.5&&Math.random()<0.8||M.every(x=>x===0));return M}
+
+function setMatrix(M,name='custom'){const d=D(),n=N();S.anim=null;d.from=baseM();d.to=maskM(M);d.t=1;d.hist=[name];changed()}
+function animateTo(M,name,opt={}){
+  const d=D(),n=N(),comp=isSq()&&(opt.compose!==undefined?opt.compose:S.compose);
+  if(comp){d.from=d.to.slice();d.to=mul(M,d.to,n);if(!d.hist.length||isI(d.from,n))d.hist=[];d.hist.push(name)}
+  else{d.from=baseM();d.to=maskM(M);d.hist=[name]}
+  play(opt.then);
+}
+function play(then){const d=D();d.t=0;S.anim={start:performance.now(),dur:1500/P.speed,then};changed();}
+const ease=p=>p<.5?4*p*p*p:1-Math.pow(-2*p+2,3)/2;
+
+/* ---------- холст ---------- */
+const cv=$('#cv'),ctx=cv.getContext('2d'),stage=$('#stage'),main=$('#main'),side=$('#side');
+let W=0,H=0,DPR=1,raf=0,sized=false;
+new ResizeObserver(()=>{const r=stage.getBoundingClientRect();W=r.width;H=r.height;if(!sized&&W>0&&H>0){sized=true;S.V.scale=Math.max(30,Math.min(80,Math.min(W,H)/8))}DPR=Math.min(2,window.devicePixelRatio||1);cv.width=Math.max(1,Math.round(W*DPR));cv.height=Math.max(1,Math.round(H*DPR));req()}).observe(stage);
+function req(){if(!raf)raf=requestAnimationFrame(frame)}
+function frame(now){
+  raf=0;
+  if(S.anim){const d=D(),p=Math.min(1,(now-S.anim.start)/S.anim.dur);d.t=ease(p);
+    if(p>=1){const th=S.anim.then;S.anim=null;d.t=1;renderCaption();if(S.cob.on)renderCob();if(th)setTimeout(th,350)}else req();
+    $('#tR').value=Math.round(d.t*1000);$('#tOut').textContent=fmt(d.t);}
+  renderNow();
+  renderOverlay();
+}
+function renderNow(){ctx.setTransform(DPR,0,0,DPR,0,0);LQ=[];if(S.mode==='2d')draw2();else draw3();flushLabels();if(S.stamp)drawStamp()}
+function drawStamp(){
+  const n=N(),[rr,cc]=SH(),M=cur(),c=P.colors,cl=[c.i,c.j,c.k],cells=M.map(x=>fmt(x));
+  ctx.font='600 18px "Source Serif 4", Georgia, serif';ctx.textBaseline='middle';ctx.textAlign='right';
+  const cw=[];for(let j=0;j<cc;j++){let m=0;for(let i=0;i<rr;i++)m=Math.max(m,ctx.measureText(cells[i*n+j]).width);cw.push(m)}
+  const gap=18,rh=26,px=22,x0=12,y0=12,w=cw.reduce((a,b)=>a+b,0)+gap*(cc-1)+2*px,h=rh*rr+18;
+  ctx.globalAlpha=.86;ctx.fillStyle=c.bg;ctx.beginPath();if(ctx.roundRect)ctx.roundRect(x0,y0,w,h,10);else ctx.rect(x0,y0,w,h);ctx.fill();ctx.globalAlpha=1;
+  const b1=x0+11,b2=x0+w-11,t1=y0+7,t2=y0+h-7;ctx.strokeStyle=c.axis;ctx.lineWidth=2;ctx.beginPath();
+  ctx.moveTo(b1+6,t1);ctx.lineTo(b1,t1);ctx.lineTo(b1,t2);ctx.lineTo(b1+6,t2);ctx.moveTo(b2-6,t1);ctx.lineTo(b2,t1);ctx.lineTo(b2,t2);ctx.lineTo(b2-6,t2);ctx.stroke();
+  let x=x0+px;for(let j=0;j<cc;j++){ctx.fillStyle=cl[j];for(let i=0;i<rr;i++)ctx.fillText(cells[i*n+j],x+cw[j],y0+9+rh*i+rh/2);x+=cw[j]+gap}
+}
+function seg(a,b,c,w,al=1,dash){ctx.globalAlpha=al;ctx.strokeStyle=c;ctx.lineWidth=w;ctx.setLineDash(dash||[]);ctx.beginPath();ctx.moveTo(a[0],a[1]);ctx.lineTo(b[0],b[1]);ctx.stroke();ctx.setLineDash([]);ctx.globalAlpha=1}
+function dotAt(p,c,al=1,r=3){ctx.globalAlpha=al;ctx.fillStyle=c;ctx.beginPath();ctx.arc(p[0],p[1],r,0,7);ctx.fill();ctx.globalAlpha=1}
+function arrow(a,b,c,w=3,al=1){
+  const dx=b[0]-a[0],dy=b[1]-a[1],L=Math.hypot(dx,dy);ctx.globalAlpha=al;
+  if(L<2){ctx.fillStyle=c;ctx.beginPath();ctx.arc(b[0],b[1],w+1.5,0,7);ctx.fill();ctx.globalAlpha=1;return}
+  const h=Math.min(10+w*2,L*.5),ux=dx/L,uy=dy/L,hw=h*.5;
+  ctx.strokeStyle=c;ctx.lineWidth=w;ctx.lineCap='round';ctx.beginPath();ctx.moveTo(a[0],a[1]);ctx.lineTo(b[0]-ux*h*.8,b[1]-uy*h*.8);ctx.stroke();
+  ctx.fillStyle=c;ctx.beginPath();ctx.moveTo(b[0],b[1]);ctx.lineTo(b[0]-ux*h-uy*hw,b[1]-uy*h+ux*hw);ctx.lineTo(b[0]-ux*h+uy*hw,b[1]-uy*h-ux*hw);ctx.closePath();ctx.fill();
+  ctx.globalAlpha=1;ctx.lineCap='butt';
+}
+let LQ=[];
+const lfont=(sz,it)=>`${it?'italic ':''}600 ${sz}px "Source Serif 4", Georgia, serif`;
+function txt(s,x,y,c,size=19,italic=true,al=1,pri=1){LQ.push({s,x,y,ax:x,ay:y,c,size,italic,al,pri})}
+function stageObstacles(){const sr=stage.getBoundingClientRect(),out=[];
+  ['#ov','.zoom','#cap','#capOpen','#toast.on'].forEach(q=>{const e=document.querySelector(q);if(!e||e.hidden)return;const r=e.getBoundingClientRect();if(!r.width||!r.height)return;out.push({x:r.left-sr.left+r.width/2,y:r.top-sr.top+r.height/2,w:r.width+8,h:r.height+8})});return out}
+function declutter(Q){const obs=stageObstacles(),n=Q.length;
+  for(let it=0;it<80;it++){let moved=false;
+    for(let i=0;i<n;i++){const a=Q[i];
+      for(let j=i+1;j<n;j++){const b=Q[j],ox=(a.w+b.w)/2-Math.abs(a.x-b.x),oy=(a.h+b.h)/2-Math.abs(a.y-b.y);
+        if(ox>0&&oy>0){moved=true;const wa=b.pri/(a.pri+b.pri),wb=1-wa;
+          if(ox*0.8<oy){const sg=Math.sign(a.x-b.x)||-1;a.x+=sg*(ox+.5)*wa;b.x-=sg*(ox+.5)*wb}
+          else{const sg=Math.sign(a.y-b.y)||-1;a.y+=sg*(oy+.5)*wa;b.y-=sg*(oy+.5)*wb}}}
+      for(const o of obs){const ox=(a.w+o.w)/2-Math.abs(a.x-o.x),oy=(a.h+o.h)/2-Math.abs(a.y-o.y);
+        if(ox>0&&oy>0){moved=true;const hw=(a.w+o.w)/2+.5,hh=(a.h+o.h)/2+.5;
+          const c=[[o.x-hw,a.y],[o.x+hw,a.y],[a.x,o.y-hh],[a.x,o.y+hh]].filter(([x,y])=>x-a.w/2>=2&&x+a.w/2<=W-2&&y-a.h/2>=2&&y+a.h/2<=H-2);
+          const best=(c.length?c:[[a.x,o.y+hh]]).sort((p,q)=>Math.hypot(p[0]-a.x,p[1]-a.y)-Math.hypot(q[0]-a.x,q[1]-a.y))[0];a.x=best[0];a.y=best[1]}}}
+    for(const a of Q){a.x=Math.max(a.w/2+2,Math.min(W-a.w/2-2,a.x));a.y=Math.max(a.h/2+2,Math.min(H-a.h/2-2,a.y))}
+    if(!moved)break}}
+function flushLabels(){const Q=LQ;LQ=[];if(!Q.length)return;
+  for(const l of Q){ctx.font=lfont(l.size,l.italic);l.w=ctx.measureText(l.s.split('\u0302').join('')).width+6;l.h=l.size+2+(l.s.includes('\u0302')?l.size*.3:0)}
+  declutter(Q);
+  for(const l of Q){const dx=l.x-l.ax,dy=l.y-l.ay;
+    if(Math.hypot(dx,dy)>12){const k=Math.min(l.w/2/Math.max(Math.abs(dx),1e-6),l.h/2/Math.max(Math.abs(dy),1e-6),1),ex=l.x-dx*k,ey=l.y-dy*k;
+      ctx.globalAlpha=.6*l.al;ctx.strokeStyle=l.c;ctx.lineWidth=1;ctx.setLineDash([2,3]);ctx.beginPath();ctx.moveTo(l.ax,l.ay);ctx.lineTo(ex,ey);ctx.stroke();ctx.setLineDash([]);
+      ctx.fillStyle=l.c;ctx.beginPath();ctx.arc(l.ax,l.ay,2,0,7);ctx.fill();ctx.globalAlpha=1}
+    ctx.globalAlpha=l.al;ctx.font=lfont(l.size,l.italic);ctx.textAlign='center';ctx.textBaseline='middle';ctx.lineJoin='round';ctx.lineWidth=4;ctx.strokeStyle=P.colors.bg;drawHatText(l);ctx.globalAlpha=1}}
+function drawHatText(l){const HT='\u0302',plain=l.s.split(HT).join('');
+  ctx.strokeText(plain,l.x,l.y);ctx.fillStyle=l.c;ctx.fillText(plain,l.x,l.y);if(!l.s.includes(HT))return;
+  const left=l.x-ctx.measureText(plain).width/2;let pi=0;
+  for(let i=0;i<l.s.length;i++){const ch=l.s[i];if(ch===HT)continue;
+    if(l.s[i+1]===HT){const pre=ctx.measureText(plain.slice(0,pi)).width,m=ctx.measureText(ch),cx=left+pre+m.width/2+(l.italic?l.size*.08:0),top=l.y-(m.actualBoundingBoxAscent||l.size*.5)-l.size*.1,hw=l.size*.17,hh=l.size*.15;
+      ctx.save();ctx.lineJoin='round';ctx.lineCap='round';ctx.beginPath();ctx.moveTo(cx-hw,top);ctx.lineTo(cx,top-hh);ctx.lineTo(cx+hw,top);
+      ctx.strokeStyle=P.colors.bg;ctx.lineWidth=l.size*.08+3;ctx.stroke();ctx.strokeStyle=l.c;ctx.lineWidth=Math.max(1.3,l.size*.08);ctx.stroke();ctx.restore()}
+    pi++}}
+function tipLabel(s,o,t,c,far){const dx=t[0]-o[0],dy=t[1]-o[1],L=Math.hypot(dx,dy);if(L<12)return;const k=far?34:18,p=far?14:0;txt(s,t[0]+dx/L*k-dy/L*p,t[1]+dy/L*k+dx/L*p,c,far?16:19,true,1,far?1:3)}
+function poly(pts,fill,fa,stroke,sa,w=2){ctx.beginPath();pts.forEach((p,i)=>i?ctx.lineTo(p[0],p[1]):ctx.moveTo(p[0],p[1]));ctx.closePath();ctx.globalAlpha=fa;ctx.fillStyle=fill;ctx.fill();if(stroke){ctx.globalAlpha=sa;ctx.strokeStyle=stroke;ctx.lineWidth=w;ctx.stroke()}ctx.globalAlpha=1}
+
+const w2s=(x,y)=>[W/2+S.V.ox+x*S.V.scale,H/2+S.V.oy-y*S.V.scale];
+const s2w=(X,Y)=>[(X-W/2-S.V.ox)/S.V.scale,-(Y-H/2-S.V.oy)/S.V.scale];
+
+function draw2(){
+  const c=P.colors,sh=P.show,M=cur(),d=S.d2,lw=P.lw,K=S.K,sc=S.V.scale;
+  ctx.fillStyle=c.bg;ctx.fillRect(0,0,W,H);
+  const [x0,y1]=s2w(0,0),[x1,y0]=s2w(W,H);
+  const step=sc<7?10:sc<16?5:sc<28?2:1;
+  const R=Math.hypot(Math.max(Math.abs(x0),Math.abs(x1)),Math.max(Math.abs(y0),Math.abs(y1)));
+  if(sh.bgGrid){
+    ctx.strokeStyle=c.bgGrid;ctx.lineWidth=1;ctx.beginPath();
+    for(let x=Math.ceil(x0/step)*step;x<=x1;x+=step){const a=w2s(x,0)[0];ctx.moveTo(a,0);ctx.lineTo(a,H)}
+    for(let y=Math.ceil(y0/step)*step;y<=y1;y+=step){const b=w2s(0,y)[1];ctx.moveTo(0,b);ctx.lineTo(W,b)}
+    ctx.stroke();const o=w2s(0,0);seg([0,o[1]],[W,o[1]],c.axis,1.2,.3);seg([o[0],0],[o[0],H],c.axis,1.2,.3);
+  }
+  if(sh.grid){
+    let n=Math.ceil(R/Math.max(sigmaMin2(M),R/150))+step;n=Math.ceil(n/step)*step;
+    ctx.globalAlpha=.9;ctx.strokeStyle=c.grid;ctx.lineWidth=1.5*lw;ctx.beginPath();
+    for(let k=-n;k<=n;k+=step){if(k===0)continue;
+      let a=w2s(...ap(M,[k,-n],2)),b=w2s(...ap(M,[k,n],2));ctx.moveTo(a[0],a[1]);ctx.lineTo(b[0],b[1]);
+      a=w2s(...ap(M,[-n,k],2));b=w2s(...ap(M,[n,k],2));ctx.moveTo(a[0],a[1]);ctx.lineTo(b[0],b[1]);}
+    ctx.stroke();ctx.globalAlpha=1;
+    seg(w2s(...ap(M,[-n,0],2)),w2s(...ap(M,[n,0],2)),c.axis,2.2*lw,.95);
+    seg(w2s(...ap(M,[0,-n],2)),w2s(...ap(M,[0,n],2)),c.axis,2.2*lw,.95);
+  }
+  if(sh.coords&&sc>=26){
+    ctx.font='500 11px "Manrope", system-ui, sans-serif';ctx.fillStyle=c.axis;ctx.globalAlpha=.5;ctx.textAlign='center';ctx.textBaseline='top';
+    for(let x=Math.ceil(x0/step)*step;x<=x1;x+=step)if(x){const p=w2s(x,0);ctx.fillText(String(x).replace('-','−'),p[0],p[1]+5)}
+    ctx.textAlign='right';ctx.textBaseline='middle';
+    for(let y=Math.ceil(y0/step)*step;y<=y1;y+=step)if(y){const p=w2s(0,y);ctx.fillText(String(y).replace('-','−'),p[0]-6,p[1])}
+    ctx.globalAlpha=1;
+  }
+  if(sh.span){const ns=nullspace(M,2,1e-7);
+    if(ns.rank===1){const u=nz(col(M,ns.piv[0],2));seg(w2s(...sc2(u,-2*R)),w2s(...sc2(u,2*R)),c.span,5*lw,.55);
+      if(sh.labels){const p=w2s(...sc2(u,Math.min(R*.55,4.5)));txt(T().image,p[0]+14,p[1]-14,c.span,15)}}}
+  if(sh.kernel&&K.ns.basis.length===1){const u=K.ns.basis[0];seg(w2s(...sc2(u,-2*R)),w2s(...sc2(u,2*R)),c.kernel,2.2*lw,.85,[8,7]);
+    if(sh.labels){const p=w2s(...sc2(u,Math.min(R*.45,3.5)));txt(T().kernel,p[0]+16,p[1]+14,c.kernel,15)}}
+  const F=d.from,o0=w2s(0,0),moved=!M.every((x,i)=>Math.abs(x-F[i])<1e-9),fi=col(F,0,2),fj=col(F,1,2);
+  if(sh.ghost&&moved){
+    if(sh.grid){let n=Math.ceil(R/Math.max(sigmaMin2(F),R/150))+step;n=Math.ceil(n/step)*step;ctx.globalAlpha=.32;ctx.strokeStyle=c.grid;ctx.lineWidth=lw;ctx.setLineDash([5,5]);ctx.beginPath();
+      for(let k=-n;k<=n;k+=step){let a=w2s(...ap(F,[k,-n],2)),b=w2s(...ap(F,[k,n],2));ctx.moveTo(a[0],a[1]);ctx.lineTo(b[0],b[1]);a=w2s(...ap(F,[-n,k],2));b=w2s(...ap(F,[n,k],2));ctx.moveTo(a[0],a[1]);ctx.lineTo(b[0],b[1])}
+      ctx.stroke();ctx.setLineDash([]);ctx.globalAlpha=1}
+    if(sh.det){ctx.setLineDash([6,5]);poly([o0,w2s(...fi),w2s(...add(fi,fj)),w2s(...fj)],c.det,.07,c.det,.6,1.5*lw);ctx.setLineDash([])}
+    if(sh.basis){arrow(o0,w2s(...fi),c.i,2.4*lw,.38);if(SH()[1]>1)arrow(o0,w2s(...fj),c.j,2.4*lw,.38)}
+    if(sh.vec)arrow(o0,w2s(...ap(F,d.v,2)),c.vec,2.2*lw,.38);
+  }
+  if(sh.trails&&moved){const trl=(a,b,cl,al=.8)=>{const p=w2s(...a);seg(p,w2s(...b),cl,1.6*lw,al,[2,5]);dotAt(p,cl,al)};
+    if(sh.grid)for(let x=-3;x<=3;x++)for(let y=-3;y<=3;y++)trl(ap(F,[x,y],2),ap(M,[x,y],2),c.grid,.45);
+    if(sh.det)trl(add(fi,fj),add(col(M,0,2),col(M,1,2)),c.det);
+    if(sh.basis){trl(fi,col(M,0,2),c.i);trl(fj,col(M,1,2),c.j)}
+    if(sh.vec)trl(ap(F,d.v,2),ap(M,d.v,2),c.vec)}
+  const mi=col(M,0,2),mj=col(M,1,2),o=w2s(0,0);
+  if(!isSq()&&SH()[1]===1)for(let k=-15;k<=15;k++)dotAt(w2s(...ap(M,[k,0],2)),c.i,.9,2.6);
+  if(sh.det&&isSq()){const dt=det(M,2);
+    poly([o,w2s(...mi),w2s(...add(mi,mj)),w2s(...mj)],c.det,Math.abs(dt)<1e-9?0:.3,c.det,.9,2*lw);
+    if(sh.labels&&Math.abs(dt)>1e-9){const cc=w2s(...sc2(add(mi,mj),.5));txt('det = '+fmt(dt),cc[0],cc[1],c.det,16,false)}}
+  if(sh.eigen){K.E.vecs.forEach(e=>{if(e.dim>=2)return;
+    seg(w2s(...sc2(e.v,-2*R)),w2s(...sc2(e.v,2*R)),c.eigen,1.8*lw,.7,[4,6]);
+    const t=w2s(...ap(M,e.v,2));arrow(o,t,c.eigen,2.6*lw);if(sh.labels)tipLabel('λ = '+fmt(e.l),o,t,c.eigen,true)})}
+  if(sh.vec)drawVec2(M,o);
+  drawTools2(M,o,R);
+  if(sh.basis){const two=SH()[1]>1,ti=w2s(...mi),tj=w2s(...mj);arrow(o,ti,c.i,3.6*lw);if(two)arrow(o,tj,c.j,3.6*lw);
+    if(sh.labels){tipLabel('î',o,ti,c.i);if(two)tipLabel('ĵ',o,tj,c.j)}}
+}
+function sc2(v,s){return[v[0]*s,v[1]*s]}
+function drawTools2(M,o,R){if(!isSq())return;const c=P.colors,lw=P.lw,d=S.d2,A=d.to;
+  if(S.cob.on){const b1=S.cob.b1,b2=S.cob.b2,Pm=[b1[0],b2[0],b1[1],b2[1]];
+    if(Math.abs(det(Pm,2))>1e-9){const n=Math.min(60,Math.ceil(R/Math.max(sigmaMin2(Pm),R/60))+1);
+      ctx.save();ctx.globalAlpha=.45;ctx.strokeStyle=c.eigen;ctx.lineWidth=lw;ctx.setLineDash([4,6]);ctx.beginPath();
+      for(let k=-n;k<=n;k++){let a=w2s(...ap(Pm,[k,-n],2)),b=w2s(...ap(Pm,[k,n],2));ctx.moveTo(a[0],a[1]);ctx.lineTo(b[0],b[1]);a=w2s(...ap(Pm,[-n,k],2));b=w2s(...ap(Pm,[n,k],2));ctx.moveTo(a[0],a[1]);ctx.lineTo(b[0],b[1])}
+      ctx.stroke();ctx.restore()}
+    const t1=w2s(...b1),t2=w2s(...b2);arrow(o,t1,c.eigen,3.2*lw);arrow(o,t2,c.eigen,3.2*lw);
+    if(P.show.labels){tipLabel('b₁',o,t1,c.eigen);tipLabel('b₂',o,t2,c.eigen)}}
+  if(P.show.vec){const v=d.v,dA=det(A,2);
+    if(Math.abs(dA)>1e-9&&S.cr){const X=ap(M,v,2),Mi=col(M,0,2),Mj=col(M,1,2),pts=S.cr===1?[[0,0],X,add(X,Mj),Mj]:[[0,0],Mi,add(Mi,X),X];
+      poly(pts.map(p=>w2s(...p)),c.span,.22,c.span,.9,1.8*lw);
+      if(P.show.labels){const pc=w2s(...sc2(pts.reduce((a,p)=>add(a,p),[0,0]),.25));txt('S = '+fmt(det(M,2)*v[S.cr-1]),pc[0],pc[1],c.span,15,false)}}
+    if(Math.abs(dA)<=1e-9&&S.K.ns.rank===1){const k=S.K.ns.basis[0];
+      seg(w2s(...add(v,sc2(k,-2*R))),w2s(...add(v,sc2(k,2*R))),c.vec,1.6*lw,.35,[3,6]);
+      const p0=ap(M,v,2),dk=ap(M,k,2);if(norm(dk)>1e-6)seg(w2s(...add(p0,sc2(dk,-2*R/Math.max(norm(dk),1e-3)))),w2s(...add(p0,sc2(dk,2*R/Math.max(norm(dk),1e-3)))),c.vec,2*lw,.8,[7,5])}}
+}
+function drawVec2(M,o){
+  const c=P.colors,d=S.d2,v=d.v,Av=ap(M,v,2),t=w2s(...Av),lw=P.lw;
+  
+  if(P.show.decomp){const a=sc2(col(M,0,2),v[0]);const pa=w2s(...a);arrow(o,pa,c.i,2*lw,.85);arrow(pa,t,c.j,2*lw,.85);
+    if(P.show.labels){const m1=w2s(...sc2(a,.5));txt(fmt(v[0])+'·î',m1[0],m1[1]+14,c.i,14);const m2=[(pa[0]+t[0])/2,(pa[1]+t[1])/2];txt(fmt(v[1])+'·ĵ',m2[0]+18,m2[1],c.j,14)}}
+  arrow(o,t,c.vec,3.2*lw);if(P.show.labels)tipLabel('v',o,t,c.vec);
+}
+
+/* 3D */
+function mk3(){const cm=S.cam,cy=Math.cos(cm.yaw),sy=Math.sin(cm.yaw),cp=Math.cos(cm.pitch),sp=Math.sin(cm.pitch),s=Math.min(W,H)/11*cm.zoom,dist=22,ox=W/2,oy=H/2;
+  return p=>{const x1=p[0]*cy-p[1]*sy,y1=p[0]*sy+p[1]*cy,z=p[2],depth=y1*cp-z*sp,up=y1*sp+z*cp,f=dist/Math.max(dist+depth,dist*.15);return[ox+x1*s*f,oy-up*s*f,depth]}}
+function draw3(){
+  const c=P.colors,sh=P.show,M=cur(),K=S.K,lw=P.lw,pr=mk3();
+  ctx.fillStyle=c.bg;ctx.fillRect(0,0,W,H);
+  const L=(a,b,col,w,al,dash)=>seg(pr(a),pr(b),col,w*lw,al,dash);
+  if(sh.bgGrid){for(let k=-5;k<=5;k++){L([k,-5,0],[k,5,0],c.bgGrid,1,1);L([-5,k,0],[5,k,0],c.bgGrid,1,1)}
+    [[1,0,0,'x'],[0,1,0,'y'],[0,0,1,'z']].forEach(a=>{const e=a.slice(0,3);L(sc(e,-6),sc(e,6),c.axis,1.2,.35);if(sh.labels){const p=pr(sc(e,6.6));txt(a[3],p[0],p[1],c.axis,15,true,.6)}})}
+  if(sh.lattice){ctx.fillStyle=c.grid;ctx.globalAlpha=.85;for(let x=-2;x<=2;x++)for(let y=-2;y<=2;y++)for(let z=-2;z<=2;z++){const p=pr(ap(M,[x,y,z],3));ctx.beginPath();ctx.arc(p[0],p[1],2.3,0,7);ctx.fill()}ctx.globalAlpha=1}
+  if(sh.grid){for(let k=-4;k<=4;k++){if(!k)continue;L(ap(M,[k,-4,0],3),ap(M,[k,4,0],3),c.grid,1.3,.8);L(ap(M,[-4,k,0],3),ap(M,[4,k,0],3),c.grid,1.3,.8)}
+    [[1,0,0],[0,1,0],[0,0,1]].forEach(e=>L(ap(M,sc(e,-5),3),ap(M,sc(e,5),3),c.axis,2,.85))}
+  if(sh.span){const ns=nullspace(M,3,1e-7);
+    if(ns.rank===2){const a=nz(col(M,ns.piv[0],3));let b=col(M,ns.piv[1],3);b=nz(add(b,sc(a,-dot(a,b))));
+      poly([[1,1],[1,-1],[-1,-1],[-1,1]].map(([s1,s2])=>pr(add(sc(a,5*s1),sc(b,5*s2)))),c.span,.13,c.span,.5,1.5)}
+    else if(ns.rank===1){const u=nz(col(M,ns.piv[0],3));L(sc(u,-8),sc(u,8),c.span,5,.55)}}
+  if(sh.kernel){if(K.ns.basis.length===1){const u=K.ns.basis[0];L(sc(u,-6),sc(u,6),c.kernel,2.2,.85,[8,7])}
+    else if(K.ns.basis.length===2){const a=K.ns.basis[0];let b=K.ns.basis[1];b=nz(add(b,sc(a,-dot(a,b))));
+      const pts=[[1,1],[1,-1],[-1,-1],[-1,1]].map(([s1,s2])=>pr(add(sc(a,4*s1),sc(b,4*s2))));poly(pts,c.kernel,.08,null);
+      ctx.setLineDash([8,7]);poly(pts,c.kernel,0,c.kernel,.8,1.6);ctx.setLineDash([])}}
+  const F=S.d3.from,moved3=!M.every((x,i)=>Math.abs(x-F[i])<1e-9),O=pr([0,0,0]);
+  if(sh.ghost&&moved3){
+    if(sh.grid)for(let k=-4;k<=4;k++){L(ap(F,[k,-4,0],3),ap(F,[k,4,0],3),c.grid,1,.32,[5,5]);L(ap(F,[-4,k,0],3),ap(F,[4,k,0],3),c.grid,1,.32,[5,5])}
+    if(sh.det){const Vg=[];for(let b=0;b<8;b++)Vg.push(ap(F,[b&1,(b>>1)&1,(b>>2)&1],3));[[0,1],[1,3],[3,2],[2,0],[4,5],[5,7],[7,6],[6,4],[0,4],[1,5],[2,6],[3,7]].forEach(([a,b])=>L(Vg[a],Vg[b],c.det,1.4,.55,[6,5]))}
+    if(sh.basis)[c.i,c.j,c.k].forEach((cl,i)=>{if(i<SH()[1])arrow(O,pr(col(F,i,3)),cl,2.4*lw,.38)});
+    if(sh.vec)arrow(O,pr(ap(F,S.d3.v,3)),c.vec,2.2*lw,.38);
+  }
+  if(sh.trails&&moved3){const trl=(a,b,cl,al=.8)=>{L(a,b,cl,1.6,al,[2,5]);dotAt(pr(a),cl,al)};
+    if(sh.grid)for(let x=-2;x<=2;x++)for(let y=-2;y<=2;y++)trl(ap(F,[x,y,0],3),ap(M,[x,y,0],3),c.grid,.45);
+    if(sh.det)trl(ap(F,[1,1,1],3),ap(M,[1,1,1],3),c.det);
+    if(sh.basis)[c.i,c.j,c.k].forEach((cl,i)=>{if(i<SH()[1])trl(col(F,i,3),col(M,i,3),cl)});
+    if(sh.vec)trl(ap(F,S.d3.v,3),ap(M,S.d3.v,3),c.vec)}
+  if(sh.det&&SH()[1]===2)poly([[0,0,0],[1,0,0],[1,1,0],[0,1,0]].map(p=>pr(ap(M,p,3))),c.det,.2,c.det,.8,1.5*lw);
+  if(sh.det&&SH()[1]===3){const V=[];for(let b=0;b<8;b++)V.push(pr(ap(M,[b&1,(b>>1)&1,(b>>2)&1],3)));
+    const F=[[0,1,3,2],[4,5,7,6],[0,1,5,4],[2,3,7,6],[0,2,6,4],[1,3,7,5]];
+    F.map(f=>({f,z:f.reduce((s,i)=>s+V[i][2],0)/4})).sort((a,b)=>b.z-a.z).forEach(({f})=>poly(f.map(i=>V[i]),c.det,.17,c.det,.75,1.5*lw));
+    if(sh.labels&&isSq()&&Math.abs(det(M,3))>1e-9){const p=pr(ap(M,[.5,.5,.5],3));txt('det = '+fmt(det(M,3)),p[0],p[1],c.det,16,false)}}
+  const o=pr([0,0,0]);
+  if(sh.eigen)K.E.vecs.forEach(e=>{if(e.dim>=3)return;L(sc(e.v,-6),sc(e.v,6),c.eigen,1.8,.7,[4,6]);const t=pr(ap(M,e.v,3));arrow(o,t,c.eigen,2.6*lw);if(sh.labels)tipLabel('λ = '+fmt(e.l),o,t,c.eigen,true)});
+  if(sh.vec){const v=S.d3.v,Av=ap(M,v,3),t=pr(Av);
+    if(sh.decomp){let acc=[0,0,0];[c.i,c.j,c.k].forEach((cl,i)=>{const nx=add(acc,sc(col(M,i,3),v[i]));arrow(pr(acc),pr(nx),cl,2*lw,.85);acc=nx})}
+    arrow(o,t,c.vec,3.2*lw);if(sh.labels)tipLabel('v',o,t,c.vec)}
+  if(sh.basis){[[0,c.i,'î'],[1,c.j,'ĵ'],[2,c.k,'k̂']].filter(([i])=>i<SH()[1]).forEach(([i,cl,nm])=>{const t=pr(col(M,i,3));arrow(o,t,cl,3.6*lw);if(sh.labels)tipLabel(nm,o,t,cl)})}
+}
+const dot=(a,b)=>a.reduce((s,x,i)=>s+x*b[i],0);
+
+/* ---------- ввод на холсте ---------- */
+const ptrs=new Map();let drag=null;
+const pos=e=>{const r=cv.getBoundingClientRect();return{x:e.clientX-r.left,y:e.clientY-r.top}};
+function hit2(x,y,r){
+  const M=cur(),o=[];
+  if(P.show.vec)o.push(['v',w2s(...ap(M,S.d2.v,2))]);
+  if(S.cob.on){o.push(['b1',w2s(...S.cob.b1)]);o.push(['b2',w2s(...S.cob.b2)])}
+  if(P.show.basis){o.push(['i',w2s(...col(M,0,2))]);if(SH()[1]>1)o.push(['j',w2s(...col(M,1,2))])}
+  let best=null,bd=r;o.forEach(([k,p])=>{const dd=Math.hypot(p[0]-x,p[1]-y);if(dd<bd){bd=dd;best=k}});return best;
+}
+function setScaleAt(mx,my,ns){const V=S.V;ns=Math.max(4,Math.min(400,ns));const[wx,wy]=s2w(mx,my);V.scale=ns;V.ox=mx-W/2-wx*ns;V.oy=my-H/2+wy*ns;req()}
+cv.addEventListener('pointerdown',e=>{
+  cv.setPointerCapture(e.pointerId);const p=pos(e);ptrs.set(e.pointerId,p);
+  if(ptrs.size===2){const[a,b]=[...ptrs.values()];drag={type:'pinch',d0:Math.hypot(a.x-b.x,a.y-b.y)||1,z0:S.mode==='2d'?S.V.scale:S.cam.zoom};return}
+  if(ptrs.size>2)return;
+  const h=S.mode==='2d'?hit2(p.x,p.y,e.pointerType==='touch'?28:16):null;
+  drag=h?{type:h}:{type:S.mode==='2d'?'pan':'orbit',lx:p.x,ly:p.y};cv.style.cursor='grabbing';
+});
+cv.addEventListener('pointermove',e=>{
+  const p=pos(e);
+  if(!ptrs.has(e.pointerId)){if(S.mode==='2d')cv.style.cursor=hit2(p.x,p.y,16)?'pointer':'grab';return}
+  ptrs.set(e.pointerId,p);if(!drag)return;
+  if(drag.type==='pinch'){if(ptrs.size<2)return;const[a,b]=[...ptrs.values()],k=Math.hypot(a.x-b.x,a.y-b.y)/drag.d0;
+    if(S.mode==='2d')setScaleAt((a.x+b.x)/2,(a.y+b.y)/2,drag.z0*k);else{S.cam.zoom=Math.max(.3,Math.min(5,drag.z0*k));req()}return}
+  if(drag.type==='pan'){S.V.ox+=p.x-drag.lx;S.V.oy+=p.y-drag.ly;drag.lx=p.x;drag.ly=p.y;req();return}
+  if(drag.type==='orbit'){S.cam.yaw+=(p.x-drag.lx)*.008;S.cam.pitch=Math.max(-1.5,Math.min(1.5,S.cam.pitch+(p.y-drag.ly)*.008));drag.lx=p.x;drag.ly=p.y;req();return}
+  dragTo(drag.type,p.x,p.y);
+});
+function endPtr(e){ptrs.delete(e.pointerId);if(ptrs.size<2&&drag&&drag.type==='pinch')drag=null;if(!ptrs.size){drag=null;cv.style.cursor='grab'}}
+cv.addEventListener('pointerup',endPtr);cv.addEventListener('pointercancel',endPtr);
+cv.addEventListener('wheel',e=>{e.preventDefault();const k=Math.exp(-e.deltaY*.0015),p=pos(e);
+  if(S.mode==='2d')setScaleAt(p.x,p.y,S.V.scale*k);else{S.cam.zoom=Math.max(.3,Math.min(5,S.cam.zoom*k));req()}},{passive:false});
+function dragTo(type,X,Y){
+  const d=S.d2;let p=s2w(X,Y);if(P.show.snap)p=p.map(z=>Math.round(z*2)/2);
+  if(type==='b1'||type==='b2'){S.cob[type]=p;renderCob();req();return}
+  if(type==='i'||type==='j'){if(S.anim||d.t<1||!eqM(d.from,baseM())){d.to=cur();d.from=baseM();d.t=1;S.anim=null}
+    if(type==='i'){d.to[0]=p[0];d.to[2]=p[1]}else{d.to[1]=p[0];d.to[3]=p[1]}d.to=maskM(d.to);d.hist=['custom'];changed()}
+  else if(type==='v'){const M=cur(),iv=inv(M,2);if(!iv)return;d.v=ap(iv,p,2).map(x=>Math.round(x*1000)/1000);changed()}
+}
+$('#zIn').onclick=()=>{if(S.mode==='2d')setScaleAt(W/2,H/2,S.V.scale*1.25);else{S.cam.zoom=Math.min(5,S.cam.zoom*1.25);req()}};
+$('#zOut').onclick=()=>{if(S.mode==='2d')setScaleAt(W/2,H/2,S.V.scale/1.25);else{S.cam.zoom=Math.max(.3,S.cam.zoom/1.25);req()}};
+$('#zHome').onclick=()=>{S.V={scale:Math.max(30,Math.min(80,Math.min(W,H)/8)),ox:0,oy:0};S.cam={yaw:-2.3,pitch:.5,zoom:1};req()};
+
+/* ---------- панели ---------- */
+function buildPanels(){
+  document.querySelectorAll('.panel').forEach(p=>{
+    const h=document.createElement('div');h.className='ph';
+    h.innerHTML=`<span class="handle" data-it="drag">⠿</span><h3 data-i="p_${p.dataset.id}"></h3><button class="icon" data-mv="-1" data-it="up">↑</button><button class="icon" data-mv="1" data-it="down">↓</button><button class="icon chev" data-col data-it="collapse">▾</button>`;
+    p.prepend(h);
+    const id=p.dataset.id,toggle=()=>{P.collapsed[id]=!P.collapsed[id];p.classList.toggle('collapsed',!!P.collapsed[id]);save()};
+    h.querySelector('h3').onclick=toggle;h.querySelector('[data-col]').onclick=toggle;
+    h.querySelectorAll('[data-mv]').forEach(b=>b.onclick=()=>{const i=P.order.indexOf(id),j=i+(+b.dataset.mv);if(j<0||j>=P.order.length)return;[P.order[i],P.order[j]]=[P.order[j],P.order[i]];applyOrder();save()});
+    const hd=h.querySelector('.handle');
+    hd.addEventListener('pointerdown',()=>{p.draggable=true});
+    p.addEventListener('dragstart',e=>{p.classList.add('dragging');e.dataTransfer.effectAllowed='move';try{e.dataTransfer.setData('text/plain',id)}catch(_){}});
+    p.addEventListener('dragend',()=>{p.classList.remove('dragging');p.draggable=false;P.order=[...side.querySelectorAll('.panel')].map(x=>x.dataset.id);save()});
+  });
+  side.addEventListener('dragover',e=>{const dr=side.querySelector('.panel.dragging');if(!dr)return;e.preventDefault();
+    const after=[...side.querySelectorAll('.panel:not(.dragging)')].find(el=>{const r=el.getBoundingClientRect();return e.clientY<r.top+r.height/2});
+    if(after)side.insertBefore(dr,after);else side.appendChild(dr)});
+}
+function applyOrder(){P.order.forEach(id=>{const el=side.querySelector(`.panel[data-id="${id}"]`);if(el)side.appendChild(el)});
+  side.querySelectorAll('.panel').forEach(p=>p.classList.toggle('collapsed',!!P.collapsed[p.dataset.id]))}
+
+function buildMatrixInputs(){
+  const n=N(),[rr,cc]=SH(),box=$('#matIn');box.style.gridTemplateColumns=`repeat(${cc},auto)`;box.innerHTML='';
+  for(let i=0;i<n*n;i++){if(Math.floor(i/n)>=rr||i%n>=cc)continue;const inp=document.createElement('input');inp.type='text';inp.inputMode='decimal';inp.dataset.i=i;inp.dataset.c=i%n;inp.setAttribute('aria-label',T().cell(Math.floor(i/n)+1,i%n+1));
+    inp.addEventListener('input',()=>{const v=parseFloat(inp.value.replace(',','.').replace('−','-'));if(!isFinite(v))return;const d=D();const M=(S.anim||d.t<1)?d.to.slice():d.to.slice();M[i]=v;setMatrix(M)});
+    inp.addEventListener('blur',syncInputs);box.appendChild(inp)}
+}
+function syncInputs(){const d=D();document.querySelectorAll('#matIn input').forEach(inp=>{if(document.activeElement!==inp)inp.value=fmt(d.to[+inp.dataset.i],3).replace('−','-')});
+  document.querySelectorAll('#vIn input').forEach(inp=>{if(document.activeElement!==inp)inp.value=fmt(d.v[+inp.dataset.v],3).replace('−','-')})}
+function buildPresets(){const box=$('#pre');box.innerHTML='';PRE[shapeKey()].forEach(([name,M])=>{const b=document.createElement('button');b.className='chip';b.textContent=nm(name);
+  b.onclick=()=>animateTo(M||randShape(),name);box.appendChild(b)})}
+function buildVecInputs(){const n=SH()[1],box=$('#vIn');box.innerHTML='';['x','y','z'].slice(0,n).forEach((nm,i)=>{const l=document.createElement('label');l.innerHTML=`${nm}<input type="text" inputmode="decimal" data-v="${i}" aria-label="${T().coord(nm)}">`;
+  const inp=l.querySelector('input');inp.addEventListener('input',()=>{const v=parseFloat(inp.value.replace(',','.').replace('−','-'));if(!isFinite(v))return;D().v[i]=v;if(!P.show.vec){P.show.vec=true;syncToggles();save()}changed()});
+  inp.addEventListener('blur',syncInputs);box.appendChild(l)})}
+const TOG=[['bgGrid'],['grid'],['basis'],['det'],['eigen'],['span'],['kernel'],['vec'],['decomp'],['labels'],['coords','2d'],['snap','2d'],['lattice','3d'],['ghost'],['trails'],['hints']];
+function buildToggles(){const box=$('#tog');box.innerHTML='';TOG.forEach(([k,m])=>{const lab=T().tog[k];const l=document.createElement('label');l.className='chk'+(m==='2d'?' d2only':m==='3d'?' d3only':'');
+  l.innerHTML=`<input type="checkbox" data-k="${k}"> ${lab}`;l.querySelector('input').onchange=e=>{P.show[k]=e.target.checked;if(k==='decomp'&&P.show.decomp)P.show.vec=true;syncToggles();save();renderCaption();req()};box.appendChild(l)})}
+function syncToggles(){document.querySelectorAll('#tog input').forEach(i=>{i.checked=!!P.show[i.dataset.k]})}
+
+function miniMat(M,n){return`<span class="mini" style="grid-template-columns:repeat(${n},auto)">${M.map(x=>`<span>${fmt(x)}</span>`).join('')}</span>`}
+function polyStr(co){const n=co.length-1;let s='';co.forEach((a,i)=>{const p=n-i;if(i>0&&Math.abs(a)<1e-9)return;const abs=Math.abs(a),coef=(p>0&&Math.abs(abs-1)<1e-9)?'':fmt(abs),pw=p===0?'':p===1?'λ':'λ'+(p===2?'²':'³');
+  s+=i===0?(a<0?'−':'')+coef+pw:(a<0?' − ':' + ')+coef+pw});return s+' = 0'}
+function rootsStr(roots){const out=[];roots.forEach(r=>{if(r.im===0)out.push(fmt(r.re));else if(r.im>0)out.push(`${fmt(r.re)} ± ${fmt(r.im)}i`)});return out.join(',  ')}
+function renderPropsNS(){const L=T(),[m,n]=SH(),K=S.K,rk=K.ns.rank,kd=K.ns.basis.length,Rn=k=>k===1?'ℝ':'ℝ'+(k===2?'²':'³');
+  const img=m===1?L.img1[rk]:L.img(m)[rk],ker=kd===0?L.ker[0]:kd===n?(n===1?L.img1[1]:L.img(n)[n]):L.ker[kd];
+  const row=(k,term,v,s='')=>`<div class="prop"><span class="k">${k}<button class="q" data-term="${term}">?</button></span><span class="v">${v}</span>${s?`<span class="s">${s}</span>`:''}</div>`;
+  $('#props').innerHTML=row(L.r_size,'nonsquare',`${m}×${n}`,`${Rn(n)} → ${Rn(m)}`)+row(L.r_rank,'rank',rk,L.rankNote(img,ker))+row(L.r_rn,'kernel',`${kd} + ${rk} = ${n}`,L.rnNote)+`<p class="note">${L.nsqNote}</p>`}
+function renderProps(){if(!isSq()){renderPropsNS();return}
+  const d=D(),n=N(),A=d.to,K=S.K,dt=K.det,z=Math.abs(dt)<1e-9,L=T();
+  const detNote=z?L.detCol(n):dt<0?L.detNeg(n,fmt(-dt)):L.detPos(n,fmt(dt));
+  const rk=K.ns.rank,img=L.img(n)[rk],kdim=n-rk,ker=kdim===n?L.img(n)[n]:L.ker[kdim];
+  const vecs=K.E.vecs.length?(K.E.vecs.some(e=>e.dim===n)?L.anyVec:K.E.vecs.map(e=>`<div><span class="sw" style="background:var(--s-eigen)"></span>λ = ${fmt(e.l)}: (${e.v.map(x=>fmt(x)).join(', ')})</div>`).join('')):L.noReal;
+  const co=n===2?[1,-K.tr,dt]:[1,-K.tr,K.c2,-dt];const iv=inv(A,n);
+  const row=(k,term,v,s='')=>`<div class="prop"><span class="k">${k}<button class="q" data-term="${term}">?</button></span><span class="v">${v}</span>${s?`<span class="s">${s}</span>`:''}</div>`;
+  $('#props').innerHTML=
+    row(L.r_det,'det',`<span class="sw" style="background:var(--s-det)"></span>${fmt(dt,3)}`,detNote)+
+    row(L.r_tr,'trace',fmt(K.tr,3),L.traceNote)+
+    row(L.r_rank,'rank',rk,L.rankNote(img,ker))+
+    row(L.r_ev,'eigen',rootsStr(K.E.roots),K.E.roots.some(r=>r.im)?L.complexNote:'')+
+    row(L.r_evec,'eigen','',vecs)+
+    row(L.r_cp,'charpoly','',polyStr(co))+
+    row(L.r_inv,'inverse',iv?miniMat(iv,n):L.none,'');
+}
+function renderCr(){if(S.mode!=='2d'||!S.K)return;if(!isSq()){$('#crOut').innerHTML='';$('#crCtl').hidden=true;return}const L=T(),A=S.d2.to,v=S.d2.v,b=ap(A,v,2),dA=det(A,2);let h='';
+  if(Math.abs(dA)<=1e-9)h=`<p class="note">${L.vSing}</p>`;
+  else if(S.cr){const A1=[b[0],A[1],b[1],A[3]],A2=[A[0],b[0],A[2],b[1]],Ai=S.cr===1?A1:A2;
+    h=`<div class="crm"><i>x</i>${S.cr===1?'₁':'₂'} = det ${miniMat(Ai,2)} / det <i>A</i> = ${fmt(det(Ai,2))} / ${fmt(dA)} = <b>${fmt(v[S.cr-1])}</b></div><p class="note">${L.crEx(S.cr)}</p>`}
+  $('#crOut').innerHTML=h;$('#crCtl').hidden=Math.abs(dA)<=1e-9}
+function renderVec(){renderCr();const d=D(),n=N(),[rr,cc]=SH(),Av=ap(d.to,d.v,n).slice(0,rr),vv=d.v.slice(0,cc),nm=['î','ĵ','<span class="kh">k</span>'];
+  $('#vOut').innerHTML=`<i>A</i>·<i>v</i> = (${Av.map(x=>fmt(x)).join(', ')})`;$('#vEq').innerHTML=`= ${vv.map((x,i)=>`${fmt(x)}·(<i>A</i>${nm[i]})`).join(' + ')}: ${T().vecEq}`}
+function renderHist(){const d=D(),h=d.hist,L=T();$('#hist').innerHTML=!h.length?'':h.length===1?`${L.now} <b>${nm(h[0])}</b>`:`${L.now} <b>${h.slice().reverse().map(nm).join(' · ')}</b><br>${L.rtl(nm(h[0]))}`}
+function renderCaption(){
+  const cap=$('#cap');$('#capOpen').hidden=!!P.show.hints;if(!P.show.hints){cap.hidden=true;return}cap.hidden=false;
+  const d=D(),n=N(),A=d.to,K=S.K,dt=K.det,C=T().cap;let t;
+  if(!isSq())t=C.nsq(SH(),K.ns.rank,K.ns.basis.length);
+  else if(isI(A,n))t=C.id(n);
+  else if(K.ns.rank===0)t=C.zero;
+  else if(Math.abs(dt)<1e-9)t=C.sing(n,K.ns.rank);
+  else if(n===2&&K.E.roots.some(r=>r.im))t=C.complex(fmt(dt));
+  else if(dt<0)t=C.neg(n,fmt(dt),fmt(-dt));
+  else t=C.pos(n,fmt(dt))+(K.E.vecs.length&&!K.E.vecs.some(e=>e.dim===n)?C.eig:'');
+  $('#capT').textContent=t;
+}
+function renderOverlay(){const n=N(),[rr,cc]=SH(),M=cur(),cl=['var(--s-i)','var(--s-j)','var(--s-k)'];
+  $('#ov').innerHTML=`<span class="bm" style="grid-template-columns:repeat(${cc},auto)">${M.map((x,i)=>Math.floor(i/n)<rr&&i%n<cc?`<span style="color:${cl[i%n]}">${fmt(x)}</span>`:'').join('')}</span>${D().t<1?`<span class="tt">t = ${fmt(D().t)}</span>`:''}`}
+function changed(){
+  const d=D(),n=N(),A=d.to;
+  const sq=isSq(),inD=SH()[1];let ns=nullspace(A,n,1e-9);if(!sq)ns={rank:ns.rank,piv:ns.piv,basis:ns.basis.filter(v=>v.every((x,j)=>j<inD||Math.abs(x)<1e-9))};
+  S.K={det:sq?det(A,n):NaN,tr:sq?tr(A,n):NaN,c2:sq&&n===3?(A[0]*A[4]-A[1]*A[3])+(A[0]*A[8]-A[2]*A[6])+(A[4]*A[8]-A[5]*A[7]):0,ns,E:sq?eigen(A,n):{roots:[],vecs:[]}};
+  $('#bT').disabled=!sq;$('#bInv').disabled=!sq;$('#compose').disabled=!sq;
+  renderProps();syncInputs();renderVec();renderHist();renderTex();renderCob();if(!S.anim)renderCaption();
+  $('#tR').value=Math.round(d.t*1000);$('#tOut').textContent=fmt(d.t);req();
+}
+const MUL={'2d':{A:[1,1,0,1],B:[0,-1,1,0]},'3d':{A:[1,0,1,0,1,0,0,0,1],B:[0,-1,0,1,0,0,0,0,1]}};
+const SUB='₀₁₂₃₄₅₆₇₈₉';
+function buildMul(){const n=N(),m=MUL[S.mode];['A','B'].forEach(k=>{const box=$('#mul'+k);box.style.gridTemplateColumns=`repeat(${n},auto)`;box.innerHTML='';
+  for(let i=0;i<n*n;i++){const inp=document.createElement('input');inp.type='text';inp.inputMode='decimal';inp.dataset.c=i%n;inp.value=fmt(m[k][i],3).replace('−','-');inp.setAttribute('aria-label',k+' '+T().cell(Math.floor(i/n)+1,i%n+1));
+    inp.addEventListener('input',()=>{const v=parseFloat(inp.value.replace(',','.').replace('−','-'));if(!isFinite(v))return;m[k][i]=v;renderMul()});
+    inp.addEventListener('blur',()=>{inp.value=fmt(m[k][i],3).replace('−','-')});box.appendChild(inp)}});renderMul()}
+function renderMul(){const n=N(),m=MUL[S.mode],A=m.A,B=m.B,C=mul(A,B,n),BA=mul(B,A,n),L=T(),same=C.every((x,i)=>Math.abs(x-BA[i])<1e-9);
+  $('#mulC').innerHTML=miniMat(C,n);
+  const p=x=>x<0?`(${fmt(x)})`:fmt(x);
+  $('#mulInfo').innerHTML=(same?L.mulComm:`${L.mulNon} ${miniMat(BA,n)}`)+`<br>${L.mulDet}: ${fmt(det(A,n))} · ${fmt(det(B,n))} = ${fmt(det(C,n))}`;
+  const rows=[];for(let i=0;i<n;i++)for(let j=0;j<n;j++){const terms=[];for(let k=0;k<n;k++)terms.push(`${p(A[i*n+k])}·${p(B[k*n+j])}`);rows.push(`<i>c</i>${SUB[i+1]}${SUB[j+1]} = ${terms.join(' + ')} = <b>${fmt(C[i*n+j])}</b>`)}
+  $('#mulSteps').innerHTML=rows.join('<br>')}
+const pnum=v=>parseFloat(String(v).replace(',','.').replace('−','-'));
+function renderCob(){if(S.mode!=='2d'||!S.K)return;if(!isSq()){$('#cbOut').innerHTML=`<p class="note">${T().cbSq}</p>`;return}const L=T(),b1=S.cob.b1,b2=S.cob.b2,Pm=[b1[0],b2[0],b1[1],b2[1]],dP=det(Pm,2),d=S.d2;
+  let h=`<i>P</i> = [b₁ b₂] = ${miniMat(Pm,2)}, det <i>P</i> = ${fmt(dP)}`;
+  if(Math.abs(dP)<1e-9)h+=`<p class="note">${L.cbBad}</p>`;
+  else{const A2=mul(mul(inv(Pm,2),d.to,2),Pm,2),dg=Math.abs(A2[1])<1e-9&&Math.abs(A2[2])<1e-9;
+    h+=`<div class="crm">${L.cbA} <i>P</i>⁻¹<i>AP</i> = ${miniMat(A2,2)}</div>`+(dg?`<p class="note">${L.cbDiag}</p>`:'')}
+  $('#cbOut').innerHTML=h;
+  document.querySelectorAll('[data-cb]').forEach(inp=>{const[k,i]=inp.dataset.cb.split(':');if(document.activeElement!==inp)inp.value=fmt(S.cob[k][+i],3).replace('−','-')})}
+function syncTools(){$('#cbOn').checked=S.cob.on;document.querySelectorAll('#slCr button').forEach(b=>b.classList.toggle('on',+b.dataset.cr===S.cr));renderVec();renderCob();req()}
+function showPanel(id){P.collapsed[id]=false;applyOrder();save();const el=side.querySelector(`.panel[data-id="${id}"]`);if(el)el.querySelectorAll('details.more,details.steps').forEach(d=>{d.open=true});if(el)setTimeout(()=>el.scrollIntoView({block:'nearest',behavior:'smooth'}),50)}
+$('#cbOn').onchange=e=>{S.cob.on=e.target.checked;renderCob();req()};
+document.querySelectorAll('#slCr button').forEach(b=>b.onclick=()=>{S.cr=+b.dataset.cr;if(S.cr&&!P.show.vec){P.show.vec=true;syncToggles();save()}syncTools()});
+document.querySelectorAll('[data-cb]').forEach(inp=>{inp.oninput=()=>{const v=pnum(inp.value);if(!isFinite(v))return;const[k,i]=inp.dataset.cb.split(':');S.cob[k][+i]=v;renderCob();req()};inp.onblur=renderCob});
+document.querySelectorAll('[data-go2d]').forEach(b=>b.onclick=()=>setMode('2d'));
+$('#cbStd').onclick=()=>{S.cob.b1=[1,0];S.cob.b2=[0,1];S.cob.on=true;syncTools()};
+$('#cbEig').onclick=()=>{const E=eigen(S.d2.to,2),vs=E.vecs.filter(e=>e.dim<2);
+  const nice=u=>{const m=Math.max(Math.abs(u[0]),Math.abs(u[1]));let w=u.map(x=>x/m);if(w[0]<-1e-9||(Math.abs(w[0])<1e-9&&w[1]<0))w=w.map(x=>-x);return w.map(x=>Math.round(x*1000)/1000)};
+  if(E.vecs.some(e=>e.dim===2)){S.cob.b1=[1,0];S.cob.b2=[0,1]}else if(vs.length>=2){S.cob.b1=nice(vs[0].v);S.cob.b2=nice(vs[1].v)}else{toast(T().cbNoEig);return}
+  S.cob.on=true;syncTools()};
+$('#cbTo').onclick=()=>{const b1=S.cob.b1,b2=S.cob.b2,Pm=[b1[0],b2[0],b1[1],b2[1]],Pi=inv(Pm,2);if(!Pi){toast(T().cbBad);return}setMatrix(mul(mul(Pi,S.d2.to,2),Pm,2),'A′')};
+$('#mulSwap').onclick=()=>{const m=MUL[S.mode];[m.A,m.B]=[m.B,m.A];buildMul()};
+$('#mulTake').onclick=()=>{MUL[S.mode].A=D().to.slice();buildMul()};
+$('#mulTo').onclick=()=>{const m=MUL[S.mode];setMatrix(mul(m.A,m.B,N()),'A·B')};
+$('#mulPlay').onclick=()=>{const m=MUL[S.mode],A=m.A.slice(),B=m.B.slice();animateTo(B,'B',{compose:false,then:()=>animateTo(A,'A',{compose:true})})};
+function buildShapeSeg(){const opts=S.mode==='2d'?[[2,2],[2,1],[1,2]]:[[3,3],[3,2],[2,3]],box=$('#shapeSeg');box.innerHTML='';
+  opts.forEach(([r,c])=>{const b=document.createElement('button');b.textContent=`${r}×${c}`;b.classList.toggle('on',SH()[0]===r&&SH()[1]===c);b.onclick=()=>setShape(r,c);box.appendChild(b)})}
+function setShape(r,c,force){const d=D();if(!force&&d.shape[0]===r&&d.shape[1]===c)return;d.shape=[r,c];S.anim=null;S.cr=0;d.v=d.v.map((x,i)=>i<c?x:0);
+  d.from=baseM();d.to=baseM();d.t=1;d.hist=[];buildShapeSeg();buildMatrixInputs();buildPresets();buildVecInputs();
+  const p=PRE[shapeKey()][0];animateTo(p[1],p[0],{compose:false});renderCaption()}
+function setMode(m){S.mode=m;S.anim=null;document.body.classList.toggle('m3',m==='3d');document.querySelectorAll('#modeSeg button').forEach(b=>b.classList.toggle('on',b.dataset.mode===m));
+  buildShapeSeg();buildMatrixInputs();buildPresets();buildVecInputs();buildMul();changed()}
+
+/* ---------- кнопки ---------- */
+document.querySelectorAll('#modeSeg button').forEach(b=>b.onclick=()=>setMode(b.dataset.mode));
+$('#bT').onclick=()=>{const d=D(),n=N();d.from=cur();d.to=transpose(d.to,n);d.hist=[(d.hist.length===1?d.hist[0]:'A')+'ᵀ'];play()};
+$('#bInv').onclick=()=>{const d=D(),n=N(),iv=inv(d.to,n);if(!iv){$('#capT').textContent=T().invErr;$('#cap').hidden=false;return}
+  d.from=d.to.slice();d.to=I(n);d.hist.push('A⁻¹');play()};
+$('#bI').onclick=()=>{const d=D();d.from=cur();d.to=baseM();d.hist=[];play()};
+$('#compose').onchange=e=>{S.compose=e.target.checked};
+$('#bPlay').onclick=()=>play();
+$('#bZero').onclick=()=>{S.anim=null;D().t=0;changed()};
+$('#bOne').onclick=()=>{S.anim=null;D().t=1;changed()};
+$('#tR').oninput=e=>{S.anim=null;D().t=e.target.value/1000;$('#tOut').textContent=fmt(D().t);if(S.cob.on)renderCob();req()};
+$('#spR').oninput=e=>{P.speed=+e.target.value;$('#spOut').textContent='×'+fmt(P.speed);save()};
+$('#capOpen').onclick=()=>{P.show.hints=true;syncToggles();renderCaption();save()};
+$('#capX').onclick=()=>{P.show.hints=false;syncToggles();renderCaption();save()};
+document.addEventListener('click',e=>{const q=e.target.closest('[data-term]');if(q){e.preventDefault();e.stopPropagation();openTerm(q.dataset.term)}});
+
+/* ---------- справочник ---------- */
+const TERMS=[
+ {id:'vector',ru:['Вектор','vector','<p>Стрелка из начала координат. Записывается столбиком координат: <span class="m">(3, 2)</span> значит «3 шага вправо и 2 вверх».</p><p>Векторы складывают, приставляя хвост второго к концу первого, и умножают на число, растягивая или сжимая.</p>'],
+  en:['Vector','вектор','<p>An arrow from the origin, written as a column of coordinates: <span class="m">(3, 2)</span> means “3 steps right and 2 steps up”.</p><p>Vectors are added by placing the tail of the second at the tip of the first, and multiplied by a number to stretch or shrink them.</p>']},
+ {id:'lincomb',ru:['Линейная комбинация','linear combination','<p>Сумма векторов, умноженных на числа: <span class="m">a·v + b·w</span>.</p><p>Любой вектор плоскости — линейная комбинация базисных: <span class="m">(3, 2) = 3·î + 2·ĵ</span>. Включите «Разложение v по базису», чтобы увидеть это на сцене.</p>'],
+  en:['Linear combination','линейная комбинация','<p>A sum of scaled vectors: <span class="m">a·v + b·w</span>.</p><p>Every vector in the plane is a linear combination of the basis vectors: <span class="m">(3, 2) = 3·î + 2·ĵ</span>. Turn on “Decompose v in basis” to see it on the scene.</p>']},
+ {id:'basis',ru:['Базис','basis','<p>Набор линейно независимых векторов, через которые однозначно выражается любой вектор пространства. Стандартный базис плоскости — <span class="m">î = (1, 0)</span> и <span class="m">ĵ = (0, 1)</span>.</p><p>Координаты вектора — это просто коэффициенты при базисных векторах. Поэтому в другом базисе у той же самой стрелки будут другие координаты. Демонстрация показывает новый базис и то, как <span class="m">v</span> собирается из него.</p>'],
+  en:['Basis','базис','<p>A set of linearly independent vectors that expresses every vector in the space in exactly one way. The standard basis of the plane is <span class="m">î = (1, 0)</span> and <span class="m">ĵ = (0, 1)</span>.</p><p>A vector’s coordinates are just the coefficients on the basis vectors, so the same arrow has different coordinates in a different basis. The demo shows a new basis and how <span class="m">v</span> is built from it.</p>']},
+ {id:'span',ru:['Линейная оболочка','span','<p>Все точки, до которых можно дойти линейными комбинациями данных векторов.</p><p>Два непараллельных вектора на плоскости дают всю плоскость, два параллельных — только прямую, нулевой вектор — точку. В 3D три вектора, лежащие в одной плоскости, дают лишь эту плоскость.</p><p>Оболочка столбцов матрицы — это её образ: на сцене он подсвечивается, когда пространство схлопывается.</p>'],
+  en:['Span','линейная оболочка','<p>All the points you can reach with linear combinations of the given vectors.</p><p>Two non-parallel vectors in the plane span the whole plane, two parallel ones only a line, the zero vector just a point. In 3D, three vectors lying in one plane span only that plane.</p><p>The span of a matrix’s columns is its image; the scene highlights it when space gets squished.</p>']},
+ {id:'dependence',ru:['Линейная зависимость и независимость','linear dependence, independence','<p>Векторы <b>линейно независимы</b>, если каждый из них добавляет новое направление: ни один нельзя получить из остальных. Два непараллельных вектора на плоскости независимы, и их оболочка — вся плоскость. В 3D независимы три вектора, не лежащие в одной плоскости.</p><p>Векторы <b>линейно зависимы</b>, если хотя бы один выражается через остальные: он лишний и не расширяет оболочку. Зависимы два параллельных вектора, любой набор с нулевым вектором и любые три вектора на плоскости.</p><p>Именно независимость делает набор базисом: базис — это независимые векторы, которых хватает на всё пространство. Столбцы квадратной матрицы независимы тогда и только тогда, когда <span class="m">det ≠ 0</span>.</p>'],
+  en:['Linear dependence and independence','линейная зависимость и независимость','<p>Vectors are <b>linearly independent</b> if each one adds a new direction: none can be built from the others. Two non-parallel vectors in the plane are independent, and they span the whole plane. In 3D, three vectors not lying in one plane are independent.</p><p>Vectors are <b>linearly dependent</b> if at least one can be written in terms of the others: it is redundant and doesn’t enlarge the span. Two parallel vectors, any set containing the zero vector and any three vectors in the plane are dependent.</p><p>Independence is what makes a set a basis: a basis is a set of independent vectors that is big enough to reach the whole space. The columns of a square matrix are independent exactly when <span class="m">det ≠ 0</span>.</p>']},
+ {id:'transform',ru:['Линейное преобразование','linear transformation','<p>Правило, которое переводит каждый вектор в новый вектор так, что линии сетки остаются прямыми, параллельными и равномерно расставленными, а начало координат стоит на месте.</p><p>Алгебраически: <span class="m">L(v + w) = L(v) + L(w)</span> и <span class="m">L(c·v) = c·L(v)</span>.</p>'],
+  en:['Linear transformation','линейное преобразование','<p>A rule that moves every vector to a new one so that grid lines stay straight, parallel and evenly spaced, and the origin stays put.</p><p>Algebraically: <span class="m">L(v + w) = L(v) + L(w)</span> and <span class="m">L(c·v) = c·L(v)</span>.</p>']},
+ {id:'matrix',ru:['Матрица','matrix','<p>Числовая запись линейного преобразования. Главная идея: <b>столбцы матрицы — это координаты, куда попали базисные векторы</b>.</p><p>Зная, куда ушли <span class="m">î</span> и <span class="m">ĵ</span>, знаем всё: <span class="m">A·(x, y) = x·(1-й столбец) + y·(2-й столбец)</span>. Потяните кончики <span class="m">î</span> и <span class="m">ĵ</span> на сцене, и числа в матрице поменяются вместе с ними.</p>'],
+  en:['Matrix','матрица','<p>A numeric record of a linear transformation. The key idea: <b>the columns of the matrix are where the basis vectors land</b>.</p><p>Know where <span class="m">î</span> and <span class="m">ĵ</span> go and you know everything: <span class="m">A·(x, y) = x·(column 1) + y·(column 2)</span>. Drag the tips of <span class="m">î</span> and <span class="m">ĵ</span> on the scene and the numbers change with them.</p>']},
+ {id:'identity',ru:['Единичная матрица','identity','<p><span class="m">I</span> — единицы на диагонали, нули в остальных местах. Это преобразование «ничего не делать»: <span class="m">î</span> остаётся <span class="m">î</span>, <span class="m">ĵ</span> остаётся <span class="m">ĵ</span>.</p><p>При умножении она играет роль единицы: <span class="m">A·I = I·A = A</span>. Через неё определяется обратная матрица: <span class="m">A⁻¹·A = I</span>.</p>'],
+  en:['Identity matrix','единичная матрица','<p><span class="m">I</span> has ones on the diagonal and zeros elsewhere. It’s the “do nothing” transformation: <span class="m">î</span> stays <span class="m">î</span>, <span class="m">ĵ</span> stays <span class="m">ĵ</span>.</p><p>It acts as the number 1 for multiplication: <span class="m">A·I = I·A = A</span>, and the inverse is defined through it: <span class="m">A⁻¹·A = I</span>.</p>']},
+ {id:'transpose',ru:['Транспонирование','transpose','<p><span class="m">Aᵀ</span> получается, если строки матрицы записать столбцами. Определитель при этом не меняется (<span class="m">det Aᵀ = det A</span>), собственные значения тоже.</p><p>Геометрически <span class="m">Aᵀ</span> — не «обратное» и не «зеркальное» преобразование. Его смысл виден через скалярное произведение: <span class="m">(A·v)·w = v·(Aᵀ·w)</span>. Для поворотов <span class="m">Aᵀ = A⁻¹</span>, а у симметричных матриц (<span class="m">Aᵀ = A</span>) собственные векторы перпендикулярны.</p>'],
+  en:['Transpose','транспонирование','<p><span class="m">Aᵀ</span> is what you get by writing the rows of a matrix as columns. The determinant doesn’t change (<span class="m">det Aᵀ = det A</span>), and neither do the eigenvalues.</p><p>Geometrically, <span class="m">Aᵀ</span> is neither the “inverse” nor a “mirror” transformation. Its meaning shows up through the dot product: <span class="m">(A·v)·w = v·(Aᵀ·w)</span>. For rotations <span class="m">Aᵀ = A⁻¹</span>, and symmetric matrices (<span class="m">Aᵀ = A</span>) have perpendicular eigenvectors.</p>']},
+ {id:'composition',ru:['Композиция и умножение матриц','composition','<p>Сделать сначала <span class="m">A</span>, потом <span class="m">B</span> — то же самое, что одно преобразование <span class="m">B·A</span>. Читается справа налево, как функции: <span class="m">B(A(v))</span>.</p><p>Порядок важен: обычно <span class="m">AB ≠ BA</span>. Включите «Применять поверх текущего», и готовые преобразования будут накладываться друг на друга.</p>'],
+  en:['Composition and matrix multiplication','композиция','<p>Doing <span class="m">A</span> first and then <span class="m">B</span> is the same as the single transformation <span class="m">B·A</span>. Read right to left, like functions: <span class="m">B(A(v))</span>.</p><p>Order matters: usually <span class="m">AB ≠ BA</span>. Turn on “Apply on top of current” and presets will stack on each other.</p>']},
+ {id:'det',ru:['Определитель','determinant','<p>Во сколько раз преобразование меняет площади (в 3D — объёмы). Единичный квадрат превращается в параллелограмм площадью <span class="m">|det|</span>, и любая другая фигура масштабируется так же.</p><p>Знак показывает ориентацию: при <span class="m">det &lt; 0</span> пространство «вывернуто», как в зеркале. При <span class="m">det = 0</span> всё схлопнулось в прямую или точку.</p>'],
+  en:['Determinant','определитель','<p>How much the transformation scales areas (volumes in 3D). The unit square becomes a parallelogram of area <span class="m">|det|</span>, and every other shape scales the same way.</p><p>The sign gives the orientation: with <span class="m">det &lt; 0</span> space is flipped, like a mirror image. With <span class="m">det = 0</span> everything collapses onto a line or a point.</p>']},
+ {id:'volume',ru:['Определитель в 3D','3D determinant, volume','<p>В пространстве определитель — это объём параллелепипеда, в который превратился единичный куб. Отрицательный знак означает, что тройка <span class="m">î, ĵ, <span class="kh">k</span></span> сменила «правую руку» на «левую».</p>'],
+  en:['Determinant in 3D','определитель в 3D, объём','<p>In space, the determinant is the volume of the parallelepiped the unit cube turns into. A negative sign means the triple <span class="m">î, ĵ, <span class="kh">k</span></span> switched from right-handed to left-handed.</p>']},
+ {id:'inverse',ru:['Обратная матрица','inverse','<p><span class="m">A⁻¹</span> отменяет действие <span class="m">A</span>: <span class="m">A⁻¹·A = I</span>.</p><p>Она существует, только если <span class="m">det ≠ 0</span>. Если плоскость сплющилась в прямую, разные векторы попали в одну точку, и однозначно вернуть их обратно нельзя.</p>'],
+  en:['Inverse matrix','обратная матрица','<p><span class="m">A⁻¹</span> undoes <span class="m">A</span>: <span class="m">A⁻¹·A = I</span>.</p><p>It exists only when <span class="m">det ≠ 0</span>. If the plane is squished onto a line, different vectors land on the same point, and there’s no unique way to send them back.</p>']},
+ {id:'rank',ru:['Ранг','rank','<p>Размерность результата преобразования: сколько измерений «выжило». На плоскости ранг 2 — полный, ранг 1 — всё легло на прямую, ранг 0 — в точку.</p><p>Ранг равен числу линейно независимых столбцов.</p>'],
+  en:['Rank','ранг','<p>The dimension of the output: how many dimensions “survive”. In the plane, rank 2 is full, rank 1 means everything lands on a line, rank 0 on a point.</p><p>Rank equals the number of linearly independent columns.</p>']},
+ {id:'colspace',ru:['Образ','column space, image','<p>Множество всех возможных результатов <span class="m">A·v</span>. Это линейная оболочка столбцов матрицы.</p><p>Система <span class="m">A·x = b</span> имеет решение, только если <span class="m">b</span> лежит в образе.</p>'],
+  en:['Image','образ, пространство столбцов','<p>The set of all possible outputs <span class="m">A·v</span>. It’s the span of the matrix’s columns.</p><p>The system <span class="m">A·x = b</span> has a solution only if <span class="m">b</span> lies in the image.</p>']},
+ {id:'kernel',ru:['Ядро','null space, kernel','<p>Все векторы, которые преобразование отправляет в ноль: <span class="m">A·v = 0</span>.</p><p>При <span class="m">det ≠ 0</span> это только нулевой вектор. При <span class="m">det = 0</span> — целая прямая или плоскость. Размерность ядра плюс ранг равна размерности пространства.</p><p>В демонстрации вектор <span class="m">v</span> лежит на ядре и сжимается в точку.</p>'],
+  en:['Kernel','ядро, нуль-пространство','<p>All vectors the transformation sends to zero: <span class="m">A·v = 0</span>.</p><p>When <span class="m">det ≠ 0</span> it’s only the zero vector. When <span class="m">det = 0</span> it’s a whole line or plane. The dimension of the kernel plus the rank equals the dimension of the space.</p><p>In the demo, <span class="m">v</span> lies on the kernel and shrinks to a point.</p>']},
+ {id:'eigen',ru:['Собственные векторы и значения','eigenvectors, eigenvalues','<p>Векторы, которые после преобразования остаются на своей прямой и лишь растягиваются в <span class="m">λ</span> раз: <span class="m">A·v = λ·v</span>. Число <span class="m">λ</span> — собственное значение.</p><p><span class="m">λ &lt; 0</span> означает разворот в противоположную сторону. У поворота плоскости (кроме поворотов на 0° и 180°) вещественных собственных векторов нет: каждый вектор сходит со своей прямой. А у сдвига собственная прямая всего одна, и собственных векторов не хватает на базис.</p>'],
+  en:['Eigenvectors and eigenvalues','собственные векторы','<p>Vectors that stay on their own line after the transformation and only get stretched by a factor <span class="m">λ</span>: <span class="m">A·v = λ·v</span>. The number <span class="m">λ</span> is the eigenvalue.</p><p><span class="m">λ &lt; 0</span> means a flip to the opposite direction. A rotation of the plane (other than by 0° or 180°) has no real eigenvectors: every vector is knocked off its line. A shear has just one eigenline, so its eigenvectors can’t form a basis.</p>']},
+ {id:'charpoly',ru:['Как найти λ','characteristic polynomial','<p><span class="m">A·v = λ·v</span> равносильно <span class="m">(A − λI)·v = 0</span>. Ненулевое решение есть, только если <span class="m">A − λI</span> схлопывает пространство, то есть <span class="m">det(A − λI) = 0</span>.</p><p>Для матрицы 2×2 это уравнение <span class="m">λ² − tr·λ + det = 0</span>.</p>'],
+  en:['Finding λ','характеристический многочлен','<p><span class="m">A·v = λ·v</span> is the same as <span class="m">(A − λI)·v = 0</span>. A nonzero solution exists only if <span class="m">A − λI</span> squishes space, that is, <span class="m">det(A − λI) = 0</span>.</p><p>For a 2×2 matrix this is <span class="m">λ² − tr·λ + det = 0</span>.</p>']},
+ {id:'trace',ru:['След','trace','<p>Сумма элементов главной диагонали. Равен сумме собственных значений, а определитель равен их произведению (с учётом кратности, включая комплексные).</p>'],
+  en:['Trace','след','<p>The sum of the main diagonal entries. It equals the sum of the eigenvalues, while the determinant equals their product (counting multiplicity, complex ones included).</p>']},
+ {id:'changebasis',ru:['Смена базиса','change of basis','<p>Если столбцы <span class="m">P</span> — векторы нового базиса, то <span class="m">P⁻¹·A·P</span> описывает то же самое преобразование, но в координатах нового базиса.</p><p>Если собственных векторов хватает на базис, в этом базисе матрица становится диагональной, и преобразование выглядит как растяжение вдоль осей. У сдвига так не получится: собственная прямая у него одна.</p>'],
+  en:['Change of basis','смена базиса','<p>If the columns of <span class="m">P</span> are the new basis vectors, <span class="m">P⁻¹·A·P</span> describes the same transformation in the coordinates of the new basis.</p><p>If there are enough eigenvectors to form a basis, the matrix becomes diagonal in that basis, and the transformation is just stretching along the axes. A shear can’t do this: it has only one eigenline.</p>']}
+ ,{id:'dot',ru:['Скалярное произведение','dot product','<p>Число, которое показывает, насколько два вектора смотрят в одну сторону: <span class="m">v·w = |v|·|w|·cos θ</span>. Оно положительно, если угол острый, равно нулю для перпендикулярных векторов и отрицательно, если угол тупой.</p><p>Геометрически это длина проекции <span class="m">w</span> на направление <span class="m">v</span>, умноженная на длину <span class="m">v</span>. А ещё это линейное преобразование из плоскости на числовую прямую, записанное матрицей-строкой <span class="m">vᵀ</span>: в этом и состоит «двойственность» векторов и таких преобразований.</p>'],
+  en:['Dot product','скалярное произведение','<p>A number that tells how much two vectors point the same way: <span class="m">v·w = |v|·|w|·cos θ</span>. It is positive for an acute angle, zero for perpendicular vectors and negative for an obtuse angle.</p><p>Geometrically it is the length of the projection of <span class="m">w</span> onto the direction of <span class="m">v</span>, times the length of <span class="m">v</span>. It is also a linear transformation from the plane to the number line, written as the row matrix <span class="m">vᵀ</span>: that is the “duality” between vectors and such transformations.</p>']}
+ ,{id:'cross',ru:['Векторное произведение','cross product','<p>Операция только для 3D: из двух векторов <span class="m">v</span> и <span class="m">w</span> получается третий, перпендикулярный обоим. Его длина равна площади параллелограмма на <span class="m">v</span> и <span class="m">w</span>, а направление задаёт правило правой руки.</p><p>Порядок важен: <span class="m">w × v = −(v × w)</span>. Для параллельных векторов произведение — нулевой вектор.</p>'],
+  en:['Cross product','векторное произведение','<p>A 3D-only operation: two vectors <span class="m">v</span> and <span class="m">w</span> give a third one perpendicular to both. Its length is the area of the parallelogram on <span class="m">v</span> and <span class="m">w</span>, and the right-hand rule sets its direction.</p><p>Order matters: <span class="m">w × v = −(v × w)</span>. For parallel vectors the product is the zero vector.</p>']}
+ ,{id:'orthogonal',ru:['Ортогональные матрицы','orthogonal matrix','<p>Преобразования, которые ничего не растягивают и не искажают: длины и углы сохраняются. Это повороты и отражения. Сетка остаётся квадратной, только поворачивается или переворачивается.</p><p>Обратную к такой матрице найти очень легко: это просто транспонированная, <span class="m">Q⁻¹ = Qᵀ</span>. Определитель равен 1 у поворота и −1 у отражения.</p>'],
+  en:['Orthogonal matrices','ортогональные матрицы','<p>Transformations that stretch and distort nothing: lengths and angles are preserved. These are rotations and reflections. The grid stays square; it only turns or flips.</p><p>Their inverse is trivial to find: it is just the transpose, <span class="m">Q⁻¹ = Qᵀ</span>. The determinant is 1 for a rotation and −1 for a reflection.</p>']}
+ ,{id:'systems',ru:['Системы линейных уравнений','linear systems','<p>Система <span class="m">A·x = b</span> — это вопрос: какой вектор <span class="m">x</span> преобразование <span class="m">A</span> отправит точно в <span class="m">b</span>?</p><p>Если <span class="m">det A ≠ 0</span>, ответ всегда один: <span class="m">x = A⁻¹·b</span>, то есть преобразование «отматывают» назад. Если <span class="m">det A = 0</span>, пространство схлопнулось: когда <span class="m">b</span> не лежит в образе, решений нет, а когда лежит — их бесконечно много (к одному решению можно прибавить любой вектор ядра). На картинке каждое уравнение — прямая, а решение — их пересечение.</p>'],
+  en:['Systems of linear equations','системы линейных уравнений','<p>The system <span class="m">A·x = b</span> asks: which vector <span class="m">x</span> does the transformation <span class="m">A</span> send exactly to <span class="m">b</span>?</p><p>If <span class="m">det A ≠ 0</span>, there is always exactly one answer: <span class="m">x = A⁻¹·b</span>, that is, play the transformation backwards. If <span class="m">det A = 0</span>, space has collapsed: when <span class="m">b</span> is outside the image there are no solutions, and when it is inside there are infinitely many (add any kernel vector to one solution). In the picture each equation is a line, and the solution is where they cross.</p>']}
+ ,{id:'gauss',ru:['Метод Гаусса','Gaussian elimination','<p>Главный рабочий инструмент вычислений. Матрицу приводят к «лесенке» тремя безопасными операциями со строками: поменять две строки местами, умножить строку на ненулевое число, прибавить к строке другую строку, умноженную на число. Эти операции не меняют множество решений системы.</p><p>По лесенке сразу видно ранг (число ненулевых строк) и есть ли решения, а само решение находится обратным ходом снизу вверх. Тем же способом считают обратную матрицу и определитель.</p>'],
+  en:['Gaussian elimination','метод Гаусса','<p>The main computational workhorse. A matrix is reduced to a “staircase” with three safe row operations: swap two rows, multiply a row by a nonzero number, add a multiple of one row to another. These operations don’t change the solution set of a system.</p><p>The staircase shows the rank (the number of nonzero rows) and whether solutions exist, and back substitution from the bottom up gives the solution. The same method computes inverses and determinants.</p>']}
+ ,{id:'nonsquare',ru:['Неквадратные матрицы','non-square matrices','<p>Матрица m×n переводит n-мерное пространство в m-мерное. Матрица 3×2 берёт плоскость и укладывает её в пространство: два её столбца — места, куда попали <span class="m">î</span> и <span class="m">ĵ</span>, но теперь это 3D-векторы. Образ — плоскость или прямая внутри 3D.</p><p>Матрица 2×3, наоборот, сплющивает пространство на плоскость: три столбца показывают, куда попадают <span class="m">î</span>, <span class="m">ĵ</span> и <span class="m"><span class="kh">k</span></span>, но у каждого лишь две координаты. Ядро такой матрицы всегда как минимум прямая. Определитель для неквадратных матриц не определён.</p>'],
+  en:['Non-square matrices','неквадратные матрицы','<p>An m×n matrix maps n-dimensional space to m-dimensional space. A 3×2 matrix takes the plane and places it into space: its two columns are where <span class="m">î</span> and <span class="m">ĵ</span> land, but now they are 3D vectors. The image is a plane or a line inside 3D.</p><p>A 2×3 matrix does the opposite and squashes space onto a plane: its three columns show where <span class="m">î</span>, <span class="m">ĵ</span> and <span class="m"><span class="kh">k</span></span> land, each with only two coordinates. Its kernel is always at least a line. Non-square matrices have no determinant.</p>']}
+ ,{id:'complexeig',ru:['Комплексные собственные значения','complex eigenvalues','<p>Если у матрицы 2×2 дискриминант характеристического уравнения отрицателен, вещественных собственных векторов нет: каждый вектор сходит со своей прямой. Зато есть комплексные корни <span class="m">λ = a ± bi</span>, и они многое рассказывают.</p><p>Модуль <span class="m">|λ| = √(a² + b²)</span> показывает, во сколько раз преобразование растягивает, а аргумент — угол поворота. У поворота на θ, например, <span class="m">λ = cos θ ± i·sin θ</span>. Если повторять такое преобразование, точка идёт по спирали: наружу при <span class="m">|λ| &gt; 1</span> и внутрь при <span class="m">|λ| &lt; 1</span>.</p>'],
+  en:['Complex eigenvalues','комплексные собственные значения','<p>If the characteristic equation of a 2×2 matrix has a negative discriminant, there are no real eigenvectors: every vector is knocked off its line. There are complex roots <span class="m">λ = a ± bi</span> instead, and they say a lot.</p><p>The modulus <span class="m">|λ| = √(a² + b²)</span> is the stretch factor, and the argument is the rotation angle. A rotation by θ, for example, has <span class="m">λ = cos θ ± i·sin θ</span>. Repeat such a transformation and a point moves along a spiral: outward when <span class="m">|λ| &gt; 1</span>, inward when <span class="m">|λ| &lt; 1</span>.</p>']}
+ ,{id:'symmetric',ru:['Симметричные матрицы','symmetric matrix','<p>Матрица симметрична, если не меняется при транспонировании: элемент над диагональю равен элементу под ней. У таких матриц всё устроено «красиво»: собственные значения вещественные, а собственные векторы можно выбрать перпендикулярными.</p><p>Геометрически симметричная матрица — это растяжения вдоль перпендикулярных направлений без скрытого поворота. Круг она превращает в эллипс, оси которого и есть собственные векторы.</p>'],
+  en:['Symmetric matrices','симметричные матрицы','<p>A matrix is symmetric if transposing it changes nothing: each entry above the diagonal equals the one below. Such matrices are “nice”: their eigenvalues are real and their eigenvectors can be chosen perpendicular.</p><p>Geometrically, a symmetric matrix stretches along perpendicular directions with no hidden rotation. It turns a circle into an ellipse whose axes are exactly the eigenvectors.</p>']}
+ ,{id:'abstract',ru:['Абстрактные векторные пространства','vector spaces','<p>Всё, что мы делали со стрелками, работает для любых объектов, которые можно складывать и умножать на число по обычным правилам. Многочлены, функции, последовательности — тоже векторы.</p><p>Например, производная — линейное преобразование: производная суммы равна сумме производных, а множитель выносится. В базисе 1, x, x² её можно записать обычной матрицей. Поэтому идеи линейной алгебры (базис, ядро, собственные векторы) встречаются повсюду. Собственные «векторы» производной — экспоненты: <span class="m">(e<sup>kx</sup>)′ = k·e<sup>kx</sup></span>.</p>'],
+  en:['Abstract vector spaces','абстрактные векторные пространства','<p>Everything we did with arrows works for any objects you can add and scale by the usual rules. Polynomials, functions and sequences are vectors too.</p><p>The derivative, for example, is a linear transformation: the derivative of a sum is the sum of derivatives, and constants factor out. In the basis 1, x, x² it is an ordinary matrix. That is why linear algebra ideas (basis, kernel, eigenvectors) show up everywhere. The eigen-“vectors” of the derivative are exponentials: <span class="m">(e<sup>kx</sup>)′ = k·e<sup>kx</sup></span>.</p>']}
+ ,{id:'subspace',ru:['Подпространство','subspace','<p>«Плоское» множество внутри пространства, которое проходит через начало координат и замкнуто: складывая его векторы и умножая их на числа, из него никогда не выйти.</p><p>На плоскости подпространства бывают трёх видов: точка 0, прямая через начало координат и вся плоскость. В 3D добавляются плоскости через начало координат. Прямая, не проходящая через 0, подпространством не является. Линейная оболочка любых векторов, а также образ и ядро любой матрицы — подпространства.</p>'],
+  en:['Subspace','подпространство','<p>A “flat” set inside a space that passes through the origin and is closed: adding its vectors and scaling them never takes you outside it.</p><p>In the plane there are three kinds of subspaces: the point 0, a line through the origin and the whole plane. In 3D, planes through the origin join the list. A line that misses 0 is not a subspace. The span of any vectors, and the image and kernel of any matrix, are subspaces.</p>']}
+ ,{id:'cramer',ru:['Правило Крамера','Cramer’s rule','<p>Способ решить систему <span class="m">A·x = b</span> через определители, и у него красивый геометрический смысл. Возьмите параллелограмм на неизвестном векторе <span class="m">x</span> и векторе <span class="m">ĵ</span>: его площадь со знаком равна просто первой координате <span class="m">x₁</span>. Преобразование <span class="m">A</span> превращает его в параллелограмм на <span class="m">b</span> и <span class="m">A·ĵ</span>, а любая площадь умножается на <span class="m">det A</span>.</p><p>Значит, <span class="m">x₁ = (площадь после) / det A</span>, а «площадь после» — это определитель матрицы <span class="m">A</span>, у которой первый столбец заменён на <span class="m">b</span>. Так же находится и <span class="m">x₂</span>. На больших матрицах метод Гаусса быстрее, но правило Крамера хорошо объясняет, почему при <span class="m">det A = 0</span> всё ломается: делить не на что.</p>'],
+  en:['Cramer’s rule','правило Крамера','<p>A way to solve <span class="m">A·x = b</span> with determinants, and it has a lovely geometric meaning. Take the parallelogram on the unknown vector <span class="m">x</span> and the vector <span class="m">ĵ</span>: its signed area is simply the first coordinate <span class="m">x₁</span>. The transformation <span class="m">A</span> turns it into the parallelogram on <span class="m">b</span> and <span class="m">A·ĵ</span>, and every area is scaled by <span class="m">det A</span>.</p><p>So <span class="m">x₁ = (area after) / det A</span>, and the “area after” is the determinant of <span class="m">A</span> with its first column replaced by <span class="m">b</span>. <span class="m">x₂</span> works the same way. Gaussian elimination is faster for large matrices, but Cramer’s rule shows clearly why everything breaks when <span class="m">det A = 0</span>: there is nothing to divide by.</p>']}
+];
+const sh=(k,v=true)=>{P.show[k]=v};
+const go2=()=>{if(S.mode!=='2d')setMode('2d')};
+const FORMAL={
+ vector:{ru:'<p><b>Определение.</b> Вектор пространства ℝⁿ — упорядоченный набор из n чисел <span class="m">v = (v₁, …, vₙ)</span>. Сложение и умножение на число выполняются покоординатно: <span class="m">u + v = (u₁ + v₁, …, uₙ + vₙ)</span>, <span class="m">c·v = (c·v₁, …, c·vₙ)</span>.</p><p><b>Пример.</b> (1, 2) + (3, −1) = (4, 1); 2·(1, 2) = (2, 4).</p>',
+  en:'<p><b>Definition.</b> A vector in ℝⁿ is an ordered list of n numbers <span class="m">v = (v₁, …, vₙ)</span>. Addition and scalar multiplication work entry by entry: <span class="m">u + v = (u₁ + v₁, …, uₙ + vₙ)</span>, <span class="m">c·v = (c·v₁, …, c·vₙ)</span>.</p><p><b>Example.</b> (1, 2) + (3, −1) = (4, 1); 2·(1, 2) = (2, 4).</p>'},
+ lincomb:{ru:'<p><b>Определение.</b> Линейная комбинация векторов v₁, …, vₖ с коэффициентами c₁, …, cₖ ∈ ℝ — это вектор <span class="m">c₁v₁ + c₂v₂ + … + cₖvₖ</span>.</p><p><b>Пример.</b> 2·(1, 0) + 3·(0, 1) − 1·(1, 1) = (1, 2).</p>',
+  en:'<p><b>Definition.</b> A linear combination of vectors v₁, …, vₖ with coefficients c₁, …, cₖ ∈ ℝ is the vector <span class="m">c₁v₁ + c₂v₂ + … + cₖvₖ</span>.</p><p><b>Example.</b> 2·(1, 0) + 3·(0, 1) − 1·(1, 1) = (1, 2).</p>'},
+ basis:{ru:'<p><b>Определение.</b> Набор векторов b₁, …, bₙ — базис пространства V, если он линейно независим и его линейная оболочка равна V. Тогда каждый v ∈ V единственным образом записывается как <span class="m">v = c₁b₁ + … + cₙbₙ</span>; числа cᵢ — координаты v в этом базисе. Число векторов в любом базисе одно и то же: это размерность V.</p><p><b>Пример.</b> (1, 1) и (1, −1) — базис ℝ². Вектор (3, 1) = 2·(1, 1) + 1·(1, −1), поэтому его координаты в этом базисе — (2, 1).</p>',
+  en:'<p><b>Definition.</b> Vectors b₁, …, bₙ form a basis of a space V if they are linearly independent and their span is V. Then every v ∈ V can be written in exactly one way as <span class="m">v = c₁b₁ + … + cₙbₙ</span>; the numbers cᵢ are the coordinates of v in this basis. Every basis has the same number of vectors: the dimension of V.</p><p><b>Example.</b> (1, 1) and (1, −1) form a basis of ℝ². Since (3, 1) = 2·(1, 1) + 1·(1, −1), its coordinates in this basis are (2, 1).</p>'},
+ span:{ru:'<p><b>Определение.</b> <span class="m">span(v₁, …, vₖ) = { c₁v₁ + … + cₖvₖ : cᵢ ∈ ℝ }</span>. Линейная оболочка всегда подпространство: содержит 0 и замкнута относительно сложения и умножения на число.</p><p><b>Пример.</b> span((1, 2)) — прямая y = 2x. span((1, 0), (0, 1)) = ℝ². span((1, 2), (2, 4)) — та же прямая y = 2x.</p>',
+  en:'<p><b>Definition.</b> <span class="m">span(v₁, …, vₖ) = { c₁v₁ + … + cₖvₖ : cᵢ ∈ ℝ }</span>. A span is always a subspace: it contains 0 and is closed under addition and scalar multiplication.</p><p><b>Example.</b> span((1, 2)) is the line y = 2x. span((1, 0), (0, 1)) = ℝ². span((1, 2), (2, 4)) is the same line y = 2x.</p>'},
+ dependence:{ru:'<p><b>Определение.</b> Векторы v₁, …, vₖ <b>линейно независимы</b>, если равенство <span class="m">c₁v₁ + … + cₖvₖ = 0</span> выполняется только при c₁ = … = cₖ = 0. Если же оно выполняется при каком-то наборе коэффициентов, не все из которых нули, векторы <b>линейно зависимы</b>.</p><p>Полезные факты: в ℝⁿ больше n векторов всегда зависимы; набор с нулевым вектором зависим; n векторов в ℝⁿ независимы ⇔ определитель матрицы из них не равен нулю.</p><p><b>Пример.</b> (1, 2) и (2, 4) зависимы: 2·(1, 2) − 1·(2, 4) = 0. (1, 0) и (1, 1) независимы: из a·(1, 0) + b·(1, 1) = (a + b, b) = 0 следует b = 0, а затем a = 0. Проверка через определитель: det {{1,1;0,1}} = 1 ≠ 0.</p>',
+  en:'<p><b>Definition.</b> Vectors v₁, …, vₖ are <b>linearly independent</b> if <span class="m">c₁v₁ + … + cₖvₖ = 0</span> holds only when c₁ = … = cₖ = 0. If it holds for some coefficients that are not all zero, the vectors are <b>linearly dependent</b>.</p><p>Useful facts: more than n vectors in ℝⁿ are always dependent; a set containing the zero vector is dependent; n vectors in ℝⁿ are independent ⇔ the determinant of the matrix they form is nonzero.</p><p><b>Example.</b> (1, 2) and (2, 4) are dependent: 2·(1, 2) − 1·(2, 4) = 0. (1, 0) and (1, 1) are independent: a·(1, 0) + b·(1, 1) = (a + b, b) = 0 forces b = 0 and then a = 0. Determinant check: det {{1,1;0,1}} = 1 ≠ 0.</p>'},
+ transform:{ru:'<p><b>Определение.</b> Отображение L: ℝⁿ → ℝᵐ линейно, если для любых векторов u, v и любого числа c выполнено <span class="m">L(u + v) = L(u) + L(v)</span> и <span class="m">L(c·v) = c·L(v)</span>. Отсюда, в частности, L(0) = 0.</p><p><b>Пример.</b> L(x, y) = (2x, x + y) линейно. M(x, y) = (x + 1, y) не линейно: M(0, 0) = (1, 0) ≠ 0. N(x, y) = (x², y) тоже нет: N(2·(1, 0)) = (4, 0), а 2·N(1, 0) = (2, 0).</p>',
+  en:'<p><b>Definition.</b> A map L: ℝⁿ → ℝᵐ is linear if for all vectors u, v and every number c we have <span class="m">L(u + v) = L(u) + L(v)</span> and <span class="m">L(c·v) = c·L(v)</span>. In particular, L(0) = 0.</p><p><b>Example.</b> L(x, y) = (2x, x + y) is linear. M(x, y) = (x + 1, y) is not: M(0, 0) = (1, 0) ≠ 0. Neither is N(x, y) = (x², y): N(2·(1, 0)) = (4, 0) but 2·N(1, 0) = (2, 0).</p>'},
+ matrix:{ru:'<p><b>Определение.</b> Матрица размера m×n — прямоугольная таблица чисел aᵢⱼ, где i — номер строки, j — номер столбца. Каждому линейному отображению L: ℝⁿ → ℝᵐ соответствует единственная матрица A, для которой L(v) = A·v; её j-й столбец равен L(eⱼ). Произведение матрицы на вектор: <span class="m">(A·v)ᵢ = aᵢ₁v₁ + … + aᵢₙvₙ</span>.</p><p><b>Пример.</b> L(x, y) = (2x, x + y) задаётся матрицей {{2,0;1,1}}. Тогда {{2,0;1,1}}·(1, 3) = (2·1 + 0·3, 1·1 + 1·3) = (2, 4).</p>',
+  en:'<p><b>Definition.</b> An m×n matrix is a rectangular table of numbers aᵢⱼ, where i is the row and j the column. Every linear map L: ℝⁿ → ℝᵐ has exactly one matrix A with L(v) = A·v; its j-th column is L(eⱼ). Matrix times vector: <span class="m">(A·v)ᵢ = aᵢ₁v₁ + … + aᵢₙvₙ</span>.</p><p><b>Example.</b> L(x, y) = (2x, x + y) has the matrix {{2,0;1,1}}. Then {{2,0;1,1}}·(1, 3) = (2·1 + 0·3, 1·1 + 1·3) = (2, 4).</p>'},
+ identity:{ru:'<p><b>Определение.</b> Единичная матрица Iₙ — матрица n×n с элементами (Iₙ)ᵢⱼ = 1 при i = j и 0 при i ≠ j. Для любой матрицы A размера n×n: <span class="m">A·I = I·A = A</span>, для любого вектора v: <span class="m">I·v = v</span>.</p><p><b>Пример.</b> I₂ = {{1,0;0,1}}, I₃ = {{1,0,0;0,1,0;0,0,1}}.</p>',
+  en:'<p><b>Definition.</b> The identity matrix Iₙ is the n×n matrix with (Iₙ)ᵢⱼ = 1 when i = j and 0 when i ≠ j. For every n×n matrix A: <span class="m">A·I = I·A = A</span>, and for every vector v: <span class="m">I·v = v</span>.</p><p><b>Example.</b> I₂ = {{1,0;0,1}}, I₃ = {{1,0,0;0,1,0;0,0,1}}.</p>'},
+ transpose:{ru:'<p><b>Определение.</b> Транспонированная матрица: <span class="m">(Aᵀ)ᵢⱼ = aⱼᵢ</span>. Свойства: (Aᵀ)ᵀ = A, (A + B)ᵀ = Aᵀ + Bᵀ, <span class="m">(A·B)ᵀ = Bᵀ·Aᵀ</span>, det Aᵀ = det A.</p><p><b>Пример.</b> {{1,2;3,4}}ᵀ = {{1,3;2,4}}.</p>',
+  en:'<p><b>Definition.</b> The transpose: <span class="m">(Aᵀ)ᵢⱼ = aⱼᵢ</span>. Properties: (Aᵀ)ᵀ = A, (A + B)ᵀ = Aᵀ + Bᵀ, <span class="m">(A·B)ᵀ = Bᵀ·Aᵀ</span>, det Aᵀ = det A.</p><p><b>Example.</b> {{1,2;3,4}}ᵀ = {{1,3;2,4}}.</p>'},
+ composition:{ru:'<p><b>Определение.</b> Произведение матрицы A размера m×n на матрицу B размера n×p — матрица C = A·B размера m×p с элементами <span class="m">cᵢⱼ = aᵢ₁b₁ⱼ + aᵢ₂b₂ⱼ + … + aᵢₙbₙⱼ</span>: строка i матрицы A, умноженная на столбец j матрицы B. Число столбцов A должно совпадать с числом строк B.</p><p>Свойства: (AB)C = A(BC), A(B + C) = AB + AC, det(AB) = det A·det B. В общем случае <span class="m">AB ≠ BA</span>.</p><p><b>Пример.</b> {{1,1;0,1}}·{{0,−1;1,0}} = {{1·0 + 1·1, 1·(−1) + 1·0; 0·0 + 1·1, 0·(−1) + 1·0}} = {{1,−1;1,0}}, а в обратном порядке {{0,−1;1,0}}·{{1,1;0,1}} = {{0,−1;1,1}}. Посчитать свои примеры можно в блоке «Умножение матриц».</p>',
+  en:'<p><b>Definition.</b> The product of an m×n matrix A and an n×p matrix B is the m×p matrix C = A·B with entries <span class="m">cᵢⱼ = aᵢ₁b₁ⱼ + aᵢ₂b₂ⱼ + … + aᵢₙbₙⱼ</span>: row i of A times column j of B. The number of columns of A must equal the number of rows of B.</p><p>Properties: (AB)C = A(BC), A(B + C) = AB + AC, det(AB) = det A·det B. In general <span class="m">AB ≠ BA</span>.</p><p><b>Example.</b> {{1,1;0,1}}·{{0,−1;1,0}} = {{1·0 + 1·1, 1·(−1) + 1·0; 0·0 + 1·1, 0·(−1) + 1·0}} = {{1,−1;1,0}}, while in the other order {{0,−1;1,0}}·{{1,1;0,1}} = {{0,−1;1,1}}. Try your own in the “Matrix multiplication” block.</p>'},
+ det:{ru:'<p><b>Определение.</b> Для матрицы 2×2: <span class="m">det {{a,b;c,d}} = ad − bc</span>. Для n×n — разложение по первой строке: <span class="m">det A = a₁₁M₁₁ − a₁₂M₁₂ + a₁₃M₁₃ − …</span>, где M₁ⱼ — определитель матрицы без первой строки и j-го столбца (минор).</p><p>Свойства: det(AB) = det A·det B, det Aᵀ = det A, перестановка двух строк меняет знак, det A ≠ 0 ⇔ A обратима.</p><p><b>Пример.</b> det {{3,1;2,4}} = 3·4 − 1·2 = 10.</p>',
+  en:'<p><b>Definition.</b> For a 2×2 matrix: <span class="m">det {{a,b;c,d}} = ad − bc</span>. For n×n, expand along the first row: <span class="m">det A = a₁₁M₁₁ − a₁₂M₁₂ + a₁₃M₁₃ − …</span>, where M₁ⱼ is the determinant of the matrix without the first row and the j-th column (a minor).</p><p>Properties: det(AB) = det A·det B, det Aᵀ = det A, swapping two rows flips the sign, det A ≠ 0 ⇔ A is invertible.</p><p><b>Example.</b> det {{3,1;2,4}} = 3·4 − 1·2 = 10.</p>'},
+ volume:{ru:'<p><b>Определение.</b> Для матрицы 3×3 (правило Саррюса): <span class="m">det A = a₁₁a₂₂a₃₃ + a₁₂a₂₃a₃₁ + a₁₃a₂₁a₃₂ − a₁₃a₂₂a₃₁ − a₁₁a₂₃a₃₂ − a₁₂a₂₁a₃₃</span>. Объём параллелепипеда, построенного на столбцах A, равен |det A|.</p><p><b>Пример.</b> det {{2,0,0;0,1,0;0,0,3}} = 2·1·3 = 6: единичный куб превращается в коробку 2×1×3.</p>',
+  en:'<p><b>Definition.</b> For a 3×3 matrix (rule of Sarrus): <span class="m">det A = a₁₁a₂₂a₃₃ + a₁₂a₂₃a₃₁ + a₁₃a₂₁a₃₂ − a₁₃a₂₂a₃₁ − a₁₁a₂₃a₃₂ − a₁₂a₂₁a₃₃</span>. The volume of the parallelepiped spanned by the columns of A is |det A|.</p><p><b>Example.</b> det {{2,0,0;0,1,0;0,0,3}} = 2·1·3 = 6: the unit cube becomes a 2×1×3 box.</p>'},
+ inverse:{ru:'<p><b>Определение.</b> Матрица B — обратная к квадратной матрице A, если <span class="m">A·B = B·A = I</span>; обозначается A⁻¹. Она существует тогда и только тогда, когда det A ≠ 0. Для 2×2: <span class="m">{{a,b;c,d}}⁻¹ = 1/(ad − bc) · {{d,−b;−c,a}}</span>. Свойство: (AB)⁻¹ = B⁻¹A⁻¹.</p><p><b>Пример.</b> {{2,1;1,1}}⁻¹ = {{1,−1;−1,2}}, так как det = 1. Проверка: {{2,1;1,1}}·{{1,−1;−1,2}} = {{1,0;0,1}}.</p>',
+  en:'<p><b>Definition.</b> A matrix B is the inverse of a square matrix A if <span class="m">A·B = B·A = I</span>; it is written A⁻¹. It exists exactly when det A ≠ 0. For 2×2: <span class="m">{{a,b;c,d}}⁻¹ = 1/(ad − bc) · {{d,−b;−c,a}}</span>. Property: (AB)⁻¹ = B⁻¹A⁻¹.</p><p><b>Example.</b> {{2,1;1,1}}⁻¹ = {{1,−1;−1,2}}, since det = 1. Check: {{2,1;1,1}}·{{1,−1;−1,2}} = {{1,0;0,1}}.</p>'},
+ rank:{ru:'<p><b>Определение.</b> Ранг матрицы A — размерность её образа. Он равен максимальному числу линейно независимых столбцов и, что то же самое, строк. На практике матрицу приводят к ступенчатому виду методом Гаусса: ранг равен числу ненулевых строк.</p><p><b>Пример.</b> rank {{1,2;2,4}} = 1: вторая строка — удвоенная первая. rank I₂ = 2. Ранг нулевой матрицы равен 0.</p>',
+  en:'<p><b>Definition.</b> The rank of a matrix A is the dimension of its image. It equals the maximum number of linearly independent columns, and equally of rows. In practice you row-reduce the matrix (Gaussian elimination): the rank is the number of nonzero rows.</p><p><b>Example.</b> rank {{1,2;2,4}} = 1: the second row is twice the first. rank I₂ = 2. The zero matrix has rank 0.</p>'},
+ colspace:{ru:'<p><b>Определение.</b> <span class="m">Im A = { A·x : x ∈ ℝⁿ }</span> — это линейная оболочка столбцов A. Система A·x = b имеет решение тогда и только тогда, когда b ∈ Im A.</p><p><b>Пример.</b> Для A = {{1,2;2,4}} образ — прямая span((1, 2)). Вектор b = (3, 6) в ней лежит (например, x = (3, 0)), а b = (1, 0) — нет, и система A·x = (1, 0) решений не имеет.</p>',
+  en:'<p><b>Definition.</b> <span class="m">Im A = { A·x : x ∈ ℝⁿ }</span>, the span of the columns of A. The system A·x = b has a solution exactly when b ∈ Im A.</p><p><b>Example.</b> For A = {{1,2;2,4}} the image is the line span((1, 2)). The vector b = (3, 6) lies on it (take x = (3, 0)), while b = (1, 0) does not, so A·x = (1, 0) has no solution.</p>'},
+ kernel:{ru:'<p><b>Определение.</b> <span class="m">Ker A = { x ∈ ℝⁿ : A·x = 0 }</span>. Это подпространство. Теорема о ранге: <span class="m">dim Ker A + rank A = n</span>, где n — число столбцов.</p><p><b>Пример.</b> Для A = {{1,2;2,4}} ядро — span((−2, 1)): 1·(−2) + 2·1 = 0 и 2·(−2) + 4·1 = 0. Здесь dim Ker A = 1, rank A = 1, в сумме 2.</p>',
+  en:'<p><b>Definition.</b> <span class="m">Ker A = { x ∈ ℝⁿ : A·x = 0 }</span>. It is a subspace. Rank–nullity theorem: <span class="m">dim Ker A + rank A = n</span>, the number of columns.</p><p><b>Example.</b> For A = {{1,2;2,4}} the kernel is span((−2, 1)): 1·(−2) + 2·1 = 0 and 2·(−2) + 4·1 = 0. Here dim Ker A = 1, rank A = 1, adding up to 2.</p>'},
+ eigen:{ru:'<p><b>Определение.</b> Число λ — собственное значение квадратной матрицы A, а ненулевой вектор v — соответствующий собственный вектор, если <span class="m">A·v = λ·v</span>. Все такие v вместе с нулём образуют собственное подпространство <span class="m">Ker(A − λI)</span>.</p><p><b>Пример.</b> A = {{3,1;0,2}}. A·(1, 0) = (3, 0) = 3·(1, 0), значит, λ₁ = 3. A·(−1, 1) = (−2, 2) = 2·(−1, 1), значит, λ₂ = 2.</p>',
+  en:'<p><b>Definition.</b> A number λ is an eigenvalue of a square matrix A, and a nonzero vector v is a corresponding eigenvector, if <span class="m">A·v = λ·v</span>. All such v together with zero form the eigenspace <span class="m">Ker(A − λI)</span>.</p><p><b>Example.</b> A = {{3,1;0,2}}. A·(1, 0) = (3, 0) = 3·(1, 0), so λ₁ = 3. A·(−1, 1) = (−2, 2) = 2·(−1, 1), so λ₂ = 2.</p>'},
+ charpoly:{ru:'<p><b>Определение.</b> Характеристический многочлен <span class="m">p(λ) = det(A − λI)</span>; его корни — собственные значения A. Иногда пишут det(λI − A): это отличается разве что знаком. Для 2×2: <span class="m">p(λ) = λ² − (tr A)·λ + det A</span>.</p><p><b>Пример.</b> A = {{3,1;0,2}}: p(λ) = (3 − λ)(2 − λ) − 1·0 = λ² − 5λ + 6, корни 3 и 2.</p>',
+  en:'<p><b>Definition.</b> The characteristic polynomial is <span class="m">p(λ) = det(A − λI)</span>; its roots are the eigenvalues of A. Some texts use det(λI − A), which differs at most by sign. For 2×2: <span class="m">p(λ) = λ² − (tr A)·λ + det A</span>.</p><p><b>Example.</b> A = {{3,1;0,2}}: p(λ) = (3 − λ)(2 − λ) − 1·0 = λ² − 5λ + 6, with roots 3 and 2.</p>'},
+ trace:{ru:'<p><b>Определение.</b> <span class="m">tr A = a₁₁ + a₂₂ + … + aₙₙ</span>. Свойства: tr(A + B) = tr A + tr B, tr(c·A) = c·tr A, <span class="m">tr(AB) = tr(BA)</span>, tr A = λ₁ + … + λₙ.</p><p><b>Пример.</b> tr {{3,1;0,2}} = 3 + 2 = 5, и это сумма собственных значений 3 и 2.</p>',
+  en:'<p><b>Definition.</b> <span class="m">tr A = a₁₁ + a₂₂ + … + aₙₙ</span>. Properties: tr(A + B) = tr A + tr B, tr(c·A) = c·tr A, <span class="m">tr(AB) = tr(BA)</span>, tr A = λ₁ + … + λₙ.</p><p><b>Example.</b> tr {{3,1;0,2}} = 3 + 2 = 5, the sum of the eigenvalues 3 and 2.</p>'},
+ changebasis:{ru:'<p><b>Определение.</b> Пусть столбцы обратимой матрицы P — векторы нового базиса. Если x — координаты вектора в новом базисе, то в стандартном он равен P·x. Матрица того же преобразования в новом базисе: <span class="m">A′ = P⁻¹·A·P</span> (такие матрицы называют подобными). Если у A есть n линейно независимых собственных векторов и P составлена из них, то A′ = diag(λ₁, …, λₙ).</p><p><b>Пример.</b> A = {{3,1;0,2}}, P = {{1,−1;0,1}} (столбцы — собственные векторы). Тогда P⁻¹ = {{1,1;0,1}} и P⁻¹·A·P = {{3,0;0,2}}.</p>',
+  en:'<p><b>Definition.</b> Let the columns of an invertible matrix P be the new basis vectors. If x holds a vector’s coordinates in the new basis, the vector in standard coordinates is P·x. The same transformation in the new basis has matrix <span class="m">A′ = P⁻¹·A·P</span> (such matrices are called similar). If A has n linearly independent eigenvectors and P is built from them, then A′ = diag(λ₁, …, λₙ).</p><p><b>Example.</b> A = {{3,1;0,2}}, P = {{1,−1;0,1}} (the columns are eigenvectors). Then P⁻¹ = {{1,1;0,1}} and P⁻¹·A·P = {{3,0;0,2}}.</p>'}
+ ,dot:{ru:'<p><b>Определение.</b> <span class="m">v·w = v₁w₁ + v₂w₂ + … + vₙwₙ = vᵀw</span>. Длина <span class="m">|v| = √(v·v)</span>, угол: <span class="m">cos θ = v·w / (|v|·|w|)</span>. Векторы ортогональны ⇔ v·w = 0. Свойства: v·w = w·v, линейность по каждому аргументу, v·v ≥ 0 и v·v = 0 только при v = 0.</p><p><b>Пример.</b> (3, 1)·(1, 2) = 3 + 2 = 5. Проекция w = (1, 2) на v = (3, 1): (v·w / v·v)·v = (5/10)·(3, 1) = (1,5; 0,5).</p>',
+  en:'<p><b>Definition.</b> <span class="m">v·w = v₁w₁ + v₂w₂ + … + vₙwₙ = vᵀw</span>. Length <span class="m">|v| = √(v·v)</span>, angle: <span class="m">cos θ = v·w / (|v|·|w|)</span>. Vectors are orthogonal ⇔ v·w = 0. Properties: v·w = w·v, linear in each argument, v·v ≥ 0 with v·v = 0 only for v = 0.</p><p><b>Example.</b> (3, 1)·(1, 2) = 3 + 2 = 5. The projection of w = (1, 2) onto v = (3, 1) is (v·w / v·v)·v = (5/10)·(3, 1) = (1.5, 0.5).</p>'}
+ ,cross:{ru:'<p><b>Определение.</b> Для v, w ∈ ℝ³: <span class="m">v × w = (v₂w₃ − v₃w₂, v₃w₁ − v₁w₃, v₁w₂ − v₂w₁)</span>. Удобно запоминать как «определитель» с базисными векторами в первой строке: det {{î,ĵ,<span class="kh">k</span>;v₁,v₂,v₃;w₁,w₂,w₃}}. Свойства: <span class="m">|v × w| = |v|·|w|·sin θ</span>; (v × w)·u — объём параллелепипеда на v, w, u со знаком.</p><p><b>Пример.</b> î × ĵ = <span class="kh">k</span>. (1, 2, 0) × (0, 1, 3) = (2·3 − 0·1, 0·0 − 1·3, 1·1 − 2·0) = (6, −3, 1).</p>',
+  en:'<p><b>Definition.</b> For v, w ∈ ℝ³: <span class="m">v × w = (v₂w₃ − v₃w₂, v₃w₁ − v₁w₃, v₁w₂ − v₂w₁)</span>. A handy mnemonic is a “determinant” with the basis vectors in the first row: det {{î,ĵ,<span class="kh">k</span>;v₁,v₂,v₃;w₁,w₂,w₃}}. Properties: <span class="m">|v × w| = |v|·|w|·sin θ</span>; (v × w)·u is the signed volume of the parallelepiped on v, w, u.</p><p><b>Example.</b> î × ĵ = <span class="kh">k</span>. (1, 2, 0) × (0, 1, 3) = (2·3 − 0·1, 0·0 − 1·3, 1·1 − 2·0) = (6, −3, 1).</p>'}
+ ,orthogonal:{ru:'<p><b>Определение.</b> Квадратная матрица Q ортогональна, если <span class="m">QᵀQ = I</span>, то есть её столбцы — единичные попарно перпендикулярные векторы (ортонормированный базис). Тогда |Qv| = |v|, Qv·Qw = v·w, <span class="m">Q⁻¹ = Qᵀ</span>, det Q = ±1.</p><p><b>Пример.</b> Поворот на угол θ: {{cos θ,−sin θ;sin θ,cos θ}}. Для θ = 90°: Q = {{0,−1;1,0}}, и QᵀQ = {{0,1;−1,0}}·{{0,−1;1,0}} = {{1,0;0,1}}.</p>',
+  en:'<p><b>Definition.</b> A square matrix Q is orthogonal if <span class="m">QᵀQ = I</span>, that is, its columns are unit vectors perpendicular to each other (an orthonormal basis). Then |Qv| = |v|, Qv·Qw = v·w, <span class="m">Q⁻¹ = Qᵀ</span>, det Q = ±1.</p><p><b>Example.</b> Rotation by θ: {{cos θ,−sin θ;sin θ,cos θ}}. For θ = 90°: Q = {{0,−1;1,0}}, and QᵀQ = {{0,1;−1,0}}·{{0,−1;1,0}} = {{1,0;0,1}}.</p>'}
+ ,systems:{ru:'<p><b>Определение.</b> Система m уравнений с n неизвестными записывается как A·x = b, где A — матрица коэффициентов m×n. Теорема Кронекера — Капелли: система совместна ⇔ rank A = rank [A | b]. Если x₀ — решение, то все решения имеют вид x₀ + z, где z ∈ Ker A. Для квадратной A с det A ≠ 0 решение единственно; правило Крамера: <span class="m">xᵢ = det Aᵢ / det A</span>, где в Aᵢ i-й столбец заменён на b.</p><p><b>Пример.</b> x + y = 3, x − y = 1, то есть {{1,1;1,−1}}·(x, y) = (3, 1). det = −2. По Крамеру x = det {{3,1;1,−1}} / (−2) = (−4)/(−2) = 2, y = det {{1,3;1,1}} / (−2) = (−2)/(−2) = 1.</p>',
+  en:'<p><b>Definition.</b> A system of m equations in n unknowns is written A·x = b, where A is the m×n coefficient matrix. Rouché–Capelli theorem: the system is consistent ⇔ rank A = rank [A | b]. If x₀ is a solution, all solutions are x₀ + z with z ∈ Ker A. For a square A with det A ≠ 0 the solution is unique; Cramer’s rule: <span class="m">xᵢ = det Aᵢ / det A</span>, where Aᵢ has its i-th column replaced by b.</p><p><b>Example.</b> x + y = 3, x − y = 1, that is {{1,1;1,−1}}·(x, y) = (3, 1). det = −2. By Cramer, x = det {{3,1;1,−1}} / (−2) = (−4)/(−2) = 2 and y = det {{1,3;1,1}} / (−2) = (−2)/(−2) = 1.</p>'}
+ ,gauss:{ru:'<p><b>Определение.</b> Матрица имеет ступенчатый вид, если первый ненулевой (ведущий) элемент каждой строки стоит правее ведущего элемента предыдущей, а нулевые строки — внизу. Элементарные преобразования строк равносильны умножению слева на обратимые элементарные матрицы, поэтому не меняют ранг и решения A·x = b. Чтобы найти A⁻¹, расширенную матрицу [A | I] приводят к виду [I | A⁻¹].</p><p><b>Пример.</b> Система x + 2y = 3, 2x + 5y = 8: {{1,2,3;2,5,8}} → (из второй строки вычесть первую, умноженную на 2) → {{1,2,3;0,1,2}}. Отсюда y = 2, затем x = 3 − 2·2 = −1.</p>',
+  en:'<p><b>Definition.</b> A matrix is in row echelon form if the first nonzero (leading) entry of each row lies to the right of the leading entry of the row above, and zero rows are at the bottom. Elementary row operations amount to multiplying on the left by invertible elementary matrices, so they preserve the rank and the solutions of A·x = b. To find A⁻¹, row-reduce the augmented matrix [A | I] to [I | A⁻¹].</p><p><b>Example.</b> The system x + 2y = 3, 2x + 5y = 8: {{1,2,3;2,5,8}} → (subtract twice the first row from the second) → {{1,2,3;0,1,2}}. So y = 2, then x = 3 − 2·2 = −1.</p>'}
+ ,nonsquare:{ru:'<p><b>Определение.</b> Матрица A размера m×n задаёт линейное отображение ℝⁿ → ℝᵐ. Всегда rank A ≤ min(m, n). При m &lt; n ядро нетривиально: dim Ker A ≥ n − m. При m &gt; n образ не может быть всем ℝᵐ. Произведение A·B определено, если число столбцов A равно числу строк B.</p><p><b>Пример.</b> {{1,0;0,1;1,1}}·(x, y) = (x, y, x + y): плоскость ℝ² ложится в 3D как плоскость z = x + y. А {{1,0,0;0,1,0}} — проекция (x, y, z) ↦ (x, y), её ядро — ось z.</p>',
+  en:'<p><b>Definition.</b> An m×n matrix A defines a linear map ℝⁿ → ℝᵐ. Always rank A ≤ min(m, n). When m &lt; n the kernel is nontrivial: dim Ker A ≥ n − m. When m &gt; n the image can’t be all of ℝᵐ. The product A·B is defined when the number of columns of A equals the number of rows of B.</p><p><b>Example.</b> {{1,0;0,1;1,1}}·(x, y) = (x, y, x + y): the plane ℝ² sits in 3D as the plane z = x + y. And {{1,0,0;0,1,0}} is the projection (x, y, z) ↦ (x, y), whose kernel is the z-axis.</p>'}
+ ,complexeig:{ru:'<p><b>Определение.</b> Если у вещественной матрицы 2×2 tr² − 4·det &lt; 0, то её собственные значения λ = a ± bi, где a = tr/2, b = √(4·det − tr²)/2, и |λ|² = det A. Такая матрица подобна {{a,−b;b,a}} = r·{{cos φ,−sin φ;sin φ,cos φ}}, где r = |λ|, φ = arg λ: в подходящем базисе это поворот на φ с растяжением в r раз.</p><p><b>Пример.</b> A = {{1,−1;1,1}}: tr = 2, det = 2, λ = 1 ± i. |λ| = √2, arg λ = 45°: поворот на 45° и растяжение в √2 раз.</p>',
+  en:'<p><b>Definition.</b> If a real 2×2 matrix has tr² − 4·det &lt; 0, its eigenvalues are λ = a ± bi with a = tr/2, b = √(4·det − tr²)/2, and |λ|² = det A. Such a matrix is similar to {{a,−b;b,a}} = r·{{cos φ,−sin φ;sin φ,cos φ}}, where r = |λ| and φ = arg λ: in a suitable basis it is a rotation by φ combined with scaling by r.</p><p><b>Example.</b> A = {{1,−1;1,1}}: tr = 2, det = 2, λ = 1 ± i. |λ| = √2, arg λ = 45°: a 45° rotation with scaling by √2.</p>'}
+ ,symmetric:{ru:'<p><b>Определение.</b> Матрица A симметрична, если Aᵀ = A, то есть aᵢⱼ = aⱼᵢ. Спектральная теорема: у вещественной симметричной матрицы все собственные значения вещественны и есть ортонормированный базис из собственных векторов, то есть <span class="m">A = Q·D·Qᵀ</span>, где Q ортогональна, а D диагональна.</p><p><b>Пример.</b> A = {{2,1;1,2}}: λ₁ = 3 с вектором (1, 1), λ₂ = 1 с вектором (−1, 1). Векторы перпендикулярны: (1, 1)·(−1, 1) = 0.</p>',
+  en:'<p><b>Definition.</b> A is symmetric if Aᵀ = A, that is, aᵢⱼ = aⱼᵢ. Spectral theorem: a real symmetric matrix has only real eigenvalues and an orthonormal basis of eigenvectors, so <span class="m">A = Q·D·Qᵀ</span> with Q orthogonal and D diagonal.</p><p><b>Example.</b> A = {{2,1;1,2}}: λ₁ = 3 with vector (1, 1), λ₂ = 1 with vector (−1, 1). The vectors are perpendicular: (1, 1)·(−1, 1) = 0.</p>'}
+ ,abstract:{ru:'<p><b>Определение.</b> Векторное пространство над ℝ — множество V с операциями сложения и умножения на число, для которых выполнены аксиомы: сложение коммутативно и ассоциативно, есть нулевой элемент и противоположные элементы, 1·v = v, (ab)v = a(bv), a(u + v) = au + av, (a + b)v = av + bv.</p><p><b>Пример.</b> Многочлены степени ≤ 2 с базисом 1, x, x²: многочлен 3 + 2x − x² имеет координаты (3, 2, −1). Производная переводит (c₀, c₁, c₂) в (c₁, 2c₂, 0), то есть задаётся матрицей {{0,1,0;0,0,2;0,0,0}}. Её ядро — константы, ранг равен 2.</p>',
+  en:'<p><b>Definition.</b> A vector space over ℝ is a set V with addition and scalar multiplication satisfying the axioms: addition is commutative and associative, there is a zero element and additive inverses, 1·v = v, (ab)v = a(bv), a(u + v) = au + av, (a + b)v = av + bv.</p><p><b>Example.</b> Polynomials of degree ≤ 2 with basis 1, x, x²: the polynomial 3 + 2x − x² has coordinates (3, 2, −1). The derivative sends (c₀, c₁, c₂) to (c₁, 2c₂, 0), so its matrix is {{0,1,0;0,0,2;0,0,0}}. Its kernel is the constants, and its rank is 2.</p>'}
+ ,subspace:{ru:'<p><b>Определение.</b> Непустое подмножество U векторного пространства V — подпространство, если оно замкнуто относительно сложения и умножения на число: из u, w ∈ U следует u + w ∈ U и c·u ∈ U для любого c. Отсюда 0 ∈ U. Подпространство само является векторным пространством, у него есть базис и размерность.</p><p><b>Пример.</b> U = {(x, y) : y = 2x} — подпространство ℝ²: (a, 2a) + (b, 2b) = (a + b, 2(a + b)) ∈ U и c·(a, 2a) = (ca, 2ca) ∈ U. А {(x, y) : y = 2x + 1} — нет: в нём нет нулевого вектора.</p>',
+  en:'<p><b>Definition.</b> A nonempty subset U of a vector space V is a subspace if it is closed under addition and scalar multiplication: u, w ∈ U implies u + w ∈ U and c·u ∈ U for every c. Hence 0 ∈ U. A subspace is itself a vector space, with a basis and a dimension.</p><p><b>Example.</b> U = {(x, y) : y = 2x} is a subspace of ℝ²: (a, 2a) + (b, 2b) = (a + b, 2(a + b)) ∈ U and c·(a, 2a) = (ca, 2ca) ∈ U. But {(x, y) : y = 2x + 1} is not: it lacks the zero vector.</p>'}
+ ,cramer:{ru:'<p><b>Теорема.</b> Если A — квадратная матрица n×n и det A ≠ 0, то система A·x = b имеет единственное решение <span class="m">xᵢ = det Aᵢ / det A</span>, где Aᵢ — матрица A, в которой i-й столбец заменён на b.</p><p><b>Пример.</b> 2x + y = 5, x + 3y = 5. det {{2,1;1,3}} = 5. Тогда x = det {{5,1;5,3}} / 5 = (15 − 5)/5 = 2, y = det {{2,5;1,5}} / 5 = (10 − 5)/5 = 1. Проверка: 2·2 + 1 = 5, 2 + 3·1 = 5.</p>',
+  en:'<p><b>Theorem.</b> If A is a square n×n matrix with det A ≠ 0, the system A·x = b has the unique solution <span class="m">xᵢ = det Aᵢ / det A</span>, where Aᵢ is A with its i-th column replaced by b.</p><p><b>Example.</b> 2x + y = 5, x + 3y = 5. det {{2,1;1,3}} = 5. Then x = det {{5,1;5,3}} / 5 = (15 − 5)/5 = 2 and y = det {{2,5;1,5}} / 5 = (10 − 5)/5 = 1. Check: 2·2 + 1 = 5, 2 + 3·1 = 5.</p>'}
+};
+const SUBM={'ᵢ':'i','ⱼ':'j','ₖ':'k','ₙ':'n','ₘ':'m'};
+const mathify=h=>h.replace(/[ᵢⱼₖₙₘ₀₁₂₃₄₅₆₇₈₉]*[ᵢⱼₖₙₘ][ᵢⱼₖₙₘ₀₁₂₃₄₅₆₇₈₉]*/g,m=>`<sub>${[...m].map(c=>SUBM[c]||String('₀₁₂₃₄₅₆₇₈₉'.indexOf(c))).join('')}</sub>`).replace(/\{\{([^}]+)\}\}/g,(m,b)=>{const rows=b.split(';').map(r=>r.split(',').map(x=>x.trim()));return`<span class="mini mm" style="grid-template-columns:repeat(${rows[0].length},auto)">${rows.flat().map(x=>`<span>${x}</span>`).join('')}</span>`});
+
+function gTabs(id,html){const f=FORMAL[id];if(!f)return html;const L=T(),ft=P.gTab==='f';
+  return `<div class="seg gtabs"><button data-tab="i" class="${ft?'':'on'}">${L.tabI}</button><button data-tab="f" class="${ft?'on':''}">${L.tabF}</button></div><div class="pane" data-pane="i"${ft?' hidden':''}>${html}</div><div class="pane" data-pane="f"${ft?'':' hidden'}>${mathify(f[P.lang]||f.ru)}</div>`}
+const DEMOS={
+  vector:()=>{go2();sh('vec');sh('decomp',false);S.d2.v=[3,2];setMatrix(I(2),'I')},
+  lincomb:()=>{go2();sh('vec');sh('decomp');S.d2.v=[3,2];setMatrix(I(2),'I')},
+  basis:()=>{go2();sh('vec');sh('decomp');S.d2.v=[1,1];animateTo([2,-1,1,1],'newbasis',{compose:false})},
+  span:()=>{go2();sh('span');sh('kernel',false);animateTo([1,2,0.5,1],'dep',{compose:false})},
+  dependence:()=>{go2();sh('span');animateTo([1,2,0.5,1],'dep',{compose:false})},
+  transform:()=>{go2();animateTo([1,1,0,1],'shear',{compose:false})},
+  matrix:()=>{go2();sh('vec');sh('decomp');S.d2.v=[2,1];animateTo([1,-1,1,2],'A',{compose:false})},
+  composition:()=>{go2();animateTo(rot2(Math.PI/2),'rot90',{compose:false,then:()=>animateTo([1,1,0,1],'shear',{compose:true})})},
+  det:()=>{go2();sh('det');animateTo([3,0,0,2],'stretch',{compose:false})},
+  volume:()=>{if(S.mode!=='3d')setMode('3d');sh('det');animateTo([2,0,0,0,1,0,0,0,1.5],'stretch',{compose:false})},
+  inverse:()=>{go2();const A=[2,1,1,1];animateTo(A,'A',{compose:false,then:()=>{const d=S.d2;d.from=d.to.slice();d.to=I(2);d.hist.push('A⁻¹');play()}})},
+  rank:()=>{go2();sh('span');animateTo([1,0,0,0],'proj',{compose:false})},
+  colspace:()=>{go2();sh('span');animateTo([1,2,0.5,1],'singular',{compose:false})},
+  kernel:()=>{go2();sh('kernel');sh('vec');sh('decomp',false);S.d2.v=[-2,1];animateTo([1,2,0.5,1],'singular',{compose:false})},
+  eigen:()=>{go2();sh('eigen');animateTo([3,1,0,2],'eig',{compose:false})},
+  charpoly:()=>{go2();sh('eigen');animateTo([3,1,0,2],'eig',{compose:false})},
+  trace:()=>{go2();sh('eigen');animateTo([3,1,0,2],'eig',{compose:false})},
+  cramer:()=>{go2();sh('vec');sh('decomp',false);syncToggles();S.d2.v=[2,1];S.cr=1;syncTools();showPanel('vector');animateTo([2,1,1,3],'A',{compose:false})},
+  changebasis:()=>{go2();S.cob.on=true;setMatrix([3,1,0,2],'eig');S.cob.b1=[1,0];S.cob.b2=[-1,1];syncTools();showPanel('cob')},
+  nonsquare:()=>{if(S.mode!=='3d')setMode('3d');setShape(3,2,true)},
+  orthogonal:()=>{go2();animateTo(rot2(Math.PI/6),'rot30',{compose:false})},
+  complexeig:()=>{go2();sh('eigen');animateTo([1,-1,1,1],'spiral',{compose:false})},
+  symmetric:()=>{go2();sh('eigen');animateTo([2,1,1,2],'A',{compose:false})},
+  systems:()=>{go2();sh('vec');sh('decomp',false);syncToggles();S.d2.v=[2,1];S.cr=0;syncTools();showPanel('vector');animateTo([1,1,1,-1],'A',{compose:false})},
+  transpose:()=>{go2();sh('eigen');animateTo([1,2,0,1],'A',{compose:false,then:()=>$('#bT').click()})},
+  identity:()=>{go2();const d=S.d2;d.from=cur();d.to=I(2);d.hist=[];play()}
+};
+const REL={subspace:['span','colspace','kernel','abstract'],cramer:['systems','det','inverse'],dot:['transpose','orthogonal','cross'],cross:['dot','volume'],orthogonal:['transpose','dot','det'],systems:['cramer','gauss','colspace','kernel'],gauss:['rank','systems','inverse'],nonsquare:['matrix','rank','kernel'],complexeig:['eigen','charpoly'],symmetric:['transpose','eigen','orthogonal'],abstract:['basis','transform','eigen'],vector:['lincomb','basis'],lincomb:['span','basis'],basis:['lincomb','changebasis'],span:['dependence','colspace'],dependence:['span','det'],transform:['matrix','composition'],matrix:['transform','identity','transpose'],identity:['matrix','inverse'],transpose:['matrix','det'],composition:['matrix','inverse'],det:['volume','inverse','rank'],volume:['det'],inverse:['identity','det'],rank:['colspace','kernel'],colspace:['span','rank'],kernel:['rank','eigen'],eigen:['charpoly','trace','changebasis'],charpoly:['eigen','det'],trace:['eigen','det'],changebasis:['basis','eigen']};
+const termTitle=id=>{const t=TERMS.find(x=>x.id===id);return t?(t[P.lang]||t.ru)[0]:id};
+const R30=(()=>{const c=Math.cos(Math.PI/6),s=Math.sin(Math.PI/6);return{c,s}})();
+const SPIRAL=(()=>{const pts=[];let p=[2.3,0];const c=Math.cos(Math.PI/7)*0.93,s=Math.sin(Math.PI/7)*0.93;for(let k=0;k<26;k++){pts.push(p);p=[c*p[0]-s*p[1],s*p[0]+c*p[1]]}return pts})();
+const ILL={
+ vector:{o:[45,108],s:26,it:[['grid'],['seg',[0,0],[3,0],'i',1],['seg',[3,0],[3,2],'j',1],['v',3,2,'vec','v'],['t',1.5,-0.45,'3','i'],['t',3.4,1,'2','j']]},
+ lincomb:{o:[55,112],s:26,it:[['grid'],['v',2,0,'i'],['v',2,3,'j',null,2,0],['v',2,3,'vec'],['t',1,-0.45,'2î','i'],['t',2.5,1.5,'3ĵ','j'],['t',0.45,2,'v','vec']]},
+ basis:{o:[45,92],s:22,it:[['tg',[1,1,1,-1],'grid',.6],['v',2,2,'i',null,0,0,1,.45],['v',3,1,'j',null,2,2,1,.55],['v',1,1,'i','b₁'],['v',1,-1,'j','b₂'],['v',3,1,'vec','v'],['T',150,14,'v = 2·b₁ + 1·b₂','vec',11]]},
+ span:{o:[100,72],s:22,it:[['grid'],['l',1,2,'span',0,4,.45],['v',-0.8,-1.6,'vec',null,0,0,0,.55],['v',1,2,'vec','v'],['T',160,22,'span(v)','span',12]]},
+ dependence:{o:[0,0],s:1,it:[['mini',30,92,26,[1,2,0.5,1]],['mini',122,92,30,[1.3,0.4,0.3,1.1]],['T',55,120,'det = 0','kernel',12],['T',150,120,'det ≠ 0','span',12]]},
+ transform:{o:[90,85],s:24,it:[['tg',[1,1,0,1]],['p',[[0,0],[1,0],[2,1],[1,1]],'det',.25],['v',1,0,'i','î'],['v',1,1,'j','ĵ']]},
+ matrix:{o:[100,90],s:26,it:[['tg',[1,-1,1,1]],['v',1,1,'i','(1, 1)'],['v',-1,1,'j','(−1, 1)']]},
+ identity:{o:[70,100],s:32,it:[['grid'],['p',[[0,0],[1,0],[1,1],[0,1]],'det',.25],['v',1,0,'i','î'],['v',0,1,'j','ĵ'],['T',150,32,'I·v = v','axis',13]]},
+ transpose:{o:[0,0],s:1,it:[['raw','<path d="M18 34 h-5 v62 h5 M76 34 h5 v62 h-5 M124 34 h-5 v62 h5 M182 34 h5 v62 h-5" fill="none" stroke="var(--s-axis)" stroke-width="2"/><line x1="18" y1="38" x2="76" y2="92" stroke="var(--s-axis)" stroke-opacity=".35" stroke-dasharray="3 3"/><line x1="124" y1="38" x2="182" y2="92" stroke="var(--s-axis)" stroke-opacity=".35" stroke-dasharray="3 3"/><path d="M62 42 Q66 66 34 84" fill="none" stroke="var(--s-vec)" stroke-width="1.2" stroke-dasharray="2 3"/>'],['T',32,50,'1','axis',18],['T',62,50,'2','i',18],['T',32,80,'3','j',18],['T',62,80,'4','axis',18],['T',100,64,'→','axis',18],['T',138,50,'1','axis',18],['T',168,50,'3','j',18],['T',138,80,'2','i',18],['T',168,80,'4','axis',18],['T',47,118,'A','axis',14],['T',153,118,'Aᵀ','axis',14]]},
+ composition:{o:[0,0],s:1,it:[['mini',16,86,26,[1,0,0,1]],['A',50,70,72,70,'axis','B'],['mini',108,86,26,[0,-1,1,0]],['A',116,70,138,70,'axis','A'],['mini',168,86,26,[1,-1,1,0]],['T',29,112,'I','axis',13],['T',95,112,'B','axis',13],['T',168,112,'A·B','axis',13]]},
+ det:{o:[50,108],s:24,it:[['tg',[2,1,0,1.5]],['p',[[0,0],[2,0],[3,1.5],[1,1.5]],'det',.3],['v',2,0,'i'],['v',1,1.5,'j'],['t',1.5,.75,'det = 3','det']]},
+ volume:{o:[55,118],s:24,it:[['l3',[0,0,0],[3.5,0,0],'axis',0,.3],['l3',[0,0,0],[0,3,0],'axis',0,.3],['l3',[0,0,0],[0,0,3.6],'axis',0,.3],
+   ['p3',[[0,0,0],[2,0,0],[2,0,1.5],[0,0,1.5]],'det',.18],['p3',[[2,0,0],[2,1.4,0],[2,1.4,1.5],[2,0,1.5]],'det',.18],['p3',[[0,0,1.5],[2,0,1.5],[2,1.4,1.5],[0,1.4,1.5]],'det',.18],
+   ['v3',2,0,0,'i','î'],['v3',0,1.4,0,'j','ĵ'],['v3',0,0,1.5,'k','k̂'],['T',160,24,'V = |det|','det',12]]},
+ inverse:{o:[0,0],s:1,it:[['mini',14,92,22,[1,0,0,1]],['A',42,66,62,66,'axis','A'],['mini',70,100,20,[2,1,1,1]],['A',136,66,156,66,'axis','A⁻¹'],['mini',166,92,22,[1,0,0,1]],['T',25,118,'I','axis',13],['T',100,118,'A','axis',13],['T',177,118,'I','axis',13],['T',100,20,'A⁻¹·A = I','axis',13]]},
+ rank:{o:[95,78],s:22,it:[['grid'],['tg',[1,2,0.5,1]],['l',2,1,'span',0,4,.5],['v',1,0.5,'i','î'],['v',2,1,'j','ĵ'],['T',160,124,'rank = 1','span',12]]},
+ colspace:{o:[95,78],s:22,it:[['grid'],['l',2,1,'span',0,4,.45],['pt',2,1,'vec','b ✓',0,-12],['pt',-1.5,1.5,'kernel','b ✗',0,-12],['T',160,124,'Im A','span',12]]},
+ kernel:{o:[100,72],s:22,it:[['grid'],['l',-2,1,'kernel',1,2,.85],['v',-2,1,'vec','v'],['pt',0,0,'vec'],['T',155,124,'A·v = 0','kernel',12]]},
+ eigen:{o:[95,85],s:22,it:[['grid'],['l',1,0,'eigen',1,1.5,.7],['l',-1,1,'eigen',1,1.5,.7],['v',-2,2,'eigen','A·v',0,0,0,.75],['v',-1,1,'vec','v'],['v',3,0,'eigen','A·u',0,0,0,.75],['v',1,0,'vec','u']]},
+ charpoly:{o:[25,96],s:30,it:[['seg',[-1,0],[6,0],'axis',0,1,.45],['seg',[0,-1],[0,4],'axis',0,1,.45],['fn',x=>x*x-5*x+6,0.75,4.3,'eigen'],['pt',2,0,'vec','2',0,13],['pt',3,0,'vec','3',0,13],['T',150,22,'λ² − 5λ + 6','eigen',12]]},
+ trace:{o:[0,0],s:1,it:[['raw','<path d="M62 34 h-7 v62 h7 M138 34 h7 v62 h-7" fill="none" stroke="var(--s-axis)" stroke-width="2"/><circle cx="80" cy="50" r="14" fill="none" stroke="var(--s-det)" stroke-width="1.6"/><circle cx="120" cy="80" r="14" fill="none" stroke="var(--s-det)" stroke-width="1.6"/>'],['T',80,50,'3','det',20],['T',120,50,'1','axis',20],['T',80,80,'0','axis',20],['T',120,80,'2','det',20],['T',100,120,'tr = 3 + 2 = 5','det',13]]},
+ changebasis:{o:[100,80],s:24,it:[['grid'],['tg',[1,-1,0,1],'eigen',.55],['v',1,0,'i','b₁'],['v',-1,1,'j','b₂'],['T',160,124,'P⁻¹AP','eigen',12]]},
+ dot:{o:[30,108],s:26,it:[['grid'],['l',3,1,'axis',1,1,.3],['seg',[1,2],[1.5,0.5],'axis',1,1.2,.75],['v',1.5,0.5,'vec',null],['v',3,1,'i','v'],['v',1,2,'j','w'],['T',150,22,'v·w = 5','vec',12]]},
+ cross:{o:[60,112],s:24,it:[['p3',[[0,0,0],[2.4,0,0],[2.4,1.8,0],[0,1.8,0]],'det',.22],['v3',2.4,0,0,'i','v'],['v3',0,1.8,0,'j','w'],['v3',0,0,3,'vec','v × w']]},
+ orthogonal:{o:[90,88],s:32,it:[['tg',[R30.c,-R30.s,R30.s,R30.c]],['p',[[0,0],[R30.c,R30.s],[R30.c-R30.s,R30.s+R30.c],[-R30.s,R30.c]],'det',.22],['v',R30.c,R30.s,'i','î'],['v',-R30.s,R30.c,'j','ĵ'],['T',160,126,'QᵀQ = I','det',12]]},
+ systems:{o:[40,105],s:24,it:[['grid'],['L',0,3,1,-1,'i',0,2,.9],['L',1,0,1,1,'j',0,2,.9],['pt',2,1,'vec','(2, 1)',16,-10],['T',95,116,'x + y = 3','i',11],['T',95,130,'x − y = 1','j',11]]},
+ gauss:{o:[0,0],s:1,it:[['raw','<path d="M24 32 h-5 v50 h5 M88 32 h5 v50 h-5 M124 32 h-5 v50 h5 M188 32 h5 v50 h-5" fill="none" stroke="var(--s-axis)" stroke-width="1.6"/><line x1="66" y1="34" x2="66" y2="80" stroke="var(--s-axis)" stroke-opacity=".5"/><line x1="166" y1="34" x2="166" y2="80" stroke="var(--s-axis)" stroke-opacity=".5"/><circle cx="133" cy="45" r="10" fill="none" stroke="var(--s-vec)" stroke-width="1.5"/><circle cx="153" cy="70" r="10" fill="none" stroke="var(--s-vec)" stroke-width="1.5"/><path d="M122 58 h22 v24 h46" fill="none" stroke="var(--s-vec)" stroke-dasharray="3 3" stroke-opacity=".7"/>'],
+   ['T',33,45,'1','axis',15],['T',53,45,'2','axis',15],['T',78,45,'3','axis',15],['T',33,70,'2','axis',15],['T',53,70,'5','axis',15],['T',78,70,'8','axis',15],['T',104,57,'→','vec',15],
+   ['T',133,45,'1','axis',15],['T',153,45,'2','axis',15],['T',178,45,'3','axis',15],['T',133,70,'0','axis',15],['T',153,70,'1','axis',15],['T',178,70,'2','axis',15],['T',100,116,'y = 2,  x = −1','vec',13]]},
+ nonsquare:{o:[45,112],s:24,it:[['l3',[0,0,0],[3.5,0,0],'axis',0,.3],['l3',[0,0,0],[0,3,0],'axis',0,.3],['l3',[0,0,0],[0,0,3],'axis',0,.3],['p3',[[0,0,0],[2,0,0.9],[2,2,1.8],[0,2,0.9]],'span',.2],['v3',2,0,0.9,'i','A·î'],['v3',0,2,0.9,'j','A·ĵ'],['T',165,126,'ℝ² → ℝ³','axis',12]]},
+ complexeig:{o:[95,72],s:24,it:[['grid'],['pl',SPIRAL,'vec',1.8,.85],['pt',SPIRAL[0][0],SPIRAL[0][1],'vec'],['v',SPIRAL[1][0],SPIRAL[1][1],'eigen',null],['v',SPIRAL[0][0],SPIRAL[0][1],'i',null],['T',160,126,'|λ| < 1','vec',12]]},
+ symmetric:{o:[100,72],s:19,it:[['grid'],['e',[2,1,1,2],'det'],['l',1,1,'eigen',1,1.4,.7],['l',-1,1,'eigen',1,1.4,.7],['v',2.12,2.12,'eigen','λ = 3'],['v',-0.71,0.71,'eigen','λ = 1']]},
+ subspace:{o:[100,72],s:22,it:[['grid'],['l',1,2,'span',0,3,.6],['L',0,1,1,2,'kernel',1,1.6,.75],['pt',0,0,'span'],['pt',0,1,'kernel'],['T',150,16,'y = 2x  ✓','span',11],['T',150,130,'y = 2x + 1  ✗','kernel',11]]},
+ cramer:{o:[50,108],s:24,it:[['grid'],['p',[[0,0],[2,1],[2,2],[0,1]],'det',.3],['v',0,1,'j','ĵ'],['v',2,1,'vec','x'],['t',1,1,'x₁','det',13],['T',148,18,'x₁ = det A₁ / det A','det',11]]},
+ abstract:{o:[12,64],s:20,it:[['seg',[-1,0],[10,0],'axis',0,1,.4],['fn',x=>1.2*Math.sin(x),0,8.8,'i'],['fn',x=>0.28*x-1,0,8.8,'j'],['fn',x=>1.2*Math.sin(x)+0.28*x-1,0,8.8,'vec'],['T',40,128,'f','i',13],['T',80,128,'g','j',13],['T',130,128,'f + g','vec',13]]}
+};
+function illSvg(id){const sp=ILL[id];if(!sp)return'';const W=200,H=140,o=sp.o,s=sp.s;
+  const X=x=>o[0]+x*s,Y=y=>o[1]-y*s,c=k=>`var(--s-${k})`,F=v=>(+v).toFixed(1);let out='';
+  const line=(x1,y1,x2,y2,col,w=1.5,op=1,dash)=>`<line x1="${F(x1)}" y1="${F(y1)}" x2="${F(x2)}" y2="${F(y2)}" stroke="${c(col)}" stroke-width="${w}" stroke-opacity="${op}"${dash?' stroke-dasharray="4 3"':''}/>`;
+  const arr=(x1,y1,x2,y2,col,w=2.2,op=1,dash)=>{const dx=x2-x1,dy=y2-y1,L=Math.hypot(dx,dy);if(L<1)return'';const ux=dx/L,uy=dy/L,h=Math.min(8,L*.45),hw=h*.55;
+    return line(x1,y1,x2-ux*h*.8,y2-uy*h*.8,col,w,op,dash)+`<polygon points="${F(x2)},${F(y2)} ${F(x2-ux*h-uy*hw)},${F(y2-uy*h+ux*hw)} ${F(x2-ux*h+uy*hw)},${F(y2-uy*h-ux*hw)}" fill="${c(col)}" fill-opacity="${op}"/>`};
+  const tx=(x,y,t,col,sz=12)=>{const hat=t.includes('\u0302'),tt=t.split('\u0302').join('');return `<text x="${F(x)}" y="${F(y)}" fill="${c(col)}" font-size="${sz}" font-style="italic" font-family="'Source Serif 4',Georgia,serif" text-anchor="middle" dominant-baseline="middle" paint-order="stroke" stroke="var(--s-bg)" stroke-width="3" stroke-linejoin="round">${tt}</text>`+(hat?`<path d="M${F(x+sz*.08-sz*.17)} ${F(y-sz*.5)} L${F(x+sz*.08)} ${F(y-sz*.66)} L${F(x+sz*.08+sz*.17)} ${F(y-sz*.5)}" fill="none" stroke="${c(col)}" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>`:'')};
+  const lab=(x0,y0,x1,y1,t,col)=>{const dx=x1-x0,dy=y1-y0,L=Math.hypot(dx,dy)||1;return tx(x1+dx/L*12,y1+dy/L*12,t,col)};
+  const P3=(x,y,z)=>[X(x+y*.55),Y(z+y*.4)];
+  const pts=a=>a.map(p=>F(X(p[0]))+','+F(Y(p[1]))).join(' ');
+  for(const it of sp.it){const k=it[0],a=it.slice(1);
+    if(k==='grid'){for(let i=-12;i<=12;i++){out+=line(X(i),0,X(i),H,'bgGrid',1)+line(0,Y(i),W,Y(i),'bgGrid',1)}out+=line(0,Y(0),W,Y(0),'axis',1,.35)+line(X(0),0,X(0),H,'axis',1,.35)}
+    else if(k==='tg'){const[M,col='grid',op=.75]=a;for(let i=-10;i<=10;i++){const p=ap(M,[i,-10],2),q=ap(M,[i,10],2),r=ap(M,[-10,i],2),t=ap(M,[10,i],2);const cc=i?col:'axis',w=i?1:1.4,oo=i?op:.85;out+=line(X(p[0]),Y(p[1]),X(q[0]),Y(q[1]),cc,w,oo)+line(X(r[0]),Y(r[1]),X(t[0]),Y(t[1]),cc,w,oo)}}
+    else if(k==='l'){const[dx,dy,col,dash,w=2,op=.8]=a;out+=line(X(-30*dx),Y(-30*dy),X(30*dx),Y(30*dy),col,w,op,dash)}
+    else if(k==='L'){const[px,py,dx,dy,col,dash,w=2,op=.85]=a;out+=line(X(px-30*dx),Y(py-30*dy),X(px+30*dx),Y(py+30*dy),col,w,op,dash)}
+    else if(k==='seg'){const[p,q,col,dash,w=1.5,op=.8]=a;out+=line(X(p[0]),Y(p[1]),X(q[0]),Y(q[1]),col,w,op,dash)}
+    else if(k==='v'){const[x,y,col,t,x0=0,y0=0,dash,op=1]=a;out+=arr(X(x0),Y(y0),X(x),Y(y),col,2.2,op,dash);if(t)out+=lab(X(x0),Y(y0),X(x),Y(y),t,col)}
+    else if(k==='p'){const[ps,col,op=.3]=a;out+=`<polygon points="${pts(ps)}" fill="${c(col)}" fill-opacity="${op}" stroke="${c(col)}" stroke-width="1.5"/>`}
+    else if(k==='pl'){const[ps,col,w=1.8,op=1]=a;out+=`<polyline points="${pts(ps)}" fill="none" stroke="${c(col)}" stroke-width="${w}" stroke-opacity="${op}" stroke-linejoin="round"/>`}
+    else if(k==='pt'){const[x,y,col,t,dx=0,dy=-11]=a;out+=`<circle cx="${F(X(x))}" cy="${F(Y(y))}" r="3.2" fill="${c(col)}"/>`+(t?tx(X(x)+dx,Y(y)+dy,t,col,11):'')}
+    else if(k==='t'){const[x,y,t,col,sz]=a;out+=tx(X(x),Y(y),t,col,sz)}
+    else if(k==='T'){const[x,y,t,col,sz]=a;out+=tx(x,y,t,col,sz)}
+    else if(k==='fn'){const[f,x0,x1,col]=a;const ps=[];for(let i=0;i<=80;i++){const x=x0+(x1-x0)*i/80;ps.push([x,f(x)])}out+=`<polyline points="${pts(ps)}" fill="none" stroke="${c(col)}" stroke-width="2"/>`}
+    else if(k==='e'){const[M,col]=a;const ps=[];for(let i=0;i<64;i++){const t=i/64*2*Math.PI;ps.push(ap(M,[Math.cos(t),Math.sin(t)],2))}out+=`<polygon points="${pts(ps)}" fill="${c(col)}" fill-opacity=".15" stroke="${c(col)}" stroke-width="1.8"/>`}
+    else if(k==='v3'){const[x,y,z,col,t]=a;const p=P3(0,0,0),q=P3(x,y,z);out+=arr(p[0],p[1],q[0],q[1],col);if(t)out+=lab(p[0],p[1],q[0],q[1],t,col)}
+    else if(k==='p3'){const[ps,col,op=.25]=a;out+=`<polygon points="${ps.map(p=>P3(...p).map(F).join(',')).join(' ')}" fill="${c(col)}" fill-opacity="${op}" stroke="${c(col)}" stroke-width="1.3" stroke-opacity=".8"/>`}
+    else if(k==='l3'){const[p,q,col,dash,op=.5]=a;const A=P3(...p),B=P3(...q);out+=line(A[0],A[1],B[0],B[1],col,1.2,op,dash)}
+    else if(k==='mini'){const[px,py,sc,M,col='det']=a;const T2=(x,y)=>{const p=ap(M,[x,y],2);return[px+p[0]*sc,py-p[1]*sc]};const q=[[0,0],[1,0],[1,1],[0,1]].map(v=>T2(...v)),o0=q[0],i1=T2(1,0),j1=T2(0,1);
+      out+=`<polygon points="${q.map(p=>F(p[0])+','+F(p[1])).join(' ')}" fill="${c(col)}" fill-opacity=".28" stroke="${c(col)}" stroke-width="1.4"/>`+arr(o0[0],o0[1],i1[0],i1[1],'i',2)+arr(o0[0],o0[1],j1[0],j1[1],'j',2)}
+    else if(k==='A'){const[x1,y1,x2,y2,col,t]=a;out+=arr(x1,y1,x2,y2,col,1.6,.8);if(t)out+=tx((x1+x2)/2,y1-11,t,col,12)}
+    else if(k==='raw')out+=a[0];
+  }
+  return `<svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false"><rect width="${W}" height="${H}" fill="var(--s-bg)"/>${out}</svg>`}
+const CHAP=[{ru:'Векторы',en:'Vectors',ids:['vector','lincomb','basis','span','dependence']},
+ {ru:'Преобразования и матрицы',en:'Transformations and matrices',ids:['transform','matrix','identity','transpose','composition']},
+ {ru:'Определитель',en:'The determinant',ids:['det','volume']},
+ {ru:'Обратная матрица, ранг и ядро',en:'Inverse, rank and kernel',ids:['inverse','rank','subspace','colspace','kernel']},
+ {ru:'Смена базиса',en:'Change of basis',ids:['changebasis']},
+ {ru:'Собственные векторы',en:'Eigenvectors',ids:['eigen','charpoly','trace']},
+ {ru:'Ещё',en:'More',extra:true,ids:['dot','cross','orthogonal','systems','cramer','gauss','nonsquare','complexeig','symmetric','abstract']}];
+function termHtml(t,L){const x=t[P.lang]||t.ru,rd=!!P.read[t.id];
+  return `<details class="term${rd?' read':''}" id="g-${t.id}"><summary><span>${rd?'<b class="rd">✓</b>':''}${x[0]}</span><small>${x[1]}</small></summary><div class="tb">${ILL[t.id]?`<figure class="ill">${illSvg(t.id)}</figure>`:''}${gTabs(t.id,x[2])}${DEMOS[t.id]?`<button class="btn sm primary" data-demo="${t.id}">${L.showDemo}</button>`:''}${REL[t.id]?`<div class="rel">${L.seeAlso} ${REL[t.id].map(r=>`<button class="chip" data-term="${r}">${termTitle(r)}</button>`).join('')}</div>`:''}<div class="row" style="margin-top:.8rem"><button class="btn sm readbtn${rd?' on':''}" data-read="${t.id}">${rd?L.readDone:L.readMark}</button></div></div></details>`}
+function renderGloss(q=''){q=q.trim().toLowerCase();const L=T();if(!P.read||typeof P.read!=='object')P.read={};
+  const total=TERMS.length,done=TERMS.filter(t=>P.read[t.id]).length;
+  const match=t=>{if(!q)return true;const x=t[P.lang]||t.ru,f=FORMAL[t.id];return(x[0]+' '+x[1]+' '+x[2]+' '+(f?(f[P.lang]||f.ru):'')).replace(/<[^>]+>/g,'').toLowerCase().includes(q)};
+  let html=`<div class="prog"><span>${L.readOf(done,total)}</span><span class="bar"><i style="width:${Math.round(done/total*100)}%"></i></span>${done?`<button class="linkbtn" id="readReset">${L.readReset}</button>`:''}</div>`;
+  let any=false,num=0;
+  CHAP.forEach(ch=>{if(!ch.extra)num++;const ts=ch.ids.map(id=>TERMS.find(t=>t.id===id)).filter(Boolean).filter(match);if(!ts.length)return;any=true;
+    const r=ch.ids.filter(id=>P.read[id]).length;
+    html+=`<section class="chap"><h3>${ch.extra?'':num+'. '}${ch[P.lang]||ch.ru}<span class="cnt">${r} / ${ch.ids.length}</span></h3>${ts.map(t=>termHtml(t,L)).join('')}</section>`});
+  $('#gl').innerHTML=any?html:html+`<p class="note">${L.noFound}</p>`}
+function rerenderGloss(){const sh=$('#dGloss .sheet'),st=sh.scrollTop,open=[...document.querySelectorAll('#gl details[open]')].map(d=>d.id);renderGloss($('#gq').value);open.forEach(id=>{const e=document.getElementById(id);if(e)e.open=true});sh.scrollTop=st}
+$('#gq').oninput=e=>renderGloss(e.target.value);
+$('#gl').addEventListener('click',e=>{const rb=e.target.closest('[data-read]');if(rb){P.read[rb.dataset.read]=!P.read[rb.dataset.read];if(!P.read[rb.dataset.read])delete P.read[rb.dataset.read];save();rerenderGloss();return}
+  if(e.target.closest('#readReset')){P.read={};save();rerenderGloss()}});
+$('#gl').addEventListener('click',e=>{const tb=e.target.closest('[data-tab]');if(!tb)return;const box=tb.closest('.tb');P.gTab=tb.dataset.tab;
+  box.querySelectorAll('[data-tab]').forEach(x=>x.classList.toggle('on',x.dataset.tab===P.gTab));box.querySelectorAll('.pane').forEach(p=>{p.hidden=p.dataset.pane!==P.gTab});save()});
+$('#gl').addEventListener('click',e=>{const b=e.target.closest('[data-demo]');if(!b)return;closeDrawers();syncToggles();save();DEMOS[b.dataset.demo]()});
+function openDrawer(id){document.getElementById(id).classList.add('open')}
+function closeDrawers(){document.querySelectorAll('.drawer').forEach(d=>d.classList.remove('open'))}
+document.querySelectorAll('[data-close]').forEach(el=>el.onclick=closeDrawers);
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeDrawers()});
+/* ---------- экспорт ---------- */
+let DL=null,fmtMode='tex';
+const LOCAL=!window.claude;
+const canSave=()=>!!(DL||LOCAL);
+const wait=ms=>new Promise(r=>setTimeout(r,ms));
+function vidMime(){if(!window.MediaRecorder||!cv.captureStream)return null;for(const m of['video/webm;codecs=vp9','video/webm;codecs=vp8','video/webm','video/mp4'])if(MediaRecorder.isTypeSupported&&MediaRecorder.isTypeSupported(m))return m;return null}
+function updExport(){const L=T();$('#xPng').disabled=!canSave()||S.rec;$('#xVid').disabled=!canSave()||!vidMime()||S.rec;$('#xNote').textContent=S.rec?L.xRec:!canSave()?(S.dlTried?L.xNoDl:''):(!vidMime()?L.xNoVid:'')}
+function flash(msg,ms=3500){$('#xNote').textContent=msg;clearTimeout(flash.t);if(ms)flash.t=setTimeout(updExport,ms)}
+async function saveFile(name,data){const L=T();if(!DL){if(LOCAL){const u=URL.createObjectURL(data),a=document.createElement('a');a.href=u;a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),5000);flash(L.xSaved)}return}try{await DL.save({filename:name,data});flash(L.xSaved)}catch(e){const c=e&&e.code;if(c==='declined'){updExport();return}if(c==='unavailable'||c==='not_granted'||c==='capability_disabled'||c==='capability_removed'){DL=null;S.dlTried=true;updExport();return}flash(c==='rate_limited'?L.xBusy:L.xFail)}}
+function exportPng(){if(!canSave()||S.rec)return;S.stamp=$('#xStamp').checked;renderNow();cv.toBlob(b=>{S.stamp=false;req();if(b)saveFile(`linear-${S.mode}.png`,b)},'image/png')}
+async function exportVideo(){
+  const m=vidMime();if(!canSave()||!m||S.rec)return;S.rec=true;S.stamp=$('#xStamp').checked;updExport();
+  const keep=ms=>new Promise(r=>{const t0=performance.now();const f=()=>{renderNow();renderOverlay();if(performance.now()-t0<ms)requestAnimationFrame(f);else r()};f()});
+  const chunks=[];let rec;
+  try{const stream=cv.captureStream(60);rec=new MediaRecorder(stream,{mimeType:m,videoBitsPerSecond:8e6});rec.ondataavailable=e=>{if(e.data&&e.data.size)chunks.push(e.data)};
+    const stopped=new Promise(r=>{rec.onstop=r});D().t=0;S.anim=null;rec.start(100);await keep(500);
+    play();await new Promise(r=>{const f=()=>S.anim?requestAnimationFrame(f):r();f()});await keep(900);rec.stop();await stopped;
+  }catch(err){S.rec=false;S.stamp=false;req();flash(T().xFail);return}
+  S.rec=false;S.stamp=false;req();updExport();
+  const blob=new Blob(chunks,{type:m});if(blob.size)saveFile(`linear-${S.mode}.${m.startsWith('video/mp4')?'mp4':'webm'}`,blob);else flash(T().xFail);
+}
+function renderTex(){const d=D(),n=N(),A=d.to,a=x=>fmt(x,4).replace('−','-'),rows=[],[rr,cc]=SH();for(let i=0;i<rr;i++)rows.push(A.slice(i*n,i*n+cc).map(a));
+  $('#xTex').value=fmtMode==='tex'?'\\begin{pmatrix}\n'+rows.map(r=>'  '+r.join(' & ')).join(' \\\\\n')+'\n\\end{pmatrix}':fmtMode==='np'?'np.array([\n'+rows.map(r=>'    ['+r.join(', ')+']').join(',\n')+'\n])':rows.map(r=>r.join('\t')).join('\n')}
+async function copyTex(){const ta=$('#xTex'),L=T();let ok=false;try{await navigator.clipboard.writeText(ta.value);ok=true}catch(e){}if(!ok){ta.focus();ta.select();try{ok=document.execCommand('copy')}catch(e){}}flash(ok?L.xCopied:L.xSelect)}
+$('#xPng').onclick=exportPng;$('#xVid').onclick=exportVideo;$('#xCopy').onclick=copyTex;
+document.querySelectorAll('#xFmt button').forEach(b=>b.onclick=()=>{fmtMode=b.dataset.f;document.querySelectorAll('#xFmt button').forEach(x=>x.classList.toggle('on',x===b));renderTex()});
+(async()=>{try{if(window.claude&&typeof window.claude.use==='function')DL=await window.claude.use('downloads')}catch(e){DL=null}S.dlTried=true;updExport()})();
+/* ---------- горячие клавиши ---------- */
+const KEYS=[['Space','k_play'],['← →','k_t'],['Shift + ← →','k_t2'],['Home / End','k_t01'],['1 – 9','k_pre'],['R','k_reset'],['T','k_tr'],['I','k_inv'],['C','k_comp'],['D','k_mode'],['G','k_ghost'],['P','k_trails'],['E','k_eig'],['K','k_ker'],['V','k_vec'],['B','k_dec'],['L','k_lab'],['H','k_hint'],['+ / −','k_zoom'],['0','k_home'],['S','k_png'],['A','k_vid'],['M','k_mul'],['/','k_gloss'],['?','k_keys'],['Esc','k_esc']];
+function renderKeys(){const L=T();$('#keysList').innerHTML=KEYS.map(([k,d])=>`<span>${k.split(' ').map((p,i)=>i>0&&/^[+\/–]$/.test(p)?p:`<kbd>${p}</kbd>`).join(' ')}</span><span>${L[d]}</span>`).join('')}
+function openKeys(){renderKeys();closeDrawers();openDrawer('dKeys')}
+$('#openKeys').onclick=openKeys;$('#openKeys2').onclick=openKeys;
+function toast(msg){const t=$('#toast');t.textContent=msg;t.classList.add('on');clearTimeout(toast.t);toast.t=setTimeout(()=>t.classList.remove('on'),1300)}
+function flip(k){P.show[k]=!P.show[k];if(k==='decomp'&&P.show.decomp)P.show.vec=true;syncToggles();save();renderCaption();req();const L=T();toast(`${L.tog[k]}: ${P.show[k]?L.on:L.off}`)}
+document.addEventListener('keydown',e=>{
+  if(e.ctrlKey||e.metaKey||e.altKey)return;
+  const tg=e.target,tag=tg&&tg.tagName;
+  if((tag==='INPUT'&&!['checkbox','range','radio','color'].includes(tg.type))||tag==='TEXTAREA'||tag==='SELECT'||(tg&&tg.isContentEditable))return;
+  const isQ=e.key==='?'||(e.code==='Slash'&&e.shiftKey);
+  if(document.querySelector('.drawer.open')&&!isQ)return;
+  const d=D(),c=e.code,L=T();let h=true;
+  const setT=v=>{S.anim=null;d.t=Math.max(0,Math.min(1,v));changed()};
+  if(isQ)openKeys();
+  else if(c==='Space')play();
+  else if(c==='ArrowLeft'||c==='ArrowRight'){const st=e.shiftKey?.25:.05;setT(Math.round((d.t+(c==='ArrowLeft'?-st:st))*100)/100)}
+  else if(c==='Home')setT(0);else if(c==='End')setT(1);
+  else if(/^(Digit|Numpad)[1-9]$/.test(c)){const p=PRE[S.mode][+c.slice(-1)-1];if(p){animateTo(p[1]||randM(N()),p[0]);toast(nm(p[0]))}}
+  else if(c==='Digit0'||c==='Numpad0')$('#zHome').click();
+  else if(c==='KeyR')$('#bI').click();else if(c==='KeyT')$('#bT').click();else if(c==='KeyI')$('#bInv').click();
+  else if(c==='KeyC'){const b=$('#compose');b.checked=!b.checked;S.compose=b.checked;toast(`${L.compose}: ${S.compose?L.on:L.off}`)}
+  else if(c==='KeyD'){setMode(S.mode==='2d'?'3d':'2d');toast(S.mode.toUpperCase())}
+  else if(c==='KeyG')flip('ghost');else if(c==='KeyP')flip('trails');else if(c==='KeyE')flip('eigen');else if(c==='KeyK')flip('kernel');
+  else if(c==='KeyV')flip('vec');else if(c==='KeyB')flip('decomp');else if(c==='KeyL')flip('labels');else if(c==='KeyH')flip('hints');
+  else if(c==='Equal'||c==='NumpadAdd')$('#zIn').click();else if(c==='Minus'||c==='NumpadSubtract')$('#zOut').click();
+  else if(c==='KeyS'){if(canSave())exportPng();else toast(L.xNoDl)}
+  else if(c==='KeyM')$('#mulPlay').click();
+  else if(c==='KeyA'){if(canSave()&&vidMime())exportVideo();else toast(canSave()?L.xNoVid:L.xNoDl)}
+  else if(c==='Slash'){$('#openGloss').click();setTimeout(()=>$('#gq').focus(),30)}
+  else h=false;
+  if(h)e.preventDefault();
+});
+$('#openGloss').onclick=()=>{$('#gq').value='';renderGloss();openDrawer('dGloss')};
+function openTerm(id){$('#gq').value='';renderGloss();openDrawer('dGloss');const el=document.getElementById('g-'+id);if(el){el.open=true;setTimeout(()=>el.scrollIntoView({block:'start'}),30)}}
+
+/* ---------- настройки ---------- */
+$('#openSet').onclick=()=>{syncSettings();openDrawer('dSet')};
+function buildSettings(){
+  buildPal();
+  document.querySelectorAll('#langSeg button,#langSeg2 button').forEach(b=>b.onclick=()=>{P.lang=b.dataset.l;applyLang();save()});
+  document.querySelectorAll('#uiSeg button').forEach(b=>b.onclick=()=>{P.ui=b.dataset.v;applyPrefs()});
+  document.querySelectorAll('#dockSeg button').forEach(b=>b.onclick=()=>{P.dock=b.dataset.v;applyPrefs()});
+  $('#wR').oninput=e=>{P.width=+e.target.value;applyPrefs()};
+  $('#hR').oninput=e=>{P.bottomH=+e.target.value;applyPrefs()};
+  $('#fR').oninput=e=>{P.font=+e.target.value;applyPrefs()};
+  $('#lR').oninput=e=>{P.lw=+e.target.value;applyPrefs()};
+  $('#resetOrder').onclick=()=>{P.order=PANELS.slice();P.collapsed={};applyPrefs()};
+  $('#resetAll').onclick=()=>{const lg=P.lang,rd=P.read;P=clone(DEF);P.lang=lg;P.read=rd||{};syncToggles();$('#spR').value=P.speed;$('#spOut').textContent='×1';applyPrefs();renderCaption()};
+}
+function buildPal(){const L=T();
+  const pc=$('#palChips');pc.innerHTML='';Object.entries(PAL).forEach(([k,p])=>{const b=document.createElement('button');b.className='chip';b.dataset.p=k;b.innerHTML=`<span class="sw" style="background:${p.bg};box-shadow:inset 0 0 0 3px ${p.grid}"></span>${L.pal[k]}`;
+    b.onclick=()=>{P.palette=k;P.colors={...PAL[k]};applyPrefs()};pc.appendChild(b)});
+  const cs=$('#colors');cs.innerHTML='';Object.keys(L.colors).forEach(k=>{const l=document.createElement('label');l.innerHTML=`<input type="color" data-k="${k}"> ${L.colors[k]}`;
+    l.querySelector('input').oninput=e=>{P.colors[k]=e.target.value;P.palette='custom';applyPrefs()};cs.appendChild(l)});
+}
+function applyLang(){const L=T();document.documentElement.lang=P.lang;document.title=L.title;
+  document.querySelectorAll('[data-i]').forEach(e=>{e.textContent=L[e.dataset.i]});
+  document.querySelectorAll('[data-ih]').forEach(e=>{e.innerHTML=L[e.dataset.ih]});
+  document.querySelectorAll('[data-it]').forEach(e=>{e.title=L[e.dataset.it];e.setAttribute('aria-label',L[e.dataset.it])});
+  $('#gq').placeholder=L.search;cv.setAttribute('aria-label',L.canvas);
+  document.querySelectorAll('#langSeg button,#langSeg2 button').forEach(b=>b.classList.toggle('on',b.dataset.l===P.lang));
+  buildPal();buildToggles();syncToggles();buildPresets();buildMatrixInputs();buildVecInputs();syncSettings();
+  if($('#dGloss').classList.contains('open'))renderGloss($('#gq').value);
+  if(typeof updExport==='function'){updExport();renderKeys();buildMul()}
+  if(S.K)changed();
+}
+function syncSettings(){
+  document.querySelectorAll('#uiSeg button').forEach(b=>b.classList.toggle('on',b.dataset.v===P.ui));
+  document.querySelectorAll('#dockSeg button').forEach(b=>b.classList.toggle('on',b.dataset.v===P.dock));
+  document.querySelectorAll('#palChips .chip').forEach(b=>b.classList.toggle('on',b.dataset.p===P.palette));
+  document.querySelectorAll('#colors input').forEach(i=>{i.value=P.colors[i.dataset.k]});
+  $('#wR').value=P.width;$('#wOut').textContent=P.width+' px';$('#hR').value=P.bottomH;$('#hOut').textContent=P.bottomH+' %';
+  $('#fR').value=P.font;$('#fOut').textContent=P.font+' %';$('#lR').value=P.lw;$('#lOut').textContent='×'+fmt(P.lw,1);
+}
+function effDock(){return P.dock==='auto'?(innerWidth<760?'bottom':'right'):P.dock}
+function applyDock(){const d=effDock();main.dataset.dock=d;
+  if(d==='float'){const mr=main.getBoundingClientRect(),sw=side.offsetWidth||P.width;P.float.x=Math.max(8,Math.min(P.float.x,mr.width-Math.min(sw,mr.width)-8));P.float.y=Math.max(8,Math.min(P.float.y,mr.height-80));side.style.left=P.float.x+'px';side.style.top=P.float.y+'px'}
+  else{side.style.left='';side.style.top=''}}
+function applyPrefs(){
+  const r=document.documentElement;if(P.ui==='auto')r.removeAttribute('data-theme');else r.setAttribute('data-theme',P.ui);
+  r.style.fontSize=(16*P.font/100)+'px';r.style.setProperty('--side-w',P.width+'px');r.style.setProperty('--side-h',P.bottomH+'%');
+  Object.entries(P.colors).forEach(([k,v])=>r.style.setProperty('--s-'+k,v));
+  applyDock();applyOrder();syncSettings();save();req();
+}
+(()=>{const g=$('#grip');let st=null;
+  g.addEventListener('pointerdown',e=>{g.setPointerCapture(e.pointerId);st={x:e.clientX,y:e.clientY,fx:P.float.x,fy:P.float.y}});
+  g.addEventListener('pointermove',e=>{if(!st)return;P.float.x=st.fx+e.clientX-st.x;P.float.y=st.fy+e.clientY-st.y;applyDock()});
+  const end=()=>{if(st){st=null;save()}};g.addEventListener('pointerup',end);g.addEventListener('pointercancel',end)})();
+window.addEventListener('resize',()=>applyDock());
+
+/* ---------- старт ---------- */
+buildPanels();buildSettings();
+$('#spR').value=P.speed;$('#spOut').textContent='×'+fmt(P.speed);
+applyPrefs();setMode('2d');applyLang();
+if(document.fonts&&document.fonts.ready)document.fonts.ready.then(req);
+})();
+</script>
+</body>
+</html>

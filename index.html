@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Математика наглядно — тренажёры для студентов ВАВТ</title>
+<meta name="description" content="Интерактивные тренажёры: линейная алгебра, интегралы, методы оптимальных решений, теория вероятностей. Решения по шагам, графики, справочник.">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&family=Source+Serif+4:ital,wght@0,600;1,600&display=swap" rel="stylesheet">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📐</text></svg>">
+<style>
+:root{--bg:#f4f5f7;--card:#ffffff;--ink:#16181d;--muted:#5d6470;--line:#e3e6eb;--accent:#1f7a99;--accent-ink:#ffffff;--shadow:0 10px 30px rgba(20,30,50,.08);color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0e1014;--card:#171a20;--ink:#eceef2;--muted:#9aa2ae;--line:#2a2f38;--accent:#58c4dd;--accent-ink:#06222c;--shadow:0 14px 40px rgba(0,0,0,.45);color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#0e1014;--card:#171a20;--ink:#eceef2;--muted:#9aa2ae;--line:#2a2f38;--accent:#58c4dd;--accent-ink:#06222c;--shadow:0 14px 40px rgba(0,0,0,.45);color-scheme:dark}
+*,*::before,*::after{box-sizing:inherit}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:Manrope,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;line-height:1.5}
+.wrap{max-width:1120px;margin:0 auto;padding:1.2rem 1.2rem 3rem}
+header{display:flex;align-items:center;gap:.8rem;padding:.4rem 0 1.4rem}
+.brand{font-family:"Source Serif 4",Georgia,serif;font-weight:600;font-size:1.25rem}
+.brand i{color:var(--muted);font-weight:600}
+.spacer{flex:1}
+.seg{display:inline-flex;background:var(--line);border-radius:10px;padding:3px}
+.seg button{border:0;background:transparent;color:var(--muted);font:700 .8rem Manrope,system-ui,sans-serif;padding:.4rem .7rem;border-radius:8px;cursor:pointer}
+.seg button.on{background:var(--card);color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.12)}
+.hero h1{font-family:"Source Serif 4",Georgia,serif;font-weight:600;font-size:clamp(1.7rem,4vw,2.6rem);line-height:1.15;margin:.2rem 0 .7rem;letter-spacing:-.01em}
+.hero p{color:var(--muted);font-size:1.05rem;max-width:46rem;margin:0}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:1.1rem;margin-top:2rem}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;overflow:hidden;box-shadow:var(--shadow);display:flex;flex-direction:column}
+.card img{width:100%;aspect-ratio:1400/860;object-fit:cover;display:block;border-bottom:1px solid var(--line);background:#0b0c10}
+.cb{padding:1rem 1.1rem 1.1rem;display:flex;flex-direction:column;gap:.55rem;flex:1}
+.card h2{font-family:"Source Serif 4",Georgia,serif;font-weight:600;font-size:1.25rem;margin:0}
+.card p{margin:0;color:var(--muted);font-size:.92rem}
+.tags{display:flex;flex-wrap:wrap;gap:.3rem;margin-top:.1rem}
+.tags span{font-size:.74rem;font-weight:700;color:var(--muted);border:1px solid var(--line);border-radius:999px;padding:.12rem .55rem}
+.acts{display:flex;gap:.5rem;margin-top:auto;padding-top:.5rem}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:.35rem;text-decoration:none;font:800 .86rem Manrope,system-ui,sans-serif;border-radius:10px;padding:.55rem .9rem;border:1px solid var(--line);color:var(--ink);background:transparent}
+.btn.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent);flex:1}
+.btn:hover{filter:brightness(1.06)}
+.btn:focus-visible,.seg button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.info{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:1.1rem;margin-top:2.4rem}
+.info div{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:1rem 1.1rem}
+.info h3{margin:0 0 .35rem;font-size:.95rem}
+.info p{margin:0;color:var(--muted);font-size:.9rem}
+footer{margin-top:2.4rem;color:var(--muted);font-size:.84rem;text-align:center}
+footer a{color:var(--accent)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="brand" data-i="brand"></div>
+    <div class="spacer"></div>
+    <div class="seg" id="lang"><button data-l="ru">RU</button><button data-l="en">EN</button></div>
+  </header>
+  <section class="hero">
+    <h1 data-i="h1"></h1>
+    <p data-i="lead"></p>
+  </section>
+  <section class="grid" id="grid"></section>
+  <section class="info">
+    <div><h3 data-i="i1h"></h3><p data-i="i1"></p></div>
+    <div><h3 data-i="i2h"></h3><p data-i="i2"></p></div>
+    <div><h3 data-i="i3h"></h3><p data-i="i3"></p></div>
+  </section>
+  <footer><span data-i="foot"></span></footer>
+</div>
+<script>
+(()=>{
+const APPS=[
+ {f:'linear-algebra.html',img:'screenshots/linear-algebra.png',ru:['Линейная алгебра','Матрицы как преобразования плоскости и пространства: базисные векторы, определитель, собственные векторы, ранг.',['Матрицы 2×2 и 3×3','det','Собственные векторы','2D и 3D']],en:['Linear algebra','Matrices as transformations of the plane and space: basis vectors, determinant, eigenvectors, rank.',['2×2 and 3×3 matrices','det','Eigenvectors','2D and 3D']]},
+ {f:'integrals.html',img:'screenshots/integrals.png',ru:['Интегралы','Любой интеграл с решением по шагам: замена, по частям, дроби, тригонометрия. Площадь, первообразная, суммы Римана.',['Решение по шагам','Определённый и неопределённый','Несобственные','Суммы Римана']],en:['Integrals','Step-by-step solutions: substitution, by parts, partial fractions, trigonometry. Area, antiderivative, Riemann sums.',['Step by step','Definite and indefinite','Improper','Riemann sums']]},
+ {f:'optimization.html',img:'screenshots/optimization.png',ru:['Методы оптимальных решений','Задачи ЛП: графический метод, двойственная задача, дополняющая нежёсткость, симплекс-таблицы, теневые цены.',['Графический метод','Двойственная','Симплекс-метод','Как на семинаре']],en:['Optimization methods','Linear programming: graphical method, the dual, complementary slackness, simplex tableaux, shadow prices.',['Graphical method','Duality','Simplex','Seminar style']]},
+ {f:'probability.html',img:'screenshots/probability.png',ru:['Теория вероятностей','Все 9 разделов задачника ВАВТ: от комбинаторики и Байеса до нормального распределения. Задачи из сборника с ответами.',['Комбинаторика','Бернулли и Лаплас','Случайные величины','Φ(x) как в ВАВТ']],en:['Probability theory','All 9 sections of the VAVT problem book, from combinatorics and Bayes to the normal distribution, with problems from the book.',['Combinatorics','Bernoulli and Laplace','Random variables','Φ(x) as at VAVT']]}];
+const TX={
+ ru:{brand:'Математика <i>наглядно</i>',h1:'Интерактивные тренажёры для студентов ВАВТ',lead:'Графики можно тянуть руками, каждая задача решается по шагам, а справочник объясняет понятия интуитивно и строго. Работает в браузере, без регистрации.',
+  open:'Открыть',dl:'Скачать',dlT:'Скачать файл, чтобы пользоваться без интернета',
+  i1h:'Работает офлайн',i1:'Каждое приложение — один HTML-файл. Скачайте его и откройте двойным щелчком: интернет не нужен.',
+  i2h:'По материалам курса',i2:'Задачи, обозначения и алгоритмы взяты из учебников и задачников ВАВТ, ответы сверены со сборниками.',
+  i3h:'Ничего не собирается',i3:'Настройки и отметки «прочитано» хранятся только в вашем браузере. Никаких аккаунтов и аналитики.',
+  foot:'Нашли ошибку или есть идея? Напишите в <a href="https://github.com/Musalimov/vavt-math/issues">Issues на GitHub</a>. Исходники: <a href="https://github.com/Musalimov/vavt-math">github.com/Musalimov/vavt-math</a>.'},
+ en:{brand:'Math <i>visually</i>',h1:'Interactive trainers for VAVT students',lead:'Drag the graphs by hand, see every problem solved step by step, and read a glossary that explains concepts both intuitively and formally. Runs in the browser, no sign-up.',
+  open:'Open',dl:'Download',dlT:'Download the file to use it offline',
+  i1h:'Works offline',i1:'Each app is a single HTML file. Download it and double-click: no internet needed.',
+  i2h:'Based on the course',i2:'Problems, notation and algorithms follow VAVT textbooks and problem books; answers are checked against them.',
+  i3h:'Nothing is collected',i3:'Settings and “read” marks stay in your browser only. No accounts, no analytics.',
+  foot:'Found a mistake or have an idea? Open an <a href="https://github.com/Musalimov/vavt-math/issues">issue on GitHub</a>. Source: <a href="https://github.com/Musalimov/vavt-math">github.com/Musalimov/vavt-math</a>.'}};
+let lang='ru';try{lang=localStorage.getItem('vavt-home-lang')||((navigator.language||'').toLowerCase().startsWith('ru')?'ru':'en')}catch(e){}
+function render(){const L=TX[lang];document.documentElement.lang=lang;document.title=lang==='ru'?'Математика наглядно — тренажёры для студентов ВАВТ':'Math visually — trainers for VAVT students';
+  document.querySelectorAll('[data-i]').forEach(e=>{e.innerHTML=L[e.dataset.i]});document.querySelectorAll('#lang button').forEach(b=>b.classList.toggle('on',b.dataset.l===lang));
+  document.getElementById('grid').innerHTML=APPS.map(a=>{const[t,d,tags]=a[lang];return`<article class="card"><a href="${a.f}" tabindex="-1" aria-hidden="true"><img src="${a.img}" alt="" loading="lazy"></a><div class="cb"><h2>${t}</h2><p>${d}</p><div class="tags">${tags.map(x=>`<span>${x}</span>`).join('')}</div><div class="acts"><a class="btn primary" href="${a.f}">${L.open}</a><a class="btn" href="${a.f}" download title="${L.dlT}">⤓ ${L.dl}</a></div></div></article>`}).join('')}
+document.querySelectorAll('#lang button').forEach(b=>b.onclick=()=>{lang=b.dataset.l;try{localStorage.setItem('vavt-home-lang',lang)}catch(e){}render()});
+render();
+})();
+</script>
+</body>
+</html>
