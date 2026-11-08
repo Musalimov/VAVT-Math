@@ -1381,7 +1381,58 @@ function recognize(v,tol){if(!isFinite(v))return null;if(Math.abs(v)<1e-11)retur
     if(b2&&c2<=26&&c2<bc){best=b2;bc=c2}}
   if(best&&bc>40)best=null;
   recMemo.set(rk,best);return best}
-function limF(F,x0,dir){if(!isFinite(x0)){const s=x0>0?1:-1,vs=[1e3,1e5,1e7,1e9].map(X=>F(s*X));return conv(vs)}
+/* символьный предел первообразной: только детерминированные формы (константа · ∞, ∞ + конст., x^p, ln, exp, arctan…);
+   неопределённости (∞ − ∞, 0 · ∞, ∞/∞, колебания) → null, и тогда работает численный limN.
+   Неточный ноль (|v| < 1e-9, например cos(π/2) в float) считается нулём с неизвестной стороной.
+   Значение: {t:'f',v,s} — конечный предел (s: +1 сверху, −1 снизу, 0 точная константа, NaN неизвестно), {t:'i',s} — ±∞. */
+function limS(E,x0,dir){
+  const F=(v,s)=>!isFinite(v)?null:v!==0&&s!==0&&Math.abs(v)<1e-9?{t:'f',v:0,s:NaN}:{t:'f',v,s},I=s=>({t:'i',s}),U=NaN;
+  const sideMul=(a,b)=>a.v===0&&b.v!==0?(a.s===0?0:a.s*Math.sign(b.v)):b.v===0&&a.v!==0?(b.s===0?0:b.s*Math.sign(a.v)):a.v===0&&b.v===0?a.s*b.s:U;
+  const pw=(a,p)=>{if(!a)return null;const ip=Number.isInteger(p);
+    if(a.t==='i'){if(p===0)return F(1,0);if(a.s>0)return p>0?I(1):F(0,1);if(!ip)return null;return p>0?I(p%2?-1:1):F(0,p%2?-1:1)}
+    if(a.v>0)return F(Math.pow(a.v,p),U);if(a.v<0)return ip?F(Math.pow(a.v,p),U):null;
+    if(p>0){if(a.s===1||a.s===0)return F(0,a.s);if(a.s===-1&&ip)return F(0,p%2?-1:1);return null}
+    if(p<0&&(a.s===1||a.s===-1)){if(a.s===1)return I(1);return ip?I(p%2?-1:1):null}return null};
+  const ex=(b,g)=>{if(!g||!(b>0))return null;if(b===1)return F(1,0);const up=b>1;if(g.t==='i')return(g.s>0)===up?I(1):F(0,1);return F(Math.pow(b,g.v),U)};
+  const go=e=>{switch(e[0]){
+    case 'n':return F(e[1],0);
+    case 'c':return F(CV[e[1]],0);
+    case 'v':return isFinite(x0)?F(x0,dir):I(x0>0?1:-1);
+    case 'neg':{const a=go(e[1]);return !a?null:a.t==='i'?I(-a.s):F(-a.v,-a.s)}
+    case '+':case '-':{const a=go(e[1]);let b=go(e[2]);if(!a||!b)return null;if(e[0]==='-')b=b.t==='i'?I(-b.s):F(-b.v,-b.s);
+      if(a.t==='i'&&b.t==='i')return a.s===b.s?a:null;if(a.t==='i')return a;if(b.t==='i')return b;
+      const s=a.s===0?b.s:b.s===0?a.s:a.s===b.s?a.s:U;return F(a.v+b.v,s)}
+    case '*':{const a=go(e[1]),b=go(e[2]);if(!a||!b)return null;
+      if(a.t==='i'&&b.t==='i')return I(a.s*b.s);if(a.t==='i'||b.t==='i'){const f=a.t==='f'?a:b,i=a.t==='i'?a:b;return f.v===0?null:I(i.s*Math.sign(f.v))}
+      return F(a.v*b.v,sideMul(a,b))}
+    case '/':{const a=go(e[1]),b=go(e[2]);if(!a||!b)return null;
+      if(b.t==='i'){if(a.t==='i')return null;return a.v===0?(a.s===0?F(0,0):null):F(0,Math.sign(a.v)*b.s)}
+      if(b.v!==0)return a.t==='i'?I(a.s*Math.sign(b.v)):F(a.v/b.v,a.v===0?(a.s===0?0:a.s*Math.sign(b.v)):U);
+      if(!(b.s===1||b.s===-1))return null;if(a.t==='i')return I(a.s*b.s);return a.v===0?null:I(Math.sign(a.v)*b.s)}
+    case '^':{const a=go(e[1]),q=go(e[2]);if(!q)return null;
+      if(q.t==='f'&&q.s===0)return pw(a,q.v);
+      if(a&&a.t==='f'&&a.s===0)return ex(a.v,q);return null}
+    case 'f':{const nm=e[1],a=go(e[2]);if(!a)return null;
+      if(nm==='exp')return ex(Math.E,a);
+      if(nm==='sqrt')return pw(a,.5);
+      if(nm==='ln'){if(a.t==='i')return a.s>0?I(1):null;if(a.v>0)return F(Math.log(a.v),U);return a.v===0&&a.s===1?I(-1):null}
+      if(nm==='abs'){if(a.t==='i')return I(1);return F(Math.abs(a.v),a.v===0?(a.s===0?0:1):U)}
+      if(nm==='atan')return a.t==='i'?F(a.s*Math.PI/2,-a.s):F(Math.atan(a.v),U);
+      if(nm==='tanh')return a.t==='i'?F(a.s,-a.s):F(Math.tanh(a.v),U);
+      if(nm==='sinh')return a.t==='i'?I(a.s):F(Math.sinh(a.v),U);
+      if(nm==='cosh')return a.t==='i'?I(1):F(Math.cosh(a.v),U);
+      if(a.t==='i')return null;
+      if(nm==='sin'||nm==='cos')return F(FN[nm](a.v),U);
+      if(nm==='tan')return Math.abs(Math.cos(a.v))>1e-12?F(Math.tan(a.v),U):null;
+      if(nm==='cot')return Math.abs(Math.sin(a.v))>1e-12?F(1/Math.tan(a.v),U):null;
+      if(nm==='asin'||nm==='acos')return Math.abs(a.v)<1?F(FN[nm](a.v),U):null;
+      return null}
+    default:return null}};
+  try{return go(E)}catch(_){return null}}
+/* предел первообразной: сначала символьно (точно), иначе численно. ex — предел найден точно */
+function limFx(F,E,x0,dir){const r=E?limS(E,x0,dir):null;if(r&&r.t==='i')return{v:null,ex:true};if(r&&r.t==='f')return{v:r.v,ex:true};return{v:limN(F,x0,dir),ex:false}}
+function limF(F,x0,dir,E){return limFx(F,E,x0,dir).v}
+function limN(F,x0,dir){if(!isFinite(x0)){const s=x0>0?1:-1,vs=[1e3,1e5,1e7,1e9].map(X=>F(s*X));return conv(vs)}
   const v0=F(x0),sc=Math.max(1,Math.abs(x0)),g1=Math.abs(S.ff(x0+dir*1e-4*sc)),g2=Math.abs(S.ff(x0+dir*1e-9*sc)),blow=!isFinite(S.ff(x0))||!(isFinite(g2)&&g2<=1e3*Math.max(1,g1));
   if(isFinite(v0)&&!blow)return v0;
   const vs=[1e-5,1e-7,1e-9,1e-11].map(e=>F(x0+dir*e*Math.max(1,Math.abs(x0))));return conv(vs)}
@@ -1416,8 +1467,8 @@ function analyze(full=true){const R={};S.R=R;if(S.err)return;const f=S.ff,a=S.a,
   if(Math.abs(num)>1e10||!isFinite(num))ok=false;R.pieces=pieces;R.num=sg*num;R.numOk=ok;
   if(R.FF){
     if(!R.improper){const Fa=R.FF(a),Fb=R.FF(b),v=Fb-Fa;if(isFinite(v)&&(!ok||Math.abs(v-R.num)<=1e-6*Math.max(1,Math.abs(v)))){R.val=v;R.how='nl';R.Fa=Fa;R.Fb=Fb}else{R.val=R.num;R.how='jump'}}
-    else{let tot=0,div=false;for(const[p0,p1]of pieces){const L=limF(R.FF,p0,1),U=limF(R.FF,p1,-1);if(L===null||U===null){div=true;break}tot+=U-L}
-      if(div){R.div=true;R.how='div';if(R.inf){const side=isFinite(hi)?-1:1;let okF=true,rev=0,pd=0,pv=null;for(let i=0;i<=4000;i++){const X=side*(50+i*.37),v=R.FF(X);if(!isFinite(v)){okF=false;break}if(pv!==null){const d=v-pv;if(Math.abs(d)>1e-12){if(pd&&Math.sign(d)!==pd)rev++;pd=Math.sign(d)}}pv=v}if(okF&&rev>=6)R.divOsc=true}}else{tot*=sg;if(ok&&Math.abs(tot-R.num)>1e-5*Math.max(1,Math.abs(tot))){R.val=R.num;R.how='jump'}else{R.val=ok?R.num:tot;R.how='lim'}}}}
+    else{let tot=0,div=false,ex=true;for(const[p0,p1]of pieces){const L=limFx(R.FF,R.F,p0,1),U=limFx(R.FF,R.F,p1,-1);if(L.v===null||U.v===null){div=true;break}tot+=U.v-L.v;ex=ex&&L.ex&&U.ex}
+      if(div){R.div=true;R.how='div';if(R.inf){const side=isFinite(hi)?-1:1;let okF=true,rev=0,pd=0,pv=null;for(let i=0;i<=4000;i++){const X=side*(50+i*.37),v=R.FF(X);if(!isFinite(v)){okF=false;break}if(pv!==null){const d=v-pv;if(Math.abs(d)>1e-12){if(pd&&Math.sign(d)!==pd)rev++;pd=Math.sign(d)}}pv=v}if(okF&&rev>=6)R.divOsc=true}}else{tot*=sg;if(ok&&Math.abs(tot-R.num)>1e-5*Math.max(1,Math.abs(tot))){R.val=R.num;R.how='jump'}else{R.val=ex||!ok?tot:R.num;R.how='lim'}}}}
   else{if(R.improper&&!ok){const o=R.inf?oscInf(f,lo,hi,sing):null;if(o===UNDEC){R.div=true;R.undec=true;R.how='div'}else if(o===OSCDIV){R.div=true;R.divOsc=true;R.how='div'}else if(o!==null){R.val=R.num=sg*o;R.numOk=true;R.how='num';R.osc=true}else{R.div=true;R.how='div'}}else{R.val=R.num;R.how='num'}}
   if(!R.div&&full){R.exact=(R.how==='nl'||R.numOk||R.how==='lim')?recognize(R.val,R.how==='nl'?1e-10:1e-9):null;
     const q=g=>{let s=0;for(const[p0,p1]of pieces)s+=quadF(g,p0,p1).v;return s};
@@ -1487,7 +1538,7 @@ function accumAt(x0,x1,N){const out=[];if(!isFinite(S.a))return out;for(let i=0;
 let ACC=null;
 function accum(base){const a=base===undefined?S.a:base,k=[key(S.fe),a,S.V.cx,S.V.sx,W].join('|');if(ACC&&ACC.k===k)return ACC;const f=S.ff,st=2,xs=[],vs=[];
   for(let X=-4;X<=W+4;X+=st)xs.push(s2w(X,0)[0]);const n=xs.length;for(let i=0;i<n;i++)vs.push(NaN);
-  if(!isFinite(a)){if(S.R&&S.R.FF){const L=limF(S.R.FF,a,1);if(L!==null)for(let i=0;i<n;i++)vs[i]=S.R.FF(xs[i])-L}ACC={k,xs,vs};return ACC}
+  if(!isFinite(a)){if(S.R&&S.R.FF){const L=limF(S.R.FF,a,1,S.R.F);if(L!==null)for(let i=0;i<n;i++)vs[i]=S.R.FF(xs[i])-L}ACC={k,xs,vs};return ACC}
   const g2=(p,q)=>{const m=(p+q)/2,h=(q-p)/2,d=h/Math.sqrt(3),u=f(m-d),v=f(m+d);return h*(u+v)};
   let k0=xs.findIndex(x=>x>=a);if(k0<0)k0=n;
   if(k0<n){let A=quadF(f,a,xs[k0]).v;vs[k0]=A;for(let i=k0+1;i<n;i++){A+=g2(xs[i-1],xs[i]);if(!isFinite(A)||Math.abs(A)>1e9)break;vs[i]=A}}
