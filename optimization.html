@@ -379,25 +379,38 @@ function toFrac(v,maxD=1000,tol=1e-10){if(!isFinite(v))return null;if(Number.isI
     if(Math.abs(v-h1/k1)<=tol*Math.max(1,v))return[s*h1,k1];const fr=x-a;if(fr<1e-15)break;x=1/fr}
   return null}
 const gcdI=(a,b)=>{a=Math.abs(a);b=Math.abs(b);while(b){[a,b]=[b,a%b]}return a};
-class Q{constructor(n,d=1){if(!Number.isSafeInteger(n)||!Number.isSafeInteger(d)||Math.abs(n)>1e14||Math.abs(d)>1e14){const v=n/d,f=toFrac(v,1e6,1e-13)||[Math.round(v*1e6),1e6];n=f[0];d=f[1]}
-    if(d<0){n=-n;d=-d}const g=gcdI(n,d)||1;this.n=n/g;this.d=d/g}
-  static of(x){if(x instanceof Q)return x;if(Number.isInteger(x))return new Q(x,1);const f=toFrac(x,1e6,1e-12);return f?new Q(f[0],f[1]):new Q(Math.round(x*1e6),1e6)}
-  add(o){o=Q.of(o);return new Q(this.n*o.d+o.n*this.d,this.d*o.d)}
-  sub(o){o=Q.of(o);return new Q(this.n*o.d-o.n*this.d,this.d*o.d)}
-  mul(o){o=Q.of(o);const g1=gcdI(this.n,o.d)||1,g2=gcdI(o.n,this.d)||1;return new Q((this.n/g1)*(o.n/g2),(this.d/g2)*(o.d/g1))}
-  div(o){o=Q.of(o);return this.mul(new Q(o.d,o.n))}
-  neg(){return new Q(-this.n,this.d)}
-  get z(){return this.n===0}
-  get s(){return Math.sign(this.n)}
-  get v(){return this.n/this.d}
+/* Q — рациональное число на BigInt: точность не теряется ни при каком числе итераций симплекса.
+   N, D — точные BigInt (D > 0, НОД = 1). n, d, v — Number-приближения для логики отображения;
+   цифры печатаем только из ns / ds / as (строки), чтобы большие дроби не искажались. */
+const bgcd=(a,b)=>{if(a<0n)a=-a;if(b<0n)b=-b;while(b){[a,b]=[b,a%b]}return a};
+function bigOf(x){if(typeof x==='bigint')return x;if(Number.isSafeInteger(x))return BigInt(x);throw{msg:'tok'}}
+function bigNum(N,D){const a=Number(N),b=Number(D);if(isFinite(a)&&isFinite(b))return a/b;
+  const k=Math.max(String(N<0n?-N:N).length,String(D).length)-300,p=10n**BigInt(k);return Number(N/p)/Number(D/p)}
+class Q{constructor(n,d=1){n=bigOf(n);d=bigOf(d);if(d===0n)throw{msg:'tok'};if(d<0n){n=-n;d=-d}const g=bgcd(n,d)||1n;this.N=n/g;this.D=d/g}
+  static of(x){if(x instanceof Q)return x;if(typeof x==='bigint'||Number.isSafeInteger(x))return new Q(x,1);const f=toFrac(x,1e6,1e-12);return f?new Q(f[0],f[1]):new Q(Math.round(x*1e6),1e6)}
+  add(o){o=Q.of(o);return new Q(this.N*o.D+o.N*this.D,this.D*o.D)}
+  sub(o){o=Q.of(o);return new Q(this.N*o.D-o.N*this.D,this.D*o.D)}
+  mul(o){o=Q.of(o);return new Q(this.N*o.N,this.D*o.D)}
+  div(o){o=Q.of(o);return new Q(this.N*o.D,this.D*o.N)}
+  neg(){return new Q(-this.N,this.D)}
+  get n(){return Number(this.N)}
+  get d(){return Number(this.D)}
+  get ns(){return String(this.N)}
+  get ds(){return String(this.D)}
+  get as(){return String(this.N<0n?-this.N:this.N)}
+  get key(){return this.N+'/'+this.D}
+  get int(){return this.D===1n}
+  get z(){return this.N===0n}
+  get s(){return this.N>0n?1:this.N<0n?-1:0}
+  get v(){return bigNum(this.N,this.D)}
   cmp(o){return this.sub(o).s}
   eq(o){return this.cmp(o)===0}
-  abs(){return this.n<0?this.neg():this}
+  abs(){return this.N<0n?this.neg():this}
 }
 const Z0=new Q(0),Q1=new Q(1);
 function parseNum(s){s=s.replace(',','.');if(s.includes('/')){const[a,b]=s.split('/');return parseNum(a).div(parseNum(b))}
-  if(s.includes('.')){const[i,f]=s.split('.');const d=Math.pow(10,f.length);return new Q(parseInt((i||'0')+f,10)*(s.trim().startsWith('-')?1:1),d)}
-  return new Q(parseInt(s,10),1)}
+  s=s.trim();if(!/^[-+]?(\d+\.?\d*|\.\d+)$/.test(s))throw{msg:'tok'};const neg=s[0]==='-';s=s.replace(/^[-+]/,'');
+  const[i,f='']=s.split('.');const N=BigInt((i||'0')+f)*(neg?-1n:1n);return new Q(N,10n**BigInt(f.length))}
 /* ---------- разбор задачи ---------- */
 function normLine(l){return l.replace(/[−–—]/g,'-').replace(/[⩽≤]/g,'<=').replace(/[⩾≥]/g,'>=').replace(/=</g,'<=').replace(/=>/g,'>=').replace(/→/g,'->').replace(/·|×|\*/g,'*').replace(/(\d),(\d)/g,'$1.$2').trim()}
 function natCmp(a,b){const ma=/^([a-zA-Zа-яА-Я_']*)(\d*)(.*)$/.exec(a),mb=/^([a-zA-Zа-яА-Я_']*)(\d*)(.*)$/.exec(b);if(ma[1]!==mb[1])return ma[1]<mb[1]?-1:1;const na=+ma[2]||0,nb=+mb[2]||0;if(na!==nb)return na-nb;return a<b?-1:a>b?1:0}
@@ -511,12 +524,12 @@ function simplex(P,opt={}){if(!P.vars.length){const P2={...P,vars:['_0'],c:[Q.of
   // все решения
   const verts=[],rays=[],seen=new Set();
   const back=xs=>P.vars.map((_,j)=>map[j].reduce((s,[k,sg])=>s.add(sg>0?xs[k]:xs[k].neg()),Z0));
-  const addV=x=>{const k=x.map(q=>q.n+'/'+q.d).join(',');if(!verts.some(v=>v.map(q=>q.n+'/'+q.d).join(',')===k))verts.push(x)};
+  const addV=x=>{const k=x.map(q=>q.key).join(',');if(!verts.some(v=>v.map(q=>q.key).join(',')===k))verts.push(x)};
   const explore=(T0,Z0_,B0,depth)=>{const key=B0.slice().sort((a,b)=>a-b).join(',');if(seen.has(key)||seen.size>40)return;seen.add(key);
     const x=new Array(N).fill(Z0);B0.forEach((k,i)=>{x[k]=T0[i][N]});addV(back(x));
     for(let k=0;k<N;k++){if(B0.includes(k)||!Z0_[k].z)continue;const pos=[];let best=null;
       for(let i=0;i<T0.length;i++){if(T0[i][k].s<=0)continue;const q=T0[i][N].div(T0[i][k]);if(best===null||q.cmp(best)<0){best=q}}
-      if(best===null){const d=new Array(N).fill(Z0);d[k]=Q1;B0.forEach((kk,i)=>{d[kk]=T0[i][k].neg()});const db=back(d);if(db.some(q=>!q.z)){const nz=db.find(q=>!q.z);const nm=db.map(q=>q.div(nz.abs()));const key2=nm.map(q=>q.n+'/'+q.d).join(',');if(!rays.some(r=>r.key===key2))rays.push({d:db,key:key2})}continue}
+      if(best===null){const d=new Array(N).fill(Z0);d[k]=Q1;B0.forEach((kk,i)=>{d[kk]=T0[i][k].neg()});const db=back(d);if(db.some(q=>!q.z)){const nz=db.find(q=>!q.z);const nm=db.map(q=>q.div(nz.abs()));const key2=nm.map(q=>q.key).join(',');if(!rays.some(r=>r.key===key2))rays.push({d:db,key:key2})}continue}
       for(let i=0;i<T0.length;i++){if(T0[i][k].s<=0)continue;if(!T0[i][N].div(T0[i][k]).eq(best))continue;
         let T1=T0.map(r=>r.slice()),Z1=Z0_.slice();const B1=B0.slice();const p=T1[i][k];T1[i]=T1[i].map(v=>v.div(p));
         for(let ii=0;ii<T1.length;ii++)if(ii!==i&&!T1[ii][k].z){const f=T1[ii][k];T1[ii]=T1[ii].map((v,kk)=>v.sub(f.mul(T1[i][kk])))}
@@ -1012,15 +1025,15 @@ const frac=(n,d)=>`<span class="fr"><span class="fn">${n}</span><span class="fd"
 const SUBD='₀₁₂₃₄₅₆₇₈₉';const subD=s=>String(s).replace(/\d/g,d=>SUBD[d]);
 function varH(n){const m=/^([a-zA-Z]+)_?(\d*)('*)$/.exec(n);if(!m)return`<i>${n}</i>`;return`<i>${m[1]}</i>${m[2]?`<sub>${m[2]}</sub>`:''}${m[3].replace("''",'″').replace("'",'′')}`}
 function varT(n){const m=/^([a-zA-Z]+)_?(\d*)('*)$/.exec(n);if(!m)return n;return m[1]+subD(m[2])+m[3].replace("''",'″').replace("'",'′')}
-const isDec=q=>q.d>1&&q.d<=1000&&q.d%10===0;const decS=q=>String(+(Math.abs(q.n)/q.d).toFixed(3));
-function qH(q,sign=true){const s=q.n<0?'−':'',a=Math.abs(q.n);return(sign?s:'')+(q.d===1?String(a):isDec(q)?decS(q):frac(a,q.d))}
-function qT(q){const s=q.n<0?'−':'';const a=Math.abs(q.n);return s+(q.d===1?String(a):isDec(q)?decS(q):q.d<=64?`${a}/${q.d}`:fmt(Math.abs(q.v),4))}
-function qD(q){return q.d===1?'':` ≈ ${fmt(q.v,4)}`}
+const isDec=q=>q.d>1&&q.d<=1000&&q.d%10===0;const decS=q=>String(+Math.abs(q.v).toFixed(3));
+function qH(q,sign=true){const s=q.s<0?'−':'',a=q.as;return(sign?s:'')+(q.int?a:isDec(q)?decS(q):frac(a,q.ds))}
+function qT(q){const s=q.s<0?'−':'';const a=q.as;return s+(q.int?a:isDec(q)?decS(q):q.d<=64?`${a}/${q.ds}`:fmt(Math.abs(q.v),4))}
+function qD(q){return q.int?'':` ≈ ${fmt(q.v,4)}`}
 const ptH=(p)=>`(${p.map(q=>qH(q)).join('; ')})`;const ptT=p=>`(${p.map(qT).join('; ')})`;
 function linH(a,names,c0){let s='';a.forEach((q,j)=>{if(q.z)return;const neg=q.s<0,abs=q.abs();const co=abs.eq(Q1)?'':qH(abs);s+=(s?(neg?' − ':' + '):(neg?'−':''))+co+varH(names[j])});
   if(c0&&!c0.z)s+=(s?(c0.s<0?' − ':' + '):(c0.s<0?'−':''))+qH(c0.abs());return s||'0'}
-function linT(a,names,c0,ascii){let s='';a.forEach((q,j)=>{if(q.z)return;const neg=q.s<0,abs=q.abs();const co=abs.eq(Q1)?'':(ascii?(abs.d===1?String(abs.n):abs.n+'/'+abs.d):qT(abs));s+=(s?(neg?(ascii?' - ':' − '):' + '):(neg?(ascii?'-':'−'):''))+co+(ascii?names[j]:varT(names[j]))});
-  if(c0&&!c0.z){const a=c0.abs();s+=(s?(c0.s<0?(ascii?' - ':' − '):' + '):(c0.s<0?'-':''))+(ascii?(a.d===1?String(a.n):a.n+'/'+a.d):qT(a))}return s||'0'}
+function linT(a,names,c0,ascii){let s='';a.forEach((q,j)=>{if(q.z)return;const neg=q.s<0,abs=q.abs();const co=abs.eq(Q1)?'':(ascii?(abs.int?abs.ns:abs.ns+'/'+abs.ds):qT(abs));s+=(s?(neg?(ascii?' - ':' − '):' + '):(neg?(ascii?'-':'−'):''))+co+(ascii?names[j]:varT(names[j]))});
+  if(c0&&!c0.z){const a=c0.abs();s+=(s?(c0.s<0?(ascii?' - ':' − '):' + '):(c0.s<0?'-':''))+(ascii?(a.int?a.ns:a.ns+'/'+a.ds):qT(a))}return s||'0'}
 const opH=o=>o==='<='?'⩽':o==='>='?'⩾':'=';
 const zName=G=>G&&G.isDual?(SEM()?'f':'w'):(SEM()?'Z':'z');const zP=()=>SEM()?'Z':'z',zD=()=>SEM()?'f':'w';const gradT=()=>SEM()?'grad ':'∇';
 function probH(G,opts={}){const L=T();const nm=zName(G);let h=`<span class="obj">${varH(nm)} = ${linH(G.c,G.vars,G.c0)} → ${G.sense}</span><span class="sys">`;
@@ -1028,7 +1041,7 @@ function probH(G,opts={}){const L=T();const nm=zName(G);let h=`<span class="obj"
   const ge=G.vars.filter((_,j)=>G.sign[j]==='ge'&&!G.bin[j]),le=G.vars.filter((_,j)=>G.sign[j]==='le'),fr=G.vars.filter((_,j)=>G.sign[j]==='free'),it=G.vars.filter((_,j)=>G.int[j]&&!G.bin[j]),bn=G.vars.filter((_,j)=>G.bin[j]);
   const sg=[];if(ge.length)sg.push(`${ge.map(varH).join(', ')} ⩾ 0`);if(le.length)sg.push(`${le.map(varH).join(', ')} ⩽ 0`);if(fr.length)sg.push(`${fr.map(varH).join(', ')} — ${L.anySign}`);if(it.length)sg.push(`${it.map(varH).join(', ')} ∈ ℤ`);if(bn.length)sg.push(`${bn.map(varH).join(', ')} ∈ {0, 1}`);
   if(sg.length)h+=`<span class="sg">${sg.join('; ')}</span>`;return h}
-function probText(G){const lines=[`z = ${linT(G.c,G.vars,G.c0,true)} -> ${G.sense}`];G.cons.forEach(c=>lines.push(`${linT(c.a,G.vars,null,true)} ${c.op} ${c.b.d===1?c.b.n:c.b.n+'/'+c.b.d}`));
+function probText(G){const lines=[`z = ${linT(G.c,G.vars,G.c0,true)} -> ${G.sense}`];G.cons.forEach(c=>lines.push(`${linT(c.a,G.vars,null,true)} ${c.op} ${c.b.int?c.b.ns:c.b.ns+'/'+c.b.ds}`));
   const ge=G.vars.filter((_,j)=>G.sign[j]==='ge'&&!G.bin[j]),le=G.vars.filter((_,j)=>G.sign[j]==='le'),it=G.vars.filter((_,j)=>G.int[j]&&!G.bin[j]),bn=G.vars.filter((_,j)=>G.bin[j]);
   if(ge.length)lines.push(ge.join(', ')+' >= 0');if(le.length)lines.push(le.join(', ')+' <= 0');if(it.length)lines.push(it.join(', ')+' ∈ Z');if(bn.length)lines.push(bn.join(', ')+' ∈ {0,1}');return lines.join('\n')}
 
@@ -1396,9 +1409,9 @@ function runDemo(id){const d=DEMOS[id];if(!d)return;if(d.show){Object.assign(P.s
   loadPreset(d.p);if(d.view&&d.view!==S.view)setView(d.view);showPanel(d.panel||'solve');if(d.play)setTimeout(play,350)}
 
 /* ---------- экспорт текста ---------- */
-function texLin(a,names,c0){let s='';a.forEach((q,j)=>{if(q.z)return;const neg=q.s<0,abs=q.abs();const co=abs.eq(Q1)?'':(abs.d===1?String(abs.n):`\\frac{${abs.n}}{${abs.d}}`);const nm=names[j].replace(/^([a-zA-Z]+)_?(\d+)('*)$/,'$1_{$2}$3');s+=(s?(neg?' - ':' + '):(neg?'-':''))+co+nm});
-  if(c0&&!c0.z){const ab=c0.abs();s+=(s?(c0.s<0?' - ':' + '):(c0.s<0?'-':''))+(ab.d===1?ab.n:`\\frac{${ab.n}}{${ab.d}}`)}return s||'0'}
-const texQ=q=>(q.s<0?'-':'')+(q.d===1?Math.abs(q.n):`\\frac{${Math.abs(q.n)}}{${q.d}}`);
+function texLin(a,names,c0){let s='';a.forEach((q,j)=>{if(q.z)return;const neg=q.s<0,abs=q.abs();const co=abs.eq(Q1)?'':(abs.int?abs.ns:`\\frac{${abs.ns}}{${abs.ds}}`);const nm=names[j].replace(/^([a-zA-Z]+)_?(\d+)('*)$/,'$1_{$2}$3');s+=(s?(neg?' - ':' + '):(neg?'-':''))+co+nm});
+  if(c0&&!c0.z){const ab=c0.abs();s+=(s?(c0.s<0?' - ':' + '):(c0.s<0?'-':''))+(ab.int?ab.ns:`\\frac{${ab.ns}}{${ab.ds}}`)}return s||'0'}
+const texQ=q=>(q.s<0?'-':'')+(q.int?q.as:`\\frac{${q.as}}{${q.ds}}`);
 const texOp=o=>o==='<='?'\\le':o==='>='?'\\ge':'=';
 function texProb(G,zn){const L=[`${zn} = ${texLin(G.c,G.vars,G.c0)} \\to \\${G.sense}`];G.cons.forEach(c=>L.push(`${texLin(c.a,G.vars)} ${texOp(c.op)} ${texQ(c.b)}`));
   const ge=G.vars.filter((_,j)=>G.sign[j]==='ge'),le=G.vars.filter((_,j)=>G.sign[j]==='le');const t=v=>v.map(n=>n.replace(/^([a-zA-Z]+)_?(\d+)$/,'$1_{$2}')).join(', ');
