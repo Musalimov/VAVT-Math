@@ -587,7 +587,8 @@ function parse(str){const T=tokenize(str);let i=0;const pk=()=>T[i],nx=()=>T[i++
   const e=expr();if(i<T.length)throw{at:-1,msg:'extra'};return e}
 function hasInf(e){if(e[0]==='inf')return true;if(e[0]==='n'||e[0]==='v'||e[0]==='c')return false;if(e[0]==='f')return hasInf(e[2]);if(e[0]==='neg')return hasInf(e[1]);return hasInf(e[1])||hasInf(e[2])}
 function parseFx(str){const e=parse(str);if(hasInf(e))throw{msg:'inf'};return simp(e)}
-function parseLim(str){const s=str.trim();if(/^\+?(inf|∞|infinity)$/i.test(s))return{v:Infinity};if(/^[-−](inf|∞|infinity)$/i.test(s))return{v:-Infinity};
+/* предел: «1 000» — разряды через пробел (группы по 3 цифры); «1 00», «2 3» — ошибка, а не 1·00 = 0 */
+function parseLim(str){let s=str.trim().replace(/[\u00a0\u202f]/g,' ');if(/^[-+−]?\d{1,3}( \d{3})+([.,]\d+)?$/.test(s))s=s.replace(/ /g,'');if(/\d\s+\d/.test(s))throw{msg:'lim'};if(/^\+?(inf|∞|infinity)$/i.test(s))return{v:Infinity};if(/^[-−](inf|∞|infinity)$/i.test(s))return{v:-Infinity};
   const e=parse(s);if(hasInf(e))throw{msg:'inf'};if(has(e))throw{msg:'x'};const v=compile(simp(e))(0);if(!isFinite(v))throw{msg:'nan'};return{v,e:simp(e)}}
 
 /* ---------- печать ---------- */
