@@ -1,0 +1,1046 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Макроэкономика</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,wght@0,400;0,600;1,400;1,600&family=Manrope:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box}
+:root{
+  --bg:#eef1f5;--panel:#ffffff;--ink:#16202c;--muted:#5d6876;--line:#d8dee6;--chip:#e6eaf0;--accent:#1f7ea3;--accent-ink:#fff;--shadow:0 14px 40px rgba(20,30,45,.18);
+  --side-w:340px;--side-h:44%;
+  --s-bg:#0b0c10;--s-bgGrid:#262b33;--s-axis:#f2f2f2;--s-p1:#58c4dd;--s-p2:#ff9f43;--s-eq:#f4d345;--s-area:#83c167;--s-curve:#ff7aa8;--s-mark:#c77dff;--s-bad:#fc6255;--err:#c0392b;
+  color-scheme:light;box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);
+  background:var(--bg);
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){--bg:#0e131b;--panel:#151c27;--ink:#e6ebf2;--muted:#8d99a8;--line:#253041;--chip:#1d2633;--accent:#58c4dd;--accent-ink:#06222c;--shadow:0 14px 40px rgba(0,0,0,.5);--err:#ff8a7a;color-scheme:dark}
+}
+:root[data-theme="dark"]{--bg:#0e131b;--panel:#151c27;--ink:#e6ebf2;--muted:#8d99a8;--line:#253041;--chip:#1d2633;--accent:#58c4dd;--accent-ink:#06222c;--shadow:0 14px 40px rgba(0,0,0,.5);--err:#ff8a7a;color-scheme:dark}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+html,body{height:100%;margin:0}
+body{background:var(--bg);color:var(--ink);font-family:"Manrope",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;font-size:.9rem;overflow:hidden;-webkit-tap-highlight-color:transparent}
+button,input,select{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.serif{font-family:"Source Serif 4",Georgia,"Times New Roman",serif}
+.app{height:100%;display:flex;flex-direction:column}
+.top{display:flex;align-items:center;gap:.5rem;padding:.5rem .75rem;background:var(--panel);border-bottom:1px solid var(--line);flex:none}
+.brand{min-width:0;flex:0 1 auto;font-family:"Source Serif 4",Georgia,serif;font-size:1.2rem;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;letter-spacing:-.01em}
+.brand .sub{font-style:italic;font-weight:400;color:var(--muted)}
+.spacer{flex:1}
+.seg{display:inline-flex;flex-wrap:wrap;gap:2px;background:var(--chip);border-radius:10px;padding:3px}
+.seg button{border:0;background:transparent;color:var(--muted);font-weight:600;font-size:.82rem;padding:.35rem .75rem;border-radius:8px;cursor:pointer}
+.seg button.on{background:var(--panel);color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.18)}
+.btn{display:inline-flex;align-items:center;gap:.35rem;border:1px solid var(--line);background:var(--panel);color:var(--ink);border-radius:9px;padding:.42rem .75rem;cursor:pointer;font-weight:600;font-size:.84rem;white-space:nowrap}
+.btn:hover{border-color:var(--accent)}
+.btn.sm{padding:.3rem .6rem;font-size:.8rem}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.btn.ghost{border-color:transparent;background:transparent}
+.btn.ghost:hover{background:var(--chip)}
+.btn .ic{font-family:"Source Serif 4",serif;font-size:1.05rem;line-height:1}
+.main{flex:1;min-height:0;display:flex;position:relative}
+.stage{position:relative;flex:1;min-width:0;min-height:0;overflow:hidden;background:var(--s-bg)}
+canvas{display:block;width:100%;height:100%;touch-action:none;cursor:grab}
+.side{width:var(--side-w);flex:none;overflow-y:auto;background:var(--bg);border-left:1px solid var(--line);padding:.6rem;display:flex;flex-direction:column;gap:.55rem;overscroll-behavior:contain}
+.main[data-dock="left"]{flex-direction:row-reverse}
+.main[data-dock="left"] .side{border-left:0;border-right:1px solid var(--line)}
+.main[data-dock="bottom"]{flex-direction:column}
+.main[data-dock="bottom"] .side{width:auto;height:var(--side-h);border-left:0;border-top:1px solid var(--line)}
+.main[data-dock="float"] .side{position:absolute;z-index:6;width:min(var(--side-w),calc(100% - 16px));max-height:calc(100% - 16px);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow)}
+.grip{display:none;align-items:center;justify-content:center;gap:.4rem;color:var(--muted);font-size:.78rem;padding:.2rem 0 .1rem;cursor:move;touch-action:none;user-select:none;flex:none}
+.grip::before{content:"";width:42px;height:4px;border-radius:2px;background:var(--line)}
+.main[data-dock="float"] .grip{display:flex}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:12px;flex:none}
+.panel.dragging{opacity:.45}
+.ph{display:flex;align-items:center;gap:.2rem;padding:.35rem .35rem .35rem .25rem}
+.handle{cursor:grab;color:var(--muted);padding:.2rem .3rem;user-select:none;font-size:1rem;line-height:1}
+.ph h3{margin:0;font-family:"Source Serif 4",Georgia,serif;font-size:1.02rem;font-weight:600;flex:1;cursor:pointer;user-select:none}
+.icon{width:28px;height:28px;display:inline-grid;place-items:center;border:0;background:transparent;color:var(--muted);border-radius:7px;cursor:pointer;font-size:.9rem;flex:none}
+.icon:hover{background:var(--chip);color:var(--ink)}
+.chev{transition:transform .15s}
+.pb{padding:.15rem .8rem .8rem}
+.panel.collapsed .pb{display:none}
+.panel.collapsed .chev{transform:rotate(-90deg)}
+.note{color:var(--muted);font-size:.8rem;line-height:1.45;margin:.55rem 0}
+.row{display:flex;flex-wrap:wrap;gap:.4rem;margin-top:.5rem}
+.q{display:inline-grid;place-items:center;width:18px;height:18px;border-radius:50%;border:1px solid var(--line);background:var(--chip);color:var(--muted);font-size:.68rem;font-weight:700;cursor:pointer;vertical-align:middle;padding:0;margin-left:.2rem}
+.q:hover{border-color:var(--accent);color:var(--accent)}
+.ci{color:var(--s-i)}.cj{color:var(--s-j)}.ck{color:var(--s-k)}
+.matwrap{display:flex;justify-content:center;padding-top:.35rem}
+.mat{display:inline-grid;gap:.35rem;padding:.4rem .7rem;position:relative}
+.mat::before,.mat::after{content:"";position:absolute;top:0;bottom:0;width:9px;border:2px solid var(--ink)}
+.mat::before{left:0;border-right:0}
+.mat::after{right:0;border-left:0}
+.mat input{width:3.9rem;text-align:center;font-family:"JetBrains Mono",ui-monospace,Menlo,monospace;font-size:.92rem;border:1px solid var(--line);border-bottom-width:3px;border-radius:8px;background:var(--bg);padding:.42rem .15rem}
+.mat input[data-c="0"]{border-bottom-color:var(--s-i)}
+.mat input[data-c="1"]{border-bottom-color:var(--s-j)}
+.mat input[data-c="2"]{border-bottom-color:var(--s-k)}
+.chips{display:flex;flex-wrap:wrap;gap:.35rem}
+.chip{border:1px solid var(--line);background:var(--bg);border-radius:999px;padding:.32rem .7rem;font-size:.8rem;font-weight:600;cursor:pointer}
+.chip:hover,.chip.on{border-color:var(--accent);color:var(--accent)}
+.chk{display:flex;align-items:center;gap:.45rem;margin-top:.65rem;font-size:.84rem;cursor:pointer}
+.chk input{accent-color:var(--accent);width:16px;height:16px;flex:none}
+.hist{margin-top:.55rem;font-size:.8rem;color:var(--muted);line-height:1.5}
+.hist b{color:var(--ink);font-weight:600}
+.tex textarea{width:100%;margin-top:.6rem;font-family:"JetBrains Mono",ui-monospace,Menlo,monospace;font-size:.78rem;border:1px solid var(--line);border-radius:8px;background:var(--bg);padding:.5rem;resize:vertical;color:var(--ink)}
+.tex .row{align-items:center}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.rel{display:flex;flex-wrap:wrap;gap:.35rem;align-items:center;margin-top:.8rem;font-family:"Manrope",system-ui,sans-serif;font-size:.8rem;color:var(--muted)}
+.keys{display:grid;grid-template-columns:auto 1fr;gap:.5rem .9rem;align-items:center;margin-top:.4rem}
+kbd{display:inline-block;min-width:1.6rem;text-align:center;padding:.15rem .45rem;border:1px solid var(--line);border-bottom-width:2px;border-radius:6px;background:var(--bg);font-family:"Manrope",system-ui,sans-serif;font-size:.8rem;font-weight:700;white-space:nowrap}
+.toast{position:absolute;left:50%;top:12px;transform:translateX(-50%);padding:.4rem .8rem;border-radius:9px;background:color-mix(in srgb,var(--s-bg) 88%,transparent);border:1px solid color-mix(in srgb,var(--s-axis) 18%,transparent);color:var(--s-axis);font-size:.85rem;font-weight:600;pointer-events:none;opacity:0;transition:opacity .2s}
+.toast.on{opacity:1}
+@media (max-width:560px),(hover:none){.hk{display:none}}
+.mulrow{display:flex;align-items:center;justify-content:center;gap:.6rem;margin-top:.55rem}
+.ml{font-family:"Source Serif 4",Georgia,serif;font-style:italic;font-size:1.05rem;min-width:3.4rem;text-align:right;white-space:nowrap}
+#mulA input,#mulB input{width:3.3rem;font-size:.85rem}
+.mulres .mini{font-family:"Source Serif 4",Georgia,serif;font-size:1.05rem;padding:.15rem .6rem;gap:.15rem .8rem}
+.steps summary{cursor:pointer;font-size:.82rem;color:var(--accent);font-weight:600;margin-top:.5rem}
+.steps div{font-family:"Source Serif 4",Georgia,serif;font-size:.92rem;line-height:1.7;margin-top:.3rem;overflow-x:auto}
+.chap h3{display:flex;align-items:baseline;gap:.6rem;margin:1.3rem 0 .1rem;font-family:"Source Serif 4",Georgia,serif;font-size:1.2rem;font-weight:600}
+.chap h3 .cnt{margin-left:auto;font-family:"Manrope",system-ui,sans-serif;font-size:.75rem;font-weight:600;color:var(--muted)}
+.prog{display:flex;align-items:center;gap:.7rem;font-size:.8rem;color:var(--muted);margin:.2rem 0 .3rem}
+.prog .bar{flex:1;min-width:60px;height:6px;border-radius:3px;background:var(--chip);overflow:hidden;display:block}
+.prog .bar i{display:block;height:100%;background:var(--accent);border-radius:3px}
+.linkbtn{border:0;background:none;color:var(--accent);font:inherit;font-weight:600;cursor:pointer;padding:0}
+.rd{color:var(--accent);margin-right:.4rem}
+.readbtn.on{border-color:var(--accent);color:var(--accent)}
+.ill{margin:0 0 .85rem;display:flex;justify-content:center}
+.ill svg{width:100%;max-width:300px;height:auto;display:block;border-radius:10px;border:1px solid var(--line)}
+.crm{margin-top:.35rem;font-size:.95rem;line-height:1.7}
+.top .seg{flex-wrap:nowrap;flex:none}
+@media (max-width:560px){#langSeg{display:none}.cap{font-size:.82rem;padding:.45rem 1.9rem .45rem .7rem}}
+.more summary{cursor:pointer;font-size:.82rem;color:var(--accent);font-weight:600;margin-top:.6rem}
+.kh{position:relative;display:inline-block;line-height:1}
+.kh::after{content:"";position:absolute;left:50%;top:-.13em;width:.2em;height:.2em;margin-left:-.1em;border-left:.06em solid currentColor;border-top:.06em solid currentColor;transform:rotate(45deg);pointer-events:none}
+.m .kh::after,i .kh::after{margin-left:-.02em}
+.gtabs{margin:0 0 .75rem;font-family:"Manrope",system-ui,sans-serif}
+.pane[hidden]{display:none}
+.mm{vertical-align:middle;margin:.15rem .2rem;font-size:.92em;font-style:normal}
+.rng{display:grid;grid-template-columns:1fr auto;gap:.25rem .5rem;margin-top:.7rem;font-size:.82rem;color:var(--muted)}
+.rng output{color:var(--ink);font-weight:600;font-variant-numeric:tabular-nums}
+.rng input{grid-column:1/-1;width:100%;accent-color:var(--accent)}
+.props{display:grid;gap:.1rem}
+.prop{display:grid;grid-template-columns:auto 1fr;gap:.1rem .6rem;align-items:baseline;padding:.45rem 0;border-bottom:1px solid var(--line)}
+.prop:last-child{border-bottom:0}
+.prop .k{color:var(--muted);font-size:.8rem;white-space:nowrap}
+.prop .v{text-align:right;font-family:"Source Serif 4",Georgia,serif;font-size:1.02rem}
+.prop .s{grid-column:1/-1;font-size:.77rem;color:var(--muted)}
+.sw{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:.35rem;vertical-align:middle}
+.mini{display:inline-grid;gap:.05rem .6rem;padding:.05rem .5rem;border-left:1.5px solid var(--ink);border-right:1.5px solid var(--ink);border-radius:4px;font-size:.88rem;text-align:right}
+.vin{display:flex;gap:.45rem;align-items:center;flex-wrap:wrap}
+.vin label{display:flex;align-items:center;gap:.3rem;font-family:"Source Serif 4",serif;font-style:italic}
+.vin input{width:4rem;text-align:center;font-family:"JetBrains Mono",ui-monospace,monospace;border:1px solid var(--line);border-bottom:3px solid var(--s-vec);border-radius:8px;background:var(--bg);padding:.38rem .2rem}
+.vout{margin-top:.6rem;font-family:"Source Serif 4",serif;font-size:1rem;line-height:1.55}
+.toggles{display:grid;grid-template-columns:1fr 1fr;gap:.1rem .6rem}
+.toggles .chk{margin-top:.35rem;font-size:.8rem}
+.d3only{display:none}
+body.m3 .d3only{display:revert}
+body.m3 .d2only{display:none}
+.ov{position:absolute;left:10px;top:10px;padding:.45rem .7rem;border-radius:10px;background:color-mix(in srgb,var(--s-bg) 82%,transparent);border:1px solid color-mix(in srgb,var(--s-axis) 16%,transparent);color:var(--s-axis);font-family:"Source Serif 4",Georgia,serif;pointer-events:none;display:flex;align-items:center;gap:.5rem}
+.ov .bm{display:inline-grid;gap:.05rem .7rem;padding:.1rem .45rem;border-left:2px solid currentColor;border-right:2px solid currentColor;border-radius:5px;font-size:1.02rem;text-align:right;font-variant-numeric:tabular-nums}
+.ov .tt{font-size:.85rem;opacity:.75;font-style:italic}
+.cap{position:absolute;left:50%;bottom:12px;transform:translateX(-50%);width:min(560px,calc(100% - 90px));padding:.55rem 2rem .55rem .85rem;border-radius:10px;background:color-mix(in srgb,var(--s-bg) 84%,transparent);border:1px solid color-mix(in srgb,var(--s-axis) 16%,transparent);color:var(--s-axis);font-family:"Source Serif 4",Georgia,serif;font-size:.95rem;line-height:1.4}
+.cap[hidden]{display:none}
+.cap button{position:absolute;right:4px;top:4px;border:0;background:transparent;color:inherit;opacity:.6;font-size:1.1rem;cursor:pointer;width:26px;height:26px;border-radius:6px}
+.cap button:hover{opacity:1}
+.zoom{position:absolute;right:10px;top:10px;display:flex;flex-direction:column;gap:4px}
+.capOpen{position:absolute;left:10px;bottom:12px;display:inline-flex;align-items:center;gap:.4rem;height:34px;padding:0 .75rem;border-radius:9px;border:1px solid color-mix(in srgb,var(--s-axis) 18%,transparent);background:color-mix(in srgb,var(--s-bg) 82%,transparent);color:var(--s-axis);font-family:"Source Serif 4",Georgia,serif;font-size:.92rem;cursor:pointer}
+.capOpen:hover{border-color:color-mix(in srgb,var(--s-axis) 45%,transparent)}
+.capOpen[hidden]{display:none}
+.zoom button{width:34px;height:34px;border-radius:9px;border:1px solid color-mix(in srgb,var(--s-axis) 18%,transparent);background:color-mix(in srgb,var(--s-bg) 82%,transparent);color:var(--s-axis);font-size:1.05rem;cursor:pointer}
+.drawer{position:fixed;inset:0;z-index:50;display:none}
+.drawer.open{display:block}
+.scrim{position:absolute;inset:0;background:rgba(5,10,18,.45)}
+.sheet{position:absolute;top:0;right:0;bottom:0;width:min(460px,100%);background:var(--panel);overflow-y:auto;padding:calc(env(safe-area-inset-top,0px) + .9rem) 1.1rem calc(env(safe-area-inset-bottom,0px) + 2rem);box-shadow:var(--shadow);overscroll-behavior:contain}
+.sh-h{display:flex;align-items:center;gap:.5rem;margin-bottom:.6rem}
+.sh-h h2{margin:0;flex:1;font-family:"Source Serif 4",Georgia,serif;font-weight:600;font-size:1.45rem}
+.sheet h4{font-family:"Source Serif 4",Georgia,serif;font-size:1.05rem;font-weight:600;margin:1.3rem 0 .5rem}
+.search{width:100%;border:1px solid var(--line);background:var(--bg);border-radius:10px;padding:.6rem .8rem;margin-bottom:.6rem}
+.term{border-bottom:1px solid var(--line)}
+.term summary{list-style:none;cursor:pointer;padding:.75rem .1rem;display:flex;align-items:baseline;gap:.6rem}
+.term summary::-webkit-details-marker{display:none}
+.term summary span{font-family:"Source Serif 4",Georgia,serif;font-size:1.08rem;font-weight:600;flex:1}
+.term summary small{color:var(--muted);font-style:italic;font-family:"Source Serif 4",serif}
+.term[open] summary span{color:var(--accent)}
+.tb{padding:0 .1rem 1rem;font-family:"Source Serif 4",Georgia,serif;font-size:1rem;line-height:1.6;max-width:62ch}
+.tb p{margin:0 0 .6rem}
+.m{font-style:italic;white-space:nowrap}
+.colors{display:grid;grid-template-columns:1fr 1fr;gap:.45rem .8rem}
+.colors label{display:flex;align-items:center;gap:.5rem;font-size:.82rem}
+.colors input{width:32px;height:26px;border:1px solid var(--line);border-radius:6px;padding:0;background:none;cursor:pointer;flex:none}
+@media (max-width:560px){.top{gap:.3rem;padding:.45rem .5rem}.seg button{padding:.3rem .5rem}.btn.ghost{padding:.4rem .45rem}.brand .sub,.btn .lbl{display:none}.brand{font-size:1.05rem}.toggles{grid-template-columns:1fr}.cap{font-size:.85rem;bottom:8px;width:calc(100% - 60px);left:10px;transform:none}.colors{grid-template-columns:1fr 1fr}}
+@media (prefers-reduced-motion:reduce){.chev{transition:none}}
+
+.d3only,.d2only{display:revert}
+body:not(.mF) .Fonly,body:not(.mI) .Ionly,body:not(.mF):not(.mI) .FIonly,body.mF .Aonly,body.mI .Aonly,body.mI .noI{display:none!important}#modeSeg button{padding:.35rem .6rem}
+.fx{display:flex;align-items:center;gap:.5rem;margin-top:.2rem}
+.fx input,.lims input{flex:1;min-width:0;width:100%;font-family:"JetBrains Mono",ui-monospace,Menlo,monospace;font-size:.92rem;border:1px solid var(--line);border-bottom:3px solid var(--s-f);border-radius:8px;background:var(--bg);padding:.48rem .55rem}
+.lims{display:grid;grid-template-columns:1fr 1fr;gap:.5rem;margin-top:.5rem}
+.lims label{display:flex;align-items:center;gap:.4rem}
+.lims input{border-bottom-color:var(--s-lim)}
+.ml{font-family:"Source Serif 4",Georgia,serif;font-style:italic;font-size:1.02rem;white-space:nowrap;min-width:0;text-align:left}
+.fprev{font-family:"Source Serif 4",Georgia,serif;font-size:1.12rem;text-align:center;margin-top:.7rem;line-height:1.9;overflow-x:auto;padding:.1rem 0}
+.err{color:var(--err)}
+code{font-family:"JetBrains Mono",ui-monospace,monospace;font-size:.92em;background:var(--chip);border-radius:4px;padding:0 .25em}
+.fr{display:inline-flex;flex-direction:column;vertical-align:middle;text-align:center;font-size:.88em;margin:0 .12em;line-height:1.2}
+.fr>.fn{border-bottom:1px solid currentColor;padding:0 .2em .06em}
+.fr>.fd{padding:.06em .2em 0}
+.sq{white-space:nowrap}.sq .rad{border-top:1px solid currentColor;padding:0 .12em 0 .05em;margin-left:.02em}
+sup{font-size:.72em;line-height:0}
+.ig{font-family:"Source Serif 4",Georgia,serif;font-size:1.4em;font-style:normal;vertical-align:-.16em;margin-right:.06em;line-height:1}
+.igl{display:inline-flex;align-items:center;vertical-align:middle;margin-right:.06em}
+.igl .ig{vertical-align:0;margin-right:0;font-size:1.65em}
+.igl .lm{display:inline-flex;flex-direction:column;justify-content:space-between;font-size:.64em;line-height:1;align-self:stretch;margin-left:.02em;margin-right:.18em;padding:0;min-height:2.9em}.igl .lm>span:first-child{margin-left:.35em}
+.mx{font-family:"Source Serif 4",Georgia,serif;font-size:1rem;line-height:2;overflow-x:auto;padding:.1rem 0}
+.mchips{display:flex;flex-wrap:wrap;gap:.35rem;margin-top:.2rem}
+.mchips .chip{border-color:var(--accent);color:var(--accent)}
+.idea{font-family:"Source Serif 4",Georgia,serif;font-size:.95rem;line-height:1.5;margin:.6rem 0 .2rem}
+.stp{margin:.4rem 0 0;padding-left:1.4rem;overflow-x:auto;font-family:"Source Serif 4",Georgia,serif;font-size:.93rem;line-height:1.75}
+.stp li{margin:.35rem 0 .35rem calc(var(--d,0)*.85rem);padding-left:.15rem}
+.stp{list-style:none;counter-reset:st}.stp li{position:relative}
+.stp li:not(.sub){counter-increment:st}.stp li::before{position:absolute;left:-1.35rem;color:var(--muted);font-family:Manrope,system-ui,sans-serif;font-size:.8rem;font-weight:700;top:.12rem}
+.stp li:not(.sub)::before{content:counter(st) '.'}.stp li.sub::before{content:'–';font-weight:400}
+.stp li.sub{color:color-mix(in srgb,var(--ink) 88%,var(--muted))}
+.ans{margin-top:.75rem;padding:.55rem .7rem;border:1px solid var(--line);border-left:3px solid var(--accent);border-radius:10px;background:var(--bg)}
+.ans .k{font-size:.76rem;font-weight:700;color:var(--muted)}
+.ans .note{margin:.35rem 0 0}
+.ok{color:var(--muted)}
+.try{margin:.3rem 0 0;padding-left:1.2rem;font-size:.82rem;line-height:1.5;color:var(--muted)}
+.chip.mxc{font-family:"Source Serif 4",Georgia,serif;font-weight:400;font-size:.92rem;padding:.25rem .65rem;line-height:1.6}
+.chip.mxc .ig{font-size:1.15em}
+.chip.mxc .fr{font-size:.78em}
+.guide{margin:.4rem 0 0;padding-left:1.25rem;display:grid;gap:.6rem;font-size:.84rem;line-height:1.45}
+.guide li::marker{color:var(--muted);font-weight:700}
+.guide li .chip{margin-top:.3rem;font-weight:500;font-family:"Source Serif 4",Georgia,serif}
+.guide li.on{color:var(--ink)}
+.guide li.on::marker{color:var(--accent)}
+.guide li.on>div>.linkbtn::after{content:" ●";color:var(--accent);font-size:.7em;vertical-align:.15em}
+.ov{max-width:calc(100% - 70px);flex-direction:column;align-items:flex-start;gap:.15rem;font-size:1.05rem;line-height:1.7}
+.ov .fr{font-size:.8em}
+.ov>span:first-child{overflow-x:auto;max-width:100%;white-space:nowrap}
+#modeSeg button{font-family:"Source Serif 4",Georgia,serif;font-size:.95rem;font-style:italic}
+.top .seg{flex-wrap:nowrap;flex:none}
+.prop .v .fr{font-size:.8em}
+
+#pIn{width:100%;min-height:9.5rem;resize:vertical;font-family:"JetBrains Mono",ui-monospace,Menlo,monospace;font-size:.86rem;line-height:1.5;border:1px solid var(--line);border-left:3px solid var(--s-line);border-radius:8px;background:var(--bg);color:var(--ink);padding:.5rem .6rem;margin-top:.2rem}
+.prob{font-family:"Source Serif 4",Georgia,serif;font-size:1rem;line-height:1.75;margin-top:.55rem;overflow-x:auto}
+.sys{display:inline-grid;vertical-align:middle;grid-template-columns:auto auto auto;column-gap:.45em;align-items:baseline;border-left:2px solid var(--muted);padding-left:.55em;margin:.15rem 0;font-family:"Source Serif 4",Georgia,serif}
+.sys>span:nth-child(3n+1){text-align:right}.sys .no{color:var(--muted);font-size:.8em;margin-left:.6em}
+.prob .obj{display:block}
+.prob .sg{display:block;color:var(--muted);font-size:.92em}
+.tw{overflow-x:auto;margin:.45rem 0 .6rem}
+table.tab{border-collapse:collapse;font-family:"Source Serif 4",Georgia,serif;font-size:.88rem;min-width:100%}
+table.tab th,table.tab td{padding:.18rem .42rem;text-align:center;border-bottom:1px solid var(--line);white-space:nowrap}
+table.tab th{font-weight:600;color:var(--muted);font-size:.8rem}
+table.tab td.bs{color:var(--muted);font-style:italic;text-align:left}
+table.tab tr.zr td{border-top:2px solid var(--muted);border-bottom:none}
+table.tab td.b,table.tab th.b{border-left:2px solid var(--muted)}
+table.tab td.pc{background:color-mix(in srgb,var(--accent) 10%,transparent)}
+table.tab td.piv{outline:2px solid var(--s-opt);outline-offset:-2px;font-weight:700;background:color-mix(in srgb,var(--s-opt) 15%,transparent)}
+table.tab .fr{font-size:.8em}
+.stp{margin:.4rem 0 0;padding-left:1.4rem;font-family:"Source Serif 4",Georgia,serif;font-size:.93rem;line-height:1.65;list-style:none;counter-reset:st}
+.stp>li{position:relative;margin:.4rem 0;counter-increment:st}
+.stp>li::before{content:counter(st) '.';position:absolute;left:-1.35rem;color:var(--muted);font-family:Manrope,system-ui,sans-serif;font-size:.8rem;font-weight:700;top:.12rem}
+.stp .sub{display:block;margin:.2rem 0 .1rem .4rem;color:color-mix(in srgb,var(--ink) 88%,var(--muted))}
+.vt{border-collapse:collapse;font-family:"Source Serif 4",Georgia,serif;font-size:.9rem;margin:.3rem 0}
+.vt td,.vt th{padding:.12rem .6rem;border-bottom:1px solid var(--line);text-align:left}
+.vt tr.best td{color:var(--s-opt);font-weight:700}
+.rep{border-collapse:collapse;width:100%;font-size:.82rem;margin:.35rem 0 .7rem}
+.rep th{color:var(--muted);font-weight:700;text-align:right;padding:.2rem .35rem;border-bottom:1px solid var(--line);font-size:.74rem}
+.rep th:first-child,.rep td:first-child{text-align:left}
+.rep td{padding:.22rem .35rem;border-bottom:1px solid var(--line);text-align:right;font-family:"Source Serif 4",Georgia,serif;font-size:.92rem}
+.mxs{font-family:"Source Serif 4",Georgia,serif}
+.h4{font-size:.78rem;font-weight:800;color:var(--muted);margin:.8rem 0 .2rem;letter-spacing:.01em}
+.steplog{margin:.5rem 0 .2rem;font-family:"Source Serif 4",Georgia,serif;font-size:.92rem;line-height:1.55}
+.cs{font-family:"Source Serif 4",Georgia,serif;line-height:1.8;font-size:.95rem}
+#modeSeg button.dis{opacity:.42;cursor:not-allowed}
+#pre .pg{margin:.55rem 0 .3rem}#pre .pg:first-child{margin-top:.15rem}
+
+.frm{display:grid;grid-template-columns:auto 1fr;gap:.45rem .55rem;align-items:center;margin-top:.5rem}
+.frm label{font-size:.82rem;color:var(--muted);font-weight:600}
+.frm input,.frm select,.frm textarea{width:100%;min-width:0;font-family:"JetBrains Mono",ui-monospace,monospace;font-size:.88rem;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink);padding:.38rem .5rem}
+.frm select{font-family:inherit}
+.frm textarea{grid-column:1/-1;min-height:4.5rem;resize:vertical;line-height:1.5}
+.frm .full{grid-column:1/-1}
+#topicSeg{flex-wrap:wrap}
+#topicSeg button{flex:1 1 auto}
+.ans .big{font-family:"Source Serif 4",Georgia,serif;font-size:1.15rem;font-weight:700;margin:.15rem 0}
+.mx2{font-family:"Source Serif 4",Georgia,serif;line-height:1.75;overflow-x:auto}
+table.gm{border-collapse:separate;border-spacing:4px;margin:.3rem 0;font-family:'Source Serif 4',Georgia,serif}table.gm td,table.gm th{padding:.3rem .55rem;border-radius:6px;text-align:center;white-space:nowrap}table.gm td{background:var(--chip)}table.gm td.ne{outline:2px solid var(--s-eq);outline-offset:-2px}table.gm .b1{color:var(--s-p1);font-weight:800;text-decoration:underline}table.gm .b2{color:var(--s-p2);font-weight:800;text-decoration:underline}table.gm th{color:var(--muted);font-size:.8rem}
+#topicBox{display:grid;gap:.45rem;margin-top:.2rem}#topicBox .tgl{font-size:.7rem;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;margin:0 0 .2rem .1rem}#topicBox .seg{display:flex;flex-wrap:wrap}#topicBox .seg button{flex:1 1 auto}
+table.fac tr[data-shock]{cursor:pointer}table.fac tr[data-shock]:hover td{background:var(--chip)}table.fac tr.on td{background:var(--chip);outline:1px solid var(--s-eq)}table.fac b.up{color:var(--s-area)}table.fac b.dn{color:var(--s-bad)}table.fac .z{color:var(--muted)}table.fac{font-size:.82rem;width:100%}table.fac td,table.fac th{padding:.28rem .3rem}table.fac td:nth-child(n+3),table.fac th:nth-child(n+3){white-space:nowrap;text-align:center}table.fac td:first-child{min-width:6.5rem}table.fac td:nth-child(-n+2){white-space:normal}table.fac td:nth-child(2){max-width:7.5rem}table.fac td:nth-child(2){color:var(--muted);font-size:.78rem}
+</style>
+<body>
+<div class="app">
+  <header class="top">
+    <div class="brand" data-ih="brand"></div>
+    <div class="spacer"></div>
+    <div class="seg" id="langSeg"><button data-l="ru">RU</button><button data-l="en">EN</button></div>
+    <button class="btn ghost" id="openGloss" data-it="glossT"><span class="ic">?</span><span class="lbl" data-i="gloss"></span></button>
+    <button class="btn ghost hk" id="openKeys" data-it="keys"><span class="ic">⌨</span></button>
+    <button class="btn ghost" id="openSet" data-it="settings"><span class="ic">⚙</span><span class="lbl" data-i="settings"></span></button>
+  </header>
+  <div class="main" id="main">
+    <div class="stage" id="stage">
+      <canvas id="cv"></canvas>
+      <div class="ov" id="ov"></div>
+      <div class="toast" id="toast"></div>
+      <button class="capOpen" id="capOpen" hidden><span aria-hidden="true">💡</span><span data-i="capOpen"></span></button>
+      <div class="cap" id="cap"><span id="capT"></span><button id="capX" data-it="capX">×</button></div>
+    </div>
+    <aside class="side" id="side">
+      <div class="grip" id="grip" data-i="grip"></div>
+      <section class="panel" data-id="topic">
+        <div class="pb">
+          <div id="topicBox"></div>
+          
+          <div class="frm" id="form"></div>
+          <p class="note err" id="fErr" hidden></p>
+          <details class="more"><summary data-i="howType"></summary><div class="note" data-ih="typeHelp"></div></details>
+        </div>
+      </section>
+      <section class="panel" data-id="presets"><div class="pb"><div class="chips" id="pre"></div></div></section>
+      <section class="panel" data-id="solve"><div class="pb"><div id="solve"></div></div></section>
+      <section class="panel" data-id="factors"><div class="pb"><div id="fac"></div></div></section>
+      <section class="panel" data-id="values"><div class="pb"><div class="props" id="props"></div></div></section>
+      <section class="panel" data-id="show"><div class="pb"><div class="toggles" id="tog"></div></div></section>
+      <section class="panel" data-id="export">
+        <div class="pb">
+          <div class="row" style="margin-top:.2rem"><button class="btn sm" id="xPng" data-i="xPng" disabled></button><button class="btn sm" id="xVid" data-i="xVid" disabled style="display:none"></button></div>
+          <label class="chk"><input type="checkbox" id="xStamp" checked> <span data-i="xStamp"></span></label>
+          <p class="note" id="xNote"></p>
+          <div class="tex">
+            <div class="seg" id="xFmt"><button data-f="tex" class="on">LaTeX</button><button data-f="np">Python</button><button data-f="txt" data-i="fmtText"></button></div>
+            <textarea id="xTex" readonly rows="6" aria-label="LaTeX"></textarea>
+            <div class="row"><button class="btn sm" id="xCopy" data-i="xCopy"></button></div>
+          </div>
+        </div>
+      </section>
+    </aside>
+  </div>
+</div>
+<div class="drawer" id="dGloss" role="dialog">
+  <div class="scrim" data-close></div>
+  <div class="sheet">
+    <div class="sh-h"><h2 data-i="gloss"></h2><button class="icon" data-close data-it="close">✕</button></div>
+    <input class="search" id="gq" type="search">
+    <div id="gl"></div>
+  </div>
+</div>
+
+<div class="drawer" id="dKeys" role="dialog">
+  <div class="scrim" data-close></div>
+  <div class="sheet">
+    <div class="sh-h"><h2 data-i="keys"></h2><button class="icon" data-close data-it="close">✕</button></div>
+    <p class="note" data-i="keysNote"></p>
+    <div class="keys" id="keysList"></div>
+  </div>
+</div>
+
+<div class="drawer" id="dSet" role="dialog">
+  <div class="scrim" data-close></div>
+  <div class="sheet">
+    <div class="sh-h"><h2 data-i="settings"></h2><button class="icon" data-close data-it="close">✕</button></div>
+    <h4 data-i="s_lang"></h4>
+    <div class="seg" id="langSeg2"><button data-l="ru">Русский</button><button data-l="en">English</button></div>
+    <h4 data-i="s_ui"></h4>
+    <div class="seg" id="uiSeg"><button data-v="auto" data-i="ui_auto"></button><button data-v="light" data-i="ui_light"></button><button data-v="dark" data-i="ui_dark"></button></div>
+    <h4 data-i="s_dock"></h4>
+    <div class="seg" id="dockSeg"><button data-v="auto" data-i="d_auto"></button><button data-v="right" data-i="d_right"></button><button data-v="left" data-i="d_left"></button><button data-v="bottom" data-i="d_bottom"></button><button data-v="float" data-i="d_float"></button></div>
+    <label class="rng"><span data-i="s_w"></span><output id="wOut"></output><input type="range" id="wR" min="240" max="560" step="10"></label>
+    <label class="rng"><span data-i="s_h"></span><output id="hOut"></output><input type="range" id="hR" min="25" max="75" step="1"></label>
+    <label class="rng"><span data-i="s_f"></span><output id="fOut"></output><input type="range" id="fR" min="80" max="130" step="5"></label>
+    <label class="rng"><span data-i="s_l"></span><output id="lOut"></output><input type="range" id="lR" min="0.5" max="2.5" step="0.1"></label>
+    <h4 data-i="s_pal"></h4>
+    <div class="chips" id="palChips"></div>
+    <p class="note" data-i="palNote"></p>
+    <div class="colors" id="colors"></div>
+    <h4 data-i="s_blocks"></h4>
+    <p class="note" data-i="blocksNote"></p>
+    <h4 data-i="keys"></h4>
+    <div class="row"><button class="btn sm" id="openKeys2" data-i="showKeys"></button></div>
+    <h4 data-i="s_reset"></h4>
+    <div class="row"><button class="btn sm" id="resetOrder" data-i="resetOrder"></button><button class="btn sm" id="resetAll" data-i="resetAll"></button></div>
+  </div>
+</div>
+
+<script>
+(()=>{
+'use strict';
+/* ---------- выражения от двух переменных x, y ---------- */
+function exprXY(src){const s=src.replace(/[−–]/g,'-').replace(/,/g,'.').replace(/\s+/g,'').replace(/x1/g,'x').replace(/x2/g,'y').replace(/π/g,'pi');let i=0;
+  const pk=()=>s[i],eat=c=>{if(s.startsWith(c,i)){i+=c.length;return true}return false};const F={sin:Math.sin,cos:Math.cos,exp:Math.exp,ln:Math.log,log:Math.log,sqrt:Math.sqrt,abs:Math.abs};
+  const cmp=()=>{let a=add();for(;;){if(eat('<=')){const b=add(),A=a;a=(x,y)=>A(x,y)<=b(x,y)+1e-12?1:0}else if(eat('>=')){const b=add(),A=a;a=(x,y)=>A(x,y)>=b(x,y)-1e-12?1:0}else if(eat('<')){const b=add(),A=a;a=(x,y)=>A(x,y)<b(x,y)?1:0}else if(eat('>')){const b=add(),A=a;a=(x,y)=>A(x,y)>b(x,y)?1:0}else return a}};
+  const add=()=>{let a=mul();for(;;){if(eat('+')){const b=mul(),A=a;a=(x,y)=>A(x,y)+b(x,y)}else if(pk()==='-'){i++;const b=mul(),A=a;a=(x,y)=>A(x,y)-b(x,y)}else return a}};
+  const mul=()=>{let a=un();for(;;){if(eat('*')){const b=un(),A=a;a=(x,y)=>A(x,y)*b(x,y)}else if(eat('/')){const b=un(),A=a;a=(x,y)=>A(x,y)/b(x,y)}else if(i<s.length&&/[0-9a-z(.]/i.test(pk())){const b=un(),A=a;a=(x,y)=>A(x,y)*b(x,y)}else return a}};
+  const un=()=>{if(eat('-')){const a=un();return(x,y)=>-a(x,y)}if(eat('+'))return un();return pw()};
+  const pw=()=>{const b=at();if(eat('^')){const e=un();return(x,y)=>Math.pow(b(x,y),e(x,y))}return b};
+  const at=()=>{if(eat('(')){const e=cmp();if(!eat(')'))throw{msg:'expr'};return e}const m=/^(\d+\.?\d*|\.\d+)/.exec(s.slice(i));if(m){i+=m[0].length;const v=+m[0];return()=>v}
+    const w=/^[a-z]+/i.exec(s.slice(i));if(!w)throw{msg:'expr'};const n=w[0].toLowerCase();
+    if(n==='x'){i++;return x=>x}if(n==='y'){i++;return(x,y)=>y}if(n==='pi'){i+=2;return()=>Math.PI}if(n==='e'&&!/^[a-z]/i.test(s[i+1]||'')){i++;return()=>Math.E}
+    for(const k of['min','max']){if(s.startsWith(k+'(',i)){i+=k.length+1;const a=cmp();if(!eat(';')&&!eat('|'))throw{msg:'expr'};const b=cmp();if(!eat(')'))throw{msg:'expr'};const f=Math[k];return(x,y)=>f(a(x,y),b(x,y))}}
+    for(const k in F)if(s.startsWith(k,i)){i+=k.length;const a=at();const f=F[k];return(x,y)=>f(a(x,y))}throw{msg:'expr'}};
+  const e=cmp();if(i<s.length)throw{msg:'expr'};return e}
+function numG(s){s=String(s).trim().replace(/[−–]/g,'-').replace(',','.');if(/^[-+]?\d*\.?\d+$/.test(s))return parseFloat(s);const m=/^([-+]?\d+)\/(\d+)$/.exec(s);if(m)return(+m[1])/(+m[2]);throw{msg:'num'}}
+/* ---------- макроэкономика: математика (по Мэнкью) ---------- */
+function gdpCalc(rows){// rows: [name, P0, Q0, P1, Q1]
+  const s=(f)=>rows.reduce((a,r)=>a+f(r),0);const nom0=s(r=>r[1]*r[2]),nom1=s(r=>r[3]*r[4]),real1=s(r=>r[1]*r[4]),cpi1=s(r=>r[3]*r[2]);
+  const defl=100*nom1/real1,cpi=100*cpi1/nom0;return{nom0,nom1,real0:nom0,real1,defl,cpi,gReal:real1/nom0-1,gNom:nom1/nom0-1,piDefl:defl/100-1,piCPI:cpi/100-1}}
+const natU=(s,f)=>s/(s+f);const okun=(du,gN=.03)=>gN-2*du;// %ΔY = 3% − 2·Δu (Мэнкью, гл. 9)
+function natInc(A,K,L,al){const Y=A*Math.pow(K,al)*Math.pow(L,1-al),MPK=al*Y/K,MPL=(1-al)*Y/L;return{Y,MPK,MPL,capShare:MPK*K/Y,labShare:MPL*L/Y}}
+function loanable(Y,a,b,G,T,c,d){// C = a + b(Y−T), I = c − d r
+  const C=a+b*(Y-T),S=Y-C-G,Spriv=Y-T-C,Spub=T-G,r=(c-S)/d;return{C,S,Spriv,Spub,r,I:S}}
+function qtheory(gM,gV,gY,r){const pi=gM+gV-gY;return{pi,i:r+pi}}
+const moneyMult=(cr,rr)=>(cr+1)/(cr+rr);
+function smallOpen(Y,a,b,G,T,c,d,rs,n0,n1){const C=a+b*(Y-T),S=Y-C-G,I=c-d*rs,NX=S-I,eps=n1?(n0-NX)/n1:NaN;return{C,S,I,NX,eps}}
+/* Солоу: y = k^α, выбытие (δ + n + g) */
+function solow(al,s,dl,n,g,k0,Tn){const br=dl+n+g,ks=Math.pow(s/br,1/(1-al)),ys=Math.pow(ks,al),cs=(1-s)*ys,kg=Math.pow(al/br,1/(1-al)),sg=al;// золотое правило: MPK = δ+n+g → s = α
+  const tr=[];let k=k0;for(let t=0;t<=Tn;t++){const y=Math.pow(k,al);tr.push({t,k,y,c:(1-s)*y,inv:s*y,dep:br*k});k=k+s*y-br*k}return{br,ks,ys,cs,kg,yg:Math.pow(kg,al),cg:Math.pow(kg,al)-br*kg,sg,tr,gY:n+g,gy:g}}
+/* кейнсианский крест: C = a + b(Y−T), Y = C + I + G (с подоходным налогом t: T = T0 + tY) */
+function kcross(a,b,I,G,T,t){const m=1/(1-b*(1-t));const Y=m*(a-b*T+I+G);return{Y,mG:m,mT:-b*m,mBB:(1-b)*m,C:a+b*(Y-T-t*Y)}}
+/* IS–LM: I = c − d r ; (M/P)d = eY − f r */
+function islm(p){const{a,b,c,d,G,T,M,P,e,f}=p;// IS: Y(1−b) = a − bT + c + G − d r ; LM: eY − f r = M/P
+  const A=a-b*T+c+G,mp=M/P;const r=(e*A-(1-b)*mp)/(e*d+(1-b)*f),Y=(A-d*r)/(1-b);const C=a+b*(Y-T),I=c-d*r;
+  const den=(1-b)+d*e/f;return{A,mp,r,Y,C,I,ISY:rr=>(A-d*rr)/(1-b),LMY:rr=>(mp+f*rr)/e,mG:1/den,mT:-b/den,mM:(d/f)/den/P,crowd:1/(1-b)-1/den}}
+/* Манделл–Флеминг: NX = n0 − n1·e, r = r* */
+function mundell(p){const{a,b,c,d,G,T,M,P,e,f,rs,n0,n1,reg}=p;const Y=(M/P+f*rs)/e;// LM* вертикальна
+  const I=c-d*rs,C=a+b*(Y-T),NX=Y-C-I-G,ex=(n0-NX)/n1;return{Y,I,C,NX,e:ex,IS:ee=>(a-b*T+I+G+n0-n1*ee)/(1-b),LMY:Y}}
+function mundellFixed(p,eFix){const{a,b,c,d,G,T,P,e,f,rs,n0,n1}=p;const I=c-d*rs,Y=(a-b*T+I+G+n0-n1*eFix)/(1-b),M=P*(e*Y-f*rs);return{Y,M,I,C:a+b*(Y-T),NX:n0-n1*eFix}}
+/* AD–AS: AD — MV = PY; SRAS: Y = Ȳ + α(P − Pᵉ) */
+function adas(M,V,Yb,al,Pe){// P·(Ȳ + α(P − Pe)) = MV → αP² + (Ȳ − αPe)P − MV = 0
+  const A=al,B=Yb-al*Pe,C=-M*V;const P=al>0?(-B+Math.sqrt(B*B-4*A*C))/(2*A):Pe;const Y=M*V/P;return{P,Y,PL:M*V/Yb,AD:Pp=>M*V/Pp,AS:Pp=>Yb+al*(Pp-Pe)}}
+/* кривая Филлипса: π = πᵉ − β(u − uⁿ) + v */
+const phillips=(pe,be,un,u,v)=>pe-be*(u-un)+v;
+const TXB={
+ru:{title:'Теория вероятностей',brand:'Тервер <span class="sub">наглядно</span>',gloss:'Справочник',glossT:'Справочник понятий и формул',settings:'Настройки',canvas:'График распределения',
+ capX:'Скрыть подсказки',capOpen:'Подсказки',grip:'перетащите панель',close:'Закрыть',drag:'Перетащить',up:'Выше',down:'Ниже',collapse:'Свернуть',
+ p_topic:'Задача',p_presets:'Задачи из сборника',p_solve:'Решение',p_values:'Характеристики',p_show:'Что показывать',p_export:'Экспорт',
+ t_bern:'Бернулли',t_dsv:'Дискретная СВ',t_dvu:'Двумерная',t_nsv:'Непрерывная СВ',t_norm:'Нормальное',
+ tt:{comb:'Раздел 1. Элементы комбинаторики: перестановки, размещения, сочетания',clas:'Раздел 2. Классическая вероятность: P(A) = m/n, урновые схемы, кости',ops:'Раздел 3. Теоремы сложения и умножения, независимые события',bayes:'Раздел 4. Формула полной вероятности и формула Байеса',bern:'Раздел 5. Повторные испытания: формула Бернулли, Пуассон, Муавр–Лаплас',dsv:'Раздел 6. Дискретная случайная величина: ряд распределения, M, D, F(x)',dvu:'Раздел 7. Двумерная дискретная величина: частные и условные законы, ковариация, корреляция',nsv:'Раздел 8. Непрерывная случайная величина: плотность, F(x), M, D, мода, медиана',norm:'Раздел 9. Нормальное распределение: вероятности, квантили, обратные задачи'},
+ p_M:z=>`Свойства математического ожидания: M(${z}) = a·M(X) + b·M(Y) + c`,p_D:z=>`Свойства дисперсии: D(${z}) = a²D(X) + b²D(Y) + 2ab·cov(X, Y)`,p_ind:'X и Y независимы, поэтому cov(X, Y) = 0, а константа c на дисперсию не влияет.',p_cov:'Ковариация через коэффициент корреляции:',j_ind:'X и Y независимы, поэтому совместная вероятность — произведение: pᵢⱼ = P(X = xᵢ)·P(Y = yⱼ).',
+ t_comb:'Комбинаторика',t_clas:'Классическая',t_ops:'Сложение, умножение',t_bayes:'Полная, Байес',
+ nota_lbl:'Обозначения:',nota_v:'ВАВТ: Φ(x)',nota_c:'Классические: Φ₀(x)',nota_vT:'Как в задачнике ВАВТ: Φ(x) — функция распределения N(0; 1) от −∞ до x',nota_cT:'Как во многих учебниках: Φ₀(x) — функция Лапласа, интеграл от 0 до x (нечётная, до 0,5)',
+ opt:{rl:{ind:'независимы',r:'известен r(X, Y)',cov:'известна cov(X, Y)'},jm:{tab:'совместной таблицей',ind:'двумя независимыми рядами'},zt:{lin:'Z = aX + bY + c',prod:'Z = X·Y + c'},kind:{perm:'перестановки Pₙ',arr:'размещения Aₙᵏ',comb:'сочетания Cₙᵏ',arrRep:'размещения с повторениями',combRep:'сочетания с повторениями',permRep:'перестановки с повторениями',prod:'правило умножения'},
+  cmode:{urn:'урна: шары разных цветов',mn:'m благоприятных из n',dice:'игральные кости'},cev:{exact:'ровно столько каждого цвета',ge:'не менее k шаров 1-го цвета',le:'не более k шаров 1-го цвета'},dev:{eq:'сумма равна',ge:'сумма не меньше',le:'сумма не больше'},
+  omode:{indep:'n независимых событий',two:'два события A и B'},oev:{all:'все произошли',none:'ни одно не произошло',one1:'хотя бы одно',exact:'ровно k',ge:'не менее k',le:'не более k',only:'только k-е'},rel:{ind:'A и B независимы',ab:'известна P(AB)',agb:'известна P(A | B)',bga:'известна P(B | A)'},bev:{A:'событие A произошло',notA:'событие A не произошло'}},
+ c_perm:'Перестановки — упорядоченные наборы из всех n различных элементов: Pₙ = n!.',c_arr:'Размещения — упорядоченные наборы k элементов из n (порядок важен): Aₙᵏ = n!/(n − k)! = n(n − 1)…(n − k + 1). Это правило умножения: на первое место n вариантов, на второе n − 1 и так далее.',
+ c_comb:'Сочетания — неупорядоченные наборы k элементов из n (порядок не важен): Cₙᵏ = n!/(k!(n − k)!). Это размещения, делённые на k! — число способов упорядочить выбранное.',c_arrR:'Размещения с повторениями: на каждое из k мест — любой из n вариантов, всего nᵏ.',
+ c_combR:'Сочетания с повторениями (например, k одинаковых предметов по n ящикам): C̄ₙᵏ = Cₙ₊ₖ₋₁ᵏ.',c_permR:'Перестановки с повторениями: n предметов, среди которых n₁, n₂, … одинаковых: P(n₁, n₂, …) = n!/(n₁!·n₂!·…).',c_prod:'Правило умножения: если k действий выполняются одно за другим n₁, n₂, …, nₖ способами, то всех вариантов N = n₁·n₂·…·nₖ.',
+ k_def:'Классическое определение: P(A) = m/n, где n — число всех равновозможных исходов, m — число благоприятных.',k_dice:(s,t)=>`Бросаем ${s} кост${s===1?'ь':s<5?'и':'ей'}: всего исходов n = 6${s>1?'<sup>'+s+'</sup>':''} = ${t}. Перебираем суммы и считаем благоприятные.`,
+ k_urn:(N,n,c)=>`Всего шаров ${N}, берём ${n}: общее число исходов n = ${c}.`,k_fav:'Благоприятные исходы — выбираем нужное число шаров каждого цвета (правило умножения):',k_sum:'Складываем варианты по числу шаров 1-го цвета:',
+ o_ind:'События независимы, поэтому',o_mul:'Теорема умножения:',o_add:'Теорема сложения для совместных событий:',o_cond:'Условные вероятности:',o_rest:'Остальные части:',o_one:'ровно одно из двух:',o_isInd:'P(AB) = P(A)·P(B): события независимы.',o_notInd:'P(AB) ≠ P(A)·P(B): события зависимы.',
+ o_list:(p,q)=>`События независимы: ${p}; вероятности противоположных: ${q}.`,o_all:'Все события произошли — по теореме умножения:',o_none:'Ни одно не произошло:',o_one1:'Хотя бы одно — через противоположное «ни одного»:',o_only:k=>`Только ${k}-е событие: оно произошло, остальные нет.`,
+ o_exact:k=>`Ровно ${k}: складываем все варианты, где произошло ровно ${k} событи${k===1?'е':'я'}.`,o_gen:'Производящая функция: коэффициент при zᵏ — вероятность ровно k событий.',o_coef:k=>`Ровно ${k} — коэффициент при z^${k}:`,o_ge:k=>`Не менее ${k} — сумма коэффициентов от z^${k}:`,o_le:k=>`Не более ${k} — сумма коэффициентов до z^${k}:`,
+ h_unk:(i,v)=>`Вероятность гипотезы H${i} = 1 − (сумма остальных) = ${v}.`,h_hyp:'Гипотезы образуют полную группу:',h_not:'Наблюдали противоположное событие Ā:',h_total:'Формула полной вероятности:',h_bayes:A=>`Формула Байеса: P(Hᵢ | ${A}) = P(Hᵢ)·P(${A} | Hᵢ)/P(${A}):`,
+ c_fI:'Интегральная теорема: Pₙ(k₁ ⩽ k ⩽ k₂) ≈ Φ₀(x₂) − Φ₀(x₁), xᵢ = (kᵢ − np)/√(npq); Φ₀ — функция Лапласа (интеграл от 0 до x).',
+ c_Nst:(m,s)=>`X ~ N(${m}; ${s}²). Используем функцию Лапласа Φ₀(x) = ∫₀ˣ φ(t)dt (нечётная, Φ₀(∞) = 0,5).`,c_Nrng:'P(x₁ < X < x₂) = Φ₀((x₂ − m)/σ) − Φ₀((x₁ − m)/σ):',c_Nlt:'P(X < x₁) = 0,5 + Φ₀((x₁ − m)/σ):',c_Ngt:'P(X > x₁) = 0,5 − Φ₀((x₁ − m)/σ):',c_Ndev:'P(|X − m| < δ) = 2Φ₀(δ/σ):',
+ c_Nqu:(p,q)=>`Квантиль: 0,5 + Φ₀((x_p − m)/σ) = ${p}, то есть Φ₀(z) = ${q}:`,c_inv:(p,q)=>`0,5 + Φ₀(z) = ${p}, значит Φ₀(z) = ${q}.`,c_Nfm:'Отсюда z = (x₁ − m)/σ и m = x₁ − σ·z:',c_Nfs:'Отсюда z = (x₁ − m)/σ и σ = (x₁ − m)/z:',
+ howType:'Как вводить',
+ typeHelp:'<p>Числа можно писать с запятой или точкой, дробью или в процентах: <code>0,25</code>, <code>1/3</code>, <code>25%</code>, <code>sqrt(9)</code>.</p><p>Ряд распределения — две строки: значения и вероятности, например <code>X: -1 0 1</code> и <code>p: 0,1 0,8 0,1</code>. Одну неизвестную вероятность можно заменить знаком <code>?</code>.</p><p>Двумерная таблица: первая строка — значения Y, дальше строки «x и вероятности», числа через пробел или точку с запятой.</p><p>Плотность или функция распределения — формула от x, как в «Интегралах»: <code>x^2</code>, <code>sin x</code>, <code>e^(-3x)</code>.</p>',
+ err:{diverg:'Интеграл от g(x) по отрезку расходится — такую функцию нельзя сделать плотностью.',lam:'λ должно быть положительным.',int:'Нужны целые неотрицательные числа.',big:'Слишком большие числа (до 500).',kn:'Проверьте числа: выбрать больше, чем есть, нельзя.',tsum:'Сумма «нужно каждого цвета» должна равняться числу взятых шаров.',pab:'Такой P(AB) невозможен при данных P(A) и P(B).',pa0:'P(A) получилась равной 0.',num:'Не получилось прочитать число.',rows:'Нужно минимум две строки.',len:'В строках разное количество чисел.',unk2:'Неизвестной может быть только одна вероятность.',prob:'Вероятность должна быть от 0 до 1.',sum:s=>`Сумма вероятностей равна ${s}, а должна быть 1.`,f:'Не получилось разобрать формулу.',ab:'Нужно a < b.',neg:'Плотность принимает отрицательные значения.',norm1:'Интеграл от плотности не равен 1. Включите «f = C·g(x)», чтобы найти C.',Fbad:'F(x) должна возрастать от 0 до 1 на отрезке.',p01:'p должно быть между 0 и 1.',n:'n должно быть целым и положительным.',k:'k должно быть целым от 0 до n.',sig:'σ должно быть положительным.'},
+ f:{mx:'M(X)',dx:'D(X)',my:'M(Y)',dy:'D(Y)',rl:'Связь X и Y',rv:'Значение',a1:'Z = aX + bY + c: a',b1:'b',c1:'c',jm:'Как заданы',zt:'Вид Z',zc:'c',txt_tx:'Ряд X',txt_ty:'Ряд Y',kind:'Что считаем',cn:'n',ck:'k',list:'Числа через пробел',cmode:'Модель',counts:'Шаров каждого цвета',draw:'Берём шаров',cev:'Событие',targets:'Нужно каждого цвета',kk:'k',fav:'m — благоприятных',tot:'n — всех исходов',nd:'Число костей',dev:'Событие',dsum:'Сумма очков',omode:'События',ps:'Вероятности pᵢ',oev:'Найти',ok:'k',pa:'P(A)',pb:'P(B)',rel:'Связь',pab:'Значение',bev:'Наблюдение',hyp:'P(Hᵢ)  P(A | Hᵢ) — по строке на гипотезу',n:'n — число испытаний',p:'p — вероятность успеха',ev:'Событие',k1:'k₁',k2:'k₂',meth:'Метод',mode:'Как задана',a:'a',b:'b',lam:'λ',N:'N — всего',M:'M — «отмеченных»',nn:'n — берём',nmax:'Число попыток',za:'Z = a·X + b: a',zb:'b',fx:'g(x) или f(x)',Fx:'F(x)',C:'f = C·g(x), найти C',al:'P(α < X < β): α',be:'β',ql:'Квантиль уровня',m:'m = M(X)',sg:'σ',q:'Найти',x1:'x₁',x2:'x₂',pv:'p',del:'δ',cond:'Условное распределение',cv:'при значении',zaj:'Z = a·X + b·Y: a',zbj:'b'},
+ ev:{eq:'ровно k₁ раз',rng:'от k₁ до k₂ раз',ge:'не менее k₁ раз',le:'не более k₁ раз',one:'хотя бы один раз',mode:'наивероятнейшее число'},
+ mt:{auto:'по задачнику (авто)',bern:'формула Бернулли',pois:'формула Пуассона',lap:'Муавр–Лаплас'},
+ dm:{prop:'свойства M и D (без таблицы)',tab:'рядом распределения',bin:'биномиальное: n, p',hyp:'урна (гипергеометрическое)',geo:'до первого успеха'},
+ nm:{uni:'равномерное на [a; b]',exp:'показательное с параметром λ',f:'плотностью на [a; b]',F:'функцией распределения на [a; b]'},
+ nq:{rng:'P(x₁ < X < x₂)',lt:'P(X < x₁)',gt:'P(X > x₁)',dev:'P(|X − m| < δ)',qu:'квантиль x_p',fm:'m по P(X < x₁) = p',fs:'σ по P(X < x₁) = p'},
+ cd:{yx:'Y при X =',xy:'X при Y ='},
+ s_bern:(p,q)=>`Испытания независимы, в каждом два исхода, вероятность успеха постоянна: p = ${p}, q = 1 − p = ${q}. Это схема Бернулли.`,
+ s_par:(n,np,npq)=>`n = ${n}, np = ${np}, npq = ${npq}.`,
+ s_mB:'Число испытаний невелико, поэтому считаем точно по формуле Бернулли.',
+ s_mP:l=>`Испытаний много, а λ = np = ${l} ⩽ 10, поэтому применяем формулу Пуассона.`,
+ s_mL:v=>`npq = ${v} > 10, поэтому применяем теорему Муавра–Лапласа.`,
+ s_mU:'Метод выбран вручную.',
+ s_fB:'Формула Бернулли: Pₙ(k) = Cₙᵏ pᵏ qⁿ⁻ᵏ.',s_fP:'Формула Пуассона: Pₙ(k) ≈ λᵏe^(−λ)/k!.',
+ s_fL:'Локальная теорема: Pₙ(k) ≈ φ(x)/√(npq), x = (k − np)/√(npq).',s_fI:'Интегральная теорема: Pₙ(k₁ ⩽ k ⩽ k₂) ≈ Φ(x₂) − Φ(x₁), xᵢ = (kᵢ − np)/√(npq).',
+ s_compl:'Переходим к противоположному событию «ни одного раза»:',s_sum:'Складываем вероятности по всем k:',
+ s_mode:(a,b)=>`Наивероятнейшее число k* удовлетворяет неравенству np − q ⩽ k* ⩽ np + p: ${a} ⩽ k* ⩽ ${b}.`,s_mode2:k=>`Целых чисел в этом промежутке: ${k}.`,
+ s_exact:v=>`Точное значение по формуле Бернулли: ${v}.`,s_tab:'Аргументы φ и Φ округлены до сотых, как при работе с таблицами приложения.',
+ s_sumP:(s)=>`Проверяем, что сумма вероятностей равна 1: ${s}.`,s_unk:(x,v)=>`Неизвестная вероятность при X = ${x}: p = 1 − (сумма остальных) = ${v}.`,
+ s_M:'Математическое ожидание M(X) = Σ xᵢpᵢ:',s_M2:'M(X²) = Σ xᵢ²pᵢ:',s_D:'Дисперсия D(X) = M(X²) − M²(X):',s_s:'Среднее квадратическое отклонение σ = √D:',
+ s_mod:m=>`Мода — значение с наибольшей вероятностью: ${m}.`,s_F:'Функция распределения F(x) = P(X < x):',s_Z:(a,b)=>`Для Z = ${a}X ${b}: M(Z) = a·M(X) + b, D(Z) = a²·D(X).`,
+ s_gen:{bin:'Число успехов в n независимых испытаниях — биномиальное распределение: P(X = k) = Cₙᵏpᵏqⁿ⁻ᵏ.',hyp:'Из N предметов, среди которых M отмеченных, берём n без возвращения: P(X = k) = C_Mᵏ·C_(N−M)ⁿ⁻ᵏ / C_Nⁿ.',geo:'Испытания до первого успеха, но не больше заданного числа попыток: P(X = k) = q^(k−1)p, а последняя попытка забирает остаток q^(n−1).'},
+ s_marg:'Частные законы распределения: суммируем таблицу по строкам и по столбцам.',s_Mxy:'M(XY) = Σ xᵢyⱼpᵢⱼ:',s_cov:'Ковариация cov(X, Y) = M(XY) − M(X)·M(Y):',s_r:'Коэффициент корреляции r = cov / (σₓσᵧ):',
+ s_ind:'Все pᵢⱼ = pᵢ·pⱼ: X и Y независимы.',s_dep:(x,y,a,b)=>`P(X = ${x}, Y = ${y}) = ${a}, а произведение частных вероятностей ${b}: X и Y зависимы.`,
+ s_cond:(w,v,pv)=>`Условное распределение ${w} при условии ${v}: делим строку (столбец) на P = ${pv}.`,s_condM:'Условное математическое ожидание:',
+ s_Zj:'Закон распределения Z = aX + bY: перебираем все пары (xᵢ, yⱼ).',s_ZjD:'Проверка: D(aX + bY) = a²D(X) + b²D(Y) + 2ab·cov(X, Y).',
+ s_uni:(a,b)=>`Равномерное распределение: f(x) = 1/(b − a) = 1/(${b} − ${a}) на [a; b] и 0 вне отрезка.`,s_exp:l=>`Показательное распределение: f(x) = λe^(−λx) при x ⩾ 0, λ = ${l}; F(x) = 1 − e^(−λx); M = 1/λ, D = 1/λ².`,
+ s_C:(I,C)=>`Константу находим из условия ∫f(x)dx = 1: ∫g(x)dx = ${I}, значит C = ${C}.`,s_norm:'Проверка: интеграл плотности по отрезку равен 1.',
+ s_Ff:'F(x) = ∫ f(t)dt от a до x:',s_fF:'Плотность f(x) = F′(x):',s_Mi:'M(X) = ∫ x·f(x)dx:',s_Di:'D(X) = ∫ x²·f(x)dx − M²:',s_P:'P(α < X < β) = F(β) − F(α):',
+ s_med:'Медиана: F(x_med) = 0,5.',s_qu:p=>`Квантиль уровня ${p}: F(x_p) = ${p}.`,s_modN:'Мода — точка максимума плотности:',
+ s_Nst:(m,s)=>`X ~ N(${m}; ${s}²): переходим к стандартной величине, F(x) = Φ((x − m)/σ).`,s_Nrng:'P(x₁ < X < x₂) = Φ((x₂ − m)/σ) − Φ((x₁ − m)/σ):',s_Nlt:'P(X < x₁) = Φ((x₁ − m)/σ):',s_Ngt:'P(X > x₁) = 1 − Φ((x₁ − m)/σ):',
+ s_Ndev:'P(|X − m| < δ) = 2Φ(δ/σ) − 1:',s_Nqu:'Квантиль: Φ((x_p − m)/σ) = p, значит (x_p − m)/σ = z_p и x_p = m + σ·z_p:',s_Nfm:'Из Φ((x₁ − m)/σ) = p находим (x₁ − m)/σ = z_p, откуда m = x₁ − σ·z_p:',s_Nfs:'Из Φ((x₁ − m)/σ) = p находим (x₁ − m)/σ = z_p, откуда σ = (x₁ − m)/z_p:',
+ s_Nbad:'z_p и (x₁ − m) должны иметь один знак, иначе σ получится отрицательным.',s_3s:'Правило трёх сигм: P(|X − m| < 3σ) ≈ 0,9973 — практически все значения лежат в (m − 3σ; m + 3σ).',
+ ans:'Ответ',ex:'Точно',appr:'Приближённо',
+ v:{dig:'Цифр в числе',ex:'ровно',prior:'до опыта',n:'n',np:'np = λ',npq:'npq',k:'Наивероятнейшее k*',M:'M(X)',D:'D(X)',s:'σ(X)',mod:'Мода',med:'Медиана',sum:'Σp',Mx:'M(X)',My:'M(Y)',Dx:'D(X)',Dy:'D(Y)',cov:'cov(X, Y)',r:'r(X, Y)',ind:'Независимы?',P:'Вероятность',C:'C',yes:'да',no:'нет'},
+ tog:{bgGrid:'Сетка',coords:'Числа на осях',labels:'Подписи значений (вероятности, списки наборов)',approx:'Приближение (Пуассон / нормальное)',sigma:'M и ±σ, три сигмы',Fplot:'График F(x)',hints:'Подсказки на сцене'},
+ cap:{err:'Исправьте данные в блоке «Задача».',prop:'Без таблицы распределения: M и D находятся по свойствам. Полосы — промежутки M ± σ и M ± 2σ.',comb:'Каждая клетка — одно действие и число вариантов для него; по правилу умножения варианты перемножаются. При малых числах ниже перечислены все наборы.',clas:'Вероятность — доля благоприятных исходов среди всех равновозможных.',ops:'Для двух событий — диаграмма Венна с вероятностями частей; для n независимых — вероятности того, что произошло ровно k.',bayes:'Ширина полосы — вероятность гипотезы, закрашенная часть — P(A | Hᵢ). Справа — как гипотезы перераспределились после опыта.',bern:'Столбики — вероятности Pₙ(k); подсвечены k, входящие в событие. Пунктир — приближённая формула.',dsv:'Сверху — многоугольник распределения, снизу — ступенчатая функция F(x). Отмечены M(X) и M ± σ.',
+  dvu:'Ячейки — совместные вероятности pᵢⱼ, справа и снизу — частные законы. Подсвечена строка или столбец условия.',nsv:'Сверху — плотность f(x), закрашена P(α < X < β); снизу — F(x). Границы α и β можно тянуть.',norm:'Закрашенная площадь под колоколом — искомая вероятность. Границы можно тянуть мышью или пальцем.'},
+ xPng:'Снимок PNG',xVid:'Видео',xStamp:'Добавлять ответ на изображение',xCopy:'Копировать',fmtText:'Текст',
+ xNoDl:'Сохранение файлов недоступно в этом окне. Откройте страницу в claude.ai.',xNoVid:'',xRec:'',xSaved:'Файл передан на сохранение.',xBusy:'Окно сохранения уже открыто, попробуйте чуть позже.',xFail:'Не удалось сохранить файл.',xCopied:'Скопировано.',xSelect:'Текст выделен: нажмите Ctrl+C или ⌘C.',
+ keys:'Горячие клавиши',keysNote:'Работают в любой раскладке и не срабатывают, пока курсор стоит в поле ввода.',showKeys:'Показать список',s_reset:'Сброс',seeAlso:'См. также:',on:'вкл',off:'выкл',
+ k_topic:'разделы задачника 1–9',k_prev:'предыдущая / следующая задача',k_grid:'сетка',k_F:'график F(x)',k_ap:'приближение',k_sig:'M ± σ',k_hint:'подсказки',k_png:'снимок PNG',k_gloss:'справочник',k_keys:'этот список',k_esc:'закрыть окно',
+ search:'Найти: Бернулли, дисперсия, квантиль…',noFound:'Ничего не нашлось. Попробуйте другое слово, например «Лаплас».',showDemo:'▶ Показать на сцене',
+ tabI:'Интуиция',tabF:'Строго',readOf:(a,b)=>`Прочитано ${a} из ${b}`,readReset:'Сбросить отметки',readMark:'Отметить прочитанным',readDone:'✓ Прочитано',
+ s_lang:'Язык',s_ui:'Тема интерфейса',ui_auto:'Как в системе',ui_light:'Светлая',ui_dark:'Тёмная',s_dock:'Где стоит панель',d_auto:'Авто',d_right:'Справа',d_left:'Слева',d_bottom:'Снизу',d_float:'Плавает',
+ s_w:'Ширина боковой панели',s_h:'Высота нижней панели',s_f:'Размер текста интерфейса',s_l:'Толщина линий на сцене',s_pal:'Палитра сцены',palNote:'Любой цвет можно поменять вручную, тогда палитра станет «Своя».',
+ s_blocks:'Блоки',blocksNote:'Порядок блоков меняется перетаскиванием за ⠿ или стрелками ↑ ↓ в заголовке. Нажатие на заголовок сворачивает блок. Всё запоминается в этом браузере.',resetOrder:'Вернуть порядок блоков',resetAll:'Сбросить все настройки',
+ pal:{classic:'Классика',paper:'Бумага',neon:'Неон',nord:'Норд',custom:'Своя'},
+ colors:{bg:'Фон сцены',bgGrid:'Сетка',axis:'Оси и текст',bar:'Столбики, кривые',sel:'Выбранные значения',curve:'Приближение',area:'Площадь',aux:'Вторая величина',mark:'M и σ',F:'График F(x)'}},
+en:{title:'Probability theory',brand:'Probability <span class="sub">visually</span>',gloss:'Glossary',glossT:'Glossary of concepts and formulas',settings:'Settings',canvas:'Distribution graph',
+ capX:'Hide hints',capOpen:'Hints',grip:'drag the panel',close:'Close',drag:'Drag',up:'Up',down:'Down',collapse:'Collapse',
+ p_topic:'Problem',p_presets:'Problems from the book',p_solve:'Solution',p_values:'Characteristics',p_show:'Show',p_export:'Export',
+ t_bern:'Bernoulli',t_dsv:'Discrete RV',t_dvu:'Bivariate',t_nsv:'Continuous RV',t_norm:'Normal',
+ tt:{comb:'Section 1. Combinatorics: permutations, arrangements, combinations',clas:'Section 2. Classical probability: P(A) = m/n, urns, dice',ops:'Section 3. Addition and multiplication theorems, independent events',bayes:'Section 4. Total probability and Bayes formulas',bern:'Section 5. Repeated trials: Bernoulli, Poisson, de Moivre–Laplace',dsv:'Section 6. Discrete random variable: distribution table, M, D, F(x)',dvu:'Section 7. Bivariate discrete variable: marginal and conditional laws, covariance, correlation',nsv:'Section 8. Continuous random variable: density, F(x), M, D, mode, median',norm:'Section 9. Normal distribution: probabilities, quantiles, inverse problems'},
+ p_M:z=>`Properties of expectation: M(${z}) = a·M(X) + b·M(Y) + c`,p_D:z=>`Properties of variance: D(${z}) = a²D(X) + b²D(Y) + 2ab·cov(X, Y)`,p_ind:'X and Y are independent, so cov(X, Y) = 0, and the constant c doesn’t affect the variance.',p_cov:'Covariance via the correlation coefficient:',j_ind:'X and Y are independent, so the joint probability is a product: pᵢⱼ = P(X = xᵢ)·P(Y = yⱼ).',
+ t_comb:'Combinatorics',t_clas:'Classical',t_ops:'Addition, multiplication',t_bayes:'Total, Bayes',
+ nota_lbl:'Notation:',nota_v:'VAVT: Φ(x)',nota_c:'Classical: Φ₀(x)',nota_vT:'As in the VAVT book: Φ(x) is the N(0; 1) distribution function from −∞ to x',nota_cT:'As in many textbooks: Φ₀(x) is the Laplace function, the integral from 0 to x (odd, up to 0.5)',
+ opt:{rl:{ind:'independent',r:'r(X, Y) known',cov:'cov(X, Y) known'},jm:{tab:'a joint table',ind:'two independent series'},zt:{lin:'Z = aX + bY + c',prod:'Z = X·Y + c'},kind:{perm:'permutations Pₙ',arr:'arrangements Aₙᵏ',comb:'combinations Cₙᵏ',arrRep:'arrangements with repetition',combRep:'combinations with repetition',permRep:'permutations with repetition',prod:'multiplication rule'},
+  cmode:{urn:'urn: balls of several colors',mn:'m favorable of n',dice:'dice'},cev:{exact:'exactly so many of each color',ge:'at least k balls of color 1',le:'at most k balls of color 1'},dev:{eq:'sum equals',ge:'sum at least',le:'sum at most'},
+  omode:{indep:'n independent events',two:'two events A and B'},oev:{all:'all happened',none:'none happened',one1:'at least one',exact:'exactly k',ge:'at least k',le:'at most k',only:'only the k-th'},rel:{ind:'A and B independent',ab:'P(AB) known',agb:'P(A | B) known',bga:'P(B | A) known'},bev:{A:'event A happened',notA:'event A did not happen'}},
+ c_perm:'Permutations are ordered arrangements of all n distinct elements: Pₙ = n!.',c_arr:'Arrangements are ordered selections of k of n elements: Aₙᵏ = n!/(n − k)! = n(n − 1)…(n − k + 1). It is the multiplication rule: n options for the first place, n − 1 for the second, and so on.',
+ c_comb:'Combinations are unordered selections of k of n: Cₙᵏ = n!/(k!(n − k)!). They are arrangements divided by k!, the number of ways to order the selection.',c_arrR:'Arrangements with repetition: each of k places takes any of n options, nᵏ in total.',
+ c_combR:'Combinations with repetition (e.g. k identical items into n boxes): C̄ₙᵏ = Cₙ₊ₖ₋₁ᵏ.',c_permR:'Permutations with repetition: n items with groups of n₁, n₂, … identical ones: P(n₁, n₂, …) = n!/(n₁!·n₂!·…).',c_prod:'Multiplication rule: if k actions are done in turn in n₁, n₂, …, nₖ ways, there are N = n₁·n₂·…·nₖ options in total.',
+ k_def:'Classical definition: P(A) = m/n, where n is the number of all equally likely outcomes and m the number of favorable ones.',k_dice:(s,t)=>`Roll ${s} di${s===1?'e':'ce'}: n = 6${s>1?'<sup>'+s+'</sup>':''} = ${t} outcomes. Go through the sums and count the favorable ones.`,
+ k_urn:(N,n,c)=>`There are ${N} balls, draw ${n}: total outcomes n = ${c}.`,k_fav:'Favorable outcomes: choose the needed number of balls of each color (multiplication rule):',k_sum:'Add up the cases by the number of balls of color 1:',
+ o_ind:'The events are independent, so',o_mul:'Multiplication theorem:',o_add:'Addition theorem for compatible events:',o_cond:'Conditional probabilities:',o_rest:'Other parts:',o_one:'exactly one of the two:',o_isInd:'P(AB) = P(A)·P(B): the events are independent.',o_notInd:'P(AB) ≠ P(A)·P(B): the events are dependent.',
+ o_list:(p,q)=>`The events are independent: ${p}; complements: ${q}.`,o_all:'All events happened, by the multiplication theorem:',o_none:'None happened:',o_one1:'At least one, via the complement “none”:',o_only:k=>`Only the ${k}-th event: it happened, the others didn’t.`,
+ o_exact:k=>`Exactly ${k}: add all cases where exactly ${k} event${k===1?'':'s'} happened.`,o_gen:'Generating function: the coefficient of zᵏ is the probability of exactly k events.',o_coef:k=>`Exactly ${k} is the coefficient of z^${k}:`,o_ge:k=>`At least ${k}: sum of coefficients from z^${k}:`,o_le:k=>`At most ${k}: sum of coefficients up to z^${k}:`,
+ h_unk:(i,v)=>`Probability of hypothesis H${i} = 1 − (sum of the others) = ${v}.`,h_hyp:'The hypotheses form a complete group:',h_not:'The complementary event Ā was observed:',h_total:'Total probability formula:',h_bayes:A=>`Bayes formula: P(Hᵢ | ${A}) = P(Hᵢ)·P(${A} | Hᵢ)/P(${A}):`,
+ c_fI:'Integral theorem: Pₙ(k₁ ⩽ k ⩽ k₂) ≈ Φ₀(x₂) − Φ₀(x₁), xᵢ = (kᵢ − np)/√(npq); Φ₀ is the Laplace function (integral from 0 to x).',
+ c_Nst:(m,s)=>`X ~ N(${m}; ${s}²). Use the Laplace function Φ₀(x) = ∫₀ˣ φ(t)dt (odd, Φ₀(∞) = 0.5).`,c_Nrng:'P(x₁ < X < x₂) = Φ₀((x₂ − m)/σ) − Φ₀((x₁ − m)/σ):',c_Nlt:'P(X < x₁) = 0.5 + Φ₀((x₁ − m)/σ):',c_Ngt:'P(X > x₁) = 0.5 − Φ₀((x₁ − m)/σ):',c_Ndev:'P(|X − m| < δ) = 2Φ₀(δ/σ):',
+ c_Nqu:(p,q)=>`Quantile: 0.5 + Φ₀((x_p − m)/σ) = ${p}, i.e. Φ₀(z) = ${q}:`,c_inv:(p,q)=>`0.5 + Φ₀(z) = ${p}, so Φ₀(z) = ${q}.`,c_Nfm:'So z = (x₁ − m)/σ and m = x₁ − σ·z:',c_Nfs:'So z = (x₁ − m)/σ and σ = (x₁ − m)/z:',
+ howType:'How to enter',
+ typeHelp:'<p>Numbers can use a comma or a dot, fractions or percent: <code>0.25</code>, <code>1/3</code>, <code>25%</code>, <code>sqrt(9)</code>.</p><p>A distribution table is two lines: values and probabilities, e.g. <code>X: -1 0 1</code> and <code>p: 0.1 0.8 0.1</code>. One unknown probability can be replaced with <code>?</code>.</p><p>A bivariate table: the first line holds the values of Y, then lines “x and probabilities”, separated by spaces or semicolons.</p><p>A density or distribution function is a formula in x, as in Integrals: <code>x^2</code>, <code>sin x</code>, <code>e^(-3x)</code>.</p>',
+ err:{diverg:'The integral of g(x) over the interval diverges, so it can’t be made a density.',lam:'λ must be positive.',int:'Non-negative integers are needed.',big:'The numbers are too large (up to 500).',kn:'Check the numbers: you can’t choose more than there is.',tsum:'“Needed of each color” must add up to the number drawn.',pab:'Such P(AB) is impossible for the given P(A) and P(B).',pa0:'P(A) came out as 0.',num:'Couldn’t read a number.',rows:'At least two lines are needed.',len:'The lines have different numbers of entries.',unk2:'Only one probability can be unknown.',prob:'A probability must be between 0 and 1.',sum:s=>`The probabilities add up to ${s}, not 1.`,f:'Couldn’t parse the formula.',ab:'Need a < b.',neg:'The density takes negative values.',norm1:'The density doesn’t integrate to 1. Turn on “f = C·g(x)” to find C.',Fbad:'F(x) must increase from 0 to 1 on the interval.',p01:'p must be between 0 and 1.',n:'n must be a positive integer.',k:'k must be an integer from 0 to n.',sig:'σ must be positive.'},
+ f:{mx:'M(X)',dx:'D(X)',my:'M(Y)',dy:'D(Y)',rl:'Relation of X and Y',rv:'Value',a1:'Z = aX + bY + c: a',b1:'b',c1:'c',jm:'Given as',zt:'Form of Z',zc:'c',txt_tx:'Series X',txt_ty:'Series Y',kind:'What to count',cn:'n',ck:'k',list:'Numbers separated by spaces',cmode:'Model',counts:'Balls of each color',draw:'Balls drawn',cev:'Event',targets:'Needed of each color',kk:'k',fav:'m — favorable',tot:'n — all outcomes',nd:'Number of dice',dev:'Event',dsum:'Sum of points',omode:'Events',ps:'Probabilities pᵢ',oev:'Find',ok:'k',pa:'P(A)',pb:'P(B)',rel:'Relation',pab:'Value',bev:'Observation',hyp:'P(Hᵢ)  P(A | Hᵢ) — one line per hypothesis',n:'n — number of trials',p:'p — success probability',ev:'Event',k1:'k₁',k2:'k₂',meth:'Method',mode:'Given by',a:'a',b:'b',lam:'λ',N:'N — total',M:'M — “marked”',nn:'n — drawn',nmax:'Number of tries',za:'Z = a·X + b: a',zb:'b',fx:'g(x) or f(x)',Fx:'F(x)',C:'f = C·g(x), find C',al:'P(α < X < β): α',be:'β',ql:'Quantile level',m:'m = M(X)',sg:'σ',q:'Find',x1:'x₁',x2:'x₂',pv:'p',del:'δ',cond:'Conditional law',cv:'for the value',zaj:'Z = a·X + b·Y: a',zbj:'b'},
+ ev:{eq:'exactly k₁ times',rng:'from k₁ to k₂ times',ge:'at least k₁ times',le:'at most k₁ times',one:'at least once',mode:'most probable number'},
+ mt:{auto:'as in the book (auto)',bern:'Bernoulli formula',pois:'Poisson formula',lap:'de Moivre–Laplace'},
+ dm:{prop:'properties of M and D (no table)',tab:'a distribution table',bin:'binomial: n, p',hyp:'urn (hypergeometric)',geo:'until the first success'},
+ nm:{uni:'uniform on [a; b]',exp:'exponential with rate λ',f:'a density on [a; b]',F:'a distribution function on [a; b]'},
+ nq:{rng:'P(x₁ < X < x₂)',lt:'P(X < x₁)',gt:'P(X > x₁)',dev:'P(|X − m| < δ)',qu:'quantile x_p',fm:'m from P(X < x₁) = p',fs:'σ from P(X < x₁) = p'},
+ cd:{yx:'Y given X =',xy:'X given Y ='},
+ s_bern:(p,q)=>`Trials are independent, each has two outcomes, the success probability is constant: p = ${p}, q = 1 − p = ${q}. This is the Bernoulli scheme.`,
+ s_par:(n,np,npq)=>`n = ${n}, np = ${np}, npq = ${npq}.`,
+ s_mB:'The number of trials is small, so compute exactly with the Bernoulli formula.',
+ s_mP:l=>`There are many trials and λ = np = ${l} ⩽ 10, so use the Poisson formula.`,
+ s_mL:v=>`npq = ${v} > 10, so use the de Moivre–Laplace theorem.`,
+ s_mU:'The method was chosen manually.',
+ s_fB:'Bernoulli formula: Pₙ(k) = Cₙᵏ pᵏ qⁿ⁻ᵏ.',s_fP:'Poisson formula: Pₙ(k) ≈ λᵏe^(−λ)/k!.',
+ s_fL:'Local theorem: Pₙ(k) ≈ φ(x)/√(npq), x = (k − np)/√(npq).',s_fI:'Integral theorem: Pₙ(k₁ ⩽ k ⩽ k₂) ≈ Φ(x₂) − Φ(x₁), xᵢ = (kᵢ − np)/√(npq).',
+ s_compl:'Switch to the complementary event “not once”:',s_sum:'Add the probabilities over all k:',
+ s_mode:(a,b)=>`The most probable number k* satisfies np − q ⩽ k* ⩽ np + p: ${a} ⩽ k* ⩽ ${b}.`,s_mode2:k=>`Integers in this range: ${k}.`,
+ s_exact:v=>`Exact value by the Bernoulli formula: ${v}.`,s_tab:'Arguments of φ and Φ are rounded to hundredths, as when using the tables in the appendix.',
+ s_sumP:(s)=>`Check that the probabilities add up to 1: ${s}.`,s_unk:(x,v)=>`The unknown probability at X = ${x}: p = 1 − (sum of the rest) = ${v}.`,
+ s_M:'Expectation M(X) = Σ xᵢpᵢ:',s_M2:'M(X²) = Σ xᵢ²pᵢ:',s_D:'Variance D(X) = M(X²) − M²(X):',s_s:'Standard deviation σ = √D:',
+ s_mod:m=>`The mode is the most probable value: ${m}.`,s_F:'Distribution function F(x) = P(X < x):',s_Z:(a,b)=>`For Z = ${a}X ${b}: M(Z) = a·M(X) + b, D(Z) = a²·D(X).`,
+ s_gen:{bin:'The number of successes in n independent trials is binomial: P(X = k) = Cₙᵏpᵏqⁿ⁻ᵏ.',hyp:'From N items, M of them marked, draw n without replacement: P(X = k) = C_Mᵏ·C_(N−M)ⁿ⁻ᵏ / C_Nⁿ.',geo:'Trials until the first success, but no more than the given number of tries: P(X = k) = q^(k−1)p, and the last try takes the remainder q^(n−1).'},
+ s_marg:'Marginal laws: sum the table over rows and columns.',s_Mxy:'M(XY) = Σ xᵢyⱼpᵢⱼ:',s_cov:'Covariance cov(X, Y) = M(XY) − M(X)·M(Y):',s_r:'Correlation coefficient r = cov / (σₓσᵧ):',
+ s_ind:'All pᵢⱼ = pᵢ·pⱼ: X and Y are independent.',s_dep:(x,y,a,b)=>`P(X = ${x}, Y = ${y}) = ${a}, but the product of marginals is ${b}: X and Y are dependent.`,
+ s_cond:(w,v,pv)=>`Conditional law of ${w} given ${v}: divide the row (column) by P = ${pv}.`,s_condM:'Conditional expectation:',
+ s_Zj:'Law of Z = aX + bY: go through all pairs (xᵢ, yⱼ).',s_ZjD:'Check: D(aX + bY) = a²D(X) + b²D(Y) + 2ab·cov(X, Y).',
+ s_uni:(a,b)=>`Uniform distribution: f(x) = 1/(b − a) = 1/(${b} − ${a}) on [a; b] and 0 outside.`,s_exp:l=>`Exponential distribution: f(x) = λe^(−λx) for x ⩾ 0, λ = ${l}; F(x) = 1 − e^(−λx); M = 1/λ, D = 1/λ².`,
+ s_C:(I,C)=>`Find the constant from ∫f(x)dx = 1: ∫g(x)dx = ${I}, so C = ${C}.`,s_norm:'Check: the density integrates to 1 over the interval.',
+ s_Ff:'F(x) = ∫ f(t)dt from a to x:',s_fF:'Density f(x) = F′(x):',s_Mi:'M(X) = ∫ x·f(x)dx:',s_Di:'D(X) = ∫ x²·f(x)dx − M²:',s_P:'P(α < X < β) = F(β) − F(α):',
+ s_med:'Median: F(x_med) = 0.5.',s_qu:p=>`Quantile of level ${p}: F(x_p) = ${p}.`,s_modN:'The mode is the maximum point of the density:',
+ s_Nst:(m,s)=>`X ~ N(${m}; ${s}²): standardize, F(x) = Φ((x − m)/σ).`,s_Nrng:'P(x₁ < X < x₂) = Φ((x₂ − m)/σ) − Φ((x₁ − m)/σ):',s_Nlt:'P(X < x₁) = Φ((x₁ − m)/σ):',s_Ngt:'P(X > x₁) = 1 − Φ((x₁ − m)/σ):',
+ s_Ndev:'P(|X − m| < δ) = 2Φ(δ/σ) − 1:',s_Nqu:'Quantile: Φ((x_p − m)/σ) = p, so (x_p − m)/σ = z_p and x_p = m + σ·z_p:',s_Nfm:'From Φ((x₁ − m)/σ) = p, (x₁ − m)/σ = z_p, so m = x₁ − σ·z_p:',s_Nfs:'From Φ((x₁ − m)/σ) = p, (x₁ − m)/σ = z_p, so σ = (x₁ − m)/z_p:',
+ s_Nbad:'z_p and (x₁ − m) must have the same sign, otherwise σ is negative.',s_3s:'Three-sigma rule: P(|X − m| < 3σ) ≈ 0.9973 — practically all values lie in (m − 3σ; m + 3σ).',
+ ans:'Answer',ex:'Exact',appr:'Approximate',
+ v:{dig:'Digits',ex:'exactly',prior:'prior',n:'n',np:'np = λ',npq:'npq',k:'Most probable k*',M:'M(X)',D:'D(X)',s:'σ(X)',mod:'Mode',med:'Median',sum:'Σp',Mx:'M(X)',My:'M(Y)',Dx:'D(X)',Dy:'D(Y)',cov:'cov(X, Y)',r:'r(X, Y)',ind:'Independent?',P:'Probability',C:'C',yes:'yes',no:'no'},
+ tog:{bgGrid:'Grid',coords:'Axis numbers',labels:'Value labels (probabilities, lists of selections)',approx:'Approximation (Poisson / normal)',sigma:'M and ±σ, three sigma',Fplot:'Graph of F(x)',hints:'Hints on the scene'},
+ cap:{err:'Fix the data in the Problem block.',prop:'No distribution table: M and D come from the properties. Bands show M ± σ and M ± 2σ.',comb:'Each cell is one action and its number of options; by the multiplication rule the options multiply. For small numbers all selections are listed below.',clas:'Probability is the share of favorable outcomes among all equally likely ones.',ops:'For two events, a Venn diagram with the probabilities of its parts; for n independent events, the probabilities that exactly k happened.',bayes:'Strip width is the hypothesis probability, the filled part is P(A | Hᵢ). On the right, how the hypotheses are redistributed after the experiment.',bern:'Bars are the probabilities Pₙ(k); the k in the event are highlighted. Dashed: the approximate formula.',dsv:'Top: the distribution polygon; bottom: the step function F(x). M(X) and M ± σ are marked.',
+  dvu:'Cells are joint probabilities pᵢⱼ; on the right and bottom are the marginals. The condition row or column is highlighted.',nsv:'Top: the density f(x), with P(α < X < β) shaded; bottom: F(x). Drag the bounds α and β.',norm:'The shaded area under the bell is the probability. Drag the bounds with the mouse or a finger.'},
+ xPng:'PNG snapshot',xVid:'Video',xStamp:'Add the answer to the image',xCopy:'Copy',fmtText:'Text',
+ xNoDl:'Saving files isn’t available in this window. Open the page in claude.ai.',xNoVid:'',xRec:'',xSaved:'File handed off for saving.',xBusy:'A save dialog is already open, try again shortly.',xFail:'Couldn’t save the file.',xCopied:'Copied.',xSelect:'Text selected: press Ctrl+C or ⌘C.',
+ keys:'Keyboard shortcuts',keysNote:'They work in any keyboard layout and are off while the cursor is in an input field.',showKeys:'Show list',s_reset:'Reset',seeAlso:'See also:',on:'on',off:'off',
+ k_topic:'book sections 1–9',k_prev:'previous / next problem',k_grid:'grid',k_F:'graph of F(x)',k_ap:'approximation',k_sig:'M ± σ',k_hint:'hints',k_png:'PNG snapshot',k_gloss:'glossary',k_keys:'this list',k_esc:'close the window',
+ search:'Find: Bernoulli, variance, quantile…',noFound:'Nothing found. Try another word, such as “Laplace”.',showDemo:'▶ Show on the scene',
+ tabI:'Intuition',tabF:'Formal',readOf:(a,b)=>`Read ${a} of ${b}`,readReset:'Clear marks',readMark:'Mark as read',readDone:'✓ Read',
+ s_lang:'Language',s_ui:'Interface theme',ui_auto:'System',ui_light:'Light',ui_dark:'Dark',s_dock:'Panel position',d_auto:'Auto',d_right:'Right',d_left:'Left',d_bottom:'Bottom',d_float:'Floating',
+ s_w:'Side panel width',s_h:'Bottom panel height',s_f:'Interface text size',s_l:'Line width on the scene',s_pal:'Scene palette',palNote:'You can change any color by hand; the palette then becomes “Custom”.',
+ s_blocks:'Blocks',blocksNote:'Reorder blocks by dragging ⠿ or with the ↑ ↓ arrows in their header. Click a header to collapse the block. Everything is remembered in this browser.',resetOrder:'Restore block order',resetAll:'Reset all settings',
+ pal:{classic:'Classic',paper:'Paper',neon:'Neon',nord:'Nord',custom:'Custom'},
+ colors:{bg:'Scene background',bgGrid:'Grid',axis:'Axes and text',bar:'Bars, curves',sel:'Selected values',curve:'Approximation',area:'Area',aux:'Second variable',mark:'M and σ',F:'Graph of F(x)'}}
+};
+const TXA={
+ru:{p_factors:'Факторы и сдвиги',fac_note:'Как каждый фактор сдвигает кривые и меняет переменные. Стрелки посчитаны моделью для текущих параметров. Нажмите на строку, чтобы применить шок; кривые на графике можно тянуть мышью или пальцем.',fac_f:'Фактор',fac_c:'Кривая',fac_reset:'Убрать шок',fac_none:'Для этой модели факторов нет: меняйте параметры в блоке «Модель».',title:'Макроэкономика',brand:'Макроэкономика <span class="sub">наглядно</span>',canvas:'График модели',p_topic:'Модель',p_presets:'Задачи из учебника',
+ grp:{data:'Данные',long:'Долгий период',growth:'Экономический рост',short:'Короткий период'},
+ t_gdp:'ВВП и цены',t_unemp:'Безработица',t_natinc:'Национальный доход',t_money:'Деньги и инфляция',t_open:'Открытая экономика',t_solow:'Модель Солоу',t_cross:'Кейнсианский крест',t_islm:'IS–LM',t_mf:'Манделл–Флеминг',t_adas:'AD–AS',t_phil:'Кривая Филлипса',
+ tt:{gdp:'Гл. 2: номинальный и реальный ВВП, дефлятор, ИПЦ',unemp:'Гл. 6 и 9: естественная безработица, закон Оукена',natinc:'Гл. 3: производственная функция, доли факторов, рынок заёмных средств',money:'Гл. 4 и 19: количественная теория, эффект Фишера, денежный мультипликатор',open:'Гл. 5: малая открытая экономика, чистый экспорт, реальный курс',
+  solow:'Гл. 7–8: устойчивое состояние, золотое правило, рост населения и технологий',cross:'Гл. 10: равновесие Y = C + I + G и мультипликаторы',islm:'Гл. 10–11: IS–LM, фискальная и монетарная политика, вытеснение',mf:'Гл. 12: модель Манделла–Флеминга при плавающем и фиксированном курсе',adas:'Гл. 9 и 13: совокупный спрос и предложение, короткий и долгий период',phil:'Гл. 13: кривая Филлипса, ожидания, шоки предложения'},
+ typeHelp:'<p>Числа — с запятой или точкой. Проценты можно писать как <code>5%</code> или <code>0,05</code>.</p><p>ВВП: по строке на товар — «название P₀ Q₀ P₁ Q₁» (цены и количества в базовом и текущем году).</p><p>Изменения политики (ΔG, ΔT, ΔM) — необязательные поля: при их заполнении на графике появляется новое равновесие.</p>',
+ f:{tab:'Товар P₀ Q₀ P₁ Q₁',um:'Что считаем',us:'s — доля теряющих работу',uf:'f — доля находящих работу',du:'Δu, п. п.',gN:'Нормальный рост ВВП',nm:'Модель',A:'A',K:'K',L:'L',al:'α',Y:'Y — выпуск',a:'Автономное потребление C̄',b:'MPC',G:'G',T:'T',c:'Инвестиции: I = c − d·r, c',d:'d',dG:'ΔG',dT:'ΔT',mm:'Что считаем',gM:'Рост денежной массы',gV:'Рост скорости обращения',gY:'Рост реального ВВП',r:'Реальная ставка r',cr:'cr — наличные/депозиты',rr:'rr — резервы/депозиты',B:'Денежная база B',rs:'Мировая ставка r*, %',n0:'NX = n₀ − n₁·ε: n₀',n1:'n₁',dl:'δ — выбытие',s:'s — норма сбережения',n:'n — рост населения',g:'g — технический прогресс',k0:'k₀',s2:'Новая норма сбережения',I:'Инвестиции I',t:'Подоходный налог t',M:'M',P:'P',e:'(M/P)ᵈ = e·Y − f·r: e',f:'f',dM:'ΔM',reg:'Режим курса',V:'V',Yb:'Ȳ — потенциальный выпуск',as:'α — наклон SRAS',Pe:'Pᵉ — ожидаемые цены',dPe:'ΔPᵉ (шок предложения)',dA:'ΔA — автономные расходы (экспорт, импорт)',dI:'Δ инвестиционного спроса',dMd:'Δ спроса на деньги',dP:'ΔP',dn0:'Δn₀ — сдвиг NX (пошлины, экспорт)',drs:'Δr*',dc:'Δ инвестиционного спроса',dV:'ΔV',dYb:'ΔȲ',dn:'Δn',ddl:'Δδ',dpe:'Δπᵉ',du2:'Δu, п. п.',pe:'πᵉ',be:'β',un:'uⁿ',u:'u',v:'v — шок предложения',sr:'Коэффициент потерь'},
+ opt:{um:{nat:'естественная безработица',okun:'закон Оукена'},nm:{lf:'рынок заёмных средств',prod:'производственная функция'},mm:{qt:'количественная теория и Фишер',mult:'денежный мультипликатор'},reg:{float:'плавающий',fixed:'фиксированный'}},
+ err:{tab:'Строки вида «Товар P₀ Q₀ P₁ Q₁».',pos:'Нужны положительные числа в допустимых пределах.',mpc:'MPC должна быть между 0 и 1, коэффициенты — положительными.'},
+ g_nom:(a,b)=>`Номинальный ВВП: в базовом году Σ P₀Q₀ = ${a}, в текущем Σ P₁Q₁ = ${b}.`,g_real:r=>`Реальный ВВП текущего года в ценах базового: Σ P₀Q₁ = ${r}.`,g_defl:v=>`Дефлятор ВВП = номинальный / реальный · 100 = ${v} (индекс Пааше, корзина текущего года).`,g_cpi:v=>`ИПЦ = Σ P₁Q₀ / Σ P₀Q₀ · 100 = ${v} (индекс Ласпейреса, фиксированная корзина базового года).`,
+ g_gr:(r,n)=>`Рост реального ВВП ${r}, номинального ${n}.`,g_diff:'ИПЦ не учитывает замещение подорожавших товаров и потому обычно завышает рост стоимости жизни; дефлятор, наоборот, может его занижать.',
+ u_rule:'В устойчивом состоянии поток в безработицу равен потоку из неё: s·E = f·U, откуда естественная норма u = s/(s + f).',u_res:(s,f,u)=>`s = ${s}, f = ${f}: u = ${u}.`,u_ok:'Закон Оукена (Мэнкью): %ΔY = 3% − 2·Δu — рост безработицы на 1 п. п. снижает рост ВВП примерно на 2 п. п.',u_okR:(du,g)=>`Δu = ${du} п. п.: рост реального ВВП ${g}.`,
+ n_cd:(A,a)=>`Y = A·K^α·L^(1−α), A = ${A}, α = ${a}.`,n_Y:y=>`Выпуск Y = ${y}.`,n_mp:(k,l)=>`Факторы получают предельные продукты: MPK = αY/K = ${k}, MPL = (1 − α)Y/L = ${l}.`,n_sh:(k,l)=>`Доли в доходе: капитала ${k}, труда ${l} — они постоянны и равны α и 1 − α.`,
+ n_lf:'Рынок заёмных средств: национальные сбережения S = Y − C(Y − T) − G не зависят от r, инвестиции I(r) убывают; ставка уравнивает S и I.',n_S:(Y,C,G,S,sp,sg)=>`Y = ${Y}, C = ${C}, G = ${G}: S = ${S} (частные ${sp}, государственные ${sg}).`,n_r:(r,I)=>`I(r) = S: r = ${r}%, I = ${I}.`,
+ n_ch:(s,r,i)=>`После изменения политики: S ${s}, r ${r}, I ${i}.`,n_crowd:(g,i)=>`Рост G на ${g} вытесняет инвестиции на ${i}: выпуск фиксирован, поэтому рост госрасходов полностью вытесняет частные расходы.`,
+ q_eq:'Уравнение обмена MV = PY в темпах: ΔM/M + ΔV/V = ΔP/P + ΔY/Y.',q_pi:(m,v,y,p)=>`π = ${m} + ${v} − ${y} = ${p}.`,q_f:(r,p,i)=>`Эффект Фишера: номинальная ставка i = r + π = ${r} + ${p} = ${i}.`,q_m:'Денежная масса M = m·B, где мультипликатор m = (cr + 1)/(cr + rr).',q_mr:(c,r,m)=>`cr = ${c}, rr = ${r}: m = ${m}.`,q_M:(B,M)=>`При B = ${B}: M = ${M}.`,
+ o_rule:'Малая открытая экономика: ставка равна мировой r*, а чистый экспорт — разность сбережений и инвестиций: NX = S − I(r*).',o_S:(s,i,nx)=>`S = ${s}, I(r*) = ${i}: NX = ${nx}.`,o_e:e=>`Реальный курс ε уравнивает NX(ε) и S − I: ε = ${e}.`,o_ch:(g,nx,e)=>`Рост G на ${g} снижает сбережения: NX ${nx}, реальный курс ${e} — национальная валюта дорожает.`,
+ s_eq:(a,s,b)=>`y = k^${a}; изменение капитала Δk = s·f(k) − (δ + n + g)·k, s = ${s}, δ + n + g = ${b}.`,s_ss:(k,y,c)=>`Устойчивое состояние: s·f(k*) = (δ + n + g)k* → k* = ${k}, y* = ${y}, c* = ${c}.`,s_tr:(a,b,c)=>`Траектория капитала: ${a} → ${b} → ${c} → … к k*.`,
+ s_gold:(k,s,c,cmp)=>`Золотое правило: MPK = δ + n + g → k = ${k}, норма сбережения s = α = ${s}, потребление ${c}. Сейчас s ${cmp} s золотого правила.`,s_gr:(gy,g)=>`В устойчивом состоянии совокупный выпуск растёт на n + g = ${gy}, выпуск на работника — на g = ${g}.`,s_alt:(s,k,y,c)=>`При s = ${s}: новое устойчивое состояние k* = ${k}, y* = ${y}, c* = ${c}.`,
+ c_eq:(a,b,I,G,T)=>`Планируемые расходы PE = C + I + G, C = ${a} + ${b}(Y − T), I = ${I}, G = ${G}, T = ${T}.`,c_t:t=>`Налоги зависят от дохода: T = T₀ + ${t}Y.`,c_Y:y=>`Равновесие Y = PE: Y = ${y}.`,c_m:(g,t,bb)=>`Мультипликаторы: госрасходов ${g}, налогов ${t}, сбалансированного бюджета ${bb}.`,c_ch:(g,t,y)=>`ΔG = ${g}, ΔT = ${t}: Y ${y}.`,
+ i_is:(a,b,T,c,d,G,k,s)=>`IS: Y = C(Y − T) + I(r) + G, C = ${a} + ${b}(Y − ${T}), I = ${c} − ${d}r, G = ${G} → Y = ${k} − ${s}r.`,i_lm:(M,P,e,f,k,s)=>`LM: M/P = ${M}/${P} = ${e}Y − ${f}r → Y = ${k} + ${s}r.`,i_eq:(r,Y,C,I)=>`Равновесие: r = ${r}, Y = ${Y}; C = ${C}, I = ${I}.`,
+ i_ch:(y,r,i)=>`После изменения: Y ${y}, r ${r}, I ${i}.`,i_crowd:(k,y)=>`В кейнсианском кресте Y вырос бы на ${k}, в IS–LM — только на ${y}: рост ставки вытесняет часть инвестиций.`,i_mult:(g,t,m)=>`Мультипликаторы IS–LM: ΔY/ΔG = ${g}, ΔY/ΔT = ${t}, ΔY/ΔM = ${m}.`,
+ f_rule:r=>`Малая открытая экономика с совершенной мобильностью капитала: r = r* = ${r}. IS*: Y = C(Y − T) + I(r*) + G + NX(e); LM*: M/P = L(r*, Y).`,f_lm:y=>`LM* вертикальна: Y = ${y}.`,f_is:(e,nx)=>`Курс из IS*: e = ${e}, NX = ${nx}.`,
+ f_fl:(y,e,nx)=>`Плавающий курс: Y ${y}, e ${e}, NX ${nx}.`,f_flG:'Фискальная политика при плавающем курсе не влияет на доход: курс растёт и чистый экспорт падает ровно на рост G.',f_fx:(y,m)=>`Фиксированный курс: центробанк поддерживает e, и денежная масса подстраивается: M ${m}; доход Y ${y}. Фискальная политика здесь полностью действенна, монетарная — бессильна.`,
+ a_ad:(M,V)=>`Совокупный спрос из количественной теории: P·Y = M·V = ${M}·${V}.`,a_as:(Y,a,P)=>`Краткосрочное предложение: Y = Ȳ + α(P − Pᵉ), Ȳ = ${Y}, α = ${a}, Pᵉ = ${P}; долгосрочное — вертикальная прямая Y = Ȳ.`,a_eq:(P,Y)=>`Краткосрочное равновесие: P = ${P}, Y = ${Y}.`,
+ a_sr:(p,y)=>`После шока в коротком периоде: P ${p}, Y ${y}.`,a_lr:(P,Y)=>`В долгом периоде ожидания подстраиваются, выпуск возвращается к Ȳ = ${Y}, цены P = ${P}: деньги нейтральны.`,
+ p_eq:'Кривая Филлипса: π = πᵉ − β(u − uⁿ) + v.',p_res:(pe,b,u,un,v,p)=>`πᵉ = ${pe}, β = ${b}, u = ${u}, uⁿ = ${un}, v = ${v}: π = ${p}.`,p_sr:s=>`Коэффициент потерь ${s}: снижение инфляции на 1 п. п. стоит ${s}% годового ВВП.`,
+ v:{defl:'Дефлятор',cpi:'ИПЦ',gReal:'Рост реального ВВП',gold:'Золотое правило',mG:'Мультипликатор G',mT:'Мультипликатор T',lr:'Долгий период'},
+ tog:{bgGrid:'Сетка',coords:'Числа на осях',labels:'Подписи',areas:'Новое равновесие (после изменения)',hints:'Подсказки на сцене'},
+ cap:{err:'Исправьте данные в блоке «Модель».',gdp:'Номинальный и реальный ВВП, дефлятор и ИПЦ.',unemp:'Естественная норма безработицы в зависимости от f или закон Оукена.',natinc:'Сбережения S вертикальны, инвестиции I(r) убывают; пунктир — после изменения политики.',money:'Темпы роста и ставки в процентах или мультипликатор.',open:'Слева — S и I при мировой ставке, справа — NX(ε) и реальный курс.',
+  solow:'Сверху — f(k), s·f(k) и выбытие (δ + n + g)k, их пересечение — k*. Снизу — путь k(t) к устойчивому состоянию.',cross:'Пунктирная биссектриса E = Y и планируемые расходы PE; пересечение — равновесие.',islm:'IS — равновесие на рынке благ, LM — на рынке денег; пунктир — после политики.',mf:'IS* убывает по курсу e, LM* вертикальна при r = r*.',adas:'AD, SRAS и вертикальная LRAS; после шока — краткосрочное и долгосрочное равновесие.',phil:'Кривая Филлипса при данных ожиданиях; пунктир — без шока предложения.'},
+ colors:{bg:'Фон сцены',bgGrid:'Сетка',axis:'Оси и текст',p1:'IS, спрос, PE',p2:'LM, предложение',eq:'Равновесие',area:'Сбережения',curve:'Кривые',mark:'Новое равновесие',bad:'Выбытие, потери'},k_topic:'разделы',k_prev:'предыдущая / следующая задача'},
+en:{p_factors:'Factors and shifts',fac_note:'How each factor shifts the curves and changes the variables. Arrows are computed by the model for the current parameters. Click a row to apply the shock; curves on the chart can be dragged with the mouse or a finger.',fac_f:'Factor',fac_c:'Curve',fac_reset:'Remove the shock',fac_none:'No factors for this model: change the parameters in the Model block.',title:'Macroeconomics',brand:'Macroeconomics <span class="sub">visually</span>',canvas:'Model chart',p_topic:'Model',p_presets:'Textbook problems',
+ grp:{data:'Data',long:'Long run',growth:'Economic growth',short:'Short run'},
+ t_gdp:'GDP and prices',t_unemp:'Unemployment',t_natinc:'National income',t_money:'Money and inflation',t_open:'Open economy',t_solow:'Solow model',t_cross:'Keynesian cross',t_islm:'IS–LM',t_mf:'Mundell–Fleming',t_adas:'AD–AS',t_phil:'Phillips curve',
+ tt:{gdp:'Ch. 2: nominal and real GDP, deflator, CPI',unemp:'Ch. 6 and 9: natural unemployment, Okun’s law',natinc:'Ch. 3: production function, factor shares, loanable funds',money:'Ch. 4 and 19: quantity theory, Fisher effect, money multiplier',open:'Ch. 5: small open economy, net exports, real exchange rate',
+  solow:'Ch. 7–8: steady state, golden rule, population and technology growth',cross:'Ch. 10: equilibrium Y = C + I + G and multipliers',islm:'Ch. 10–11: IS–LM, fiscal and monetary policy, crowding out',mf:'Ch. 12: Mundell–Fleming with floating and fixed exchange rates',adas:'Ch. 9 and 13: aggregate demand and supply, short and long run',phil:'Ch. 13: Phillips curve, expectations, supply shocks'},
+ typeHelp:'<p>Numbers use a comma or a dot. Percentages can be written as <code>5%</code> or <code>0.05</code>.</p><p>GDP: one line per good — “name P₀ Q₀ P₁ Q₁” (base and current year).</p><p>Policy changes (ΔG, ΔT, ΔM) are optional: filling them shows the new equilibrium on the chart.</p>',
+ f:{tab:'Good P₀ Q₀ P₁ Q₁',um:'What to compute',us:'s — job separation rate',uf:'f — job finding rate',du:'Δu, pp',gN:'Normal GDP growth',nm:'Model',A:'A',K:'K',L:'L',al:'α',Y:'Y — output',a:'Autonomous consumption C̄',b:'MPC',G:'G',T:'T',c:'Investment: I = c − d·r, c',d:'d',dG:'ΔG',dT:'ΔT',mm:'What to compute',gM:'Money growth',gV:'Velocity growth',gY:'Real GDP growth',r:'Real rate r',cr:'cr — currency/deposits',rr:'rr — reserves/deposits',B:'Monetary base B',rs:'World rate r*, %',n0:'NX = n₀ − n₁·ε: n₀',n1:'n₁',dl:'δ — depreciation',s:'s — saving rate',n:'n — population growth',g:'g — technological progress',k0:'k₀',s2:'New saving rate',I:'Investment I',t:'Income tax t',M:'M',P:'P',e:'(M/P)ᵈ = e·Y − f·r: e',f:'f',dM:'ΔM',reg:'Exchange-rate regime',V:'V',Yb:'Ȳ — natural output',as:'α — SRAS slope',Pe:'Pᵉ — expected prices',dPe:'ΔPᵉ (supply shock)',dA:'ΔA — autonomous spending (exports, imports)',dI:'Δ investment demand',dMd:'Δ money demand',dP:'ΔP',dn0:'Δn₀ — NX shift (tariffs, exports)',drs:'Δr*',dc:'Δ investment demand',dV:'ΔV',dYb:'ΔȲ',dn:'Δn',ddl:'Δδ',dpe:'Δπᵉ',du2:'Δu, pp',pe:'πᵉ',be:'β',un:'uⁿ',u:'u',v:'v — supply shock',sr:'Sacrifice ratio'},
+ opt:{um:{nat:'natural unemployment',okun:'Okun’s law'},nm:{lf:'loanable funds',prod:'production function'},mm:{qt:'quantity theory and Fisher',mult:'money multiplier'},reg:{float:'floating',fixed:'fixed'}},
+ err:{tab:'Lines like “Good P₀ Q₀ P₁ Q₁”.',pos:'Positive numbers within valid ranges are needed.',mpc:'MPC must be between 0 and 1, coefficients positive.'},
+ g_nom:(a,b)=>`Nominal GDP: base year Σ P₀Q₀ = ${a}, current year Σ P₁Q₁ = ${b}.`,g_real:r=>`Current real GDP at base prices: Σ P₀Q₁ = ${r}.`,g_defl:v=>`GDP deflator = nominal / real · 100 = ${v} (Paasche index, current basket).`,g_cpi:v=>`CPI = Σ P₁Q₀ / Σ P₀Q₀ · 100 = ${v} (Laspeyres index, fixed base-year basket).`,
+ g_gr:(r,n)=>`Real GDP growth ${r}, nominal ${n}.`,g_diff:'The CPI ignores substitution away from pricier goods and tends to overstate the cost of living; the deflator may understate it.',
+ u_rule:'In steady state flows into and out of unemployment balance: s·E = f·U, so the natural rate is u = s/(s + f).',u_res:(s,f,u)=>`s = ${s}, f = ${f}: u = ${u}.`,u_ok:'Okun’s law (Mankiw): %ΔY = 3% − 2·Δu — a 1 pp rise in unemployment cuts GDP growth by about 2 pp.',u_okR:(du,g)=>`Δu = ${du} pp: real GDP growth ${g}.`,
+ n_cd:(A,a)=>`Y = A·K^α·L^(1−α), A = ${A}, α = ${a}.`,n_Y:y=>`Output Y = ${y}.`,n_mp:(k,l)=>`Factors earn marginal products: MPK = αY/K = ${k}, MPL = (1 − α)Y/L = ${l}.`,n_sh:(k,l)=>`Income shares: capital ${k}, labor ${l} — constant, equal to α and 1 − α.`,
+ n_lf:'Loanable funds: national saving S = Y − C(Y − T) − G doesn’t depend on r, investment I(r) falls with r; the rate equates S and I.',n_S:(Y,C,G,S,sp,sg)=>`Y = ${Y}, C = ${C}, G = ${G}: S = ${S} (private ${sp}, public ${sg}).`,n_r:(r,I)=>`I(r) = S: r = ${r}%, I = ${I}.`,
+ n_ch:(s,r,i)=>`After the policy change: S ${s}, r ${r}, I ${i}.`,n_crowd:(g,i)=>`A rise in G of ${g} crowds out investment by ${i}: with output fixed, higher government spending fully crowds out private spending.`,
+ q_eq:'The quantity equation MV = PY in growth rates: ΔM/M + ΔV/V = ΔP/P + ΔY/Y.',q_pi:(m,v,y,p)=>`π = ${m} + ${v} − ${y} = ${p}.`,q_f:(r,p,i)=>`Fisher effect: nominal rate i = r + π = ${r} + ${p} = ${i}.`,q_m:'Money supply M = m·B with multiplier m = (cr + 1)/(cr + rr).',q_mr:(c,r,m)=>`cr = ${c}, rr = ${r}: m = ${m}.`,q_M:(B,M)=>`With B = ${B}: M = ${M}.`,
+ o_rule:'Small open economy: the rate equals the world rate r*, and net exports are saving minus investment: NX = S − I(r*).',o_S:(s,i,nx)=>`S = ${s}, I(r*) = ${i}: NX = ${nx}.`,o_e:e=>`The real exchange rate ε equates NX(ε) and S − I: ε = ${e}.`,o_ch:(g,nx,e)=>`A rise in G of ${g} reduces saving: NX ${nx}, real exchange rate ${e} — the currency appreciates.`,
+ s_eq:(a,s,b)=>`y = k^${a}; Δk = s·f(k) − (δ + n + g)·k, s = ${s}, δ + n + g = ${b}.`,s_ss:(k,y,c)=>`Steady state: s·f(k*) = (δ + n + g)k* → k* = ${k}, y* = ${y}, c* = ${c}.`,s_tr:(a,b,c)=>`Capital path: ${a} → ${b} → ${c} → … towards k*.`,
+ s_gold:(k,s,c,cmp)=>`Golden rule: MPK = δ + n + g → k = ${k}, saving rate s = α = ${s}, consumption ${c}. Now s ${cmp} the golden-rule s.`,s_gr:(gy,g)=>`In steady state total output grows at n + g = ${gy}, output per worker at g = ${g}.`,s_alt:(s,k,y,c)=>`With s = ${s}: new steady state k* = ${k}, y* = ${y}, c* = ${c}.`,
+ c_eq:(a,b,I,G,T)=>`Planned expenditure PE = C + I + G, C = ${a} + ${b}(Y − T), I = ${I}, G = ${G}, T = ${T}.`,c_t:t=>`Taxes depend on income: T = T₀ + ${t}Y.`,c_Y:y=>`Equilibrium Y = PE: Y = ${y}.`,c_m:(g,t,bb)=>`Multipliers: government purchases ${g}, taxes ${t}, balanced budget ${bb}.`,c_ch:(g,t,y)=>`ΔG = ${g}, ΔT = ${t}: Y ${y}.`,
+ i_is:(a,b,T,c,d,G,k,s)=>`IS: Y = C(Y − T) + I(r) + G, C = ${a} + ${b}(Y − ${T}), I = ${c} − ${d}r, G = ${G} → Y = ${k} − ${s}r.`,i_lm:(M,P,e,f,k,s)=>`LM: M/P = ${M}/${P} = ${e}Y − ${f}r → Y = ${k} + ${s}r.`,i_eq:(r,Y,C,I)=>`Equilibrium: r = ${r}, Y = ${Y}; C = ${C}, I = ${I}.`,
+ i_ch:(y,r,i)=>`After the change: Y ${y}, r ${r}, I ${i}.`,i_crowd:(k,y)=>`In the Keynesian cross Y would rise by ${k}, in IS–LM only by ${y}: the higher rate crowds out some investment.`,i_mult:(g,t,m)=>`IS–LM multipliers: ΔY/ΔG = ${g}, ΔY/ΔT = ${t}, ΔY/ΔM = ${m}.`,
+ f_rule:r=>`Small open economy with perfect capital mobility: r = r* = ${r}. IS*: Y = C(Y − T) + I(r*) + G + NX(e); LM*: M/P = L(r*, Y).`,f_lm:y=>`LM* is vertical: Y = ${y}.`,f_is:(e,nx)=>`Exchange rate from IS*: e = ${e}, NX = ${nx}.`,
+ f_fl:(y,e,nx)=>`Floating rate: Y ${y}, e ${e}, NX ${nx}.`,f_flG:'Under floating rates fiscal policy doesn’t affect income: the exchange rate rises and net exports fall by exactly the rise in G.',f_fx:(y,m)=>`Fixed rate: the central bank holds e and the money supply adjusts: M ${m}; income Y ${y}. Fiscal policy is fully effective here, monetary policy powerless.`,
+ a_ad:(M,V)=>`Aggregate demand from the quantity theory: P·Y = M·V = ${M}·${V}.`,a_as:(Y,a,P)=>`Short-run supply: Y = Ȳ + α(P − Pᵉ), Ȳ = ${Y}, α = ${a}, Pᵉ = ${P}; long-run supply is the vertical line Y = Ȳ.`,a_eq:(P,Y)=>`Short-run equilibrium: P = ${P}, Y = ${Y}.`,
+ a_sr:(p,y)=>`After the shock in the short run: P ${p}, Y ${y}.`,a_lr:(P,Y)=>`In the long run expectations adjust, output returns to Ȳ = ${Y}, prices P = ${P}: money is neutral.`,
+ p_eq:'Phillips curve: π = πᵉ − β(u − uⁿ) + v.',p_res:(pe,b,u,un,v,p)=>`πᵉ = ${pe}, β = ${b}, u = ${u}, uⁿ = ${un}, v = ${v}: π = ${p}.`,p_sr:s=>`Sacrifice ratio ${s}: cutting inflation by 1 pp costs ${s}% of a year’s GDP.`,
+ v:{defl:'Deflator',cpi:'CPI',gReal:'Real GDP growth',gold:'Golden rule',mG:'G multiplier',mT:'T multiplier',lr:'Long run'},
+ tog:{bgGrid:'Grid',coords:'Axis numbers',labels:'Labels',areas:'New equilibrium (after the change)',hints:'Hints on the scene'},
+ cap:{err:'Fix the data in the Model block.',gdp:'Nominal and real GDP, deflator and CPI.',unemp:'Natural unemployment as a function of f, or Okun’s law.',natinc:'Saving S is vertical, investment I(r) slopes down; dashed — after the policy change.',money:'Growth rates and interest rates in percent, or the multiplier.',open:'Left: S and I at the world rate; right: NX(ε) and the real exchange rate.',
+  solow:'Top: f(k), s·f(k) and depreciation (δ + n + g)k, crossing at k*. Bottom: the path k(t) to the steady state.',cross:'The dashed 45° line E = Y and planned expenditure PE; they cross at equilibrium.',islm:'IS is goods-market equilibrium, LM money-market equilibrium; dashed — after policy.',mf:'IS* slopes down in e, LM* is vertical at r = r*.',adas:'AD, SRAS and vertical LRAS; after a shock — short- and long-run equilibria.',phil:'The Phillips curve for given expectations; dashed — without the supply shock.'},
+ colors:{bg:'Scene background',bgGrid:'Grid',axis:'Axes and text',p1:'IS, demand, PE',p2:'LM, supply',eq:'Equilibrium',area:'Saving',curve:'Curves',mark:'New equilibrium',bad:'Depreciation, losses'},k_topic:'sections',k_prev:'previous / next problem'}};
+const TX={ru:{...TXB.ru,...TXA.ru},en:{...TXB.en,...TXA.en}};
+const T_=(id,ru,en)=>({id,ru,en});
+const TERMS=[
+ T_('gdp',['ВВП, дефлятор, ИПЦ','гл. 2','<p>Номинальный ВВП — Σ PQ в текущих ценах, реальный — в ценах базового года. Дефлятор = номинальный/реальный · 100 — индекс Пааше (корзина текущего года). ИПЦ — индекс Ласпейреса: стоимость фиксированной корзины базового года. ИПЦ обычно завышает инфляцию: не учитывает замещение, новые товары и рост качества.</p>'],['GDP, deflator, CPI','ch. 2','<p>Nominal GDP is Σ PQ at current prices, real GDP at base-year prices. Deflator = nominal/real · 100, a Paasche index (current basket). The CPI is a Laspeyres index: the cost of a fixed base-year basket. The CPI tends to overstate inflation: substitution, new goods, quality.</p>']),
+ T_('natu',['Естественная безработица и закон Оукена','u = s/(s + f)','<p>Если доля s занятых теряет работу, а доля f безработных находит её, устойчивая норма безработицы u = s/(s + f); у Мэнкью s = 1%, f = 20% дают ≈ 4,8%. Закон Оукена: рост безработицы на 1 п. п. снижает рост реального ВВП примерно на 2 п. п.: %ΔY = 3% − 2Δu.</p>'],['Natural unemployment and Okun’s law','u = s/(s + f)','<p>If a share s of the employed lose jobs and a share f of the unemployed find them, the steady-state rate is u = s/(s + f); Mankiw’s s = 1%, f = 20% give ≈ 4.8%. Okun’s law: a 1 pp rise in unemployment cuts real GDP growth by about 2 pp: %ΔY = 3% − 2Δu.</p>']),
+ T_('loanable',['Рынок заёмных средств','S = I(r)','<p>В долгом периоде выпуск задан факторами производства. Национальные сбережения S = Y − C − G = частные (Y − T − C) + государственные (T − G). Реальная ставка уравнивает S и инвестиции I(r). Рост госрасходов или снижение налогов уменьшает S, повышает r и вытесняет инвестиции.</p>'],['Loanable funds','S = I(r)','<p>In the long run output is set by factors of production. National saving S = Y − C − G = private (Y − T − C) + public (T − G). The real rate equates S and investment I(r). Higher G or lower T reduce S, raise r and crowd out investment.</p>']),
+ T_('qtm',['Количественная теория и эффект Фишера','MV = PY, i = r + π','<p>Уравнение обмена в темпах: π = ΔM/M + ΔV/V − ΔY/Y. В долгом периоде рост денежной массы определяет инфляцию. Эффект Фишера: номинальная ставка i = r + π — инфляция повышает номинальную ставку один к одному.</p>'],['Quantity theory and Fisher effect','MV = PY, i = r + π','<p>The quantity equation in growth rates: π = ΔM/M + ΔV/V − ΔY/Y. In the long run money growth determines inflation. Fisher effect: the nominal rate i = r + π — inflation raises the nominal rate one for one.</p>']),
+ T_('mmult',['Денежный мультипликатор','m = (cr + 1)/(cr + rr)','<p>Денежная масса M = m·B, где B — денежная база (наличные + резервы), cr — отношение наличных к депозитам, rr — норма резервов. Чем ниже cr и rr, тем больше мультипликатор.</p>'],['Money multiplier','m = (cr + 1)/(cr + rr)','<p>Money supply M = m·B, where B is the monetary base (currency + reserves), cr the currency-deposit ratio, rr the reserve-deposit ratio. Lower cr and rr give a larger multiplier.</p>']),
+ T_('openecon',['Малая открытая экономика','NX = S − I(r*)','<p>При свободном движении капитала ставка равна мировой r*. Разница сбережений и инвестиций уходит за границу: NX = S − I(r*). Реальный курс ε подстраивается так, чтобы NX(ε) = S − I. Бюджетная экспансия внутри страны снижает S, удорожает валюту и создаёт торговый дефицит.</p>'],['Small open economy','NX = S − I(r*)','<p>With free capital flows the rate equals the world rate r*. Saving minus investment goes abroad: NX = S − I(r*). The real exchange rate ε adjusts so that NX(ε) = S − I. Domestic fiscal expansion lowers S, appreciates the currency and creates a trade deficit.</p>']),
+ T_('solow',['Модель Солоу','устойчивое состояние','<p>Капитал на работника растёт, пока инвестиции s·f(k) больше выбытия (δ + n + g)k. В устойчивом состоянии они равны: k* растёт с s и падает с δ, n, g. Выпуск на работника растёт только за счёт технического прогресса g. Мэнкью, табл. 7-2: y = √k, s = 0,3, δ = 0,1 → k* = 9, y* = 3.</p>'],['Solow model','steady state','<p>Capital per worker grows while investment s·f(k) exceeds depreciation (δ + n + g)k. In steady state they are equal: k* rises with s and falls with δ, n, g. Output per worker grows only through technological progress g. Mankiw, Table 7-2: y = √k, s = 0.3, δ = 0.1 → k* = 9, y* = 3.</p>']),
+ T_('golden',['Золотое правило','MPK = δ + n + g','<p>Уровень капитала, максимизирующий потребление в устойчивом состоянии: MPK = δ + n + g. Для y = k^α норма сбережения золотого правила равна α. Если s меньше, рост сбережений сначала снижает, а потом повышает потребление.</p>'],['Golden rule','MPK = δ + n + g','<p>The capital level maximizing steady-state consumption: MPK = δ + n + g. For y = k^α the golden-rule saving rate equals α. If s is below it, raising saving first lowers and then raises consumption.</p>']),
+ T_('kcross',['Кейнсианский крест и мультипликатор','1/(1 − MPC)','<p>В коротком периоде выпуск определяется спросом: Y = C(Y − T) + I + G. Мультипликатор госрасходов 1/(1 − MPC), налогов −MPC/(1 − MPC), сбалансированного бюджета 1. Гл. 10, задача 2: C = 200 + 0,75(Y − T), I = G = T = 100 → Y = 1300.</p>'],['Keynesian cross and multiplier','1/(1 − MPC)','<p>In the short run output is demand-determined: Y = C(Y − T) + I + G. The government-purchases multiplier is 1/(1 − MPC), the tax multiplier −MPC/(1 − MPC), the balanced-budget multiplier 1. Ch. 10, problem 2: C = 200 + 0.75(Y − T), I = G = T = 100 → Y = 1300.</p>']),
+ T_('islm',['Модель IS–LM','рынки благ и денег','<p>IS — сочетания r и Y, при которых рынок благ в равновесии (убывает: ниже r — больше I и Y). LM — равновесие на рынке денег M/P = L(r, Y) (возрастает). Фискальная экспансия сдвигает IS вправо: Y и r растут, часть инвестиций вытесняется. Монетарная экспансия сдвигает LM вправо: Y растёт, r падает. Хиксония (гл. 11): r = 6, Y = 1100.</p>'],['IS–LM model','goods and money markets','<p>IS: combinations of r and Y with goods-market equilibrium (downward sloping). LM: money-market equilibrium M/P = L(r, Y) (upward sloping). Fiscal expansion shifts IS right: Y and r rise, some investment is crowded out. Monetary expansion shifts LM right: Y rises, r falls. Hicksonia (ch. 11): r = 6, Y = 1100.</p>']),
+ T_('mf',['Модель Манделла–Флеминга','IS*–LM*','<p>Малая открытая экономика с совершенной мобильностью капитала: r = r*. При плавающем курсе фискальная политика бессильна (курс растёт, NX падает), монетарная действенна. При фиксированном — наоборот: центробанк подстраивает M под курс, фискальная политика меняет доход, монетарная не работает.</p>'],['Mundell–Fleming model','IS*–LM*','<p>A small open economy with perfect capital mobility: r = r*. Under floating rates fiscal policy is powerless (the currency rises, NX falls) and monetary policy works. Under fixed rates it is the reverse: the central bank adjusts M to hold the rate, fiscal policy changes income, monetary policy doesn’t work.</p>']),
+ T_('adas',['Совокупный спрос и предложение','AD–AS','<p>AD из количественной теории: P·Y = M·V. В коротком периоде цены жёсткие: SRAS Y = Ȳ + α(P − Pᵉ). В долгом периоде выпуск равен потенциальному Ȳ (вертикальная LRAS). Рост M в коротком периоде повышает выпуск, в долгом — только цены: деньги нейтральны.</p>'],['Aggregate demand and supply','AD–AS','<p>AD from the quantity theory: P·Y = M·V. In the short run prices are sticky: SRAS Y = Ȳ + α(P − Pᵉ). In the long run output equals natural output Ȳ (vertical LRAS). Money growth raises output in the short run and only prices in the long run: money is neutral.</p>']),
+ T_('phillips',['Кривая Филлипса','π = πᵉ − β(u − uⁿ) + v','<p>Инфляция зависит от ожидаемой инфляции, циклической безработицы (u − uⁿ) и шоков предложения v. Снижение инфляции требует временного роста безработицы; цену измеряет коэффициент потерь — у Мэнкью около 5% годового ВВП на 1 п. п. инфляции.</p>'],['Phillips curve','π = πᵉ − β(u − uⁿ) + v','<p>Inflation depends on expected inflation, cyclical unemployment (u − uⁿ) and supply shocks v. Disinflation requires a temporary rise in unemployment; its cost is the sacrifice ratio — about 5% of a year’s GDP per 1 pp of inflation in Mankiw.</p>'])];
+const FORMAL={};const REL={gdp:['qtm'],natu:['phillips'],loanable:['openecon','islm'],qtm:['mmult','adas'],mmult:['qtm'],openecon:['mf','loanable'],solow:['golden'],golden:['solow'],kcross:['islm'],islm:['kcross','mf','adas'],mf:['islm','openecon'],adas:['islm','phillips'],phillips:['natu','adas']};
+const CHAP=[{ru:'Данные',en:'Data',ids:['gdp','natu']},{ru:'Долгий период',en:'Long run',ids:['loanable','qtm','mmult','openecon']},{ru:'Экономический рост',en:'Economic growth',ids:['solow','golden']},{ru:'Короткий период',en:'Short run',ids:['kcross','islm','mf','adas','phillips']}];
+const DEMOS={gdp:{p:'g1'},natu:{p:'u6'},loanable:{p:'n3'},qtm:{p:'mq'},mmult:{p:'mm'},openecon:{p:'o5'},solow:{p:'s72'},golden:{p:'s7s'},kcross:{p:'k10'},islm:{p:'h11'},mf:{p:'mff'},adas:{p:'a9'},phillips:{p:'p13'}};const ILL={};
+const $=s=>document.querySelector(s);let LNG='ru';
+const KEY='macro-viz-v1';
+function fmt(x,d=2){if(!isFinite(x))return x>0?'∞':x<0?'−∞':'—';if(Math.abs(x)<5e-12)x=0;let s=String(+x.toFixed(d));if(s==='-0')s='0';return s.replace('-','−')}
+const PAL={
+  classic:{bg:'#0b0c10',bgGrid:'#262b33',axis:'#f2f2f2',p1:'#58c4dd',p2:'#ff9f43',eq:'#f4d345',area:'#83c167',curve:'#ff7aa8',mark:'#c77dff',bad:'#fc6255'},
+  paper:{bg:'#fbfaf7',bgGrid:'#e3e1da',axis:'#23262b',p1:'#2b6cb0',p2:'#e67e22',eq:'#c98a00',area:'#3f9a3a',curve:'#c0398b',mark:'#8e44ad',bad:'#d1453b'},
+  neon:{bg:'#07020f',bgGrid:'#1f1533',axis:'#ffffff',p1:'#4dd2ff',p2:'#ffa53d',eq:'#fff35c',area:'#39ff88',curve:'#ff9ecf',mark:'#a98bff',bad:'#ff4d6d'},
+  nord:{bg:'#2e3440',bgGrid:'#3b4252',axis:'#eceff4',p1:'#88c0d0',p2:'#d08770',eq:'#ebcb8b',area:'#a3be8c',curve:'#e5a0c0',mark:'#b48ead',bad:'#bf616a'}};
+const T=()=>TX[P.lang]||TX.ru;
+const PANELS=['topic','presets','solve','factors','values','show','export'];
+const DEF={palette:'classic',colors:{...PAL.classic},dock:'auto',width:380,bottomH:46,ui:'auto',font:100,speed:1,lw:1,order:PANELS.slice(),collapsed:{export:true},read:{},float:{x:12,y:12},
+  show:{bgGrid:true,coords:true,labels:true,areas:true,hints:true},topic:'cross',inp:null,preset:null};
+const clone=o=>JSON.parse(JSON.stringify(o));
+function load(){let r=null;try{r=JSON.parse(localStorage.getItem(KEY)||'null')}catch(e){}const p=clone(DEF);if(!r||typeof r!=='object')return p;
+  Object.assign(p,r);p.colors={...DEF.colors,...(r.colors||{})};p.show={...DEF.show,...(r.show||{})};const ord=Array.isArray(r.order)?r.order.filter(x=>PANELS.includes(x)):[];PANELS.forEach(x=>{if(!ord.includes(x))ord.push(x)});p.order=ord;p.collapsed=r.collapsed||{};p.float=r.float||{x:12,y:12};return p}
+let P=load();if(!P.lang)P.lang=(navigator.language||'').toLowerCase().startsWith('ru')?'ru':'en';let saveT=0;
+function save(){clearTimeout(saveT);saveT=setTimeout(()=>{try{localStorage.setItem(KEY,JSON.stringify(P))}catch(e){}},250)}
+const dc=s=>P.lang==='ru'?s.replace(/(\d)\.(\d)/g,'$1,$2'):s;
+function fN(v,d=4){if(!isFinite(v))return v>0?'∞':v<0?'−∞':'—';return dc(fmt(v,d))}
+function fQ(v,d=4){const f=toFrac(v,1000,1e-9);if(f&&f[1]>1)return`${f[0]<0?'−':''}${Math.abs(f[0])}/${f[1]} ≈ ${fN(v,d)}`;return fN(v,d)}
+const fV=a=>`(${a.map(v=>fN(v,4)).join('; ')})`;
+const PRE={
+ gdp:[['g1',{tab:'Яблоки 1 100 2 120\nАпельсины 3 50 3 60'},'Номинальный и реальный ВВП','Nominal and real GDP'],['g2',{tab:'Хлеб 2 1000 3 900\nМолоко 1 500 1 600\nКомпьютеры 1000 2 800 3'},'Дефлятор и ИПЦ расходятся','Deflator and CPI diverge']],
+ unemp:[['u6',{um:'nat',us:'1%',uf:'20%',du:'',gN:''},'Гл. 6: s = 1%, f = 20%','Ch. 6: s = 1%, f = 20%'],['uok',{um:'okun',us:'',uf:'',du:'1',gN:'3'},'Закон Оукена: Δu = +1 п. п.','Okun’s law: Δu = +1 pp']],
+ natinc:[['n3',{nm:'lf',A:'',K:'',L:'',al:'',Y:'5000',a:'250',b:'0,75',G:'1000',T:'1000',c:'1000',d:'50',dG:'250',dT:''},'Гл. 3: рынок заёмных средств, G +250','Ch. 3: loanable funds, G +250'],['n3t',{nm:'lf',A:'',K:'',L:'',al:'',Y:'5000',a:'250',b:'0,75',G:'1000',T:'1000',c:'1000',d:'50',dG:'',dT:'-200'},'Снижение налогов на 200','Tax cut of 200'],['ncd',{nm:'prod',A:'1',K:'100',L:'100',al:'0,3',Y:'',a:'',b:'',G:'',T:'',c:'',d:'',dG:'',dT:''},'Кобб–Дуглас, α = 0,3','Cobb–Douglas, α = 0.3']],
+ money:[['mq',{mm:'qt',gM:'5%',gV:'0%',gY:'3%',r:'2%',cr:'',rr:'',B:''},'Количественная теория и Фишер','Quantity theory and Fisher'],['mm',{mm:'mult',gM:'',gV:'',gY:'',r:'',cr:'0,4',rr:'0,1',B:'500'},'Денежный мультипликатор','Money multiplier']],
+ open:[['o5',{Y:'5000',a:'250',b:'0,75',G:'1000',T:'1000',c:'1000',d:'50',rs:'5',n0:'500',n1:'500',dG:'250'},'Гл. 5: малая открытая экономика, G +250','Ch. 5: small open economy, G +250'],['o5r',{Y:'5000',a:'250',b:'0,75',G:'1000',T:'1000',c:'1000',d:'50',rs:'10',n0:'500',n1:'500',dG:''},'Мировая ставка выросла до 10%','World rate rises to 10%']],
+ solow:[['s72',{al:'0,5',s:'0,3',dl:'0,1',n:'0',g:'0',k0:'4',s2:''},'Гл. 7, табл. 7-2: y = √k, s = 0,3, δ = 0,1','Ch. 7, Table 7-2: y = √k, s = 0.3, δ = 0.1'],['s7s',{al:'0,5',s:'0,3',dl:'0,1',n:'0',g:'0',k0:'9',s2:'0,4'},'Рост нормы сбережения до 0,4','Saving rate rises to 0.4'],['s8',{al:'0,3',s:'0,25',dl:'0,05',n:'0,01',g:'0,02',k0:'2',s2:''},'Гл. 8: рост населения и технологий','Ch. 8: population and technology growth']],
+ cross:[['k10',{a:'200',b:'0,75',I:'100',G:'100',T:'100',t:'0',dG:'25',dT:''},'Гл. 10, задача 2: G +25','Ch. 10, problem 2: G +25'],['k10f',{a:'200',b:'0,75',I:'100',G:'100',T:'100',t:'0',dG:'75',dT:''},'До полной занятости 1600','To full employment 1600'],['k10t',{a:'200',b:'0,75',I:'100',G:'100',T:'100',t:'0',dG:'100',dT:'100'},'Сбалансированный бюджет: G и T +100','Balanced budget: G and T +100'],['kt',{a:'200',b:'0,75',I:'100',G:'100',T:'0',t:'0,2',dG:'25',dT:''},'С подоходным налогом t = 0,2','With income tax t = 0.2']],
+ islm:[['h11',{a:'200',b:'0,75',c:'200',d:'25',G:'100',T:'100',M:'1000',P:'2',e:'1',f:'100',dG:'',dT:'',dM:''},'Гл. 11, задача 3: Хиксония','Ch. 11, problem 3: Hicksonia'],['h11g',{a:'200',b:'0,75',c:'200',d:'25',G:'100',T:'100',M:'1000',P:'2',e:'1',f:'100',dG:'50',dT:'',dM:''},'Хиксония: G 100 → 150','Hicksonia: G 100 → 150'],
+  ['h11m',{a:'200',b:'0,75',c:'200',d:'25',G:'100',T:'100',M:'1000',P:'2',e:'1',f:'100',dG:'',dT:'',dM:'200'},'Хиксония: M 1000 → 1200','Hicksonia: M 1000 → 1200'],['h11t',{a:'200',b:'0,75',c:'200',d:'25',G:'100',T:'100',M:'1000',P:'2',e:'1',f:'100',dG:'',dT:'-50',dM:''},'Хиксония: снижение налогов на 50','Hicksonia: tax cut of 50']],
+ mf:[['mff',{reg:'float',a:'200',b:'0,75',c:'200',d:'25',G:'100',T:'100',M:'1000',P:'2',e:'1',f:'100',rs:'5',n0:'300',n1:'100',dG:'50',dM:''},'Плавающий курс: G +50','Floating rate: G +50'],['mffm',{reg:'float',a:'200',b:'0,75',c:'200',d:'25',G:'100',T:'100',M:'1000',P:'2',e:'1',f:'100',rs:'5',n0:'300',n1:'100',dG:'',dM:'100'},'Плавающий курс: M +100','Floating rate: M +100'],['mfx',{reg:'fixed',a:'200',b:'0,75',c:'200',d:'25',G:'100',T:'100',M:'1000',P:'2',e:'1',f:'100',rs:'5',n0:'300',n1:'100',dG:'50',dM:''},'Фиксированный курс: G +50','Fixed rate: G +50']],
+ adas:[['a9',{M:'1000',V:'2',Yb:'1000',as:'100',Pe:'2',dM:'200',dPe:''},'Рост денежной массы на 200','Money supply +200'],['a9s',{M:'1000',V:'2',Yb:'1000',as:'100',Pe:'2',dM:'',dPe:'0,5'},'Шок предложения: Pᵉ +0,5','Supply shock: Pᵉ +0.5'],['a9h',{M:'1000',V:'2',Yb:'1000',as:'0',Pe:'2',dM:'-200',dPe:''},'Горизонтальная SRAS (гл. 9)','Horizontal SRAS (ch. 9)']],
+ phil:[['p13',{pe:'3%',be:'0,5',un:'6%',u:'8%',v:'0%',sr:'5'},'Гл. 13: u выше естественной на 2 п. п.','Ch. 13: u 2 pp above natural'],['p13v',{pe:'3%',be:'0,5',un:'6%',u:'6%',v:'2%',sr:'5'},'Шок предложения v = 2%','Supply shock v = 2%']]};
+const GROUPS=[['data',['gdp','unemp']],['long',['natinc','money','open']],['growth',['solow']],['short',['cross','islm','mf','adas','phil']]];
+const TOPICS=GROUPS.flatMap(g=>g[1]);
+const FORMS={gdp:[['tab','txt']],unemp:[['um','sel',['nat','okun']],['us','num',i=>i.um==='nat'],['uf','num',i=>i.um==='nat'],['du','num',i=>i.um==='okun'],['gN','num',i=>i.um==='okun']],
+ natinc:[['nm','sel',['lf','prod']],['A','num',i=>i.nm==='prod'],['K','num',i=>i.nm==='prod'],['L','num',i=>i.nm==='prod'],['al','num',i=>i.nm==='prod'],['Y','num',i=>i.nm==='lf'],['a','num',i=>i.nm==='lf'],['b','num',i=>i.nm==='lf'],['G','num',i=>i.nm==='lf'],['T','num',i=>i.nm==='lf'],['c','num',i=>i.nm==='lf'],['d','num',i=>i.nm==='lf'],['dG','num',i=>i.nm==='lf'],['dT','num',i=>i.nm==='lf'],['dc','num',i=>i.nm==='lf']],
+ money:[['mm','sel',['qt','mult']],['gM','num',i=>i.mm==='qt'],['gV','num',i=>i.mm==='qt'],['gY','num',i=>i.mm==='qt'],['r','num',i=>i.mm==='qt'],['cr','num',i=>i.mm==='mult'],['rr','num',i=>i.mm==='mult'],['B','num',i=>i.mm==='mult']],
+ open:[['Y','num'],['a','num'],['b','num'],['G','num'],['T','num'],['c','num'],['d','num'],['rs','num'],['n0','num'],['n1','num'],['dG','num'],['dT','num'],['dc','num'],['drs','num'],['dn0','num']],
+ solow:[['al','num'],['s','num'],['dl','num'],['n','num'],['g','num'],['k0','num'],['s2','num'],['dn','num'],['ddl','num']],
+ cross:[['a','num'],['b','num'],['I','num'],['G','num'],['T','num'],['t','num'],['dG','num'],['dT','num'],['dA','num']],
+ islm:[['a','num'],['b','num'],['c','num'],['d','num'],['G','num'],['T','num'],['M','num'],['P','num'],['e','num'],['f','num'],['dG','num'],['dT','num'],['dM','num'],['dA','num'],['dI','num'],['dMd','num'],['dP','num']],
+ mf:[['reg','sel',['float','fixed']],['a','num'],['b','num'],['c','num'],['d','num'],['G','num'],['T','num'],['M','num'],['P','num'],['e','num'],['f','num'],['rs','num'],['n0','num'],['n1','num'],['dG','num'],['dT','num'],['dM','num',i=>i.reg==='float'],['dn0','num'],['drs','num']],
+ adas:[['M','num'],['V','num'],['Yb','num'],['as','num'],['Pe','num'],['dM','num'],['dPe','num'],['dV','num'],['dYb','num']],phil:[['pe','num'],['be','num'],['un','num'],['u','num'],['v','num'],['sr','num'],['dpe','num'],['du2','num']]};
+
+const DELTAS={natinc:['dG','dT','dc'],open:['dG','dT','dc','drs','dn0'],solow:['s2','dn','ddl'],cross:['dG','dT','dA'],islm:['dG','dT','dM','dA','dI','dMd','dP'],mf:['dG','dT','dM','dn0','drs'],adas:['dM','dPe','dV','dYb'],phil:['dpe','du2','v']};
+const q4=v=>dc(String(+(+v).toFixed(4)));const gv=(I,k)=>Math.abs(nI(I[k]||0))||1;
+const SHOCKS={
+ cross:[{id:'g',ru:'Рост госрасходов G',en:'Higher government purchases G',c:'PE вверх',cen:'PE up',set:I=>({dG:q4(gv(I,'G')*.25)})},{id:'t',ru:'Рост налогов T',en:'Higher taxes T',c:'PE вниз',cen:'PE down',set:I=>({dT:q4(gv(I,'G')*.25)})},
+  {id:'x',ru:'Рост экспорта',en:'Higher exports',c:'PE вверх',cen:'PE up',set:I=>({dA:q4(gv(I,'G')*.25)})},{id:'m',ru:'Рост импорта (автономного)',en:'Higher (autonomous) imports',c:'PE вниз',cen:'PE down',set:I=>({dA:q4(-gv(I,'G')*.25)})},
+  {id:'i',ru:'Оптимизм инвесторов',en:'Investor optimism',c:'PE вверх',cen:'PE up',set:I=>({dA:q4(gv(I,'I')*.25)})},{id:'bb',ru:'Сбалансированный рост G и T',en:'Balanced rise in G and T',c:'PE вверх на ΔG(1 − MPC)',cen:'PE up by ΔG(1 − MPC)',set:I=>({dG:q4(gv(I,'G')*.25),dT:q4(gv(I,'G')*.25)})}],
+ islm:[{id:'g',ru:'Рост госрасходов G',en:'Higher government purchases G',c:'IS вправо',cen:'IS right',set:I=>({dG:q4(gv(I,'G')*.5)})},{id:'t',ru:'Рост налогов T',en:'Higher taxes T',c:'IS влево',cen:'IS left',set:I=>({dT:q4(gv(I,'G')*.5)})},
+  {id:'x',ru:'Рост экспорта',en:'Higher exports',c:'IS вправо',cen:'IS right',set:I=>({dA:q4(gv(I,'G')*.5)})},{id:'m',ru:'Рост импорта',en:'Higher imports',c:'IS влево',cen:'IS left',set:I=>({dA:q4(-gv(I,'G')*.5)})},
+  {id:'i',ru:'Оптимизм инвесторов',en:'Investor optimism',c:'IS вправо',cen:'IS right',set:I=>({dI:q4(gv(I,'c')*.25)})},{id:'mu',ru:'Рост денежной массы M',en:'Higher money supply M',c:'LM вправо',cen:'LM right',set:I=>({dM:q4(gv(I,'M')*.2)})},
+  {id:'md',ru:'Сокращение денежной массы M',en:'Lower money supply M',c:'LM влево',cen:'LM left',set:I=>({dM:q4(-gv(I,'M')*.2)})},{id:'p',ru:'Рост уровня цен P',en:'Higher price level P',c:'LM влево',cen:'LM left',set:I=>({dP:q4(gv(I,'P')*.25)})},
+  {id:'dm',ru:'Рост спроса на деньги',en:'Higher money demand',c:'LM влево',cen:'LM left',set:I=>({dMd:q4(gv(I,'M')/gv(I,'P')*.1)})}],
+ mf:[{id:'g',ru:'Рост госрасходов G',en:'Higher government purchases G',c:'IS* вправо',cen:'IS* right',set:I=>({dG:q4(gv(I,'G')*.5)})},{id:'t',ru:'Рост налогов T',en:'Higher taxes T',c:'IS* влево',cen:'IS* left',set:I=>({dT:q4(gv(I,'G')*.5)})},
+  {id:'mu',ru:'Рост денежной массы M',en:'Higher money supply M',c:'LM* вправо (плавающий курс)',cen:'LM* right (floating)',set:I=>({dM:q4(gv(I,'M')*.1)})},{id:'tar',ru:'Импортные пошлины / рост экспорта',en:'Import tariffs / higher exports',c:'IS* вправо',cen:'IS* right',set:I=>({dn0:q4(gv(I,'n0')*.3)})},
+  {id:'im',ru:'Рост спроса на импорт',en:'Higher import demand',c:'IS* влево',cen:'IS* left',set:I=>({dn0:q4(-gv(I,'n0')*.3)})},{id:'rs',ru:'Рост мировой ставки r*',en:'Higher world rate r*',c:'LM* вправо, IS* влево',cen:'LM* right, IS* left',set:I=>({drs:'1'})}],
+ adas:[{id:'mu',ru:'Рост денежной массы M',en:'Higher money supply M',c:'AD вправо',cen:'AD right',set:I=>({dM:q4(gv(I,'M')*.2)})},{id:'md',ru:'Сокращение M',en:'Lower M',c:'AD влево',cen:'AD left',set:I=>({dM:q4(-gv(I,'M')*.2)})},
+  {id:'v',ru:'Рост скорости обращения V (бум расходов)',en:'Higher velocity V (spending boom)',c:'AD вправо',cen:'AD right',set:I=>({dV:q4(gv(I,'V')*.2)})},{id:'oil',ru:'Подорожание нефти (шок издержек)',en:'Oil price rise (cost shock)',c:'SRAS вверх (влево)',cen:'SRAS up (left)',set:I=>({dPe:q4(gv(I,'Pe')*.25)})},
+  {id:'fav',ru:'Благоприятный шок предложения',en:'Favorable supply shock',c:'SRAS вниз (вправо)',cen:'SRAS down (right)',set:I=>({dPe:q4(-gv(I,'Pe')*.2)})},{id:'tech',ru:'Рост потенциала (технологии, ресурсы)',en:'Higher potential output (technology, resources)',c:'LRAS и SRAS вправо',cen:'LRAS and SRAS right',set:I=>({dYb:q4(gv(I,'Yb')*.1)})}],
+ natinc:[{id:'g',ru:'Рост госрасходов G',en:'Higher government purchases G',c:'S влево',cen:'S left',set:I=>({dG:q4(gv(I,'G')*.25)})},{id:'t',ru:'Снижение налогов T',en:'Tax cut',c:'S влево',cen:'S left',set:I=>({dT:q4(-gv(I,'T')*.2)})},{id:'i',ru:'Рост инвестиционного спроса',en:'Higher investment demand',c:'I(r) вправо',cen:'I(r) right',set:I=>({dc:q4(gv(I,'c')*.2)})}],
+ open:[{id:'g',ru:'Рост госрасходов G',en:'Higher government purchases G',c:'S − I влево',cen:'S − I left',set:I=>({dG:q4(gv(I,'G')*.25)})},{id:'t',ru:'Снижение налогов T',en:'Tax cut',c:'S − I влево',cen:'S − I left',set:I=>({dT:q4(-gv(I,'T')*.2)})},{id:'i',ru:'Рост инвестиционного спроса',en:'Higher investment demand',c:'S − I влево',cen:'S − I left',set:I=>({dc:q4(gv(I,'c')*.2)})},
+  {id:'rs',ru:'Рост мировой ставки r*',en:'Higher world rate r*',c:'S − I вправо',cen:'S − I right',set:I=>({drs:'2'})},{id:'tar',ru:'Протекционизм (пошлины, квоты)',en:'Protectionism (tariffs, quotas)',c:'NX(ε) вправо',cen:'NX(ε) right',set:I=>({dn0:q4(gv(I,'n0')*.4)})}],
+ solow:[{id:'s',ru:'Рост нормы сбережения s',en:'Higher saving rate s',c:'s·f(k) вверх',cen:'s·f(k) up',set:I=>({s2:q4(Math.min(.95,nI(I.s)*1.3))})},{id:'n',ru:'Рост населения n',en:'Higher population growth n',c:'(δ+n+g)k круче',cen:'(δ+n+g)k steeper',set:I=>({dn:'0,02'})},{id:'dl',ru:'Рост нормы выбытия δ',en:'Higher depreciation δ',c:'(δ+n+g)k круче',cen:'(δ+n+g)k steeper',set:I=>({ddl:'0,03'})}],
+ phil:[{id:'pe',ru:'Рост инфляционных ожиданий',en:'Higher expected inflation',c:'кривая вверх',cen:'curve up',set:I=>({dpe:'2%'})},{id:'v',ru:'Шок предложения (нефть)',en:'Supply shock (oil)',c:'кривая вверх',cen:'curve up',set:I=>({v:'2%'})},{id:'u',ru:'Рост безработицы (спад)',en:'Higher unemployment (recession)',c:'движение вдоль кривой',cen:'movement along the curve',set:I=>({du2:'2'})}]};
+const fin=R=>R.R1||R.R0;
+const EFFV={cross:(R,b)=>{const x=b?R.R0:fin(R);return{Y:x.Y,C:x.C}},islm:(R,b)=>{const x=b?R.R0:fin(R);return{Y:x.Y,r:x.r,C:x.C,I:x.I}},mf:(R,b)=>{const x=b?R.R0:fin(R);return{Y:x.Y,e:x.e,NX:x.NX}},
+ adas:(R,b)=>{const x=b?R.R0:fin(R);return{[P.lang==='ru'?'P (кор.)':'P (SR)']:x.P,[P.lang==='ru'?'Y (кор.)':'Y (SR)']:x.Y,[P.lang==='ru'?'P (долг.)':'P (LR)']:b?R.M*R.V/R.Yb:(R.LR?R.LR.P:R.M*R.V/R.Yb)}},
+ natinc:(R,b)=>{const x=b?R.R0:fin(R);return R.nm==='lf'?{S:x.S,r:x.r,I:x.I}:{}},open:(R,b)=>{const x=b?R.R0:fin(R);return{S:x.S,I:x.I,NX:x.NX,'ε':x.eps}},
+ solow:(R,b)=>{const x=b||!R.alt?R:R.alt;return{'k*':x.ks,'y*':x.ys,'c*':x.cs}},phil:(R,b)=>({'π':b?R.pi:(R.pi2!=null?R.pi2:R.pi)})};
+
+const S={topic:TOPICS.includes(P.topic)?P.topic:'cross',inp:{},res:null,err:null,preset:P.preset||null,stamp:false,anyAnim:false};
+TOPICS.forEach(t=>{S.inp[t]=clone(PRE[t][0][1])});if(P.inp)for(const t of TOPICS)if(P.inp[t])S.inp[t]={...S.inp[t],...P.inp[t]};
+function renderForm(){const box=$('#form'),L=T(),t=S.topic,I=S.inp[t];box.innerHTML='';
+  for(const[k,type,a,b]of FORMS[t]){const show=typeof a==='function'?a:typeof b==='function'?b:null;if(show&&!show(I))continue;
+    const l=document.createElement('label');l.textContent=L.f[k]||k;if(type==='txt')l.className='full';box.appendChild(l);let el;
+    if(type==='txt'){el=document.createElement('textarea');el.spellcheck=false}else if(type==='sel'){el=document.createElement('select');for(const o of a){const op=document.createElement('option');op.value=o;op.textContent=(L.opt[k]||{})[o]||o;el.appendChild(op)}}
+    else{el=document.createElement('input');el.type='text';el.spellcheck=false;el.autocomplete='off'}el.value=I[k]==null?'':I[k];el.dataset.k=k;box.appendChild(el)}
+  buildTopics()}
+function buildTopics(){const L=T(),box=$('#topicBox');box.innerHTML=GROUPS.map(([g,ts])=>`<div class="tg"><div class="tgl">${L.grp[g]}</div><div class="seg">${ts.map(t=>`<button data-t="${t}" class="${t===S.topic?'on':''}" title="${L.tt[t]||''}">${L['t_'+t]}</button>`).join('')}</div></div>`).join('')}
+document.addEventListener('click',e=>{const b=e.target.closest('#topicBox button[data-t]');if(b)setTopic(b.dataset.t)});
+let fT0=0;$('#form').addEventListener('input',e=>{const k=e.target.dataset.k;if(!k)return;S.inp[S.topic][k]=e.target.value;S.preset=null;S.shock=null;if(e.target.tagName==='SELECT'){renderForm();recompute();return}clearTimeout(fT0);fT0=setTimeout(recompute,250)});
+function setTopic(t){if(!TOPICS.includes(t))return;S.topic=t;P.topic=t;S.preset=null;save();renderForm();recompute()}
+function loadPreset(id){for(const t of TOPICS){const p=PRE[t].find(z=>z[0]===id);if(p){S.topic=t;P.topic=t;S.inp[t]={...S.inp[t],...clone(p[1])};S.preset=id;S.shock=null;renderForm();recompute();return}}}
+const E=(msg)=>{throw{msg}};const nI=s=>numG(String(s==null?'':s).replace(',','.'));const opt=(s,d=0)=>s===''||s==null?d:nI(s);
+const pct=s=>{const t=String(s==null?'':s).trim();if(!t)return 0;return t.endsWith('%')?nI(t.slice(0,-1))/100:(()=>{const v=nI(t);return Math.abs(v)>=1?v/100:v})()};
+function compGdp(I){const rows=String(I.tab||'').trim().split('\n').map(l=>l.trim()).filter(Boolean).map(l=>{const p=l.split(/\s+/);if(p.length<4)E('tab');const nums=p.slice(-4).map(nI);return[p.slice(0,-4).join(' ')||'—',...nums]});if(!rows.length)E('tab');if(rows.some(r=>r.slice(1).some(v=>!(v>=0))))E('pos');return{rows,...gdpCalc(rows)}}
+function compUnemp(I){if(I.um==='nat'){const s=pct(I.us),f=pct(I.uf);if(!(s>0&&f>0))E('pos');return{um:'nat',s,f,u:natU(s,f)}}const du=nI(I.du)/100,gN=pct(I.gN);return{um:'okun',du,gN,g:okun(du,gN)}}
+function compNat(I){if(I.nm==='prod'){const A=nI(I.A),K=nI(I.K),L=nI(I.L),al=nI(I.al);if(!(A>0&&K>0&&L>0&&al>0&&al<1))E('pos');return{nm:'prod',A,K,L,al,...natInc(A,K,L,al)}}
+  const p=['Y','a','b','G','T','c','d'].map(k=>nI(I[k]));if(!(p[2]>0&&p[2]<1&&p[6]>0))E('mpc');const[Y,a,b,G,T,c,d]=p;const R0=loanable(Y,a,b,G,T,c,d);const dG=opt(I.dG),dT=opt(I.dT),dc=opt(I.dc);const R1=(dG||dT||dc)?loanable(Y,a,b,G+dG,T+dT,c+dc,d):null;return{nm:'lf',Y,a,b,G,T,c,d,dG,dT,dc,R0,R1}}
+function compMoney(I){if(I.mm==='qt'){const gM=pct(I.gM),gV=pct(I.gV),gY=pct(I.gY),r=pct(I.r);return{mm:'qt',gM,gV,gY,r,...qtheory(gM,gV,gY,r)}}const cr=nI(I.cr),rr=nI(I.rr),B=opt(I.B,NaN);if(!(cr>=0&&rr>0&&rr<=1))E('pos');const m=moneyMult(cr,rr);return{mm:'mult',cr,rr,B,m,M:m*B}}
+function compOpen(I){const v=['Y','a','b','G','T','c','d','rs','n0','n1'].map(k=>nI(I[k]));if(!(v[2]>0&&v[2]<1&&v[6]>0&&v[9]>0))E('mpc');const R0=smallOpen(...v);const dG=opt(I.dG),dT=opt(I.dT),dc=opt(I.dc),drs=opt(I.drs),dn0=opt(I.dn0);const v1=[v[0],v[1],v[2],v[3]+dG,v[4]+dT,v[5]+dc,v[6],v[7]+drs,v[8]+dn0,v[9]];const R1=(dG||dT||dc||drs||dn0)?smallOpen(...v1):null;return{v,v1,R0,R1,dG,dT,dc,drs,dn0}}
+function compSolow(I){const al=nI(I.al),s=nI(I.s),dl=nI(I.dl),n=opt(I.n),g=opt(I.g),k0=nI(I.k0);if(!(al>0&&al<1&&s>0&&s<1&&dl+n+g>0&&k0>0))E('pos');const R=solow(al,s,dl,n,g,k0,80);const s2=opt(I.s2,NaN);
+  const dn=opt(I.dn),ddl=opt(I.ddl);if(isFinite(s2)||dn||ddl){const s1=isFinite(s2)?s2:s;if(!(s1>0&&s1<1)||dl+ddl+n+dn+g<=0)E('pos');R.alt=solow(al,s1,dl+ddl,n+dn,g,R.ks,80);R.alt.s=s1}R.al=al;R.s=s;R.dl=dl;R.n=n;R.g=g;R.k0=k0;R.s2=isFinite(s2)?s2:(R.alt?s:NaN);R.dn=dn;R.ddl=ddl;return R}
+function compCross(I){const a=nI(I.a),b=nI(I.b),Iv=nI(I.I),G=nI(I.G),T=nI(I.T),t=opt(I.t);if(!(b>0&&b<1&&t>=0&&t<1))E('mpc');const R0=kcross(a,b,Iv,G,T,t),dG=opt(I.dG),dT=opt(I.dT),dA=opt(I.dA);const R1=(dG||dT||dA)?kcross(a,b,Iv+dA,G+dG,T+dT,t):null;return{a,b,I:Iv,G,T,t,dG,dT,dA,R0,R1}}
+const islmP=I=>{const p={};for(const k of['a','b','c','d','G','T','M','P','e','f'])p[k]=nI(I[k]);if(!(p.b>0&&p.b<1&&p.d>0&&p.e>0&&p.f>0&&p.P>0))E('mpc');return p};
+function compIslm(I){const p=islmP(I),dG=opt(I.dG),dT=opt(I.dT),dM=opt(I.dM),dA=opt(I.dA),dMd=opt(I.dMd),dP=opt(I.dP),dI=opt(I.dI);if(p.P+dP<=0)E('pos');const R0=islm(p);const P1=p.P+dP;const R1=(dG||dT||dM||dA||dMd||dP||dI)?islm({...p,G:p.G+dG+dA,T:p.T+dT,c:p.c+dI,P:P1,M:p.M+dM-dMd*P1}):null;return{p,dG,dT,dM,dA,dMd,dP,dI,R0,R1}}
+function compMF(I){const p=islmP(I);for(const k of['rs','n0','n1'])p[k]=nI(I[k]);if(!(p.n1>0))E('pos');const dG=opt(I.dG),dM=opt(I.dM),dT=opt(I.dT),dn0=opt(I.dn0),drs=opt(I.drs);const R0=mundell(p);let R1=null;const p1={...p,G:p.G+dG,T:p.T+dT,n0:p.n0+dn0,rs:p.rs+drs};
+  if(I.reg==='fixed'){if(dG||dT||dn0||drs||dM)R1={...mundellFixed(p1,R0.e),e:R0.e}}else if(dG||dM||dT||dn0||drs)R1=mundell({...p1,M:p.M+dM});return{reg:I.reg,p,p1,dG,dM,dT,dn0,drs,R0,R1}}
+function compAdas(I){const M=nI(I.M),V=nI(I.V),Yb=nI(I.Yb),al=nI(I.as),Pe=nI(I.Pe);if(!(M>0&&V>0&&Yb>0&&al>=0&&Pe>0))E('pos');const R0=adas(M,V,Yb,al,Pe),dM=opt(I.dM),dPe=opt(I.dPe),dV=opt(I.dV),dYb=opt(I.dYb);let R1=null,LR=null;if(M+dM<=0||V+dV<=0||Yb+dYb<=0)E('pos');
+  if(dM||dPe||dV||dYb){R1=adas(M+dM,V+dV,Yb+dYb,al,Pe+dPe);LR={P:(M+dM)*(V+dV)/(Yb+dYb),Y:Yb+dYb}}return{M,V,Yb,al,Pe,dM,dPe,dV,dYb,R0,R1,LR}}
+function compPhil(I){const pe=pct(I.pe),be=nI(I.be),un=pct(I.un),u=pct(I.u),v=pct(I.v),sr=opt(I.sr,NaN);if(!(be>0))E('pos');const dpe=pct(I.dpe),du=nI(I.du2||0)/100;return{pe,be,un,u,v,sr,pi:phillips(pe,be,un,u,v),dpe,du,pi2:(dpe||du)?phillips(pe+dpe,be,un,u+du,v):null}}
+const COMP={gdp:compGdp,unemp:compUnemp,natinc:compNat,money:compMoney,open:compOpen,solow:compSolow,cross:compCross,islm:compIslm,mf:compMF,adas:compAdas,phil:compPhil};
+
+function recompute(){const t=S.topic,I=S.inp[t];S.err=null;S.res=null;try{S.res=COMP[t](I)}catch(e){S.err=e&&e.msg?e:{msg:'num'}}P.inp=S.inp;P.preset=S.preset;save();renderAll()}
+/* ---------- панели ---------- */
+function buildPanels(){
+  document.querySelectorAll('.panel').forEach(p=>{
+    const h=document.createElement('div');h.className='ph';
+    h.innerHTML=`<span class="handle" data-it="drag">⠿</span><h3 data-i="p_${p.dataset.id}"></h3><button class="icon" data-mv="-1" data-it="up">↑</button><button class="icon" data-mv="1" data-it="down">↓</button><button class="icon chev" data-col data-it="collapse">▾</button>`;
+    p.prepend(h);
+    const id=p.dataset.id,toggle=()=>{P.collapsed[id]=!P.collapsed[id];p.classList.toggle('collapsed',!!P.collapsed[id]);save()};
+    h.querySelector('h3').onclick=toggle;h.querySelector('[data-col]').onclick=toggle;
+    h.querySelectorAll('[data-mv]').forEach(b=>b.onclick=()=>{const i=P.order.indexOf(id),j=i+(+b.dataset.mv);if(j<0||j>=P.order.length)return;[P.order[i],P.order[j]]=[P.order[j],P.order[i]];applyOrder();save()});
+    const hd=h.querySelector('.handle');
+    hd.addEventListener('pointerdown',()=>{p.draggable=true});
+    p.addEventListener('dragstart',e=>{p.classList.add('dragging');e.dataTransfer.effectAllowed='move';try{e.dataTransfer.setData('text/plain',id)}catch(_){}});
+    p.addEventListener('dragend',()=>{p.classList.remove('dragging');p.draggable=false;P.order=[...side.querySelectorAll('.panel')].map(x=>x.dataset.id);save()});
+  });
+  side.addEventListener('dragover',e=>{const dr=side.querySelector('.panel.dragging');if(!dr)return;e.preventDefault();
+    const after=[...side.querySelectorAll('.panel:not(.dragging)')].find(el=>{const r=el.getBoundingClientRect();return e.clientY<r.top+r.height/2});
+    if(after)side.insertBefore(dr,after);else side.appendChild(dr)});
+}
+function applyOrder(){P.order.forEach(id=>{const el=side.querySelector(`.panel[data-id="${id}"]`);if(el)side.appendChild(el)});
+  side.querySelectorAll('.panel').forEach(p=>p.classList.toggle('collapsed',!!P.collapsed[p.dataset.id]))}
+function showPanel(id){P.collapsed[id]=false;applyOrder();save();const el=side.querySelector(`.panel[data-id="${id}"]`);if(el)setTimeout(()=>el.scrollIntoView({block:'nearest',behavior:'smooth'}),50)}
+const ol=a=>`<ol class="stp">${a.filter(Boolean).map(s=>`<li>${s}</li>`).join('')}</ol>`;
+function renderSolve(){const box=$('#solve'),L=T();if(S.err){box.innerHTML=`<p class="note err">${L.err[S.err.msg]||L.err.num}</p>`;S.ans='';return}const r=SOLVE[S.topic](S.res);S.ans=r.ans;
+  box.innerHTML=`<p class="idea">${L.tt[S.topic]}</p>${typeof shockNote==='function'?shockNote():''}${ol(r.st)}<div class="ans"><div class="k">${L.ans}</div><div class="big">${r.ans}</div></div>`}
+function prop(k,v){return`<div class="prop"><span class="k">${k}</span><span class="v">${v}</span></div>`}
+const fp=v=>fN(v,4),pc=v=>fN(v*100,3)+'%';
+const dlt=(a,b)=>`${fp(a)} → ${fp(b)} (${b-a>=0?'+':'−'}${fp(Math.abs(b-a))})`;
+function sGdp(R){const L=T(),st=[L.g_nom(fp(R.nom0),fp(R.nom1)),L.g_real(fp(R.real1)),L.g_defl(fp(R.defl)),L.g_cpi(fp(R.cpi)),L.g_gr(pc(R.gReal),pc(R.gNom)),L.g_diff];return{st,ans:`${L.v.defl} ${fp(R.defl)}, ${L.v.cpi} ${fp(R.cpi)}`}}
+function sUnemp(R){const L=T();if(R.um==='nat')return{st:[L.u_rule,L.u_res(pc(R.s),pc(R.f),pc(R.u))],ans:`u* = ${pc(R.u)}`};return{st:[L.u_ok,L.u_okR(fN(R.du*100,3),pc(R.g))],ans:`ΔY/Y = ${pc(R.g)}`}}
+function sNat(R){const L=T();if(R.nm==='prod')return{st:[L.n_cd(fp(R.A),fp(R.al)),L.n_Y(fp(R.Y)),L.n_mp(fp(R.MPK),fp(R.MPL)),L.n_sh(fN(R.capShare,4),fN(R.labShare,4))],ans:`Y = ${fp(R.Y)}`};
+  const a=R.R0,st=[L.n_lf,L.n_S(fp(R.Y),fp(a.C),fp(R.G),fp(a.S),fp(a.Spriv),fp(a.Spub)),L.n_r(fp(a.r),fp(a.I))];if(R.R1){const b=R.R1;st.push(L.n_ch(dlt(a.S,b.S),dlt(a.r,b.r),dlt(a.I,b.I)));if(R.dG)st.push(L.n_crowd(fp(R.dG),fp(a.I-b.I)))}return{st,ans:`r = ${fp((R.R1||a).r)}%, I = ${fp((R.R1||a).I)}`}}
+function sMoney(R){const L=T();if(R.mm==='qt')return{st:[L.q_eq,L.q_pi(pc(R.gM),pc(R.gV),pc(R.gY),pc(R.pi)),L.q_f(pc(R.r),pc(R.pi),pc(R.i))],ans:`π = ${pc(R.pi)}, i = ${pc(R.i)}`};
+  return{st:[L.q_m,L.q_mr(fp(R.cr),fp(R.rr),fp(R.m))+(isFinite(R.M)?' '+L.q_M(fp(R.B),fp(R.M)):'')],ans:`m = ${fp(R.m)}`}}
+function sOpen(R){const L=T(),a=R.R0,st=[L.o_rule,L.o_S(fp(a.S),fp(a.I),fp(a.NX)),L.o_e(fp(a.eps))];if(R.R1){const b=R.R1;st.push(L.o_ch(fp(R.dG),dlt(a.NX,b.NX),dlt(a.eps,b.eps)))}return{st,ans:`NX = ${fp((R.R1||a).NX)}, ε = ${fp((R.R1||a).eps)}`}}
+function sSolow(R){const L=T(),st=[L.s_eq(fp(R.al),fp(R.s),fp(R.br))];st.push(L.s_ss(fp(R.ks),fp(R.ys),fp(R.cs)));st.push(L.s_tr(fp(R.k0),fp(R.tr[1].k),fp(R.tr[2].k)));st.push(L.s_gold(fp(R.kg),fp(R.sg),fp(R.cg),R.s<R.sg-1e-9?'<':R.s>R.sg+1e-9?'>':'='));
+  if(R.n||R.g)st.push(L.s_gr(pc(R.n+R.g),pc(R.g)));if(R.alt)st.push(L.s_alt(fp(R.s2),fp(R.alt.ks),fp(R.alt.ys),fp(R.alt.cs)));const F=R.alt||R;return{st,ans:`k* = ${fp(F.ks)}, y* = ${fp(F.ys)}`}}
+function sCross(R){const L=T(),a=R.R0,st=[L.c_eq(fp(R.a),fp(R.b),fp(R.I),fp(R.G),fp(R.T))+(R.t?' '+L.c_t(fp(R.t)):''),L.c_Y(fp(a.Y)),L.c_m(fp(a.mG),fp(a.mT),fp(a.mBB))];
+  if(R.R1){const b=R.R1;st.push(L.c_ch(fp(R.dG),fp(R.dT),dlt(a.Y,b.Y)))}return{st,ans:`Y = ${fp((R.R1||a).Y)}`}}
+function sIslm(R){const L=T(),a=R.R0,p=R.p,st=[L.i_is(fp(p.a),fp(p.b),fp(p.T),fp(p.c),fp(p.d),fp(p.G),fp(a.A/(1-p.b)),fp(p.d/(1-p.b))),L.i_lm(fp(p.M),fp(p.P),fp(p.e),fp(p.f),fp(a.mp/p.e),fp(p.f/p.e)),L.i_eq(fp(a.r),fp(a.Y),fp(a.C),fp(a.I))];
+  if(R.R1){const b=R.R1;st.push(L.i_ch(dlt(a.Y,b.Y),dlt(a.r,b.r),dlt(a.I,b.I)));if(R.dG)st.push(L.i_crowd(fp(R.dG/(1-p.b)),fp(b.Y-a.Y)))}st.push(L.i_mult(fp(a.mG),fp(a.mT),fp(a.mM)));return{st,ans:`r = ${fp((R.R1||a).r)}, Y = ${fp((R.R1||a).Y)}`}}
+function sMF(R){const L=T(),a=R.R0,st=[L.f_rule(fp(R.p.rs)),L.f_lm(fp(a.Y)),L.f_is(fp(a.e),fp(a.NX))];if(R.R1){const b=R.R1;if(R.reg==='float'){st.push(L.f_fl(dlt(a.Y,b.Y),dlt(a.e,b.e),dlt(a.NX,b.NX)));if(R.dG)st.push(L.f_flG)}else{st.push(L.f_fx(dlt(a.Y,b.Y),dlt(R.p.M,b.M)))}}
+  return{st,ans:`Y = ${fp((R.R1||a).Y)}, e = ${fp((R.R1||a).e)}`}}
+function sAdas(R){const L=T(),a=R.R0,st=[L.a_ad(fp(R.M),fp(R.V)),L.a_as(fp(R.Yb),fp(R.al),fp(R.Pe)),L.a_eq(fp(a.P),fp(a.Y))];if(R.R1){st.push(L.a_sr(dlt(a.P,R.R1.P),dlt(a.Y,R.R1.Y)));st.push(L.a_lr(fp(R.LR.P),fp(R.Yb)))}return{st,ans:`P = ${fp((R.R1||a).P)}, Y = ${fp((R.R1||a).Y)}`}}
+function sPhil(R){const L=T(),st=[L.p_eq,L.p_res(pc(R.pe),fp(R.be),pc(R.u),pc(R.un),pc(R.v),pc(R.pi))];if(isFinite(R.sr))st.push(L.p_sr(fp(R.sr)));return{st,ans:`π = ${pc(R.pi)}`}}
+const SOLVE={gdp:sGdp,unemp:sUnemp,natinc:sNat,money:sMoney,open:sOpen,solow:sSolow,cross:sCross,islm:sIslm,mf:sMF,adas:sAdas,phil:sPhil};
+function shockNote(){const t=S.topic;if(!S.shock||!SHOCKS[t])return'';const sh=SHOCKS[t].find(s=>s.id===S.shock);return sh?`<p class="idea"><b>${sh[P.lang]||sh.ru}:</b> ${(P.lang==='en'?sh.cen:sh.c)}</p>`:''}
+function renderValues(){const box=$('#props'),V=T().v;if(S.err||!S.res){box.innerHTML='';return}const R=S.res,t=S.topic;let h='';const fin=R.R1||R.R0;
+  if(t==='gdp')h=prop(V.defl,fp(R.defl))+prop(V.cpi,fp(R.cpi))+prop(V.gReal,pc(R.gReal));else if(t==='unemp')h=R.um==='nat'?prop('u*',pc(R.u)):prop('ΔY/Y',pc(R.g));
+  else if(t==='natinc')h=R.nm==='prod'?prop('Y',fp(R.Y))+prop('MPK',fp(R.MPK))+prop('MPL',fp(R.MPL)):prop('S',fp(fin.S))+prop('r',fp(fin.r)+'%')+prop('I',fp(fin.I));
+  else if(t==='money')h=R.mm==='qt'?prop('π',pc(R.pi))+prop('i',pc(R.i)):prop('m',fp(R.m))+(isFinite(R.M)?prop('M',fp(R.M)):'');
+  else if(t==='open')h=prop('S',fp(fin.S))+prop('I',fp(fin.I))+prop('NX',fp(fin.NX))+prop('ε',fp(fin.eps));
+  else if(t==='solow')h=prop('k*',fp(R.ks))+prop('y*',fp(R.ys))+prop('c*',fp(R.cs))+prop(V.gold,`k = ${fp(R.kg)}, s = ${fp(R.sg)}`);
+  else if(t==='cross')h=prop('Y',fp(fin.Y))+prop(V.mG,fp(R.R0.mG))+prop(V.mT,fp(R.R0.mT));
+  else if(t==='islm')h=prop('Y',fp(fin.Y))+prop('r',fp(fin.r))+prop('C',fp(fin.C))+prop('I',fp(fin.I));
+  else if(t==='mf')h=prop('Y',fp(fin.Y))+prop('e',fp(fin.e))+prop('NX',fp(fin.NX));
+  else if(t==='adas')h=prop('P',fp(fin.P))+prop('Y',fp(fin.Y))+(R.LR?prop(V.lr,`P = ${fp(R.LR.P)}`):'');else h=prop('π',pc(R.pi));box.innerHTML=h}
+function capKey(){return S.topic}
+function relTogs(){const G=['bgGrid','coords','labels'];return[...G,...(['natinc','open','cross','islm','mf','adas','solow'].includes(S.topic)?['areas']:[]),'hints']}
+
+function renderPresets(){const box=$('#pre');box.innerHTML='';PRE[S.topic].forEach(([id,,ru,en])=>{const b=document.createElement('button');b.className='chip'+(S.preset===id?' on':'');b.dataset.pre=id;b.textContent=P.lang==='ru'?ru:en;box.appendChild(b)})}
+function renderOverlay(){const ov=$('#ov'),L=T();if(S.err||!S.res){ov.innerHTML=`<span class="tt">${L.cap.err}</span>`;return}ov.innerHTML=`<span>${S.ans||''}</span><span class="tt">${L['t_'+S.topic]}</span>`}
+function renderCaption(){const cap=$('#cap');$('#capOpen').hidden=!!P.show.hints;if(!P.show.hints){cap.hidden=true;return}cap.hidden=false;$('#capT').textContent=S.err?T().cap.err:T().cap[capKey()]}
+function syncTogVis(){const r=relTogs();document.querySelectorAll('#tog label').forEach(l=>{l.style.display=r.includes(l.querySelector('input').dataset.k)?'':'none'})}
+function renderAll(){syncTogVis();if(typeof renderFactors==='function')renderFactors();renderSolve();renderValues();renderPresets();renderOverlay();renderCaption();renderTex();const fe=$('#fErr');fe.hidden=!S.err;if(S.err)fe.textContent=T().err[S.err.msg]||T().err.num;req()}
+/* ---------- сцена ---------- */
+const cv=$('#cv'),ctx=cv.getContext('2d'),stage=$('#stage'),main=$('#main'),side=$('#side');let W=0,H=0,DPR=1,raf=0;
+new ResizeObserver(()=>{const r=stage.getBoundingClientRect();W=r.width;H=r.height;DPR=Math.min(2,window.devicePixelRatio||1);cv.width=Math.max(1,Math.round(W*DPR));cv.height=Math.max(1,Math.round(H*DPR));req()}).observe(stage);
+function req(){if(!raf)raf=requestAnimationFrame(()=>{raf=0;renderNow()})}
+function niceStep(raw){const p=Math.pow(10,Math.floor(Math.log10(raw))),m=raw/p;return(m<1.5?1:m<3.5?2:m<7.5?5:10)*p}
+function txt(s,x,y,col,sz=12,al='center',bl='middle',it=false){ctx.font=`${it?'italic ':''}600 ${sz}px "Source Serif 4", Georgia, serif`;ctx.textAlign=al;ctx.textBaseline=bl;ctx.lineWidth=3;ctx.strokeStyle=P.colors.bg;ctx.lineJoin='round';ctx.strokeText(s,x,y);ctx.fillStyle=col;ctx.fillText(s,x,y)}
+function frame(r,x0,x1,y0,y1,eq,ttl,noX){const c=P.colors;let sx=r.w/(x1-x0),sy=r.h/(y1-y0);if(eq){const s=Math.min(sx,sy);sx=sy=s}const X=x=>r.x+(x-x0)*sx,Y=y=>r.y+r.h-(y-y0)*sy;
+  const st=niceStep((x1-x0)/Math.max(2,r.w/80)),sty=eq?st:niceStep((y1-y0)/Math.max(2,r.h/55));const xe=x0+r.w/sx,ye=y0+r.h/sy;
+  if(P.show.bgGrid){ctx.strokeStyle=c.bgGrid;ctx.lineWidth=1;ctx.beginPath();for(let x=Math.ceil(x0/st)*st;x<=xe+1e-9;x+=st){ctx.moveTo(X(x)+.5,r.y);ctx.lineTo(X(x)+.5,Y(y0))}for(let y=Math.ceil(y0/sty)*sty;y<=ye+1e-9;y+=sty){ctx.moveTo(r.x,Y(y)+.5);ctx.lineTo(X(xe),Y(y)+.5)}ctx.stroke()}
+  ctx.strokeStyle=c.axis;ctx.globalAlpha=.6;ctx.lineWidth=1.2;ctx.beginPath();ctx.moveTo(X(x0),Y(Math.max(0,y0)));ctx.lineTo(X(xe),Y(Math.max(0,y0)));ctx.moveTo(X(Math.max(0,x0)),Y(y0));ctx.lineTo(X(Math.max(0,x0)),Y(ye));ctx.stroke();ctx.globalAlpha=1;
+  if(P.show.coords){ctx.fillStyle=c.axis;ctx.globalAlpha=.7;ctx.font='500 11px Manrope, system-ui, sans-serif';ctx.textAlign='center';ctx.textBaseline='top';const dx=Math.max(0,-Math.floor(Math.log10(st)));if(!noX)for(let x=Math.ceil(x0/st)*st;x<=xe+1e-9;x+=st)ctx.fillText(dc(fmt(x,dx)),X(x),Y(Math.max(0,y0))+4);
+    ctx.textAlign='right';ctx.textBaseline='middle';const dy=Math.max(0,-Math.floor(Math.log10(sty)));for(let y=Math.ceil(y0/sty)*sty;y<=ye+1e-9;y+=sty){if(Math.abs(y)<sty/2)continue;ctx.fillText(dc(fmt(y,dy)),X(Math.max(0,x0))-4,Y(y))}ctx.globalAlpha=1}
+  if(ttl)txt(ttl,r.x+6,r.y+8,c.axis,13,'left','middle',true);return{X,Y,r}}
+function seg(fr,a,b,col,w=2,dash){ctx.strokeStyle=col;ctx.lineWidth=w*P.lw;ctx.setLineDash(dash||[]);ctx.beginPath();ctx.moveTo(fr.X(a[0]),fr.Y(a[1]));ctx.lineTo(fr.X(b[0]),fr.Y(b[1]));ctx.stroke();ctx.setLineDash([])}
+function dotP(fr,p,col,r=6,lab){const X=fr.X(p[0]),Y=fr.Y(p[1]);ctx.fillStyle=col;ctx.strokeStyle=P.colors.bg;ctx.lineWidth=2;ctx.beginPath();ctx.arc(X,Y,r,0,7);ctx.fill();ctx.stroke();if(lab)txt(lab,X+10,Y-12,col,14,'left')}
+const pT=()=>Math.min(100,H*.17),pB=()=>Math.min(70,H*.12);
+function renderNow(){DRAGS.length=0;ctx.setTransform(DPR,0,0,DPR,0,0);ctx.fillStyle=P.colors.bg;ctx.fillRect(0,0,W,H);if(!S.res||S.err||!W)return;DRAW[S.topic](S.res);
+  if(S.stamp){const t=(S.ans||'').replace(/<[^>]+>/g,'');ctx.font='600 15px "Source Serif 4", Georgia, serif';const w=ctx.measureText(t).width+20;ctx.fillStyle=P.colors.bg;ctx.globalAlpha=.85;ctx.fillRect(W-w-12,H-38,w,28);ctx.globalAlpha=1;ctx.fillStyle=P.colors.axis;ctx.textAlign='left';ctx.textBaseline='middle';ctx.fillText(t,W-w-2,H-24)}}
+const RR=()=>({x:64,y:pT(),w:W-110,h:H-pT()-pB()});
+function curve(fr,f,x0,x1,col,w=2.4,dash){ctx.save();ctx.beginPath();ctx.rect(fr.r.x-2,fr.r.y-2,fr.r.w+4,fr.r.h+4);ctx.clip();ctx.strokeStyle=col;ctx.lineWidth=w*P.lw;ctx.setLineDash(dash||[]);ctx.beginPath();let pen=false;for(let i=0;i<=600;i++){const x=x0+(x1-x0)*i/600,y=f(x);if(!isFinite(y)||Math.abs(y)>1e9){pen=false;continue}const X=fr.X(x),Y=Math.max(-1e5,Math.min(1e5,fr.Y(y)));pen?ctx.lineTo(X,Y):ctx.moveTo(X,Y);pen=true}ctx.stroke();ctx.setLineDash([]);ctx.restore()}
+function curveXY(fr,fx,y0,y1,col,w=2.4,dash){ctx.save();ctx.beginPath();ctx.rect(fr.r.x-2,fr.r.y-2,fr.r.w+4,fr.r.h+4);ctx.clip();ctx.strokeStyle=col;ctx.lineWidth=w*P.lw;ctx.setLineDash(dash||[]);ctx.beginPath();for(let i=0;i<=400;i++){const y=y0+(y1-y0)*i/400,x=fx(y);const X=fr.X(x),Y=fr.Y(y);i?ctx.lineTo(X,Y):ctx.moveTo(X,Y)}ctx.stroke();ctx.setLineDash([]);ctx.restore()}
+function hline(fr,y,x0,x1,col,dash=[5,4]){ctx.strokeStyle=col;ctx.lineWidth=1.4;ctx.setLineDash(dash);ctx.beginPath();ctx.moveTo(fr.X(x0),fr.Y(y));ctx.lineTo(fr.X(x1),fr.Y(y));ctx.stroke();ctx.setLineDash([])}
+function vline2(fr,x,y0,y1,col,dash=[5,4]){ctx.strokeStyle=col;ctx.lineWidth=1.4;ctx.setLineDash(dash);ctx.beginPath();ctx.moveTo(fr.X(x),fr.Y(y0));ctx.lineTo(fr.X(x),fr.Y(y1));ctx.stroke();ctx.setLineDash([])}
+const lb=(fr,x,y,s,col,al='left',dy=-10)=>{if(P.show.labels)txt(s,fr.X(x)+(al==='left'?8:-8),fr.Y(y)+dy,col,13,al)};
+const PT=(fr,x,y,col,l)=>dotP(fr,[x,y],col,6,P.show.labels?l:'');
+const sh=()=>P.show.areas;
+function bars(vals,labels,cols,ttl){const mx=Math.max(...vals.map(Math.abs),1e-9);const fr=frame(RR(),-.6,vals.length-.4,Math.min(0,...vals)*1.2,mx*1.2,false,ttl,true);const bw=(fr.X(1)-fr.X(0))*.6;
+  vals.forEach((v,i)=>{const X=fr.X(i),Y=fr.Y(Math.max(v,0)),Y0=fr.Y(Math.min(v,0));ctx.fillStyle=cols[i%cols.length];ctx.globalAlpha=.78;ctx.fillRect(X-bw/2,Y,bw,Y0-Y);ctx.globalAlpha=1;if(P.show.labels)txt(dc(fmt(v,2)),X,v>=0?Y-10:Y0+10,P.colors.axis,12);txt(labels[i],X,fr.Y(0)+16,P.colors.axis,11)})}
+const DRAW={
+ gdp:R=>{const c=P.colors,r=RR(),w=(r.w-50)/2;const panel=(rx,vals,labs,cols,ttl)=>{const mx=Math.max(...vals)*1.2||1;const fr=frame({x:rx,y:r.y,w,h:r.h},-.6,vals.length-.4,0,mx,false,ttl,true);const bw=(fr.X(1)-fr.X(0))*.6;
+   vals.forEach((v,k)=>{const X=fr.X(k),Y=fr.Y(v);ctx.fillStyle=cols[k];ctx.globalAlpha=.78;ctx.fillRect(X-bw/2,Y,bw,fr.Y(0)-Y);ctx.globalAlpha=1;if(P.show.labels)txt(dc(fmt(v,2)),X,Y-10,c.axis,12);txt(labs[k],X,fr.Y(0)+16,c.axis,11)});return fr};
+  const ru=P.lang==='ru';panel(r.x,[R.nom0,R.nom1,R.real1],[ru?'ном. ВВП 0':'nom. GDP 0',ru?'ном. ВВП 1':'nom. GDP 1',ru?'реал. ВВП 1':'real GDP 1'],[c.p1,c.p1,c.p2],ru?'ВВП':'GDP');
+  const f2=panel(r.x+w+50,[100,R.defl,R.cpi],[ru?'база':'base',ru?'дефлятор':'deflator',ru?'ИПЦ':'CPI'],[c.axis,c.eq,c.mark],ru?'индексы цен':'price indices');hline(f2,100,-.6,2.6,c.axis)},
+ unemp:R=>{const c=P.colors;if(R.um==='nat'){const fr=frame(RR(),0,.5,0,.3,false,'u ↑   f →');curve(fr,f=>natU(R.s,f),.01,.5,c.p1,2.6);PT(fr,R.f,R.u,c.eq,`u* = ${dc(fmt(R.u*100,2))}%`);return}
+  const fr=frame(RR(),-3,3,-6,9,false,P.lang==='ru'?'рост ВВП, % ↑   Δu, п. п. →':'GDP growth, % ↑   Δu, pp →');curve(fr,x=>R.gN*100-2*x,-3,3,c.p1,2.6);PT(fr,R.du*100,R.g*100,c.eq,`${dc(fmt(R.g*100,2))}%`)},
+ natinc:R=>{const c=P.colors;if(R.nm==='prod'){bars([R.Y,R.MPK*R.K,R.MPL*R.L],['Y','MPK·K','MPL·L'],[c.p1,c.p2,c.area],P.lang==='ru'?'распределение дохода':'income distribution');return}
+  const a=R.R0,b=R.R1,rmax=Math.max(R.c/R.d,a.r,b?b.r:0)*1.15,Smax=Math.max(R.c,a.S,b?b.S:0)*1.1;const fr=frame(RR(),0,Smax,0,rmax,false,'r, % ↑   S, I →');curve(fr,I=>(R.c-I)/R.d,0,R.c,c.p1,2.6);vline2(fr,a.S,0,rmax,c.p2,[]);PT(fr,a.S,a.r,c.eq,'E');
+  if(b&&sh()){vline2(fr,b.S,0,rmax,c.p2,[7,5]);PT(fr,b.S,b.r,c.mark,"E'")}lb(fr,a.S,rmax*.92,'S',c.p2);lb(fr,R.c*.1,(R.c-R.c*.1)/R.d,'I(r)',c.p1);if(b&&sh()&&R.dc)curve(fr,I=>(R.c+R.dc-I)/R.d,0,R.c+R.dc,c.p1,2.2,[7,5]);addDrag(fr,'vl',(b||a).S,'dG',-1);addDrag(fr,'fx',r=>R.c+(R.dc||0)-R.d*r,'dc',1)},
+ money:R=>{const c=P.colors;if(R.mm==='qt')bars([R.gM*100,R.gV*100,R.gY*100,R.pi*100,R.i*100],['ΔM/M','ΔV/V','ΔY/Y','π','i'],[c.p1,c.p1,c.p2,c.eq,c.mark],'%');else bars([1,R.m,...(isFinite(R.M)?[R.B,R.M]:[])],['1','m',...(isFinite(R.M)?['B','M']:[])],[c.axis,c.eq,c.p2,c.p1],P.lang==='ru'?'денежный мультипликатор':'money multiplier')},
+ open:R=>{const c=P.colors,a=R.R0,b=R.R1,[Y,,,,,cc,d,rs]=R.v;const r=RR(),w=(r.w-40)/2;const rmax=Math.max(cc/d,rs)*1.2,Smax=Math.max(cc,a.S)*1.1;const f1=frame({x:r.x,y:r.y,w,h:r.h},0,Smax,0,rmax,false,'r* ↑   S, I →');curve(f1,I=>(cc-I)/d,0,cc,c.p1,2.6);vline2(f1,a.S,0,rmax,c.p2,[]);hline(f1,rs,0,Smax,c.eq,[]);if(b&&sh()){vline2(f1,b.S,0,rmax,c.p2,[7,5]);if(R.drs)hline(f1,rs+R.drs,0,Smax,c.eq,[7,5]);if(R.dc)curve(f1,I=>(cc+R.dc-I)/d,0,cc+R.dc,c.p1,2.2,[7,5])}addDrag(f1,'vl',(b||a).S,'dG',-1);addDrag(f1,'hl',rs+(R.drs||0),'drs',1);
+  const n0=R.v[8],n1=R.v[9],NXs=[a.NX,b?b.NX:a.NX],emax=Math.max(n0/n1,a.eps,b?b.eps:0)*1.3;const nmin=Math.min(...NXs,-n0*.2),nmax=Math.max(n0,...NXs)*1.1;const f2=frame({x:r.x+w+40,y:r.y,w,h:r.h},nmin,nmax,0,emax,false,'ε ↑   NX →');curveXY(f2,e=>n0-n1*e,0,emax,c.p1,2.6);vline2(f2,a.NX,0,emax,c.p2,[]);PT(f2,a.NX,a.eps,c.eq,'ε');if(b&&sh()){vline2(f2,b.NX,0,emax,c.p2,[7,5]);PT(f2,b.NX,b.eps,c.mark,"ε'")}},
+ solow:R=>{const c=P.colors,km=Math.max(R.ks,R.kg,R.alt?R.alt.ks:0)*1.5;const r=RR(),h1=r.h*.62,r1={x:r.x,y:r.y,w:r.w,h:h1},r2={x:r.x,y:r.y+h1+28,w:r.w,h:r.h-h1-28};const ym=Math.pow(km,R.al)*1.1;const fr=frame(r1,0,km,0,ym,false,'y ↑   k →');
+  curve(fr,k=>Math.pow(k,R.al),0,km,c.p1,2.4);curve(fr,k=>R.s*Math.pow(k,R.al),0,km,c.area,2.4);{const s1=R.alt?R.alt.s:R.s,k1=R.alt?R.alt.ks:R.ks;addDrag(fr,'fy',k=>s1*Math.pow(k,R.al),'s2',1/Math.pow(Math.max(k1,1e-6),R.al),{base:()=>s1,clamp:v=>Math.min(.95,Math.max(.01,v))})}if(R.alt&&sh()&&(R.dn||R.ddl))curve(fr,k=>R.alt.br*k,0,km,c.bad,2,[7,5]);curve(fr,k=>R.br*k,0,km,c.bad,2.4);if(R.alt&&sh()&&isFinite(R.s2)&&R.alt.s!==R.s)curve(fr,k=>R.alt.s*Math.pow(k,R.al),0,km,c.area,2,[7,5]);
+  PT(fr,R.ks,R.s*R.ys,c.eq,'k*');vline2(fr,R.kg,0,Math.pow(R.kg,R.al),c.mark);lb(fr,R.kg,Math.pow(R.kg,R.al),P.lang==='ru'?'золотое правило':'golden rule',c.mark);if(R.alt&&sh())PT(fr,R.alt.ks,R.alt.s*R.alt.ys,c.mark,"k*'");
+  if(P.show.labels){txt('f(k)',fr.X(km*.95),fr.Y(Math.pow(km*.95,R.al))-10,c.p1,12);txt('s·f(k)',fr.X(km*.95),fr.Y(R.s*Math.pow(km*.95,R.al))+12,c.area,12);txt('(δ+n+g)k',fr.X(km*.8),fr.Y(R.br*km*.8)-12,c.bad,12)}
+  const tr=(R.alt&&sh())?R.alt.tr:R.tr,tm=tr.length-1,kk=Math.max(...tr.map(o=>o.k))*1.15;const f2=frame(r2,0,tm,0,kk,false,'k(t)');curve(f2,t=>tr[Math.min(tm,Math.round(t))].k,0,tm,c.p2,2.2);hline(f2,(R.alt&&sh())?R.alt.ks:R.ks,0,tm,c.eq)},
+ cross:R=>{const c=P.colors,a=R.R0,b=R.R1;const Ym=Math.max(a.Y,b?b.Y:0)*1.35;const fr=frame(RR(),0,Ym,0,Ym,true,P.lang==='ru'?'расходы E ↑   доход Y →':'expenditure E ↑   income Y →');curve(fr,Y=>Y,0,Ym,c.axis,1.4,[4,4]);
+  const PE=(G,T)=>Y=>R.a+R.b*(Y-T-R.t*Y)+R.I+G;curve(fr,PE(R.G,R.T),0,Ym,c.p1,2.6);PT(fr,a.Y,a.Y,c.eq,'E');if(b&&sh()){curve(fr,PE(R.G+R.dG,R.T+R.dT),0,Ym,c.p1,2.4,[7,5]);PT(fr,b.Y,b.Y,c.mark,"E'")}lb(fr,Ym*.85,Ym*.85,'E = Y',c.axis);lb(fr,Ym*.05,PE(R.G,R.T)(Ym*.05),'PE',c.p1);addDrag(fr,'fy',PE(R.G+R.dG,R.T+R.dT),'dG',1)},
+ islm:R=>{const c=P.colors,a=R.R0,b=R.R1,rm=Math.max(a.r,b?b.r:0,1)*2,Ym=Math.max(a.Y,b?b.Y:0)*1.6;const fr=frame(RR(),0,Ym,0,rm,false,'r ↑   Y →');curveXY(fr,a.ISY,0,rm,c.p1,2.6);curveXY(fr,a.LMY,0,rm,c.p2,2.6);PT(fr,a.Y,a.r,c.eq,'E');
+  if(b&&sh()){if(R.dG||R.dT||R.dA||R.dI)curveXY(fr,b.ISY,0,rm,c.p1,2.2,[7,5]);if(R.dMd||R.dP)curveXY(fr,b.LMY,0,rm,c.p2,2.2,[7,5]);if(R.dM)curveXY(fr,b.LMY,0,rm,c.p2,2.2,[7,5]);PT(fr,b.Y,b.r,c.mark,"E'")}lb(fr,a.ISY(rm*.1),rm*.1,'IS',c.p1);lb(fr,a.LMY(rm*.9),rm*.9,'LM',c.p2,'right');const F=b||a;addDrag(fr,'fx',F.ISY,'dG',1-R.p.b);addDrag(fr,'fx',F.LMY,'dM',R.p.e*(R.p.P+(R.dP||0)))},
+ mf:R=>{const c=P.colors,a=R.R0,b=R.R1,eM=Math.max(a.e,b&&b.e?b.e:0,1)*2,Ym=Math.max(a.Y,b?b.Y:0)*1.5;const fr=frame(RR(),0,Ym,0,eM,false,'e ↑   Y →');curveXY(fr,a.IS,0,eM,c.p1,2.6);vline2(fr,a.Y,0,eM,c.p2,[]);PT(fr,a.Y,a.e,c.eq,'E');
+  if(b&&sh()){if(R.dG){const p2={...R.p,G:R.p.G+R.dG};const is2=ee=>(p2.a-p2.b*p2.T+(p2.c-p2.d*p2.rs)+p2.G+p2.n0-p2.n1*ee)/(1-p2.b);curveXY(fr,is2,0,eM,c.p1,2.2,[7,5])}if(R.reg==='float'&&R.dM)vline2(fr,b.Y,0,eM,c.p2,[7,5]);if(R.reg==='fixed')vline2(fr,b.Y,0,eM,c.p2,[7,5]);PT(fr,b.Y,b.e,c.mark,"E'")}lb(fr,a.IS(eM*.15),eM*.15,'IS*',c.p1);lb(fr,a.Y,eM*.9,'LM*',c.p2);{const p1=R.p1;const isF=ee=>(p1.a-p1.b*p1.T+(p1.c-p1.d*p1.rs)+p1.G+p1.n0-p1.n1*ee)/(1-p1.b);addDrag(fr,'fx',isF,'dG',1-R.p.b);if(R.reg==='float')addDrag(fr,'vl',(b||a).Y,'dM',R.p.e*R.p.P)}},
+ adas:R=>{const c=P.colors,a=R.R0,b=R.R1;const Pm=Math.max(a.P,b?b.P:0,R.LR?R.LR.P:0)*1.8,Ym=R.Yb*1.8;const fr=frame(RR(),0,Ym,0,Pm,false,'P ↑   Y →');curveXY(fr,a.AD,Pm*.05,Pm,c.p1,2.6);
+  if(R.al>0)curve(fr,Y=>R.Pe+(Y-R.Yb)/R.al,0,Ym,c.p2,2.6);else hline(fr,R.Pe,0,Ym,c.p2,[]);vline2(fr,R.Yb,0,Pm,c.axis,[]);PT(fr,a.Y,a.P,c.eq,'E');
+  if(b&&sh()){if(R.dM)curveXY(fr,b.AD,Pm*.05,Pm,c.p1,2.2,[7,5]);if(R.dPe){if(R.al>0)curve(fr,Y=>R.Pe+R.dPe+(Y-R.Yb)/R.al,0,Ym,c.p2,2.2,[7,5]);else hline(fr,R.Pe+R.dPe,0,Ym,c.p2,[7,5])}PT(fr,b.Y,b.P,c.mark,"E'");PT(fr,R.LR.Y,R.LR.P,c.bad,P.lang==='ru'?'долгий период':'long run')}
+  lb(fr,R.Yb,Pm*.95,'LRAS',c.axis);lb(fr,Ym*.9,R.al>0?R.Pe+(Ym*.9-R.Yb)/R.al:R.Pe,'SRAS',c.p2,'right');lb(fr,a.AD(Pm*.2),Pm*.2,'AD',c.p1);const F=b||a,Pe1=R.Pe+(R.dPe||0);addDrag(fr,'fx',F.AD,'dM',F.P/(R.V+(R.dV||0)));if(R.al>0)addDrag(fr,'fy',Y=>Pe1+(Y-R.Yb-(R.dYb||0))/R.al,'dPe',1);else addDrag(fr,'hl',Pe1,'dPe',1)},
+ phil:R=>{const c=P.colors;const fr=frame(RR(),0,.16,-.06,.14,false,'π ↑   u →');curve(fr,u=>phillips(R.pe,R.be,R.un,u,R.v),0,.16,c.p1,2.6);if(R.v)curve(fr,u=>phillips(R.pe,R.be,R.un,u,0),0,.16,c.p1,1.6,[6,4]);vline2(fr,R.un,-.06,.14,c.axis,[]);hline(fr,R.pe,0,.16,c.mark);PT(fr,R.u,R.pi,c.eq,`π = ${dc(fmt(R.pi*100,2))}%`);lb(fr,R.un,.13,'uⁿ',c.axis);if(R.pi2!=null&&sh()){if(R.dpe)curve(fr,u=>phillips(R.pe+R.dpe,R.be,R.un,u,R.v),0,.16,c.p1,2.2,[7,5]);PT(fr,R.u+R.du,R.pi2,c.mark,`π' = ${dc(fmt(R.pi2*100,2))}%`)}addDrag(fr,'fy',u=>phillips(R.pe,R.be,R.un,u,R.v),'v',1)}};
+
+/* переключатели */
+const TOG=['bgGrid','coords','labels','areas','hints'];
+function buildToggles(){const box=$('#tog');box.innerHTML='';TOG.forEach(k=>{const l=document.createElement('label');l.className='chk';l.innerHTML=`<input type="checkbox" data-k="${k}"> <span>${T().tog[k]}</span>`;l.querySelector('input').onchange=e=>{P.show[k]=e.target.checked;save();renderCaption();req()};box.appendChild(l)});syncTogVis()}
+function syncToggles(){document.querySelectorAll('#tog input').forEach(i=>{i.checked=!!P.show[i.dataset.k]});syncTogVis()}
+$('#capOpen').onclick=()=>{P.show.hints=true;syncToggles();renderCaption();save()};$('#capX').onclick=()=>{P.show.hints=false;syncToggles();renderCaption();save()};
+document.addEventListener('click',e=>{const q=e.target.closest('[data-term]');if(q){e.preventDefault();e.stopPropagation();openTerm(q.dataset.term);return}const p=e.target.closest('[data-pre]');if(p)loadPreset(p.dataset.pre)});
+function fitView(){req()}function play(){}
+/* ---------- перетаскивание кривых ---------- */
+const DRAGS=[];let dragNow=null,dragRaf=0;
+function addDrag(fr,kind,fn,field,scale,o={}){DRAGS.push({fr,kind,fn,field,scale,...o})}// kind: 'fy' y=f(x) верт.; 'fx' x=f(y) гориз.; 'hl' y=const; 'vl' x=const
+const invX=(fr,px)=>(px-fr.X(0))/(fr.X(1)-fr.X(0)),invY=(fr,py)=>(py-fr.Y(0))/(fr.Y(1)-fr.Y(0));
+function dragDist(d,px,py){const fr=d.fr,r=fr.r;if(px<r.x-6||px>r.x+r.w+6||py<r.y-6||py>r.y+r.h+6)return Infinity;let best=Infinity;
+  if(d.kind==='hl')return Math.abs(fr.Y(d.fn)-py);if(d.kind==='vl')return Math.abs(fr.X(d.fn)-px);
+  for(let i=0;i<=160;i++){if(d.kind==='fy'){const x=invX(fr,r.x+r.w*i/160),y=d.fn(x);if(!isFinite(y))continue;best=Math.min(best,Math.hypot(fr.X(x)-px,fr.Y(y)-py))}else{const y=invY(fr,r.y+r.h*i/160),x=d.fn(y);if(!isFinite(x))continue;best=Math.min(best,Math.hypot(fr.X(x)-px,fr.Y(y)-py))}}return best}
+function pickDrag(px,py){let b=null,bd=12;for(const d of DRAGS){const v=dragDist(d,px,py);if(v<bd){bd=v;b=d}}return b}
+const cvPos=e=>{const r=cv.getBoundingClientRect();return{x:e.clientX-r.left,y:e.clientY-r.top}};
+const niceRound=v=>{if(!isFinite(v))return 0;const a=Math.abs(v);const d=a>=1000?0:a>=100?1:a>=10?2:a>=1?3:4;return+v.toFixed(d)};
+cv.addEventListener('pointerdown',e=>{const p=cvPos(e),d=pickDrag(p.x,p.y);if(!d)return;const I=S.inp[S.topic];const raw=I[d.field];const pv=x=>{const t=String(x).trim();return t.endsWith('%')?nI(t.slice(0,-1))/100:nI(t)};let v0;try{v0=raw===''||raw==null?(d.base?d.base():0):pv(raw)}catch(err){v0=d.base?d.base():0}dragNow={d,px:p.x,py:p.y,v0};cv.setPointerCapture(e.pointerId);cv.style.cursor='grabbing';e.preventDefault()});
+cv.addEventListener('pointermove',e=>{const p=cvPos(e);if(!dragNow){cv.style.cursor=pickDrag(p.x,p.y)?'grab':'default';return}const{d,px,py,v0}=dragNow,fr=d.fr;
+  const delta=(d.kind==='fy'||d.kind==='hl')?invY(fr,p.y)-invY(fr,py):invX(fr,p.x)-invX(fr,px);let v=niceRound(v0+delta*d.scale);if(d.clamp)v=d.clamp(v);
+  S.inp[S.topic][d.field]=v===0&&!d.base?'':dc(String(v));S.shock=null;S.preset=null;const el=document.querySelector(`#form [data-k="${d.field}"]`);if(el)el.value=S.inp[S.topic][d.field];
+  if(!dragRaf)dragRaf=requestAnimationFrame(()=>{dragRaf=0;recompute()})});
+const endDrag=()=>{if(dragNow){dragNow=null;cv.style.cursor='default'}};cv.addEventListener('pointerup',endDrag);cv.addEventListener('pointercancel',endDrag);
+/* ---------- факторы и сдвиги ---------- */
+const arrowOf=(a,b)=>{const t=1e-7*Math.max(1,Math.abs(a),Math.abs(b));return b>a+t?'<b class="up">↑</b>':b<a-t?'<b class="dn">↓</b>':'<span class="z">—</span>'};
+function cleared(t){const I={...S.inp[t]};(DELTAS[t]||[]).forEach(k=>{I[k]=''});return I}
+function renderFactors(){const box=$('#fac');if(!box)return;const t=S.topic,L=T(),list=SHOCKS[t];if(!list){box.innerHTML=`<p class="note">${L.fac_none}</p>`;return}
+  let base;try{base=COMP[t](cleared(t))}catch(e){box.innerHTML=`<p class="note">${L.cap.err}</p>`;return}const ev=EFFV[t],b0=ev(base,true),vars=Object.keys(b0);if(!vars.length){box.innerHTML=`<p class="note">${L.fac_mode||L.fac_none}</p>`;return}
+  const rows=list.map(sh=>{let r;try{r=COMP[t]({...cleared(t),...sh.set(cleared(t))})}catch(e){return null}const b1=ev(r,false);return{sh,b1}}).filter(Boolean);
+  box.innerHTML=`<p class="note" style="margin:.1rem 0 .5rem">${L.fac_note}</p><div class="tw"><table class="tab fac"><tr><th style="text-align:left">${L.fac_f}</th><th style="text-align:left">${L.fac_c}</th>${vars.map(v=>`<th>${v}</th>`).join('')}</tr>${rows.map(({sh,b1})=>`<tr data-shock="${sh.id}" class="${S.shock===sh.id?'on':''}"><td style="text-align:left">${sh[P.lang]||sh.ru}</td><td style="text-align:left">${(P.lang==='en'?sh.cen:sh.c)||''}</td>${vars.map(v=>`<td>${arrowOf(b0[v],b1[v])}</td>`).join('')}</tr>`).join('')}</table></div>`+(S.shock?`<div class="row"><button class="btn sm" id="facReset">${L.fac_reset}</button></div>`:'')}
+document.addEventListener('click',e=>{const tr=e.target.closest('tr[data-shock]');if(tr){const sh=SHOCKS[S.topic].find(s=>s.id===tr.dataset.shock);if(!sh)return;S.inp[S.topic]={...cleared(S.topic),...sh.set(cleared(S.topic))};S.shock=sh.id;S.preset=null;renderForm();recompute();return}
+  if(e.target.id==='facReset'){S.inp[S.topic]=cleared(S.topic);S.shock=null;renderForm();recompute()}});
+/* ---------- справочник ---------- */
+const termTitle=id=>{const t=TERMS.find(x=>x.id===id);return t?(t[P.lang]||t.ru)[0]:id};
+function mathify(h){return h}
+function gTabs(id,html){const f=FORMAL[id];if(!f)return html;const L=T(),ft=P.gTab==='f';
+  return`<div class="seg gtabs"><button data-tab="i" class="${ft?'':'on'}">${L.tabI}</button><button data-tab="f" class="${ft?'on':''}">${L.tabF}</button></div><div class="pane" data-pane="i"${ft?' hidden':''}>${html}</div><div class="pane" data-pane="f"${ft?'':' hidden'}>${f[P.lang]||f.ru}</div>`}
+function termHtml(t,L){const x=t[P.lang]||t.ru,rd=!!P.read[t.id];
+  return`<details class="term${rd?' read':''}" id="g-${t.id}"><summary><span>${rd?'<b class="rd">✓</b>':''}${x[0]}</span><small>${x[1]}</small></summary><div class="tb">${ILL[t.id]?`<figure class="ill">${illSvg(t.id)}</figure>`:''}${gTabs(t.id,x[2])}${DEMOS[t.id]?`<button class="btn sm primary" data-demo="${t.id}">${L.showDemo}</button>`:''}${REL[t.id]?`<div class="rel">${L.seeAlso} ${REL[t.id].map(r=>`<button class="chip" data-term="${r}">${termTitle(r)}</button>`).join('')}</div>`:''}<div class="row" style="margin-top:.8rem"><button class="btn sm readbtn${rd?' on':''}" data-read="${t.id}">${rd?L.readDone:L.readMark}</button></div></div></details>`}
+function renderGloss(q=''){q=q.trim().toLowerCase();const L=T();if(!P.read||typeof P.read!=='object')P.read={};
+  const total=TERMS.length,done=TERMS.filter(t=>P.read[t.id]).length;
+  const match=t=>{if(!q)return true;const x=t[P.lang]||t.ru,o=t[P.lang==='ru'?'en':'ru'],f=FORMAL[t.id];return(x[0]+' '+x[1]+' '+x[2]+' '+o[0]+' '+(f?(f[P.lang]||f.ru):'')).replace(/<[^>]+>/g,'').toLowerCase().includes(q)};
+  let html=`<div class="prog"><span>${L.readOf(done,total)}</span><span class="bar"><i style="width:${Math.round(done/total*100)}%"></i></span>${done?`<button class="linkbtn" id="readReset">${L.readReset}</button>`:''}</div>`;
+  let any=false,num=0;
+  CHAP.forEach(ch=>{if(!ch.extra)num++;const ts=ch.ids.map(id=>TERMS.find(t=>t.id===id)).filter(Boolean).filter(match);if(!ts.length)return;any=true;
+    const r=ch.ids.filter(id=>P.read[id]).length;
+    html+=`<section class="chap"><h3>${ch.extra?'':num+'. '}${ch[P.lang]||ch.ru}<span class="cnt">${r} / ${ch.ids.length}</span></h3>${ts.map(t=>termHtml(t,L)).join('')}</section>`});
+  $('#gl').innerHTML=any?html:html+`<p class="note">${L.noFound}</p>`}
+function rerenderGloss(){const sh=$('#dGloss .sheet'),st=sh.scrollTop,open=[...document.querySelectorAll('#gl details[open]')].map(d=>d.id);renderGloss($('#gq').value);open.forEach(id=>{const e=document.getElementById(id);if(e)e.open=true});sh.scrollTop=st}
+$('#gq').oninput=e=>renderGloss(e.target.value);
+$('#gl').addEventListener('click',e=>{const rb=e.target.closest('[data-read]');if(rb){P.read[rb.dataset.read]=!P.read[rb.dataset.read];if(!P.read[rb.dataset.read])delete P.read[rb.dataset.read];save();rerenderGloss();return}
+  if(e.target.closest('#readReset')){P.read={};save();rerenderGloss()}});
+$('#gl').addEventListener('click',e=>{const tb=e.target.closest('[data-tab]');if(!tb)return;const box=tb.closest('.tb');P.gTab=tb.dataset.tab;
+  box.querySelectorAll('[data-tab]').forEach(x=>x.classList.toggle('on',x.dataset.tab===P.gTab));box.querySelectorAll('.pane').forEach(p=>{p.hidden=p.dataset.pane!==P.gTab});save()});
+$('#gl').addEventListener('click',e=>{const b=e.target.closest('[data-demo]');if(!b)return;closeDrawers();runDemo(b.dataset.demo)});
+
+function openDrawer(id){document.getElementById(id).classList.add('open')}
+function closeDrawers(){document.querySelectorAll('.drawer').forEach(d=>d.classList.remove('open'))}
+document.querySelectorAll('[data-close]').forEach(el=>el.onclick=closeDrawers);
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeDrawers()});
+$('#openGloss').onclick=()=>{$('#gq').value='';renderGloss();openDrawer('dGloss')};
+function openTerm(id){if(!TERMS.find(t=>t.id===id))return;$('#gq').value='';renderGloss();openDrawer('dGloss');const el=document.getElementById('g-'+id);if(el){el.open=true;setTimeout(()=>el.scrollIntoView({block:'start'}),30)}}
+
+/* ---------- экспорт ---------- */
+let DL=null,fmtMode='tex';
+const LOCAL=!window.claude;
+const canSave=()=>!!(DL||LOCAL);
+(async()=>{try{if(window.claude&&typeof window.claude.use==='function')DL=await window.claude.use('downloads')}catch(e){DL=null}S.dlTried=true;updExport()})();
+function vidMime(){if(!window.MediaRecorder||!cv.captureStream)return null;for(const m of['video/webm;codecs=vp9','video/webm;codecs=vp8','video/webm','video/mp4'])if(MediaRecorder.isTypeSupported&&MediaRecorder.isTypeSupported(m))return m;return null}
+function updExport(){const L=T();$('#xPng').disabled=!canSave()||S.rec;$('#xVid').disabled=!canSave()||!vidMime()||S.rec;$('#xNote').textContent=S.rec?L.xRec:!canSave()?(S.dlTried?L.xNoDl:''):(!vidMime()?L.xNoVid:'')}
+function flash(msg,ms=3500){$('#xNote').textContent=msg;clearTimeout(flash.t);if(ms)flash.t=setTimeout(updExport,ms)}
+async function saveFile(name,data){const L=T();if(!DL){if(LOCAL){const u=URL.createObjectURL(data),a=document.createElement('a');a.href=u;a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),5000);flash(L.xSaved)}return}
+  try{await DL.save({filename:name,data});flash(L.xSaved)}catch(e){const c=e&&e.code;if(c==='declined'){updExport();return}if(c==='unavailable'||c==='not_granted'||c==='capability_disabled'||c==='capability_removed'){DL=null;S.dlTried=true;updExport();return}flash(c==='rate_limited'?L.xBusy:L.xFail)}}
+function exportPng(){if(!canSave()||S.rec)return;S.stamp=$('#xStamp').checked;renderNow();cv.toBlob(b=>{S.stamp=false;req();if(b)saveFile('macroeconomics.png',b)},'image/png')}
+async function exportVideo(){const m=vidMime();if(!canSave()||!m||S.rec||S.err||!S.anyAnim)return;S.rec=true;S.stamp=$('#xStamp').checked;updExport();
+  const keep=ms=>new Promise(r=>{const t0=performance.now();const f=()=>{renderNow();if(performance.now()-t0<ms)requestAnimationFrame(f);else r()};f()});
+  const chunks=[];let rec;
+  try{const stream=cv.captureStream(60);rec=new MediaRecorder(stream,{mimeType:m,videoBitsPerSecond:8e6});rec.ondataavailable=e=>{if(e.data&&e.data.size)chunks.push(e.data)};
+    const stopped=new Promise(r=>{rec.onstop=r});S.t=0;S.anim=null;rec.start(100);await keep(500);
+    play();await new Promise(r=>{const f=()=>S.anim?requestAnimationFrame(f):r();f()});await keep(900);rec.stop();await stopped}
+  catch(err){S.rec=false;S.stamp=false;req();flash(T().xFail);return}
+  S.rec=false;S.stamp=false;req();updExport();const blob=new Blob(chunks,{type:m});if(blob.size)saveFile(`probability.${m.startsWith('video/mp4')?'mp4':'webm'}`,blob);else flash(T().xFail)}
+async function copyTex(){const ta=$('#xTex'),L=T();let ok=false;try{await navigator.clipboard.writeText(ta.value);ok=true}catch(e){}if(!ok){ta.focus();ta.select();try{ok=document.execCommand('copy')}catch(e){}}flash(ok?L.xCopied:L.xSelect)}
+$('#xPng').onclick=exportPng;$('#xVid').onclick=exportVideo;$('#xCopy').onclick=copyTex;
+document.querySelectorAll('#xFmt button').forEach(b=>b.onclick=()=>{fmtMode=b.dataset.f;document.querySelectorAll('#xFmt button').forEach(x=>x.classList.toggle('on',x===b));renderTex()});
+
+function illSvg(){return''}
+function runDemo(id){const d=DEMOS[id];if(!d)return;loadPreset(d.p);showPanel('solve')}
+function renderTex(){const ta=$('#xTex');if(!ta)return;if(S.err||!S.res){ta.value='';return}const a=(S.ans||'').replace(/<[^>]+>/g,'');
+  if(fmtMode==='txt'){ta.value=`${T()['t_'+S.topic]}\n${a}`;return}if(fmtMode==='tex'){ta.value=a.replace(/≈/g,'\\approx ').replace(/·/g,'\\cdot ');return}
+  const R=S.res,t=S.topic;let py='';const ln=L=>L.kind==='lin'?`${L.a} + (${L.b})*q`:'?';
+  if(t==='sd')py=`from sympy import symbols, solve\nq = symbols('q')\nD = ${ln(R.D)}\nS = ${ln(R.S)}\nqs = solve(D - S, q)[0]\nprint(qs, D.subs(q, qs))`;
+  else if(t==='mono'&&R.dm==='one')py=`from sympy import symbols, diff, solve\nq = symbols('q')\nP = ${ln(R.D)}\nTC = ${R.FC} + (${S.inp.mono.VC.replace(/\^/g,'**').replace(/(\d)q/g,'$1*q')})\nqm = [r for r in solve(diff(P*q - TC, q), q) if r > 0]\nprint(qm, [P.subs(q, r) for r in qm])`;
+  else py=`# ${T()['t_'+t]}\nprint(${JSON.stringify(a)})`;ta.value=py}
+const KEYS=[['1 – 9','k_topic'],['[ / ]','k_prev'],['G','k_grid'],['H','k_hint'],['S','k_png'],['/','k_gloss'],['?','k_keys'],['Esc','k_esc']];
+function renderKeys(){const L=T();$('#keysList').innerHTML=KEYS.map(([k,d])=>`<span>${k.split(' ').map((p,i)=>i>0&&/^[+\/–]$/.test(p)?p:`<kbd>${p}</kbd>`).join(' ')}</span><span>${L[d]}</span>`).join('')}
+function openKeys(){renderKeys();closeDrawers();openDrawer('dKeys')}
+$('#openKeys').onclick=openKeys;$('#openKeys2').onclick=openKeys;
+function toast(msg,ms=1600){const t=$('#toast');t.textContent=msg;t.classList.add('on');clearTimeout(toast.t);toast.t=setTimeout(()=>t.classList.remove('on'),ms)}
+function flip(k){P.show[k]=!P.show[k];syncToggles();save();renderCaption();req();const L=T();toast(`${L.tog[k]}: ${P.show[k]?L.on:L.off}`)}
+document.addEventListener('keydown',e=>{if(e.ctrlKey||e.metaKey||e.altKey)return;const tg=e.target,tag=tg&&tg.tagName;if((tag==='INPUT'&&!['checkbox','range','radio','color'].includes(tg.type))||tag==='TEXTAREA'||tag==='SELECT'||(tg&&tg.isContentEditable))return;
+  const isQ=e.key==='?'||(e.code==='Slash'&&e.shiftKey);if(document.querySelector('.drawer.open')&&!isQ)return;const c=e.code,L=T();let h=true;
+  if(isQ)openKeys();else if(/^(Digit|Numpad)[1-9]$/.test(c)){setTopic(TOPICS[+c.slice(-1)-1]);toast(L['t_'+S.topic])}
+  else if(c==='BracketLeft'||c==='BracketRight'){const list=PRE[S.topic];let i=list.findIndex(p=>p[0]===S.preset);i=(i+(c==='BracketLeft'?-1:1)+list.length)%list.length;loadPreset(list[i][0]);toast(P.lang==='ru'?list[i][2]:list[i][3])}
+  else if(c==='KeyG')flip('bgGrid');else if(c==='KeyH')flip('hints');else if(c==='KeyS'){if(canSave())exportPng();else toast(L.xNoDl)}else if(c==='Slash'){$('#openGloss').click();setTimeout(()=>$('#gq').focus(),30)}else h=false;if(h)e.preventDefault()});
+/* ---------- настройки ---------- */
+$('#openSet').onclick=()=>{syncSettings();openDrawer('dSet')};
+function buildSettings(){
+  document.querySelectorAll('#langSeg button,#langSeg2 button').forEach(b=>b.onclick=()=>{P.lang=b.dataset.l;applyLang();save()});
+  document.querySelectorAll('#uiSeg button').forEach(b=>b.onclick=()=>{P.ui=b.dataset.v;applyPrefs()});
+  document.querySelectorAll('#dockSeg button').forEach(b=>b.onclick=()=>{P.dock=b.dataset.v;applyPrefs()});
+  $('#wR').oninput=e=>{P.width=+e.target.value;applyPrefs()};
+  $('#hR').oninput=e=>{P.bottomH=+e.target.value;applyPrefs()};
+  $('#fR').oninput=e=>{P.font=+e.target.value;applyPrefs()};
+  $('#lR').oninput=e=>{P.lw=+e.target.value;applyPrefs()};
+  $('#resetOrder').onclick=()=>{P.order=PANELS.slice();P.collapsed={};applyPrefs()};
+  $('#resetAll').onclick=()=>{const lg=P.lang,rd=P.read,last=P.last;P=clone(DEF);P.lang=lg;P.read=rd||{};P.last=last;syncToggles();applyPrefs();renderAll()};
+}
+function buildPal(){const L=T();
+  const pc=$('#palChips');pc.innerHTML='';Object.entries(PAL).forEach(([k,p])=>{const b=document.createElement('button');b.className='chip';b.dataset.p=k;b.innerHTML=`<span class="sw" style="background:${p.bg};box-shadow:inset 0 0 0 3px ${p.f}"></span>${L.pal[k]}`;
+    b.onclick=()=>{P.palette=k;P.colors={...PAL[k]};applyPrefs()};pc.appendChild(b)});
+  const cs=$('#colors');cs.innerHTML='';Object.keys(L.colors).forEach(k=>{const l=document.createElement('label');l.innerHTML=`<input type="color" data-k="${k}"> ${L.colors[k]}`;
+    l.querySelector('input').oninput=e=>{P.colors[k]=e.target.value;P.palette='custom';applyPrefs()};cs.appendChild(l)});
+}
+function applyLang(){const L=T();LNG=P.lang;document.documentElement.lang=P.lang;document.title=L.title;
+  document.querySelectorAll('[data-i]').forEach(e=>{e.textContent=L[e.dataset.i]});
+  document.querySelectorAll('[data-ih]').forEach(e=>{e.innerHTML=L[e.dataset.ih]});
+  document.querySelectorAll('[data-it]').forEach(e=>{e.title=L[e.dataset.it];e.setAttribute('aria-label',L[e.dataset.it])});
+  document.querySelectorAll('[data-ia]').forEach(e=>{e.setAttribute('aria-label',L[e.dataset.ia])});
+  $('#gq').placeholder=L.search;cv.setAttribute('aria-label',L.canvas);
+  document.querySelectorAll('#langSeg button,#langSeg2 button').forEach(b=>b.classList.toggle('on',b.dataset.l===P.lang));
+  buildPal();buildToggles();syncToggles();syncSettings();updExport();renderKeys();
+  if($('#dGloss').classList.contains('open'))rerenderGloss();
+  renderForm();recompute()}
+function syncSettings(){
+  document.querySelectorAll('#uiSeg button').forEach(b=>b.classList.toggle('on',b.dataset.v===P.ui));
+  document.querySelectorAll('#dockSeg button').forEach(b=>b.classList.toggle('on',b.dataset.v===P.dock));
+  document.querySelectorAll('#palChips .chip').forEach(b=>b.classList.toggle('on',b.dataset.p===P.palette));
+  document.querySelectorAll('#colors input').forEach(i=>{i.value=P.colors[i.dataset.k]});
+  $('#wR').value=P.width;$('#wOut').textContent=P.width+' px';$('#hR').value=P.bottomH;$('#hOut').textContent=P.bottomH+' %';
+  $('#fR').value=P.font;$('#fOut').textContent=P.font+' %';$('#lR').value=P.lw;$('#lOut').textContent='×'+fmt(P.lw,1)}
+function effDock(){return P.dock==='auto'?(innerWidth<760?'bottom':'right'):P.dock}
+function applyDock(){const d=effDock();main.dataset.dock=d;
+  if(d==='float'){const mr=main.getBoundingClientRect(),sw=side.offsetWidth||P.width;P.float.x=Math.max(8,Math.min(P.float.x,mr.width-Math.min(sw,mr.width)-8));P.float.y=Math.max(8,Math.min(P.float.y,mr.height-80));side.style.left=P.float.x+'px';side.style.top=P.float.y+'px'}
+  else{side.style.left='';side.style.top=''}}
+function applyPrefs(){
+  const r=document.documentElement;if(P.ui==='auto')r.removeAttribute('data-theme');else r.setAttribute('data-theme',P.ui);
+  r.style.fontSize=(16*P.font/100)+'px';r.style.setProperty('--side-w',P.width+'px');r.style.setProperty('--side-h',P.bottomH+'%');
+  Object.entries(P.colors).forEach(([k,v])=>r.style.setProperty('--s-'+k,v));
+  applyDock();applyOrder();syncSettings();save();req()}
+(()=>{const g=$('#grip');let st=null;
+  g.addEventListener('pointerdown',e=>{g.setPointerCapture(e.pointerId);st={x:e.clientX,y:e.clientY,fx:P.float.x,fy:P.float.y}});
+  g.addEventListener('pointermove',e=>{if(!st)return;P.float.x=st.fx+e.clientX-st.x;P.float.y=st.fy+e.clientY-st.y;applyDock()});
+  const end=()=>{if(st){st=null;save()}};g.addEventListener('pointerup',end);g.addEventListener('pointercancel',end)})();
+window.addEventListener('resize',()=>applyDock());
+
+buildPanels();buildSettings();applyPrefs();renderForm();applyLang();
+if(document.fonts&&document.fonts.ready)document.fonts.ready.then(()=>req());
+})();
+</script>
+</body>
+</html>
