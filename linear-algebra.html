@@ -840,8 +840,11 @@ function buildMatrixInputs(){
     inp.addEventListener('input',()=>{const v=parseFloat(inp.value.replace(',','.').replace('−','-'));if(!isFinite(v))return;const d=D();const M=d.to.slice();M[i]=v;setMatrix(M)});
     inp.addEventListener('blur',syncInputs);box.appendChild(inp)}
 }
-function syncInputs(){const d=D();document.querySelectorAll('#matIn input').forEach(inp=>{if(document.activeElement!==inp)inp.value=fmt(d.to[+inp.dataset.i],3).replace('−','-')});
-  document.querySelectorAll('#vIn input').forEach(inp=>{if(document.activeElement!==inp)inp.value=fmt(d.v[+inp.dataset.v],3).replace('−','-')})}
+/* поле ввода: «редактируется», только пока его текст и есть текущее значение; иначе — перезаписать (иначе фокус = вечно устаревшее число) */
+const editing=(inp,x)=>document.activeElement===inp&&parseFloat(inp.value.replace(',','.').replace('−','-'))===x;
+const putNum=(inp,x)=>{if(!editing(inp,x))inp.value=fmt(x,3).replace('−','-')};
+function syncInputs(){const d=D();document.querySelectorAll('#matIn input').forEach(inp=>putNum(inp,d.to[+inp.dataset.i]));
+  document.querySelectorAll('#vIn input').forEach(inp=>putNum(inp,d.v[+inp.dataset.v]))}
 function buildPresets(){const box=$('#pre');box.innerHTML='';PRE[shapeKey()].forEach(([name,M])=>{const b=document.createElement('button');b.className='chip';b.textContent=nm(name);
   b.onclick=()=>animateTo(M||randShape(),name);box.appendChild(b)})}
 function buildVecInputs(){const n=SH()[1],box=$('#vIn');box.innerHTML='';['x','y','z'].slice(0,n).forEach((nm,i)=>{const l=document.createElement('label');l.innerHTML=`${nm}<input type="text" inputmode="decimal" data-v="${i}" aria-label="${T().coord(nm)}">`;
@@ -925,7 +928,7 @@ function renderCob(){if(S.mode!=='2d'||!S.K)return;if(!isSq()){$('#cbOut').inner
   else{const A2=mul(mul(inv(Pm,2),d.to,2),Pm,2),dg=Math.abs(A2[1])<1e-9&&Math.abs(A2[2])<1e-9;
     h+=`<div class="crm">${L.cbA} <i>P</i>⁻¹<i>AP</i> = ${miniMat(A2,2)}</div>`+(dg?`<p class="note">${L.cbDiag}</p>`:'')}
   $('#cbOut').innerHTML=h;
-  document.querySelectorAll('[data-cb]').forEach(inp=>{const[k,i]=inp.dataset.cb.split(':');if(document.activeElement!==inp)inp.value=fmt(S.cob[k][+i],3).replace('−','-')})}
+  document.querySelectorAll('[data-cb]').forEach(inp=>{const[k,i]=inp.dataset.cb.split(':');putNum(inp,S.cob[k][+i])})}
 function syncTools(){$('#cbOn').checked=S.cob.on;document.querySelectorAll('#slCr button').forEach(b=>setOn(b,+b.dataset.cr===S.cr));renderVec();renderCob();req()}
 function showPanel(id){P.collapsed[id]=false;applyOrder();save();const el=side.querySelector(`.panel[data-id="${id}"]`);if(el)el.querySelectorAll('details.more,details.steps').forEach(d=>{d.open=true});if(el)setTimeout(()=>el.scrollIntoView({block:'nearest',behavior:'smooth'}),50)}
 $('#cbOn').onchange=e=>{S.cob.on=e.target.checked;renderCob();req()};
