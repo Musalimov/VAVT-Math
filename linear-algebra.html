@@ -512,7 +512,7 @@ function eigen(A,n){
   real.forEach(l=>{const B=A.slice();for(let i=0;i<n;i++)B[i*n+i]-=l;const ns=nullspace(B,n,1e-6);ns.basis.forEach(v=>vecs.push({l,v,dim:ns.basis.length}))});
   return{roots,vecs};
 }
-function fmt(x,d=2){if(!isFinite(x))return'∞';if(Math.abs(x)<5e-10)x=0;let s=String(+x.toFixed(d));if(s==='-0')s='0';return s.replace('-','−')}
+function fmt(x,d=2){if(!isFinite(x))return x>0?'∞':x<0?'−∞':'—';if(Math.abs(x)<5e-10)x=0;let s=String(+x.toFixed(d));if(s==='-0')s='0';return s.replace('-','−')}
 function sigmaMin2(M){const[a,b,c,d]=M,s=a*a+b*b+c*c+d*d,dt=a*d-b*c,q=Math.sqrt(Math.max(0,s*s-4*dt*dt));return Math.sqrt(Math.max(0,(s-q)/2))}
 
 /* ---------- состояние ---------- */
