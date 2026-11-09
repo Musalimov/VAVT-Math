@@ -9,7 +9,17 @@ import { SOLVE } from '../src/apps/macroeconomics/solvers/steps.js';
 const golden = JSON.parse(fs.readFileSync(new URL('./golden/macroeconomics.json', import.meta.url), 'utf8'));
 // та же нормализация, что при снятии эталона: без функций, ±∞/NaN строками, −0 → 0
 const norm = (v) =>
-  JSON.parse(JSON.stringify(v, (k, x) => (typeof x === 'function' ? undefined : typeof x === 'number' && !isFinite(x) ? String(x) : Object.is(x, -0) ? 0 : x)));
+  JSON.parse(
+    JSON.stringify(v, (k, x) =>
+      typeof x === 'function'
+        ? undefined
+        : typeof x === 'number' && !isFinite(x)
+          ? String(x)
+          : Object.is(x, -0)
+            ? 0
+            : x
+    )
+  );
 
 // Числа — с относительной точностью 1e-12: Math.pow и т. п. в Node и в браузере
 // могут расходиться в последнем бите (разные версии V8), это не изменение кода.
@@ -27,7 +37,10 @@ for (const c of golden.cases) {
     let lang = 'ru';
     langFrom(() => lang);
     if (c.err) {
-      assert.throws(() => COMP[c.topic](c.inp), (e) => e.msg === c.err);
+      assert.throws(
+        () => COMP[c.topic](c.inp),
+        (e) => e.msg === c.err
+      );
       return;
     }
     const res = COMP[c.topic](c.inp);
@@ -43,7 +56,16 @@ for (const c of golden.cases) {
 test('регрессия фазы 1: IS–LM при d = 0 — понятная ошибка, а не «MPC…»', () => {
   langFrom(() => 'ru');
   const islm = golden.cases.find((c) => c.topic === 'islm');
-  assert.throws(() => COMP.islm({ ...islm.inp, d: '0' }), (e) => e.msg === 'islmD');
-  assert.throws(() => COMP.islm({ ...islm.inp, f: '0' }), (e) => e.msg === 'islmF');
-  assert.throws(() => COMP.islm({ ...islm.inp, b: '1' }), (e) => e.msg === 'mpc');
+  assert.throws(
+    () => COMP.islm({ ...islm.inp, d: '0' }),
+    (e) => e.msg === 'islmD'
+  );
+  assert.throws(
+    () => COMP.islm({ ...islm.inp, f: '0' }),
+    (e) => e.msg === 'islmF'
+  );
+  assert.throws(
+    () => COMP.islm({ ...islm.inp, b: '1' }),
+    (e) => e.msg === 'mpc'
+  );
 });

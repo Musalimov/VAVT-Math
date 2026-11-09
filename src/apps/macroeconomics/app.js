@@ -1,3 +1,4 @@
+import { loadPrefs, makeSaver } from '../../shared/prefs.js';
 import { SOLVE, fp, pc } from './solvers/steps.js';
 import { COMP, E, fin, gv, nI } from './solvers/compute.js';
 import {
@@ -115,46 +116,14 @@ import { lang, langFrom } from '../../shared/i18n.js';
     preset: null,
   };
   const clone = (o) => JSON.parse(JSON.stringify(o));
-  function load() {
-    let r = null;
-    try {
-      r = JSON.parse(localStorage.getItem(KEY) || 'null');
-    } catch (e) {}
-    const p = clone(DEF);
-    if (!r || typeof r !== 'object') return p;
-    Object.assign(p, r);
-    p.colors = { ...DEF.colors, ...(r.colors || {}) };
-    p.show = { ...DEF.show, ...(r.show || {}) };
-    const ord = Array.isArray(r.order) ? r.order.filter((x) => PANELS.includes(x)) : [];
-    PANELS.forEach((x) => {
-      if (!ord.includes(x)) ord.push(x);
-    });
-    p.order = ord;
-    p.collapsed = r.collapsed || {};
-    p.float = r.float || { x: 12, y: 12 };
-    /* защита от повреждённых/старых настроек: числа — в пределах ползунков, иначе по умолчанию */ const RNG =
-      { width: [240, 560], bottomH: [25, 75], font: [80, 130], speed: [0.25, 3], lw: [0.5, 2.5] };
-    for (const k in RNG) {
-      const v = p[k],
-        [a, b] = RNG[k];
-      p[k] = typeof v === 'number' && isFinite(v) ? Math.min(b, Math.max(a, v)) : DEF[k];
-    }
-    if (!p.float || typeof p.float !== 'object' || !isFinite(p.float.x) || !isFinite(p.float.y))
-      p.float = { x: 12, y: 12 };
-    if (!p.collapsed || typeof p.collapsed !== 'object' || Array.isArray(p.collapsed)) p.collapsed = {};
-    return p;
-  }
-  let P = load();
+  const LOADED = loadPrefs({ key: KEY, defaults: DEF, panels: PANELS });
+  let P = LOADED.prefs;
+  if (LOADED.status === 'corrupt') setTimeout(() => toast(T().prefsReset, 5000));
   langFrom(() => P.lang);
   if (!P.lang) P.lang = (navigator.language || '').toLowerCase().startsWith('ru') ? 'ru' : 'en';
-  let saveT = 0;
+  // настройки: схема 2, миграция со схемы 1, -bak, предупреждение при переполнении (src/shared/prefs.js)
   function save() {
-    clearTimeout(saveT);
-    saveT = setTimeout(() => {
-      try {
-        localStorage.setItem(KEY, JSON.stringify(P));
-      } catch (e) {}
-    }, 250);
+    (save.f ||= makeSaver({ key: KEY, get: () => P, onFail: () => toast(T().prefsNoSave, 4000) }))();
   }
 
   const q4 = (v) => dc(String(+(+v).toFixed(4)));
