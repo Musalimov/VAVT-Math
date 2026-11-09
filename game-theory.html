@@ -607,7 +607,24 @@ function bimatrix(A,B){const m=A.length,n=A[0].length,br1=[],br2=[];for(let j=0;
   for(let i=0;i<m;i++){const mx=Math.max(...B[i]);br2.push(B[i].map(v=>Math.abs(v-mx)<1e-12))}const pure=[];for(let i=0;i<m;i++)for(let j=0;j<n;j++)if(br1[j][i]&&br2[i][j])pure.push([i,j]);
   let mixed=null;if(m===2&&n===2){const dA=A[0][0]-A[0][1]-A[1][0]+A[1][1],dB=B[0][0]-B[0][1]-B[1][0]+B[1][1];
     if(Math.abs(dA)>1e-12&&Math.abs(dB)>1e-12){const q=(A[1][1]-A[0][1])/dA,p=(B[1][1]-B[1][0])/dB;if(p>1e-12&&p<1-1e-12&&q>1e-12&&q<1-1e-12){const u1=q*A[0][0]+(1-q)*A[0][1],u2=p*B[0][0]+(1-p)*B[1][0];mixed={p,q,u1,u2,dA,dB}}}}
-  return{m,n,br1,br2,pure,mixed}}
+  return{m,n,br1,br2,pure,mixed,mixN:m===2&&n===2?[]:mixedNE(A,B)}}
+/* смешанные равновесия игры m×n перебором носителей одинакового размера k ≥ 2 (для невырожденных игр находит все).
+   Носитель I×J: y на J уравнивает строки I для игрока 1, x на I уравнивает столбцы J для игрока 2, вне носителя выгоднее не станет. */
+function linSolve(M,b){const n=b.length,a=M.map((r,i)=>[...r,b[i]]);for(let c=0;c<n;c++){let p=c;for(let r=c+1;r<n;r++)if(Math.abs(a[r][c])>Math.abs(a[p][c]))p=r;
+    if(Math.abs(a[p][c])<1e-12)return null;[a[c],a[p]]=[a[p],a[c]];for(let r=0;r<n;r++){if(r===c)continue;const f=a[r][c]/a[c][c];for(let k=c;k<=n;k++)a[r][k]-=f*a[c][k]}}
+  return a.map((r,i)=>r[n]/r[i])}
+function subsets(n,k){const out=[],cur=[];const go=s=>{if(cur.length===k){out.push(cur.slice());return}for(let i=s;i<n;i++){cur.push(i);go(i+1);cur.pop()}};go(0);return out}
+function mixedNE(A,B){const m=A.length,n=A[0].length,eps=1e-9,out=[];
+  for(let k=2;k<=Math.min(m,n);k++)for(const I of subsets(m,k))for(const J of subsets(n,k)){
+    // y: Σ_j A[i][j]·y_j − u = 0 (i ∈ I), Σ y_j = 1
+    const My=I.map(i=>[...J.map(j=>A[i][j]),-1]);My.push([...J.map(()=>1),0]);const sy=linSolve(My,[...I.map(()=>0),1]);if(!sy)continue;
+    const Mx=J.map(j=>[...I.map(i=>B[i][j]),-1]);Mx.push([...I.map(()=>1),0]);const sx=linSolve(Mx,[...J.map(()=>0),1]);if(!sx)continue;
+    const yv=sy.slice(0,k),u1=sy[k],xv=sx.slice(0,k),u2=sx[k];if(yv.some(v=>v<=eps)||xv.some(v=>v<=eps))continue;
+    const x=Array(m).fill(0),y=Array(n).fill(0);I.forEach((i,t)=>x[i]=xv[t]);J.forEach((j,t)=>y[j]=yv[t]);
+    let ok=true;for(let i=0;i<m&&ok;i++){const r=A[i].reduce((s,a,j)=>s+a*y[j],0);if(r>u1+1e-7)ok=false}
+    for(let j=0;j<n&&ok;j++){let c=0;for(let i=0;i<m;i++)c+=B[i][j]*x[i];if(c>u2+1e-7)ok=false}
+    if(ok&&!out.some(e=>e.x.every((v,i)=>Math.abs(v-x[i])<1e-7)&&e.y.every((v,j)=>Math.abs(v-y[j])<1e-7)))out.push({x,y,u1,u2})}
+  return out}
 function dominance(A,B){let R=A.map((_,i)=>i),C=A[0].map((_,j)=>j);const steps=[];let ch=true;
   while(ch){ch=false;for(const i of R){for(const k of R){if(k===i)continue;if(C.every(j=>A[k][j]>A[i][j])){steps.push({p:1,out:i,by:k});R=R.filter(x=>x!==i);ch=true;break}}if(ch)break}if(ch)continue;
     for(const j of C){for(const k of C){if(k===j)continue;if(R.every(i=>B[i][k]>B[i][j])){steps.push({p:2,out:j,by:k});C=C.filter(x=>x!==j);ch=true;break}}if(ch)break}}
@@ -926,7 +943,7 @@ ru:{title:'Теория игр',brand:'Теория игр <span class="sub">н�
  s_ne:ks=>`Равновесие Нэша — клетка, где оба выигрыша подчёркнуты (каждый отвечает наилучшим образом на стратегию другого): ${ks}.`,s_noNe:'Клеток, где подчёркнуты оба выигрыша, нет: равновесия в чистых стратегиях нет.',
  s_dom:(p,o,b)=>`Стратегия ${o} игрока ${p} строго доминируется стратегией ${b}: при любом ответе соперника она хуже. Вычёркиваем её.`,s_domNo:'Строго доминируемых стратегий нет.',s_domRes:r=>`После вычёркивания осталось: ${r}.`,
  s_mix:(q,p)=>`Смешанное равновесие: игрок 1 выбирает первую строку с вероятностью p, игрок 2 — первый столбец с вероятностью q, и каждый делает соперника безразличным. Из равенства ожидаемых выигрышей игрока 1: q = ${q}; игрока 2: p = ${p}.`,
- s_mixU:(a,b)=>`Ожидаемые выигрыши в смешанном равновесии: ${a} и ${b}.`,s_mixNo:'Внутреннего смешанного равновесия нет.',
+ s_mixU:(a,b)=>`Ожидаемые выигрыши в смешанном равновесии: ${a} и ${b}.`,s_mixNo:'Внутреннего смешанного равновесия нет.',s_mixSup:'Смешанные равновесия ищем перебором носителей: для каждой пары подмножеств стратегий одинакового размера уравниваем выигрыши соперника и проверяем, что вне носителя выгоднее не становится.',s_mixNe:(x,y,a,b)=>`Смешанное равновесие: игрок 1 — x* = ${x}, игрок 2 — y* = ${y}; ожидаемые выигрыши ${a} и ${b}.`,s_mixNNo:'Смешанных равновесий с носителем из двух и более стратегий нет — равновесия только чистые.',s_mixDeg:'Перебор носителей не нашёл равновесия: игра вырожденная (есть равные выигрыши). По теореме Нэша равновесие существует — попробуйте исключить доминируемые стратегии или слегка изменить равные выигрыши.',
  s_zsMin:'Минимумы по строкам — гарантированный выигрыш игрока 1:',s_zsMax:'Максимумы по столбцам — гарантированный проигрыш игрока 2:',s_zsLo:(a,b)=>`Нижняя цена игры α = max min = ${a}, верхняя β = min max = ${b}.`,
  s_saddle:(c,v)=>`α = β, значит, есть седловая точка ${c}: цена игры v = ${v}, оптимальны чистые стратегии.`,s_noSaddle:'α < β: седловой точки нет, решение в смешанных стратегиях.',
  s_lp:'Цена игры и оптимальные смешанные стратегии — решение пары двойственных задач ЛП: max v при Σpᵢaᵢⱼ ⩾ v для всех j, Σpᵢ = 1.',s_zsRes:(p,q,v)=>`p* = ${p}, q* = ${q}, цена игры v = ${v}.`,s_graph:'Для игры 2×n на графике — графический метод: прямые выигрыша против каждого столбца, нижняя огибающая и её максимум.',
@@ -960,7 +977,7 @@ en:{title:'Game theory',brand:'Game theory <span class="sub">visually</span>',ca
  s_ne:ks=>`A Nash equilibrium is a cell where both payoffs are underlined (each best-responds to the other): ${ks}.`,s_noNe:'No cell has both payoffs underlined: there is no pure-strategy equilibrium.',
  s_dom:(p,o,b)=>`Strategy ${o} of player ${p} is strictly dominated by ${b}: it is worse against any reply. Delete it.`,s_domNo:'There are no strictly dominated strategies.',s_domRes:r=>`After deletion: ${r}.`,
  s_mix:(q,p)=>`Mixed equilibrium: player 1 plays the first row with probability p, player 2 the first column with probability q, and each makes the other indifferent. From player 1’s indifference: q = ${q}; from player 2’s: p = ${p}.`,
- s_mixU:(a,b)=>`Expected payoffs in the mixed equilibrium: ${a} and ${b}.`,s_mixNo:'There is no interior mixed equilibrium.',
+ s_mixU:(a,b)=>`Expected payoffs in the mixed equilibrium: ${a} and ${b}.`,s_mixNo:'There is no interior mixed equilibrium.',s_mixSup:'Mixed equilibria are found by support enumeration: for each pair of equal-size strategy subsets we equalize the opponent’s payoffs and check that no strategy outside the support does better.',s_mixNe:(x,y,a,b)=>`Mixed equilibrium: player 1 — x* = ${x}, player 2 — y* = ${y}; expected payoffs ${a} and ${b}.`,s_mixNNo:'No mixed equilibria with a support of two or more strategies — only pure ones.',s_mixDeg:'Support enumeration found no equilibrium: the game is degenerate (tied payoffs). By Nash’s theorem an equilibrium exists — try removing dominated strategies or slightly perturbing the ties.',
  s_zsMin:'Row minima are player 1’s guaranteed payoffs:',s_zsMax:'Column maxima are player 2’s guaranteed losses:',s_zsLo:(a,b)=>`Lower value α = max min = ${a}, upper value β = min max = ${b}.`,
  s_saddle:(c,v)=>`α = β, so there is a saddle point ${c}: the value is v = ${v}, pure strategies are optimal.`,s_noSaddle:'α < β: no saddle point, the solution is in mixed strategies.',
  s_lp:'The value and optimal mixed strategies solve a pair of dual LPs: max v subject to Σpᵢaᵢⱼ ⩾ v for all j, Σpᵢ = 1.',s_zsRes:(p,q,v)=>`p* = ${p}, q* = ${q}, value v = ${v}.`,s_graph:'For a 2×n game the chart shows the graphical method: payoff lines against each column, their lower envelope and its maximum.',
@@ -1153,6 +1170,8 @@ let P=load();if(!P.lang)P.lang=(navigator.language||'').toLowerCase().startsWith
 function save(){clearTimeout(saveT);saveT=setTimeout(()=>{try{localStorage.setItem(KEY,JSON.stringify(P))}catch(e){}},250)}
 const dc=s=>P.lang==='ru'?s.replace(/(\d)\.(\d)/g,'$1,$2'):s;
 function fN(v,d=4){if(!isFinite(v))return v>0?'∞':v<0?'−∞':'—';return dc(fmt(v,d))}
+/* вектор вероятностей: простые дроби (1/3; 2/3), иначе десятичные */
+function fVq(a){return`(${a.map(v=>{const f=toFrac(v,1000,1e-9);return f&&f[1]>1?`${f[0]<0?'−':''}${Math.abs(f[0])}/${f[1]}`:fN(v,4)}).join('; ')})`}
 function fQ(v,d=4){const f=toFrac(v,1000,1e-9);if(f&&f[1]>1)return`${f[0]<0?'−':''}${Math.abs(f[0])}/${f[1]} ≈ ${fN(v,d)}`;return fN(v,d)}
 const fV=a=>`(${a.map(v=>fN(v,4)).join('; ')})`;
 /* ---------- примеры ---------- */
@@ -1257,7 +1276,9 @@ function solveMat(R){cS=R.cl?(j=>`${P.lang==='ru'?'ст.':'col'} ${R.cl[j]}`):cS
   st.push(L.s_br1);st.push(L.s_br2);st.push(bm.pure.length?L.s_ne(bm.pure.map(([i,j])=>`(${rS(i)}, ${cS(j)})`).join(', ')):L.s_noNe);
   const d=R.dom;if(d.steps.length){d.steps.forEach(s=>st.push(L.s_dom(s.p,s.p===1?rS(s.out):cS(s.out),s.p===1?rS(s.by):cS(s.by))));st.push(L.s_domRes(`${d.R.map(rS).join(', ')} × ${d.C.map(cS).join(', ')}`))}else st.push(L.s_domNo);
   if(R.A.length===2&&R.A[0].length===2){if(bm.mixed){const m=bm.mixed;st.push(L.s_mix(fQ(m.q),fQ(m.p)));st.push(L.s_mixU(fQ(m.u1),fQ(m.u2)))}else st.push(L.s_mixNo)}
-  const ans=(bm.pure.length?bm.pure.map(([i,j])=>`(${i+1}, ${j+1})`).join(', '):'—')+(bm.mixed?`; p = ${fN(bm.mixed.p,3)}, q = ${fN(bm.mixed.q,3)}`:'');return{st,ans:`NE: ${ans}`}}
+  else{st.push(L.s_mixSup);if(bm.mixN.length)bm.mixN.forEach(e=>st.push(L.s_mixNe(fVq(e.x),fVq(e.y),fQ(e.u1),fQ(e.u2))));else st.push(bm.pure.length?L.s_mixNNo:L.s_mixDeg)}
+  const mixA=bm.mixN.map(e=>`x* = ${fVq(e.x)}, y* = ${fVq(e.y)}`).join('; ');
+  const ans=(bm.pure.length?bm.pure.map(([i,j])=>`(${i+1}, ${j+1})`).join(', '):'')+(bm.mixed?`; p = ${fN(bm.mixed.p,3)}, q = ${fN(bm.mixed.q,3)}`:'')+(mixA?(bm.pure.length?'; ':'')+mixA:'');return{st,ans:`NE: ${ans||'—'}`}}
 function solveCour(R){const L=T(),st=[L.s_c1,L.s_c2];const N=R.N;if(R.act.length<N)R.cs.forEach((c,i)=>{if(!R.act.includes(i))st.push(L.s_cOut(i+1))});
   st.push(L.s_c3(R.act.length,fQ(R.Q)));st.push(`${L.s_c4} ${R.q.map((q,i)=>`q${i+1} = ${fQ(q)}`).join(', ')}`);if(R.cs.every(c=>c===R.cs[0]))st.push(L.s_cSym(fQ((R.M-R.cs[0])/(N+1))));st.push(L.s_cP(fQ(R.P)));
   st.push(`${T().v.pi}: ${R.pi.map((p,i)=>`H${i+1} = ${fQ(p)}`).join(', ')}`);return{st,ans:`q* = ${fV(R.q)}, P = ${fN(R.P,4)}`}}
@@ -1275,7 +1296,7 @@ function renderSolve(){const box=$('#solve'),L=T();if(S.err){box.innerHTML=`<p c
   box.innerHTML=`<p class="idea">${L.tt[S.topic]}</p>${ol(r.st)}<div class="ans"><div class="k">${L.ans}</div><div class="big">${r.ans}</div></div>`}
 function prop(k,v){return`<div class="prop"><span class="k">${k}</span><span class="v">${v}</span></div>`}
 function renderValues(){const box=$('#props'),V=T().v;if(S.err||!S.res){box.innerHTML='';return}const R=S.res,t=S.topic;let h='';
-  if(t==='mat'){if(R.kind==='zs')h=prop(V.alpha,fN(R.z.lo,3))+prop(V.beta,fN(R.z.hi,3))+prop(V.val,fQ(R.z.v));else h=prop(V.ne,R.bm.pure.length?R.bm.pure.map(([i,j])=>`(${i+1}, ${j+1})`).join(', '):'—')+(R.bm.mixed?prop(V.mix,`p = ${fN(R.bm.mixed.p,3)}, q = ${fN(R.bm.mixed.q,3)}`):'')}
+  if(t==='mat'){if(R.kind==='zs')h=prop(V.alpha,fN(R.z.lo,3))+prop(V.beta,fN(R.z.hi,3))+prop(V.val,fQ(R.z.v));else h=prop(V.ne,R.bm.pure.length?R.bm.pure.map(([i,j])=>`(${i+1}, ${j+1})`).join(', '):'—')+(R.bm.mixed?prop(V.mix,`p = ${fN(R.bm.mixed.p,3)}, q = ${fN(R.bm.mixed.q,3)}`):'')+(R.bm.mixN||[]).map(e=>prop(V.mix,`x* = ${fVq(e.x)}, y* = ${fVq(e.y)}`)).join('')}
   else if(t==='cour'&&R.om!=='cour')h=VALS2.olig(R,V);
   else if(t==='cour')h=prop(V.Q,fQ(R.Q))+prop(V.P,fQ(R.P))+R.q.map((q,i)=>prop(`q${i+1}; H${i+1}`,`${fN(q,3)}; ${fN(R.pi[i],3)}`)).join('');
   else if(t==='barg')h=prop(V.nash,R.nash?fV(R.nash.x):'—')+prop(V.ks,R.ks?fV(R.ks.x):'—')+prop(V.ideal,fV(R.ideal));
