@@ -328,7 +328,19 @@ body.m3 .d2only{display:none}
 <script>
 (()=>{
 'use strict';
+/* ---------- автоматы состояний ----------
+   Всё, что «режимно» в приложении, сведено к пяти автоматам. Каждый публикует
+   текущее состояние в <body data-*> — для CSS, тестов, скринридеров и агентов.
+   anim     idle → playing → (queued → playing)* → idle;  idle ⇄ scrub
+            playing: S.anim идёт;  queued: шаг цепочки ждёт 350 мс (nextT);
+            scrub: d.t<1 без анимации. Любая команда пользователя → stopAnim().
+   gesture  none → i|j|v|b1|b2|pan|orbit → pinch → pan|orbit → none   (drag, ptrs)
+   drawer   none ⇄ gloss|keys|settings — открыт не больше одного   (openDrawer/closeDrawers)
+   rec      idle ⇄ recording   (S.rec, exportVideo)
+   mode/shape  2d|3d × 2x2|2x1|1x2|3x3|3x2|2x3 — у 2D и 3D своё состояние (S.d2/S.d3)
+*/
 const $=s=>document.querySelector(s);
+const PUB={};function pub(k,v){v=String(v);if(PUB[k]!==v){PUB[k]=v;document.body.dataset[k]=v}}
 const KEY='linal-viz-v1';
 const PAL={
   classic:{name:'Классика',bg:'#0b0c10',bgGrid:'#262b33',grid:'#3a9ec4',axis:'#f2f2f2',i:'#83c167',j:'#fc6255',k:'#58c4dd',det:'#f4d345',eigen:'#c77dff',vec:'#ff9f43',span:'#b9f3fc',kernel:'#ff7aa8'},
@@ -755,17 +767,17 @@ const pos=e=>{const r=cv.getBoundingClientRect();return{x:e.clientX-r.left,y:e.c
 function hit2(x,y,r){
   const M=cur(),o=[];
   if(P.show.vec)o.push(['v',w2s(...ap(M,S.d2.v,2))]);
-  if(S.cob.on){o.push(['b1',w2s(...S.cob.b1)]);o.push(['b2',w2s(...S.cob.b2)])}
+  if(S.cob.on&&isSq()){o.push(['b1',w2s(...S.cob.b1)]);o.push(['b2',w2s(...S.cob.b2)])}
   if(P.show.basis){o.push(['i',w2s(...col(M,0,2))]);if(SH()[1]>1)o.push(['j',w2s(...col(M,1,2))])}
   let best=null,bd=r;o.forEach(([k,p])=>{const dd=Math.hypot(p[0]-x,p[1]-y);if(dd<bd){bd=dd;best=k}});return best;
 }
 function setScaleAt(mx,my,ns){const V=S.V;ns=Math.max(4,Math.min(400,ns));const[wx,wy]=s2w(mx,my);V.scale=ns;V.ox=mx-W/2-wx*ns;V.oy=my-H/2+wy*ns;req()}
 cv.addEventListener('pointerdown',e=>{
   cv.setPointerCapture(e.pointerId);const p=pos(e);ptrs.set(e.pointerId,p);
-  if(ptrs.size===2){const[a,b]=[...ptrs.values()];drag={type:'pinch',d0:Math.hypot(a.x-b.x,a.y-b.y)||1,z0:S.mode==='2d'?S.V.scale:S.cam.zoom};return}
+  if(ptrs.size===2){const[a,b]=[...ptrs.values()];setDrag({type:'pinch',d0:Math.hypot(a.x-b.x,a.y-b.y)||1,z0:S.mode==='2d'?S.V.scale:S.cam.zoom});return}
   if(ptrs.size>2)return;
   const h=S.mode==='2d'?hit2(p.x,p.y,e.pointerType==='touch'?28:16):null;
-  drag=h?{type:h}:{type:S.mode==='2d'?'pan':'orbit',lx:p.x,ly:p.y};cv.style.cursor='grabbing';
+  setDrag(h?{type:h}:{type:S.mode==='2d'?'pan':'orbit',lx:p.x,ly:p.y});cv.style.cursor='grabbing';
 });
 cv.addEventListener('pointermove',e=>{
   const p=pos(e);
@@ -777,7 +789,11 @@ cv.addEventListener('pointermove',e=>{
   if(drag.type==='orbit'){S.cam.yaw+=(p.x-drag.lx)*.008;S.cam.pitch=Math.max(-1.5,Math.min(1.5,S.cam.pitch+(p.y-drag.ly)*.008));drag.lx=p.x;drag.ly=p.y;req();return}
   dragTo(drag.type,p.x,p.y);
 });
-function endPtr(e){ptrs.delete(e.pointerId);if(ptrs.size<2&&drag&&drag.type==='pinch')drag=null;if(!ptrs.size){drag=null;cv.style.cursor='grab'}}
+function setDrag(v){drag=v;pub('gesture',v?v.type:'none')}
+function endGesture(){setDrag(null)}
+function endPtr(e){ptrs.delete(e.pointerId);
+  if(drag&&drag.type==='pinch'&&ptrs.size===1){const[q]=[...ptrs.values()];setDrag({type:S.mode==='2d'?'pan':'orbit',lx:q.x,ly:q.y})}
+  if(!ptrs.size){setDrag(null);cv.style.cursor='grab'}}
 cv.addEventListener('pointerup',endPtr);cv.addEventListener('pointercancel',endPtr);
 cv.addEventListener('wheel',e=>{e.preventDefault();const k=Math.exp(-e.deltaY*.0015),p=pos(e);
   if(S.mode==='2d')setScaleAt(p.x,p.y,S.V.scale*k);else{S.cam.zoom=Math.max(.3,Math.min(5,S.cam.zoom*k));req()}},{passive:false});
