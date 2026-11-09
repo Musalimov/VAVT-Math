@@ -43,3 +43,25 @@ jobs:
     steps:
       - id: deployment
         uses: actions/deploy-pages@v4
+
+  # Сверка сборки с эталоном (тексты всех примеров + снимки экрана).
+  # Долгая (~15 мин на все тренажёры), поэтому — на pull request и вручную.
+  e2e:
+    if: github.event_name != 'push'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # нужен тег-эталон ref/phase1
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - run: npm run build
+      - run: npm run e2e
+      - if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-snimki
+          path: test-results/
