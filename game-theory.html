@@ -1169,6 +1169,9 @@ function load(){let r=null;try{r=JSON.parse(localStorage.getItem(KEY)||'null')}c
   /* защита от повреждённых/старых настроек: числа — в пределах ползунков, иначе по умолчанию */const RNG={width:[240,560],bottomH:[25,75],font:[80,130],speed:[.25,3],lw:[.5,2.5]};for(const k in RNG){const v=p[k],[a,b]=RNG[k];p[k]=typeof v==='number'&&isFinite(v)?Math.min(b,Math.max(a,v)):DEF[k]}if(!p.float||typeof p.float!=='object'||!isFinite(p.float.x)||!isFinite(p.float.y))p.float={x:12,y:12};if(!p.collapsed||typeof p.collapsed!=='object'||Array.isArray(p.collapsed))p.collapsed={};return p}
 let P=load();if(!P.lang)P.lang=(navigator.language||'').toLowerCase().startsWith('ru')?'ru':'en';let saveT=0;
 function save(){clearTimeout(saveT);saveT=setTimeout(()=>{try{localStorage.setItem(KEY,JSON.stringify(P))}catch(e){}},250)}
+/* текст пользователя (имена вершин, ходов, участников) в HTML — только через esc; в текстовый экспорт — через unesc */
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const unesc=s=>s.replace(/&lt;/g,'<').replace(/&gt;/g,'>').replace(/&quot;/g,'"').replace(/&#39;/g,"'").replace(/&amp;/g,'&');
 const dc=s=>P.lang==='ru'?s.replace(/(\d)\.(\d)/g,'$1,$2'):s;
 function fN(v,d=4){if(!isFinite(v))return v>0?'∞':v<0?'−∞':'—';return dc(fmt(v,d))}
 /* вектор вероятностей: простые дроби (1/3; 2/3), иначе десятичные */
@@ -1328,7 +1331,7 @@ function seg(fr,a,b,col,w=2,dash){ctx.strokeStyle=col;ctx.lineWidth=w*P.lw;ctx.s
 function dotP(fr,p,col,r=6,lab){const X=fr.X(p[0]),Y=fr.Y(p[1]);ctx.fillStyle=col;ctx.strokeStyle=P.colors.bg;ctx.lineWidth=2;ctx.beginPath();ctx.arc(X,Y,r,0,7);ctx.fill();ctx.stroke();if(lab)txt(lab,X+10,Y-12,col,14,'left')}
 const pT=()=>Math.min(100,H*.17),pB=()=>Math.min(70,H*.12);
 function renderNow(){ctx.setTransform(DPR,0,0,DPR,0,0);ctx.fillStyle=P.colors.bg;ctx.fillRect(0,0,W,H);if(!S.res||S.err||!W)return;({mat:drawMat,cour:drawCourX,barg:drawBarg,coop:drawCoop,auct:drawAuct,cont:drawCont,bayes:drawMat,hotel:drawHotel,tree:drawTree,rep:drawRep,evo:drawEvo,vote:drawVote,match:drawMatch,braess:drawBraess})[S.topic](S.res);
-  if(S.stamp){const t=(S.ans||'').replace(/<[^>]+>/g,'');ctx.font='600 15px "Source Serif 4", Georgia, serif';const w=ctx.measureText(t).width+20;ctx.fillStyle=P.colors.bg;ctx.globalAlpha=.85;ctx.fillRect(W-w-12,H-38,w,28);ctx.globalAlpha=1;ctx.fillStyle=P.colors.axis;ctx.textAlign='left';ctx.textBaseline='middle';ctx.fillText(t,W-w-2,H-24)}}
+  if(S.stamp){const t=unesc((S.ans||'').replace(/<[^>]+>/g,''));ctx.font='600 15px "Source Serif 4", Georgia, serif';const w=ctx.measureText(t).width+20;ctx.fillStyle=P.colors.bg;ctx.globalAlpha=.85;ctx.fillRect(W-w-12,H-38,w,28);ctx.globalAlpha=1;ctx.fillStyle=P.colors.axis;ctx.textAlign='left';ctx.textBaseline='middle';ctx.fillText(t,W-w-2,H-24)}}
 function drawMat(R){cS=R.cl?(j=>`${P.lang==='ru'?'ст.':'col'} ${R.cl[j]}`):cS0;const c=P.colors,A=R.A,B=R.B,m=A.length,n=A[0].length,zs=R.kind==='zs',bm=R.bm;const sq=(!zs&&m===2&&n===2)||(zs&&(m===2||n===2));
   const areaW=sq?W*.5:W-80,cw=Math.min(120,(areaW-60)/(n+(zs?1:0))),ch=Math.min(70,(H-pT()-pB()-40)/(m+(zs?1:0))),x0=40+(areaW-cw*n)/2,y0=pT()+30;const ne=new Set(bm.pure.map(([i,j])=>i+','+j)),del=R.dom?{r:new Set(R.dom.steps.filter(s=>s.p===1).map(s=>s.out)),c:new Set(R.dom.steps.filter(s=>s.p===2).map(s=>s.out))}:{r:new Set(),c:new Set()};
   for(let j=0;j<n;j++)txt(cS(j),x0+cw*j+cw/2,y0-14,c.p2,12);for(let i=0;i<m;i++)txt(rS(i),x0-24,y0+ch*i+ch/2,c.p1,12);
@@ -1409,8 +1412,8 @@ function drawHotel(R){const c=P.colors,x0=70,x1=W-70,y=Math.min(H*.5,H-160),X=t=
   if(loc){firm(.5,c.eq,P.lang==='ru'?'обе фирмы':'both firms');if(P.show.labels){[.2,.8].forEach(t=>{ctx.strokeStyle=c.mark;ctx.setLineDash([4,4]);ctx.beginPath();ctx.moveTo(X(t),y-70);ctx.lineTo(X(.5),y-70);ctx.stroke();ctx.setLineDash([])});txt(P.lang==='ru'?'→ сдвиг к центру ←':'→ move to the centre ←',X(.5),y-86,c.mark,13)}return}
   firm(a,c.p1,`p₁ = ${dc(fmt(R.p[0],3))}`);firm(b,c.p2,`p₂ = ${dc(fmt(R.p[1],3))}`);ctx.strokeStyle=c.eq;ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(X(xh),y-20);ctx.lineTo(X(xh),y+20);ctx.stroke();if(P.show.labels)txt(`x̂ = ${dc(fmt(xh,3))}`,X(xh),y+44,c.eq,14)}
 /* ---------- дерево ---------- */
-function solveTree(R){const L=T(),st=[L.s_tr1];R.log.forEach(l=>{const n=R.T.nodes[l.id];st.push(L.s_trN(l.id,l.pl,n.acts[l.best].a,fV(l.opts[l.best]))+(R.ties[l.id]?' '+L.s_trTie:''))});
-  const path=R.path.map(([id,k])=>`${id}: ${R.T.nodes[id].acts[k].a}`).join(' → ');st.push(L.s_trR(path,fV(R.v)));st.push(L.s_trS);return{st,ans:`${fV(R.v)}; ${path}`}}
+function solveTree(R){const L=T(),st=[L.s_tr1];R.log.forEach(l=>{const n=R.T.nodes[l.id];st.push(L.s_trN(esc(l.id),l.pl,esc(n.acts[l.best].a),fV(l.opts[l.best]))+(R.ties[l.id]?' '+L.s_trTie:''))});
+  const path=R.path.map(([id,k])=>`${esc(id)}: ${esc(R.T.nodes[id].acts[k].a)}`).join(' → ');st.push(L.s_trR(path,fV(R.v)));st.push(L.s_trS);return{st,ans:`${fV(R.v)}; ${path}`}}
 function drawTree(R){const c=P.colors,Tr=R.T,lay={},depth={};let leafX=0;const items=[];
   const place=(id,d)=>{const n=Tr.nodes[id];const xs=[];n.acts.forEach((a,k)=>{if(a.to)xs.push(place(a.to,d+1));else{const lx=leafX++;items.push({leaf:true,x:lx,d:d+1,pay:a.pay,par:id,k});xs.push(lx)}});const x=(xs[0]+xs[xs.length-1])/2;lay[id]={x,d,kids:xs};depth[id]=d;return x};
   place(Tr.root,0);const maxD=Math.max(...Object.values(lay).map(o=>o.d),...items.map(i=>i.d)),nL=Math.max(1,leafX-1),top=pT()+20,bot=H-pB()-40,X=x=>70+(W-140)*(nL?x/nL:.5),Y=d=>top+(bot-top)*(maxD?d/maxD:0);
@@ -1445,8 +1448,8 @@ function drawVote(R){const c=P.colors,n=R.w.length,r={x:60,y:pT(),w:W-110,h:H-pT
   R.w.forEach((w,i)=>{const X=fr.X(i+1);[[w/R.tot,c.axis,-1],[R.ss[i],c.p1,0],[R.bzN[i],c.p2,1]].forEach(([v,col,o])=>{ctx.fillStyle=col;ctx.globalAlpha=o===-1?.3:.8;ctx.fillRect(X+o*bw-bw/2,fr.Y(v),bw,fr.Y(0)-fr.Y(v));ctx.globalAlpha=1});if(P.show.labels&&n<=8)txt(dc(fmt(R.ss[i],3)),X,fr.Y(R.ss[i])-10,c.p1,11);txt(String(i+1),X,fr.Y(0)+14,c.axis,12)})}
 /* ---------- паросочетания ---------- */
 function solveMatch(R){const L=T(),st=[L.s_gs1(R.rev?(P.lang==='ru'?'вторая сторона':'side 2'):(P.lang==='ru'?'первая сторона':'side 1'))];
-  R.log.forEach(l=>st.push(L.s_gsR(l.round,l.ev.map(([p,r,k,out])=>`${p} → ${r}: ${k==='acc'?L.acc+(out?` (${out} ${P.lang==='ru'?'освобождается':'is freed'})`:''):L.rej}`).join('; '))));
-  const m=Object.entries(R.match).map(([p,r])=>`${p} — ${r}`).join(', ');st.push(L.s_gsRes(m));st.push(R.block.length?L.s_gsBl(R.block.map(([p,r])=>`${p}–${r}`).join(', ')):L.s_gsSt);st.push(L.s_gsOpt);return{st,ans:m}}
+  R.log.forEach(l=>st.push(L.s_gsR(l.round,l.ev.map(([p,r,k,out])=>`${esc(p)} → ${esc(r)}: ${k==='acc'?L.acc+(out?` (${esc(out)} ${P.lang==='ru'?'освобождается':'is freed'})`:''):L.rej}`).join('; '))));
+  const m=Object.entries(R.match).map(([p,r])=>`${esc(p)} — ${esc(r)}`).join(', ');st.push(L.s_gsRes(m));st.push(R.block.length?L.s_gsBl(R.block.map(([p,r])=>`${esc(p)}–${esc(r)}`).join(', ')):L.s_gsSt);st.push(L.s_gsOpt);return{st,ans:m}}
 function drawMatch(R){const c=P.colors,Ps=R.P,Rs=R.R,top=pT()+20,bot=H-pB()-30,xl=W*.28,xr=W*.72,y=(i,n)=>top+(bot-top)*(n>1?i/(n-1):.5);
   Object.entries(R.match).forEach(([p,r])=>{const i=Ps.indexOf(p),j=Rs.indexOf(r);ctx.strokeStyle=c.eq;ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(xl,y(i,Ps.length));ctx.lineTo(xr,y(j,Rs.length));ctx.stroke()});
   Ps.forEach((p,i)=>{ctx.fillStyle=c.p1;ctx.beginPath();ctx.arc(xl,y(i,Ps.length),10,0,7);ctx.fill();txt(p,xl-18,y(i,Ps.length),c.p1,14,'right');if(P.show.labels){const pr=(R.rev?R.pb:R.pa)[p]||[];txt(pr.join(' > '),xl-18,y(i,Ps.length)+16,c.axis,10,'right')}});
@@ -1518,7 +1521,7 @@ document.querySelectorAll('#xFmt button').forEach(b=>b.onclick=()=>{fmtMode=b.da
 
 function illSvg(){return''}
 function runDemo(id){const d=DEMOS[id];if(!d)return;loadPreset(d.p);showPanel('solve')}
-function renderTex(){const ta=$('#xTex');if(!ta)return;if(S.err||!S.res){ta.value='';return}const R=S.res,t=S.topic,a=(S.ans||'').replace(/<[^>]+>/g,'');
+function renderTex(){const ta=$('#xTex');if(!ta)return;if(S.err||!S.res){ta.value='';return}const R=S.res,t=S.topic,a=unesc((S.ans||'').replace(/<[^>]+>/g,''));
   if(fmtMode==='txt'){ta.value=`${T()['t_'+t]}\n${a}`;return}if(fmtMode==='tex'){ta.value=a.replace(/≈/g,'\\approx ').replace(/φ/g,'\\varphi ');return}
   const J=x=>JSON.stringify(x);let py='';
   if(t==='mat')py=R.kind==='zs'?`import numpy as np\nfrom scipy.optimize import linprog\nA = np.array(${J(R.A)})\nm, n = A.shape\n# max v: A^T p >= v, sum p = 1\nres = linprog(c=[0]*m + [-1], A_ub=np.hstack([-A.T, np.ones((n, 1))]), b_ub=np.zeros(n), A_eq=[[1]*m + [0]], b_eq=[1], bounds=[(0, None)]*m + [(None, None)])\nprint(res.x[:m], res.x[m])`:`import nashpy as nash  # pip install nashpy\nA = ${J(R.A)}\nB = ${J(R.B)}\nprint(list(nash.Game(A, B).support_enumeration()))`;
