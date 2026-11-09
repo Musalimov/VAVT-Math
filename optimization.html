@@ -1465,7 +1465,7 @@ function buildSettings(){
   $('#resetAll').onclick=()=>{const lg=P.lang,rd=P.read,last=P.last;P=clone(DEF);P.lang=lg;P.read=rd||{};P.last=last;syncToggles();$('#spR').value=P.speed;$('#spOut').textContent='×1';applyPrefs();renderAll()};
 }
 function buildPal(){const L=T();
-  const pc=$('#palChips');pc.innerHTML='';Object.entries(PAL).forEach(([k,p])=>{const b=document.createElement('button');b.className='chip';b.dataset.p=k;b.innerHTML=`<span class="sw" style="background:${p.bg};box-shadow:inset 0 0 0 3px ${p.f}"></span>${L.pal[k]}`;
+  const pc=$('#palChips');pc.innerHTML='';Object.entries(PAL).forEach(([k,p])=>{const b=document.createElement('button');b.className='chip';b.dataset.p=k;b.innerHTML=`<span class="sw" style="background:${p.bg};box-shadow:inset 0 0 0 3px ${p.f||Object.values(p)[3]}"></span>${L.pal[k]}`;
     b.onclick=()=>{P.palette=k;P.colors={...PAL[k]};applyPrefs()};pc.appendChild(b)});
   const cs=$('#colors');cs.innerHTML='';Object.keys(L.colors).forEach(k=>{const l=document.createElement('label');l.innerHTML=`<input type="color" data-k="${k}"> ${L.colors[k]}`;
     l.querySelector('input').oninput=e=>{P.colors[k]=e.target.value;P.palette='custom';applyPrefs()};cs.appendChild(l)});
