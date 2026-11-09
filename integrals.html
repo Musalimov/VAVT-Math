@@ -1649,7 +1649,7 @@ function buildPanels(){
     h.querySelector('h3').onclick=toggle;h.querySelector('[data-col]').onclick=toggle;
     h.querySelectorAll('[data-mv]').forEach(b=>b.onclick=()=>{const i=P.order.indexOf(id),j=i+(+b.dataset.mv);if(j<0||j>=P.order.length)return;[P.order[i],P.order[j]]=[P.order[j],P.order[i]];applyOrder();save()});
     const hd=h.querySelector('.handle');
-    hd.addEventListener('pointerdown',()=>{p.draggable=true});
+    hd.addEventListener('pointerdown',()=>{p.draggable=true;window.addEventListener('pointerup',()=>{if(!p.classList.contains('dragging'))p.draggable=false},{once:true})});
     p.addEventListener('dragstart',e=>{p.classList.add('dragging');e.dataTransfer.effectAllowed='move';try{e.dataTransfer.setData('text/plain',id)}catch(_){}});
     p.addEventListener('dragend',()=>{p.classList.remove('dragging');p.draggable=false;P.order=[...side.querySelectorAll('.panel')].map(x=>x.dataset.id);save()});
   });
