@@ -1633,7 +1633,7 @@ cv.addEventListener('pointermove',e=>{const p=pos(e);if(ptrs.has(e.pointerId))pt
   let x=s2w(p.x,p.y)[0];if(P.show.snap){const st=niceStep(90/S.V.sx)/4;const sx=Math.round(x/st)*st;if(Math.abs(sX(sx)-p.x)<10)x=snap(+sx.toFixed(10))}
   if(drag.type==='xs'){S.xs=x;renderOverlay();if(S.mode!=='I'&&isFinite(S.a)&&isFinite(S.b)&&S.b!==S.a)S.t=Math.max(0,Math.min(1,(x-S.a)/(S.b-S.a)));renderValues();renderCaption();req();return}
   const v=fmtLim(x);if(drag.type==='a')setIntegral(S.fs,v,S.bs,{keepPreset:true});else setIntegral(S.fs,S.as,v,{keepPreset:true})});
-function endPtr(e){ptrs.delete(e.pointerId);if(ptrs.size<2&&drag&&drag.type==='pinch')drag=null;if(!ptrs.size){const was=drag&&(drag.type==='a'||drag.type==='b');drag=null;cv.style.cursor='grab';if(S.drag){S.drag=false;if(was){analyze(true);renderAll()}}}}
+function endPtr(e){ptrs.delete(e.pointerId);if(ptrs.size<2&&drag&&drag.type==='pinch'){const q=[...ptrs.values()][0];drag=q?{type:'pan',x:q.x,y:q.y,cx:S.V.cx,cy:S.V.cy}:null}if(!ptrs.size){const was=drag&&(drag.type==='a'||drag.type==='b');drag=null;cv.style.cursor='grab';if(S.drag){S.drag=false;if(was){analyze(true);renderAll()}}}}
 cv.addEventListener('pointerup',endPtr);cv.addEventListener('pointercancel',endPtr);
 function zoomAt(X,Y,kx,ky){const[wx,wy]=s2w(X,Y);S.V.sx*=kx;S.V.sy*=ky;S.V.cx=wx-(X-W/2)/S.V.sx;S.V.cy=wy+(Y-H/2)/S.V.sy;ACC=null;req()}
 cv.addEventListener('wheel',e=>{e.preventDefault();const k=Math.exp(-e.deltaY*.0015),p=pos(e);zoomAt(p.x,p.y,e.shiftKey?1:k,e.altKey?1:k)},{passive:false});

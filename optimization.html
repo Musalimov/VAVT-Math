@@ -1162,7 +1162,7 @@ cv.addEventListener('pointermove',e=>{const p=pos(e);if(ptrs.has(e.pointerId))pt
   if(drag.type==='level'){S.zl=S.G.c[0].v*wx+S.G.c[1].v*wy;if(S.zr){S.t=Math.max(0,Math.min(1,(S.zl-S.zr.start)/(S.zr.end-S.zr.start||1)))}renderOverlay();renderCaption(true);req();return}
   if(drag.type==='grad'){let c1=wx/drag.k,c2=wy/drag.k;const st=P.show.snap?.5:.01;c1=Math.round(c1/st)*st;c2=Math.round(c2/st)*st;if(!c1&&!c2)return;const P0=S.P;const nc=[Q.of(c1),Q.of(c2)];if(nc[0].eq(P0.c[0])&&nc[1].eq(P0.c[1]))return;
     P0.c=nc;S.txt=probText(P0);$('#pIn').value=S.txt;S.preset=null;solveAll({keepT:true});return}});
-function endPtr(e){ptrs.delete(e.pointerId);if(ptrs.size<2&&drag&&drag.type==='pinch')drag=null;if(!ptrs.size){if(drag&&drag.type==='level')renderCaption();drag=null;cv.style.cursor='default'}}
+function endPtr(e){ptrs.delete(e.pointerId);if(ptrs.size<2&&drag&&drag.type==='pinch'){const q=[...ptrs.values()][0];drag=q?{type:'pan',x:q.x,y:q.y,cx:S.V.cx,cy:S.V.cy}:null}if(!ptrs.size){if(drag&&drag.type==='level')renderCaption();drag=null;cv.style.cursor='default'}}
 cv.addEventListener('pointerup',endPtr);cv.addEventListener('pointercancel',endPtr);
 function zoomAt(X,Y,k){const[wx,wy]=s2w(X,Y);S.V.s*=k;S.V.cx=wx-(X-W/2)/S.V.s;S.V.cy=wy+(Y-H/2)/S.V.s;req()}
 cv.addEventListener('wheel',e=>{e.preventDefault();const p=pos(e);zoomAt(p.x,p.y,Math.exp(-e.deltaY*.0015))},{passive:false});
