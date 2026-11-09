@@ -41,6 +41,7 @@ export class BuildError extends Error {}
 //   export function f() {}   export async function f() {}   export class C {}
 //   export const x = …;
 //   export { a, b as c };
+// Одно объявление на export const (не «export const a = 1, b = 2»).
 // Запрещено: export let/var (живые привязки не переносятся), export default,
 // динамический import(), импорт не по относительному пути.
 const RE_IMPORT = /^import\s*(?:\{([^}]*)\}|\*\s+as\s+([A-Za-z_$][\w$]*))\s*from\s*['"]([^'"]+)['"];?[ \t]*$/gm;
