@@ -545,14 +545,17 @@ PRE['2x3']=[['projXY',padR([[1,0,0],[0,1,0]],3)],['oblique',padR([[1,0,0.6],[0,1
 function randShape(){if(isSq())return randM(N());let M;do{M=maskM(Array.from({length:N()*N()},()=>Math.round(Math.random()*4-2)))}while(M.every(x=>x===0));return M}
 function randM(n){let M;do{M=Array.from({length:n*n},()=>Math.round(Math.random()*4-2))}while(Math.abs(det(M,n))<0.5&&Math.random()<0.8||M.every(x=>x===0));return M}
 
-function setMatrix(M,name='custom'){const d=D(),n=N();S.anim=null;d.from=baseM();d.to=maskM(M);d.t=1;d.hist=[name];changed()}
+function setMatrix(M,name='custom'){const d=D(),n=N();stopAnim();d.from=baseM();d.to=maskM(M);d.t=1;d.hist=[name];changed()}
 function animateTo(M,name,opt={}){
   const d=D(),n=N(),comp=isSq()&&(opt.compose!==undefined?opt.compose:S.compose);
   if(comp){d.from=d.to.slice();d.to=mul(M,d.to,n);if(!d.hist.length||isI(d.from,n))d.hist=[];d.hist.push(name)}
   else{d.from=baseM();d.to=maskM(M);d.hist=[name]}
   play(opt.then);
 }
-function play(then){const d=D();d.t=0;S.anim={start:performance.now(),dur:1500/P.speed,then};changed();}
+let nextT=0;
+const animState=()=>S.anim?'playing':nextT?'queued':D().t<1?'scrub':'idle';
+function stopAnim(){S.anim=null;clearTimeout(nextT);nextT=0;pub('anim',animState())}
+function play(then){stopAnim();const d=D();d.t=0;S.anim={start:performance.now(),dur:1500/P.speed,then};changed();}
 const ease=p=>p<.5?4*p*p*p:1-Math.pow(-2*p+2,3)/2;
 
 /* ---------- холст ---------- */
@@ -563,10 +566,11 @@ function req(){if(!raf)raf=requestAnimationFrame(frame)}
 function frame(now){
   raf=0;
   if(S.anim){const d=D(),p=Math.min(1,(now-S.anim.start)/S.anim.dur);d.t=ease(p);
-    if(p>=1){const th=S.anim.then;S.anim=null;d.t=1;renderCaption();if(S.cob.on)renderCob();if(th)setTimeout(th,350)}else req();
+    if(p>=1){const th=S.anim.then;S.anim=null;d.t=1;renderCaption();if(S.cob.on)renderCob();if(th)nextT=setTimeout(()=>{nextT=0;th()},350)}else req();
     $('#tR').value=Math.round(d.t*1000);$('#tOut').textContent=fmt(d.t);}
   renderNow();
   renderOverlay();
+  pub('anim',animState());
 }
 function renderNow(){ctx.setTransform(DPR,0,0,DPR,0,0);LQ=[];if(S.mode==='2d')draw2();else draw3();flushLabels();if(S.stamp)drawStamp()}
 function drawStamp(){
@@ -800,7 +804,7 @@ cv.addEventListener('wheel',e=>{e.preventDefault();const k=Math.exp(-e.deltaY*.0
 function dragTo(type,X,Y){
   const d=S.d2;let p=s2w(X,Y);if(P.show.snap)p=p.map(z=>Math.round(z*2)/2);
   if(type==='b1'||type==='b2'){S.cob[type]=p;renderCob();req();return}
-  if(type==='i'||type==='j'){if(S.anim||d.t<1||!eqM(d.from,baseM())){d.to=cur();d.from=baseM();d.t=1;S.anim=null}
+  if(type==='i'||type==='j'){if(S.anim||nextT||d.t<1||!eqM(d.from,baseM())){d.to=cur();d.from=baseM();d.t=1;stopAnim()}
     if(type==='i'){d.to[0]=p[0];d.to[2]=p[1]}else{d.to[1]=p[0];d.to[3]=p[1]}d.to=maskM(d.to);d.hist=['custom'];changed()}
   else if(type==='v'){const M=cur(),iv=inv(M,2);if(!iv)return;d.v=ap(iv,p,2).map(x=>Math.round(x*1000)/1000);changed()}
 }
@@ -894,7 +898,7 @@ function renderCaption(){
 function renderOverlay(){const n=N(),[rr,cc]=SH(),M=cur(),cl=['var(--s-i)','var(--s-j)','var(--s-k)'];
   $('#ov').innerHTML=`<span class="bm" style="grid-template-columns:repeat(${cc},auto)">${M.map((x,i)=>Math.floor(i/n)<rr&&i%n<cc?`<span style="color:${cl[i%n]}">${fmt(x)}</span>`:'').join('')}</span>${D().t<1?`<span class="tt">t = ${fmt(D().t)}</span>`:''}`}
 function changed(){
-  const d=D(),n=N(),A=d.to;
+  const d=D(),n=N(),A=d.to;pub('mode',S.mode);pub('shape',SH().join('x'));
   const sq=isSq(),inD=SH()[1];let ns=nullspace(A,n,1e-9);if(!sq)ns={rank:ns.rank,piv:ns.piv,basis:ns.basis.filter(v=>v.every((x,j)=>j<inD||Math.abs(x)<1e-9))};
   S.K={det:sq?det(A,n):NaN,tr:sq?tr(A,n):NaN,c2:sq&&n===3?(A[0]*A[4]-A[1]*A[3])+(A[0]*A[8]-A[2]*A[6])+(A[4]*A[8]-A[5]*A[7]):0,ns,E:sq?eigen(A,n):{roots:[],vecs:[]}};
   $('#bT').disabled=!sq;$('#bInv').disabled=!sq;$('#compose').disabled=!sq;
@@ -939,10 +943,10 @@ $('#mulTo').onclick=()=>{const m=MUL[S.mode];setMatrix(mul(m.A,m.B,N()),'A·B')}
 $('#mulPlay').onclick=()=>{const m=MUL[S.mode],A=m.A.slice(),B=m.B.slice();animateTo(B,'B',{compose:false,then:()=>animateTo(A,'A',{compose:true})})};
 function buildShapeSeg(){const opts=S.mode==='2d'?[[2,2],[2,1],[1,2]]:[[3,3],[3,2],[2,3]],box=$('#shapeSeg');box.innerHTML='';
   opts.forEach(([r,c])=>{const b=document.createElement('button');b.textContent=`${r}×${c}`;b.classList.toggle('on',SH()[0]===r&&SH()[1]===c);b.onclick=()=>setShape(r,c);box.appendChild(b)})}
-function setShape(r,c,force){const d=D();if(!force&&d.shape[0]===r&&d.shape[1]===c)return;d.shape=[r,c];S.anim=null;S.cr=0;d.v=d.v.map((x,i)=>i<c?x:0);
+function setShape(r,c,force){const d=D();if(!force&&d.shape[0]===r&&d.shape[1]===c)return;d.shape=[r,c];stopAnim();S.cr=0;d.v=d.v.map((x,i)=>i<c?x:0);
   d.from=baseM();d.to=baseM();d.t=1;d.hist=[];buildShapeSeg();buildMatrixInputs();buildPresets();buildVecInputs();
   const p=PRE[shapeKey()][0];animateTo(p[1],p[0],{compose:false});renderCaption()}
-function setMode(m){S.mode=m;S.anim=null;document.body.classList.toggle('m3',m==='3d');document.querySelectorAll('#modeSeg button').forEach(b=>b.classList.toggle('on',b.dataset.mode===m));
+function setMode(m){stopAnim();endGesture();S.mode=m;document.body.classList.toggle('m3',m==='3d');document.querySelectorAll('#modeSeg button').forEach(b=>b.classList.toggle('on',b.dataset.mode===m));
   buildShapeSeg();buildMatrixInputs();buildPresets();buildVecInputs();buildMul();changed()}
 
 /* ---------- кнопки ---------- */
@@ -953,9 +957,9 @@ $('#bInv').onclick=()=>{const d=D(),n=N(),iv=inv(d.to,n);if(!iv){$('#capT').text
 $('#bI').onclick=()=>{const d=D();d.from=cur();d.to=baseM();d.hist=[];play()};
 $('#compose').onchange=e=>{S.compose=e.target.checked};
 $('#bPlay').onclick=()=>play();
-$('#bZero').onclick=()=>{S.anim=null;D().t=0;changed()};
-$('#bOne').onclick=()=>{S.anim=null;D().t=1;changed()};
-$('#tR').oninput=e=>{S.anim=null;D().t=e.target.value/1000;$('#tOut').textContent=fmt(D().t);if(S.cob.on)renderCob();req()};
+$('#bZero').onclick=()=>{stopAnim();D().t=0;changed()};
+$('#bOne').onclick=()=>{stopAnim();D().t=1;changed()};
+$('#tR').oninput=e=>{stopAnim();D().t=e.target.value/1000;$('#tOut').textContent=fmt(D().t);if(S.cob.on)renderCob();req()};
 $('#spR').oninput=e=>{P.speed=+e.target.value;$('#spOut').textContent='×'+fmt(P.speed);save()};
 $('#capOpen').onclick=()=>{P.show.hints=true;syncToggles();renderCaption();save()};
 $('#capX').onclick=()=>{P.show.hints=false;syncToggles();renderCaption();save()};
@@ -1242,7 +1246,7 @@ async function exportVideo(){
   const keep=ms=>new Promise(r=>{const t0=performance.now();const f=()=>{renderNow();renderOverlay();if(performance.now()-t0<ms)requestAnimationFrame(f);else r()};f()});
   const chunks=[];let rec;
   try{const stream=cv.captureStream(60);rec=new MediaRecorder(stream,{mimeType:m,videoBitsPerSecond:8e6});rec.ondataavailable=e=>{if(e.data&&e.data.size)chunks.push(e.data)};
-    const stopped=new Promise(r=>{rec.onstop=r});D().t=0;S.anim=null;rec.start(100);await keep(500);
+    const stopped=new Promise(r=>{rec.onstop=r});stopAnim();D().t=0;rec.start(100);await keep(500);
     play();await new Promise(r=>{const f=()=>S.anim?requestAnimationFrame(f):r();f()});await keep(900);rec.stop();await stopped;
   }catch(err){S.rec=false;S.stamp=false;req();flash(T().xFail);return}
   S.rec=false;S.stamp=false;req();updExport();
@@ -1268,7 +1272,7 @@ document.addEventListener('keydown',e=>{
   const isQ=e.key==='?'||(e.code==='Slash'&&e.shiftKey);
   if(document.querySelector('.drawer.open')&&!isQ)return;
   const d=D(),c=e.code,L=T();let h=true;
-  const setT=v=>{S.anim=null;d.t=Math.max(0,Math.min(1,v));changed()};
+  const setT=v=>{stopAnim();d.t=Math.max(0,Math.min(1,v));changed()};
   if(isQ)openKeys();
   else if(c==='Space')play();
   else if(c==='ArrowLeft'||c==='ArrowRight'){const st=e.shiftKey?.25:.05;setT(Math.round((d.t+(c==='ArrowLeft'?-st:st))*100)/100)}
