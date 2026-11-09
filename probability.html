@@ -565,7 +565,7 @@ function tokenize(s){s=s.replace(/\*\*/g,'^').replace(/[−–—]/g,'-').replac
   const T=[];let i=0;
   while(i<s.length){const c=s[i];
     if(/\s/.test(c)){i++;continue}
-    if(/[0-9.]/.test(c)){let j=i;while(j<s.length&&/[0-9.]/.test(s[j]))j++;const v=parseFloat(s.slice(i,j));if(!isFinite(v))throw{at:i};T.push({t:'n',v});i=j;continue}
+    if(/[0-9.]/.test(c)){let j=i;while(j<s.length&&/[0-9.]/.test(s[j]))j++;{const m=/^e[+-]?\d+/.exec(s.slice(j));if(m&&!/^[a-z]/.test(s.slice(j+m[0].length)))j+=m[0].length}const v=parseFloat(s.slice(i,j));if(!isFinite(v))throw{at:i};T.push({t:'n',v});i=j;continue}
     if(/[a-z]/.test(c)){let j=i;while(j<s.length&&/[a-z]/.test(s[j]))j++;let w=s.slice(i,j),p=i;
       while(w.length){const m=WORDS.find(k=>w.startsWith(k));if(!m)throw{at:p,w};
         if(m==='x')T.push({t:'x'});else if(m==='pi')T.push({t:'c',v:'pi'});else if(m==='e')T.push({t:'c',v:'e'});else if(m==='inf')T.push({t:'inf'});else T.push({t:'fn',v:ALIAS[m]});
