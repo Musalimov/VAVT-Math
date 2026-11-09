@@ -194,7 +194,7 @@ body.m3 .d2only{display:none}
       <canvas id="cv"></canvas>
       <div class="ov" id="ov"></div>
       <div class="zoom"><button id="zIn" data-it="zIn">+</button><button id="zOut" data-it="zOut">−</button><button id="zHome" data-it="zHome">⌂</button></div>
-      <div class="toast" id="toast"></div>
+      <div class="toast" id="toast" role="status" aria-live="polite"></div>
       <button class="capOpen" id="capOpen" hidden><span aria-hidden="true">💡</span><span data-i="capOpen"></span></button>
       <div class="cap" id="cap"><span id="capT"></span><button id="capX" data-it="capX">×</button></div>
     </div>
@@ -952,8 +952,8 @@ function setMode(m){stopAnim();endGesture();S.mode=m;document.body.classList.tog
 /* ---------- кнопки ---------- */
 document.querySelectorAll('#modeSeg button').forEach(b=>b.onclick=()=>setMode(b.dataset.mode));
 $('#bT').onclick=()=>{const d=D(),n=N();d.from=cur();d.to=transpose(d.to,n);d.hist=[(d.hist.length===1?d.hist[0]:'A')+'ᵀ'];play()};
-$('#bInv').onclick=()=>{const d=D(),n=N(),iv=inv(d.to,n);if(!iv){$('#capT').textContent=T().invErr;$('#cap').hidden=false;return}
-  d.from=d.to.slice();d.to=I(n);d.hist.push('A⁻¹');play()};
+$('#bInv').onclick=()=>{const d=D(),n=N(),iv=inv(d.to,n);if(!iv){toast(T().invErr,2600);return}
+  d.from=cur();d.to=I(n);d.hist.push('A⁻¹');play()};
 $('#bI').onclick=()=>{const d=D();d.from=cur();d.to=baseM();d.hist=[];play()};
 $('#compose').onchange=e=>{S.compose=e.target.checked};
 $('#bPlay').onclick=()=>play();
@@ -1263,7 +1263,7 @@ const KEYS=[['Space','k_play'],['← →','k_t'],['Shift + ← →','k_t2'],['Ho
 function renderKeys(){const L=T();$('#keysList').innerHTML=KEYS.map(([k,d])=>`<span>${k.split(' ').map((p,i)=>i>0&&/^[+\/–]$/.test(p)?p:`<kbd>${p}</kbd>`).join(' ')}</span><span>${L[d]}</span>`).join('')}
 function openKeys(){renderKeys();closeDrawers();openDrawer('dKeys')}
 $('#openKeys').onclick=openKeys;$('#openKeys2').onclick=openKeys;
-function toast(msg){const t=$('#toast');t.textContent=msg;t.classList.add('on');clearTimeout(toast.t);toast.t=setTimeout(()=>t.classList.remove('on'),1300)}
+function toast(msg,ms=1300){const t=$('#toast');t.textContent=msg;t.classList.add('on');clearTimeout(toast.t);toast.t=setTimeout(()=>t.classList.remove('on'),ms)}
 function flip(k){P.show[k]=!P.show[k];if(k==='decomp'&&P.show.decomp)P.show.vec=true;syncToggles();save();renderCaption();req();const L=T();toast(`${L.tog[k]}: ${P.show[k]?L.on:L.off}`)}
 document.addEventListener('keydown',e=>{
   if(e.ctrlKey||e.metaKey||e.altKey)return;
