@@ -184,7 +184,7 @@ body.m3 .d2only{display:none}
     <div class="brand" data-ih="brand"></div>
     <div class="spacer"></div>
     <div class="seg" id="langSeg"><button data-l="ru">RU</button><button data-l="en">EN</button></div>
-    <div class="seg" id="modeSeg" role="tablist"><button data-mode="2d" class="on">2D</button><button data-mode="3d">3D</button></div>
+    <div class="seg" id="modeSeg"><button data-mode="2d" class="on">2D</button><button data-mode="3d">3D</button></div>
     <button class="btn ghost" id="openGloss" data-it="glossT"><span class="ic">?</span><span class="lbl" data-i="gloss"></span></button>
     <button class="btn ghost hk" id="openKeys" data-it="keys"><span class="ic">⌨</span></button>
     <button class="btn ghost" id="openSet" data-it="settings"><span class="ic">⚙</span><span class="lbl" data-i="settings"></span></button>
@@ -448,6 +448,7 @@ const PANELS=['matrix','presets','anim','props','vector','mul','cob','show','exp
 const DEF={palette:'classic',colors:{...PAL.classic},dock:'auto',width:340,bottomH:44,ui:'auto',font:100,speed:1,lw:1,order:PANELS.slice(),collapsed:{mul:true,cob:true,export:true},read:{},float:{x:12,y:12},
   show:{bgGrid:true,grid:true,basis:true,det:true,eigen:true,span:true,kernel:true,vec:false,decomp:false,labels:true,coords:true,snap:true,lattice:false,hints:true,ghost:true,trails:false}};
 const clone=o=>JSON.parse(JSON.stringify(o));
+const setOn=(el,on)=>{el.classList.toggle('on',!!on);el.setAttribute('aria-pressed',on?'true':'false')};
 function load(){
   let r=null; try{r=JSON.parse(localStorage.getItem(KEY)||'null')}catch(e){}
   const p=clone(DEF); if(!r||typeof r!=='object') return p;
@@ -925,7 +926,7 @@ function renderCob(){if(S.mode!=='2d'||!S.K)return;if(!isSq()){$('#cbOut').inner
     h+=`<div class="crm">${L.cbA} <i>P</i>⁻¹<i>AP</i> = ${miniMat(A2,2)}</div>`+(dg?`<p class="note">${L.cbDiag}</p>`:'')}
   $('#cbOut').innerHTML=h;
   document.querySelectorAll('[data-cb]').forEach(inp=>{const[k,i]=inp.dataset.cb.split(':');if(document.activeElement!==inp)inp.value=fmt(S.cob[k][+i],3).replace('−','-')})}
-function syncTools(){$('#cbOn').checked=S.cob.on;document.querySelectorAll('#slCr button').forEach(b=>b.classList.toggle('on',+b.dataset.cr===S.cr));renderVec();renderCob();req()}
+function syncTools(){$('#cbOn').checked=S.cob.on;document.querySelectorAll('#slCr button').forEach(b=>setOn(b,+b.dataset.cr===S.cr));renderVec();renderCob();req()}
 function showPanel(id){P.collapsed[id]=false;applyOrder();save();const el=side.querySelector(`.panel[data-id="${id}"]`);if(el)el.querySelectorAll('details.more,details.steps').forEach(d=>{d.open=true});if(el)setTimeout(()=>el.scrollIntoView({block:'nearest',behavior:'smooth'}),50)}
 $('#cbOn').onchange=e=>{S.cob.on=e.target.checked;renderCob();req()};
 document.querySelectorAll('#slCr button').forEach(b=>b.onclick=()=>{S.cr=+b.dataset.cr;if(S.cr&&!P.show.vec){P.show.vec=true;syncToggles();save()}syncTools()});
@@ -942,11 +943,11 @@ $('#mulTake').onclick=()=>{MUL[S.mode].A=D().to.slice();buildMul()};
 $('#mulTo').onclick=()=>{const m=MUL[S.mode];setMatrix(mul(m.A,m.B,N()),'A·B')};
 $('#mulPlay').onclick=()=>{const m=MUL[S.mode],A=m.A.slice(),B=m.B.slice();animateTo(B,'B',{compose:false,then:()=>animateTo(A,'A',{compose:true})})};
 function buildShapeSeg(){const opts=S.mode==='2d'?[[2,2],[2,1],[1,2]]:[[3,3],[3,2],[2,3]],box=$('#shapeSeg');box.innerHTML='';
-  opts.forEach(([r,c])=>{const b=document.createElement('button');b.textContent=`${r}×${c}`;b.classList.toggle('on',SH()[0]===r&&SH()[1]===c);b.onclick=()=>setShape(r,c);box.appendChild(b)})}
+  opts.forEach(([r,c])=>{const b=document.createElement('button');b.textContent=`${r}×${c}`;setOn(b,SH()[0]===r&&SH()[1]===c);b.onclick=()=>setShape(r,c);box.appendChild(b)})}
 function setShape(r,c,force){const d=D();if(!force&&d.shape[0]===r&&d.shape[1]===c)return;d.shape=[r,c];stopAnim();S.cr=0;d.v=d.v.map((x,i)=>i<c?x:0);
   d.from=baseM();d.to=baseM();d.t=1;d.hist=[];buildShapeSeg();buildMatrixInputs();buildPresets();buildVecInputs();
   const p=PRE[shapeKey()][0];animateTo(p[1],p[0],{compose:false});renderCaption()}
-function setMode(m){stopAnim();endGesture();S.mode=m;document.body.classList.toggle('m3',m==='3d');document.querySelectorAll('#modeSeg button').forEach(b=>b.classList.toggle('on',b.dataset.mode===m));
+function setMode(m){stopAnim();endGesture();S.mode=m;document.body.classList.toggle('m3',m==='3d');document.querySelectorAll('#modeSeg button').forEach(b=>setOn(b,b.dataset.mode===m));
   buildShapeSeg();buildMatrixInputs();buildPresets();buildVecInputs();buildMul();changed()}
 
 /* ---------- кнопки ---------- */
@@ -1100,7 +1101,7 @@ const SUBM={'ᵢ':'i','ⱼ':'j','ₖ':'k','ₙ':'n','ₘ':'m'};
 const mathify=h=>h.replace(/[ᵢⱼₖₙₘ₀₁₂₃₄₅₆₇₈₉]*[ᵢⱼₖₙₘ][ᵢⱼₖₙₘ₀₁₂₃₄₅₆₇₈₉]*/g,m=>`<sub>${[...m].map(c=>SUBM[c]||String('₀₁₂₃₄₅₆₇₈₉'.indexOf(c))).join('')}</sub>`).replace(/\{\{([^}]+)\}\}/g,(m,b)=>{const rows=b.split(';').map(r=>r.split(',').map(x=>x.trim()));return`<span class="mini mm" style="grid-template-columns:repeat(${rows[0].length},auto)">${rows.flat().map(x=>`<span>${x}</span>`).join('')}</span>`});
 
 function gTabs(id,html){const f=FORMAL[id];if(!f)return html;const L=T(),ft=P.gTab==='f';
-  return `<div class="seg gtabs"><button data-tab="i" class="${ft?'':'on'}">${L.tabI}</button><button data-tab="f" class="${ft?'on':''}">${L.tabF}</button></div><div class="pane" data-pane="i"${ft?' hidden':''}>${html}</div><div class="pane" data-pane="f"${ft?'':' hidden'}>${mathify(f[P.lang]||f.ru)}</div>`}
+  return `<div class="seg gtabs"><button data-tab="i" class="${ft?'':'on'}" aria-pressed="${!ft}">${L.tabI}</button><button data-tab="f" class="${ft?'on':''}" aria-pressed="${ft}">${L.tabF}</button></div><div class="pane" data-pane="i"${ft?' hidden':''}>${html}</div><div class="pane" data-pane="f"${ft?'':' hidden'}>${mathify(f[P.lang]||f.ru)}</div>`}
 const DEMOS={
   vector:()=>{go2();sh('vec');sh('decomp',false);S.d2.v=[3,2];setMatrix(I(2),'I')},
   lincomb:()=>{go2();sh('vec');sh('decomp');S.d2.v=[3,2];setMatrix(I(2),'I')},
@@ -1225,7 +1226,7 @@ $('#gq').oninput=e=>renderGloss(e.target.value);
 $('#gl').addEventListener('click',e=>{const rb=e.target.closest('[data-read]');if(rb){P.read[rb.dataset.read]=!P.read[rb.dataset.read];if(!P.read[rb.dataset.read])delete P.read[rb.dataset.read];save();rerenderGloss();return}
   if(e.target.closest('#readReset')){P.read={};save();rerenderGloss()}});
 $('#gl').addEventListener('click',e=>{const tb=e.target.closest('[data-tab]');if(!tb)return;const box=tb.closest('.tb');P.gTab=tb.dataset.tab;
-  box.querySelectorAll('[data-tab]').forEach(x=>x.classList.toggle('on',x.dataset.tab===P.gTab));box.querySelectorAll('.pane').forEach(p=>{p.hidden=p.dataset.pane!==P.gTab});save()});
+  box.querySelectorAll('[data-tab]').forEach(x=>setOn(x,x.dataset.tab===P.gTab));box.querySelectorAll('.pane').forEach(p=>{p.hidden=p.dataset.pane!==P.gTab});save()});
 $('#gl').addEventListener('click',e=>{const b=e.target.closest('[data-demo]');if(!b)return;closeDrawers();syncToggles();save();DEMOS[b.dataset.demo]()});
 let drawerRet=null;const DRW={dGloss:'gloss',dKeys:'keys',dSet:'settings'};
 function openDrawer(id){const el=document.getElementById(id);if(!document.querySelector('.drawer.open'))drawerRet=document.activeElement;
@@ -1246,21 +1247,21 @@ function flash(msg,ms=3500){$('#xNote').textContent=msg;clearTimeout(flash.t);if
 async function saveFile(name,data){const L=T();if(!DL){if(LOCAL){const u=URL.createObjectURL(data),a=document.createElement('a');a.href=u;a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),5000);flash(L.xSaved)}return}try{await DL.save({filename:name,data});flash(L.xSaved)}catch(e){const c=e&&e.code;if(c==='declined'){updExport();return}if(c==='unavailable'||c==='not_granted'||c==='capability_disabled'||c==='capability_removed'){DL=null;S.dlTried=true;updExport();return}flash(c==='rate_limited'?L.xBusy:L.xFail)}}
 function exportPng(){if(!canSave()||S.rec)return;S.stamp=$('#xStamp').checked;renderNow();cv.toBlob(b=>{S.stamp=false;req();if(b)saveFile(`linear-${S.mode}.png`,b)},'image/png')}
 async function exportVideo(){
-  const m=vidMime();if(!canSave()||!m||S.rec)return;S.rec=true;S.stamp=$('#xStamp').checked;updExport();
+  const m=vidMime();if(!canSave()||!m||S.rec)return;S.rec=true;pub('rec','recording');S.stamp=$('#xStamp').checked;updExport();
   const keep=ms=>new Promise(r=>{const t0=performance.now();const f=()=>{renderNow();renderOverlay();if(performance.now()-t0<ms)requestAnimationFrame(f);else r()};f()});
   const chunks=[];let rec;
   try{const stream=cv.captureStream(60);rec=new MediaRecorder(stream,{mimeType:m,videoBitsPerSecond:8e6});rec.ondataavailable=e=>{if(e.data&&e.data.size)chunks.push(e.data)};
     const stopped=new Promise(r=>{rec.onstop=r});stopAnim();D().t=0;rec.start(100);await keep(500);
     play();await new Promise(r=>{const f=()=>S.anim?requestAnimationFrame(f):r();f()});await keep(900);rec.stop();await stopped;
-  }catch(err){S.rec=false;S.stamp=false;req();flash(T().xFail);return}
-  S.rec=false;S.stamp=false;req();updExport();
+  }catch(err){S.rec=false;pub('rec','idle');S.stamp=false;req();flash(T().xFail);return}
+  S.rec=false;pub('rec','idle');S.stamp=false;req();updExport();
   const blob=new Blob(chunks,{type:m});if(blob.size)saveFile(`linear-${S.mode}.${m.startsWith('video/mp4')?'mp4':'webm'}`,blob);else flash(T().xFail);
 }
 function renderTex(){const d=D(),n=N(),A=d.to,a=x=>fmt(x,4).replace('−','-'),rows=[],[rr,cc]=SH();for(let i=0;i<rr;i++)rows.push(A.slice(i*n,i*n+cc).map(a));
   $('#xTex').value=fmtMode==='tex'?'\\begin{pmatrix}\n'+rows.map(r=>'  '+r.join(' & ')).join(' \\\\\n')+'\n\\end{pmatrix}':fmtMode==='np'?'np.array([\n'+rows.map(r=>'    ['+r.join(', ')+']').join(',\n')+'\n])':rows.map(r=>r.join('\t')).join('\n')}
 async function copyTex(){const ta=$('#xTex'),L=T();let ok=false;try{await navigator.clipboard.writeText(ta.value);ok=true}catch(e){}if(!ok){ta.focus();ta.select();try{ok=document.execCommand('copy')}catch(e){}}flash(ok?L.xCopied:L.xSelect)}
 $('#xPng').onclick=exportPng;$('#xVid').onclick=exportVideo;$('#xCopy').onclick=copyTex;
-document.querySelectorAll('#xFmt button').forEach(b=>b.onclick=()=>{fmtMode=b.dataset.f;document.querySelectorAll('#xFmt button').forEach(x=>x.classList.toggle('on',x===b));renderTex()});
+document.querySelectorAll('#xFmt button').forEach(b=>b.onclick=()=>{fmtMode=b.dataset.f;document.querySelectorAll('#xFmt button').forEach(x=>setOn(x,x===b));renderTex()});
 (async()=>{try{if(window.claude&&typeof window.claude.use==='function')DL=await window.claude.use('downloads')}catch(e){DL=null}S.dlTried=true;updExport()})();
 /* ---------- горячие клавиши ---------- */
 const KEYS=[['Space','k_play'],['← →','k_t'],['Shift + ← →','k_t2'],['Home / End','k_t01'],['1 – 9','k_pre'],['R','k_reset'],['T','k_tr'],['I','k_inv'],['C','k_comp'],['D','k_mode'],['G','k_ghost'],['P','k_trails'],['E','k_eig'],['K','k_ker'],['V','k_vec'],['B','k_dec'],['L','k_lab'],['H','k_hint'],['+ / −','k_zoom'],['0','k_home'],['S','k_png'],['A','k_vid'],['M','k_mul'],['/','k_gloss'],['?','k_keys'],['Esc','k_esc']];
@@ -1324,16 +1325,16 @@ function applyLang(){const L=T();document.documentElement.lang=P.lang;document.t
   document.querySelectorAll('[data-ih]').forEach(e=>{e.innerHTML=L[e.dataset.ih]});
   document.querySelectorAll('[data-it]').forEach(e=>{e.title=L[e.dataset.it];e.setAttribute('aria-label',L[e.dataset.it])});
   $('#gq').placeholder=L.search;cv.setAttribute('aria-label',L.canvas);
-  document.querySelectorAll('#langSeg button,#langSeg2 button').forEach(b=>b.classList.toggle('on',b.dataset.l===P.lang));
+  document.querySelectorAll('#langSeg button,#langSeg2 button').forEach(b=>setOn(b,b.dataset.l===P.lang));
   buildPal();buildToggles();syncToggles();buildPresets();buildMatrixInputs();buildVecInputs();syncSettings();
   if($('#dGloss').classList.contains('open'))renderGloss($('#gq').value);
   if(typeof updExport==='function'){updExport();renderKeys();buildMul()}
   if(S.K)changed();
 }
 function syncSettings(){
-  document.querySelectorAll('#uiSeg button').forEach(b=>b.classList.toggle('on',b.dataset.v===P.ui));
-  document.querySelectorAll('#dockSeg button').forEach(b=>b.classList.toggle('on',b.dataset.v===P.dock));
-  document.querySelectorAll('#palChips .chip').forEach(b=>b.classList.toggle('on',b.dataset.p===P.palette));
+  document.querySelectorAll('#uiSeg button').forEach(b=>setOn(b,b.dataset.v===P.ui));
+  document.querySelectorAll('#dockSeg button').forEach(b=>setOn(b,b.dataset.v===P.dock));
+  document.querySelectorAll('#palChips .chip').forEach(b=>setOn(b,b.dataset.p===P.palette));
   document.querySelectorAll('#colors input').forEach(i=>{i.value=P.colors[i.dataset.k]});
   $('#wR').value=P.width;$('#wOut').textContent=P.width+' px';$('#hR').value=P.bottomH;$('#hOut').textContent=P.bottomH+' %';
   $('#fR').value=P.font;$('#fOut').textContent=P.font+' %';$('#lR').value=P.lw;$('#lOut').textContent='×'+fmt(P.lw,1);
@@ -1358,6 +1359,7 @@ window.addEventListener('resize',()=>applyDock());
 buildPanels();buildSettings();
 $('#spR').value=P.speed;$('#spOut').textContent='×'+fmt(P.speed);
 applyPrefs();setMode('2d');applyLang();
+document.querySelectorAll('.seg button:not([aria-pressed])').forEach(b=>setOn(b,b.classList.contains('on')));pub('drawer','none');pub('rec','idle');
 if(document.fonts&&document.fonts.ready)document.fonts.ready.then(req);
 })();
 </script>
