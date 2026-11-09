@@ -1277,10 +1277,10 @@ document.addEventListener('keydown',e=>{
   else if(c==='Space')play();
   else if(c==='ArrowLeft'||c==='ArrowRight'){const st=e.shiftKey?.25:.05;setT(Math.round((d.t+(c==='ArrowLeft'?-st:st))*100)/100)}
   else if(c==='Home')setT(0);else if(c==='End')setT(1);
-  else if(/^(Digit|Numpad)[1-9]$/.test(c)){const p=PRE[S.mode][+c.slice(-1)-1];if(p){animateTo(p[1]||randM(N()),p[0]);toast(nm(p[0]))}}
+  else if(/^(Digit|Numpad)[1-9]$/.test(c)){const p=PRE[shapeKey()][+c.slice(-1)-1];if(p){animateTo(p[1]||randShape(),p[0]);toast(nm(p[0]))}}
   else if(c==='Digit0'||c==='Numpad0')$('#zHome').click();
   else if(c==='KeyR')$('#bI').click();else if(c==='KeyT')$('#bT').click();else if(c==='KeyI')$('#bInv').click();
-  else if(c==='KeyC'){const b=$('#compose');b.checked=!b.checked;S.compose=b.checked;toast(`${L.compose}: ${S.compose?L.on:L.off}`)}
+  else if(c==='KeyC'){const b=$('#compose');if(b.disabled)return;b.checked=!b.checked;S.compose=b.checked;toast(`${L.compose}: ${S.compose?L.on:L.off}`)}
   else if(c==='KeyD'){setMode(S.mode==='2d'?'3d':'2d');toast(S.mode.toUpperCase())}
   else if(c==='KeyG')flip('ghost');else if(c==='KeyP')flip('trails');else if(c==='KeyE')flip('eigen');else if(c==='KeyK')flip('kernel');
   else if(c==='KeyV')flip('vec');else if(c==='KeyB')flip('decomp');else if(c==='KeyL')flip('labels');else if(c==='KeyH')flip('hints');
