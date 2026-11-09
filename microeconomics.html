@@ -1255,7 +1255,7 @@ async function exportVideo(){const m=vidMime();if(!canSave()||!m||S.rec||S.err||
     const stopped=new Promise(r=>{rec.onstop=r});S.t=0;S.anim=null;rec.start(100);await keep(500);
     play();await new Promise(r=>{const f=()=>S.anim?requestAnimationFrame(f):r();f()});await keep(900);rec.stop();await stopped}
   catch(err){S.rec=false;S.stamp=false;req();flash(T().xFail);return}
-  S.rec=false;S.stamp=false;req();updExport();const blob=new Blob(chunks,{type:m});if(blob.size)saveFile(`probability.${m.startsWith('video/mp4')?'mp4':'webm'}`,blob);else flash(T().xFail)}
+  S.rec=false;S.stamp=false;req();updExport();const blob=new Blob(chunks,{type:m});if(blob.size)saveFile(`microeconomics.${m.startsWith('video/mp4')?'mp4':'webm'}`,blob);else flash(T().xFail)}
 async function copyTex(){const ta=$('#xTex'),L=T();let ok=false;try{await navigator.clipboard.writeText(ta.value);ok=true}catch(e){}if(!ok){ta.focus();ta.select();try{ok=document.execCommand('copy')}catch(e){}}flash(ok?L.xCopied:L.xSelect)}
 $('#xPng').onclick=exportPng;$('#xVid').onclick=exportVideo;$('#xCopy').onclick=copyTex;
 document.querySelectorAll('#xFmt button').forEach(b=>b.onclick=()=>{fmtMode=b.dataset.f;document.querySelectorAll('#xFmt button').forEach(x=>x.classList.toggle('on',x===b));renderTex()});
