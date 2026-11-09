@@ -104,8 +104,15 @@ async function walk(browser, file, view, all) {
       const key = `${t ?? '-'}#${i}`;
       texts[key] = await pg.evaluate(() => [document.querySelector('#side')?.textContent, document.querySelector('#cap')?.textContent].join('\n§\n'));
       if (i === 0) {
-        await pg.waitForTimeout(1800); // анимации переходов
-        pngs[key] = await pg.screenshot();
+        // ждём, пока картинка перестанет меняться (анимации переходов), но не дольше 3 с
+        let shot = await pg.screenshot();
+        for (let k = 0; k < 12; k++) {
+          await pg.waitForTimeout(250);
+          const next = await pg.screenshot();
+          if (next.equals(shot)) break;
+          shot = next;
+        }
+        pngs[key] = shot;
       }
     }
   }
