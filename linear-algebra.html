@@ -836,7 +836,7 @@ function applyOrder(){P.order.forEach(id=>{const el=side.querySelector(`.panel[d
 function buildMatrixInputs(){
   const n=N(),[rr,cc]=SH(),box=$('#matIn');box.style.gridTemplateColumns=`repeat(${cc},auto)`;box.innerHTML='';
   for(let i=0;i<n*n;i++){if(Math.floor(i/n)>=rr||i%n>=cc)continue;const inp=document.createElement('input');inp.type='text';inp.inputMode='decimal';inp.dataset.i=i;inp.dataset.c=i%n;inp.setAttribute('aria-label',T().cell(Math.floor(i/n)+1,i%n+1));
-    inp.addEventListener('input',()=>{const v=parseFloat(inp.value.replace(',','.').replace('−','-'));if(!isFinite(v))return;const d=D();const M=(S.anim||d.t<1)?d.to.slice():d.to.slice();M[i]=v;setMatrix(M)});
+    inp.addEventListener('input',()=>{const v=parseFloat(inp.value.replace(',','.').replace('−','-'));if(!isFinite(v))return;const d=D();const M=d.to.slice();M[i]=v;setMatrix(M)});
     inp.addEventListener('blur',syncInputs);box.appendChild(inp)}
 }
 function syncInputs(){const d=D();document.querySelectorAll('#matIn input').forEach(inp=>{if(document.activeElement!==inp)inp.value=fmt(d.to[+inp.dataset.i],3).replace('−','-')});
