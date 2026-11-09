@@ -513,7 +513,7 @@ function simplex(P,opt={}){if(!P.vars.length){const P2={...P,vars:['_0'],c:[Q.of
   if(basis.includes(-1)){res.status='fail';return res}
   // фаза 2
   guard=0;let bland=false;
-  for(;;){if(guard++>80){res.status='fail';return res}if(guard>40)bland=true;
+  for(;;){if(guard++>2000){res.status='fail';return res}if(guard>40)bland=true;
     let r=-1;for(let k=0;k<N;k++){if(Z[k].s<0&&(r<0||(bland?false:Z[k].cmp(Z[r])<0)))r=k}
     if(r<0)break;
     let s=-1,best=null;const ratios=[];for(let i=0;i<T.length;i++){if(T[i][r].s<=0)continue;const q=T[i][N].div(T[i][r]);ratios.push([i,q]);if(best===null||q.cmp(best)<0){best=q;s=i}}
