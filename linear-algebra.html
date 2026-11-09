@@ -280,7 +280,7 @@ body.m3 .d2only{display:none}
   </div>
 </div>
 
-<div class="drawer" id="dGloss" role="dialog">
+<div class="drawer" id="dGloss" role="dialog" aria-modal="true">
   <div class="scrim" data-close></div>
   <div class="sheet">
     <div class="sh-h"><h2 data-i="gloss"></h2><button class="icon" data-close data-it="close">✕</button></div>
@@ -289,7 +289,7 @@ body.m3 .d2only{display:none}
   </div>
 </div>
 
-<div class="drawer" id="dKeys" role="dialog">
+<div class="drawer" id="dKeys" role="dialog" aria-modal="true">
   <div class="scrim" data-close></div>
   <div class="sheet">
     <div class="sh-h"><h2 data-i="keys"></h2><button class="icon" data-close data-it="close">✕</button></div>
@@ -298,7 +298,7 @@ body.m3 .d2only{display:none}
   </div>
 </div>
 
-<div class="drawer" id="dSet" role="dialog">
+<div class="drawer" id="dSet" role="dialog" aria-modal="true">
   <div class="scrim" data-close></div>
   <div class="sheet">
     <div class="sh-h"><h2 data-i="settings"></h2><button class="icon" data-close data-it="close">✕</button></div>
@@ -1227,8 +1227,12 @@ $('#gl').addEventListener('click',e=>{const rb=e.target.closest('[data-read]');i
 $('#gl').addEventListener('click',e=>{const tb=e.target.closest('[data-tab]');if(!tb)return;const box=tb.closest('.tb');P.gTab=tb.dataset.tab;
   box.querySelectorAll('[data-tab]').forEach(x=>x.classList.toggle('on',x.dataset.tab===P.gTab));box.querySelectorAll('.pane').forEach(p=>{p.hidden=p.dataset.pane!==P.gTab});save()});
 $('#gl').addEventListener('click',e=>{const b=e.target.closest('[data-demo]');if(!b)return;closeDrawers();syncToggles();save();DEMOS[b.dataset.demo]()});
-function openDrawer(id){document.getElementById(id).classList.add('open')}
-function closeDrawers(){document.querySelectorAll('.drawer').forEach(d=>d.classList.remove('open'))}
+let drawerRet=null;const DRW={dGloss:'gloss',dKeys:'keys',dSet:'settings'};
+function openDrawer(id){const el=document.getElementById(id);if(!document.querySelector('.drawer.open'))drawerRet=document.activeElement;
+  document.querySelectorAll('.drawer.open').forEach(d=>{if(d!==el)d.classList.remove('open')});el.classList.add('open');pub('drawer',DRW[id]);
+  const sh=el.querySelector('.sheet');if(!sh.contains(document.activeElement)){sh.tabIndex=-1;sh.focus({preventScroll:true})}}
+function closeDrawers(){const was=document.querySelector('.drawer.open');document.querySelectorAll('.drawer').forEach(d=>d.classList.remove('open'));pub('drawer','none');
+  if(was&&drawerRet&&drawerRet.isConnected&&(!document.activeElement||document.activeElement===document.body||was.contains(document.activeElement)))drawerRet.focus({preventScroll:true});drawerRet=null}
 document.querySelectorAll('[data-close]').forEach(el=>el.onclick=closeDrawers);
 document.addEventListener('keydown',e=>{if(e.key==='Escape')closeDrawers()});
 /* ---------- экспорт ---------- */
