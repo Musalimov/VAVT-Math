@@ -1,3 +1,4 @@
+import { createEconApp } from '../../shared/econ/app.js';
 import { createGlossary } from '../../shared/glossary.js';
 import { initDrawers } from '../../shared/drawers.js';
 import { applyTexts, createSettings } from '../../shared/settings.js';
@@ -119,7 +120,6 @@ import { Q, Q1, Z0, toFrac } from '../../math/fractions.js';
 
   /* ---------- Браес ---------- */
 
-  let LNG = 'ru';
   const KEY = 'game-viz-v1';
 
   const PAL = {
@@ -194,81 +194,104 @@ import { Q, Q1, Z0, toFrac } from '../../math/fractions.js';
     preset: null,
   };
 
-  const LOADED = loadPrefs({ key: KEY, defaults: DEF, panels: PANELS });
-  let P = LOADED.prefs;
-  if (LOADED.status === 'corrupt') setTimeout(() => toast(T().prefsReset, 5000));
-  langFrom(() => P.lang);
-  if (!P.lang) P.lang = (navigator.language || '').toLowerCase().startsWith('ru') ? 'ru' : 'en';
   // настройки: схема 2, миграция со схемы 1, -bak, предупреждение при переполнении (src/shared/prefs.js)
-  function save() {
-    (save.f ||= makeSaver({ key: KEY, get: () => P, onFail: () => toast(T().prefsNoSave, 4000) }))();
-  }
+
   /* текст пользователя (имена вершин, ходов, участников) в HTML — только через esc; в текстовый экспорт — через unesc */
 
   /* вектор вероятностей: простые дроби (1/3; 2/3), иначе десятичные */
 
   /* ---------- примеры ---------- */
 
+  const ECON = createEconApp({
+    appName: 'game-theory',
+    get CHAP() {
+      return CHAP;
+    },
+    get COMP() {
+      return COMP;
+    },
+    get DEF() {
+      return DEF;
+    },
+    get DEMOS() {
+      return DEMOS;
+    },
+    get FORMAL() {
+      return FORMAL;
+    },
+    get FORMS() {
+      return FORMS;
+    },
+    get GROUPS() {
+      return GROUPS;
+    },
+    get ILL() {
+      return ILL;
+    },
+    get KEY() {
+      return KEY;
+    },
+    get KEYS() {
+      return KEYS;
+    },
+    get PAL() {
+      return PAL;
+    },
+    get PANELS() {
+      return PANELS;
+    },
+    get PRE() {
+      return PRE;
+    },
+    get REL() {
+      return REL;
+    },
+    get S() {
+      return S;
+    },
+    get T() {
+      return T;
+    },
+    get TERMS() {
+      return TERMS;
+    },
+    get TOG() {
+      return TOG;
+    },
+    get TOPICS() {
+      return TOPICS;
+    },
+    get capKey() {
+      return capKey;
+    },
+    get loadPreset() {
+      return loadPreset;
+    },
+    get relTogs() {
+      return relTogs;
+    },
+    get renderAll() {
+      return renderAll;
+    },
+    get renderNow() {
+      return renderNow;
+    },
+    get renderTex() {
+      return renderTex;
+    },
+  });
   const S = {
-    topic: TOPICS.includes(P.topic) ? P.topic : 'mat',
+    topic: TOPICS.includes(ECON.P.topic) ? ECON.P.topic : 'mat',
     inp: {},
     res: null,
     err: null,
-    preset: P.preset || null,
+    preset: ECON.P.preset || null,
     stamp: false,
   };
-  TOPICS.forEach((t) => {
-    S.inp[t] = clone(PRE[t][0][1]);
-  });
-  if (P.inp) for (const t of TOPICS) if (P.inp[t]) S.inp[t] = { ...S.inp[t], ...P.inp[t] };
-  function renderForm() {
-    const box = $('#form'),
-      L = T(),
-      t = S.topic,
-      I = S.inp[t];
-    box.innerHTML = '';
-    for (const [k, type, a, b] of FORMS[t]) {
-      const show = typeof a === 'function' ? a : typeof b === 'function' ? b : null;
-      if (show && !show(I)) continue;
-      const l = document.createElement('label');
-      l.textContent = L.f[k] || k;
-      if (type === 'txt') l.className = 'full';
-      box.appendChild(l);
-      let el;
-      if (type === 'txt') {
-        el = document.createElement('textarea');
-        el.spellcheck = false;
-      } else if (type === 'sel') {
-        el = document.createElement('select');
-        for (const o of a) {
-          const op = document.createElement('option');
-          op.value = o;
-          op.textContent = (L.opt[k] || {})[o] || o;
-          el.appendChild(op);
-        }
-      } else {
-        el = document.createElement('input');
-        el.type = 'text';
-        el.spellcheck = false;
-        el.autocomplete = 'off';
-      }
-      el.value = I[k] == null ? '' : I[k];
-      el.dataset.k = k;
-      box.appendChild(el);
-    }
-    buildTopics();
-  }
-  function buildTopics() {
-    const L = T(),
-      box = $('#topicBox');
-    box.innerHTML = GROUPS.map(
-      ([g, ts]) =>
-        `<div class="tg"><div class="tgl">${L.grp[g]}</div><div class="seg">${ts.map((t) => `<button data-t="${t}" class="${t === S.topic ? 'on' : ''}" title="${L.tt[t] || ''}">${L['t_' + t]}</button>`).join('')}</div></div>`
-    ).join('');
-  }
+
   document.addEventListener('click', (e) => {
     const b = e.target.closest('#topicBox button[data-t]');
-    if (b) setTopic(b.dataset.t);
+    if (b) ECON.setTopic(b.dataset.t);
   });
   let fT0 = 0;
   $('#form').addEventListener('input', (e) => {
@@ -277,61 +300,31 @@ import { Q, Q1, Z0, toFrac } from '../../math/fractions.js';
     S.inp[S.topic][k] = e.target.value;
     S.preset = null;
     if (e.target.tagName === 'SELECT') {
-      renderForm();
-      recompute();
+      ECON.renderForm();
+      ECON.recompute();
       return;
     }
     clearTimeout(fT0);
-    fT0 = setTimeout(recompute, 250);
+    fT0 = setTimeout(ECON.recompute, 250);
   });
-  function setTopic(t) {
-    if (!TOPICS.includes(t)) return;
-    S.topic = t;
-    P.topic = t;
-    S.preset = null;
-    save();
-    renderForm();
-    recompute();
-  }
+
   function loadPreset(id) {
     for (const t of TOPICS) {
       const p = PRE[t].find((z) => z[0] === id);
       if (p) {
         S.topic = t;
-        P.topic = t;
+        ECON.P.topic = t;
         S.inp[t] = { ...S.inp[t], ...clone(p[1]) };
         S.preset = id;
-        renderForm();
-        recompute();
+        ECON.renderForm();
+        ECON.recompute();
         return;
       }
     }
   }
   /* ---------- вычисления ---------- */
 
-  function recompute() {
-    const t = S.topic,
-      I = S.inp[t];
-    S.err = null;
-    S.res = null;
-    try {
-      S.res = COMP[t](I);
-    } catch (e) {
-      if (e instanceof Error) console.error(e);
-      S.err = e instanceof Error ? { msg: 'bug' } : e && e.msg ? e : { msg: 'num' };
-    }
-    P.inp = S.inp;
-    P.preset = S.preset;
-    save();
-    renderAll();
-  }
   /* ---------- панели ---------- */
-
-  const ol = (a) =>
-    `<ol class="stp">${a
-      .filter(Boolean)
-      .map((s) => `<li>${s}</li>`)
-      .join('')}</ol>`;
 
   function renderSolve() {
     const box = $('#solve'),
@@ -343,11 +336,9 @@ import { Q, Q1, Z0, toFrac } from '../../math/fractions.js';
     }
     const r = SOLVE[S.topic](S.res, S.inp[S.topic]);
     S.ans = r.ans;
-    box.innerHTML = `<p class="idea">${L.tt[S.topic]}</p>${ol(r.st)}<div class="ans"><div class="k">${L.ans}</div><div class="big">${r.ans}</div></div>`;
+    box.innerHTML = `<p class="idea">${L.tt[S.topic]}</p>${ECON.ol(r.st)}<div class="ans"><div class="k">${L.ans}</div><div class="big">${r.ans}</div></div>`;
   }
-  function prop(k, v) {
-    return `<div class="prop"><span class="k">${k}</span><span class="v">${v}</span></div>`;
-  }
+
   function renderValues() {
     const box = $('#props'),
       V = T().v;
@@ -360,74 +351,50 @@ import { Q, Q1, Z0, toFrac } from '../../math/fractions.js';
     let h = '';
     if (t === 'mat') {
       if (R.kind === 'zs')
-        h = prop(V.alpha, fN(R.z.lo, 3)) + prop(V.beta, fN(R.z.hi, 3)) + prop(V.val, fQ(R.z.v));
+        h =
+          ECON.prop(V.alpha, fN(R.z.lo, 3)) + ECON.prop(V.beta, fN(R.z.hi, 3)) + ECON.prop(V.val, fQ(R.z.v));
       else
         h =
-          prop(V.ne, R.bm.pure.length ? R.bm.pure.map(([i, j]) => `(${i + 1}, ${j + 1})`).join(', ') : '—') +
-          (R.bm.mixed ? prop(V.mix, `p = ${fN(R.bm.mixed.p, 3)}, q = ${fN(R.bm.mixed.q, 3)}`) : '') +
-          (R.bm.mixN || []).map((e) => prop(V.mix, `x* = ${fVq(e.x)}, y* = ${fVq(e.y)}`)).join('');
+          ECON.prop(
+            V.ne,
+            R.bm.pure.length ? R.bm.pure.map(([i, j]) => `(${i + 1}, ${j + 1})`).join(', ') : '—'
+          ) +
+          (R.bm.mixed ? ECON.prop(V.mix, `p = ${fN(R.bm.mixed.p, 3)}, q = ${fN(R.bm.mixed.q, 3)}`) : '') +
+          (R.bm.mixN || []).map((e) => ECON.prop(V.mix, `x* = ${fVq(e.x)}, y* = ${fVq(e.y)}`)).join('');
     } else if (t === 'cour' && R.om !== 'cour') h = VALS2.olig(R, V);
     else if (t === 'cour')
       h =
-        prop(V.Q, fQ(R.Q)) +
-        prop(V.P, fQ(R.P)) +
-        R.q.map((q, i) => prop(`q${i + 1}; H${i + 1}`, `${fN(q, 3)}; ${fN(R.pi[i], 3)}`)).join('');
+        ECON.prop(V.Q, fQ(R.Q)) +
+        ECON.prop(V.P, fQ(R.P)) +
+        R.q.map((q, i) => ECON.prop(`q${i + 1}; H${i + 1}`, `${fN(q, 3)}; ${fN(R.pi[i], 3)}`)).join('');
     else if (t === 'barg')
       h =
-        prop(V.nash, R.nash ? fV(R.nash.x) : '—') +
-        prop(V.ks, R.ks ? fV(R.ks.x) : '—') +
-        prop(V.ideal, fV(R.ideal));
+        ECON.prop(V.nash, R.nash ? fV(R.nash.x) : '—') +
+        ECON.prop(V.ks, R.ks ? fV(R.ks.x) : '—') +
+        ECON.prop(V.ideal, fV(R.ideal));
     else if (t === 'coop')
       h =
-        prop(V.sh, fV(R.sh.phi)) +
-        prop(V.pn, R.pn.x ? fV(R.pn.x) : '—') +
-        prop(V.core, R.core.nonempty ? V.nonempty : V.empty) +
-        prop(V.conv, R.cv.length ? V.no : V.yes);
+        ECON.prop(V.sh, fV(R.sh.phi)) +
+        ECON.prop(V.pn, R.pn.x ? fV(R.pn.x) : '—') +
+        ECON.prop(V.core, R.core.nonempty ? V.nonempty : V.empty) +
+        ECON.prop(V.conv, R.cv.length ? V.no : V.yes);
     else if (VALS2[t]) h = VALS2[t](R, V);
     else
       h =
-        prop(V.fp, fN(R.a.fp(R.v), 4)) +
-        prop(V.sp, fN(R.a.sp(R.v), 4)) +
-        prop(V.ap, fN(R.a.ap(R.v), 4)) +
-        prop(V.rev, fQ(R.a.rev));
+        ECON.prop(V.fp, fN(R.a.fp(R.v), 4)) +
+        ECON.prop(V.sp, fN(R.a.sp(R.v), 4)) +
+        ECON.prop(V.ap, fN(R.a.ap(R.v), 4)) +
+        ECON.prop(V.rev, fQ(R.a.rev));
     box.innerHTML = h;
   }
-  function renderPresets() {
-    const box = $('#pre');
-    box.innerHTML = '';
-    PRE[S.topic].forEach(([id, , ru, en]) => {
-      const b = document.createElement('button');
-      b.className = 'chip' + (S.preset === id ? ' on' : '');
-      b.dataset.pre = id;
-      b.textContent = P.lang === 'ru' ? ru : en;
-      box.appendChild(b);
-    });
-  }
-  function renderOverlay() {
-    const ov = $('#ov'),
-      L = T();
-    if (S.err || !S.res) {
-      ov.innerHTML = `<span class="tt">${L.cap.err}</span>`;
-      return;
-    }
-    ov.innerHTML = `<span>${S.ans || ''}</span><span class="tt">${L['t_' + S.topic]}</span>`;
-  }
+
   function capKey() {
     if (S.topic === 'cour' && S.res && S.res.om && S.res.om !== 'cour') return 'olig_' + S.res.om;
     if (S.topic === 'mat' && S.res && S.res.kind === 'zs') return 'zs';
     if (S.topic === 'coop' && S.res && S.res.n !== 3) return 'coopN';
     return S.topic;
   }
-  function renderCaption() {
-    const cap = $('#cap');
-    $('#capOpen').hidden = !!P.show.hints;
-    if (!P.show.hints) {
-      cap.hidden = true;
-      return;
-    }
-    cap.hidden = false;
-    $('#capT').textContent = S.err ? T().cap.err : T().cap[capKey()];
-  }
+
   function relTogs() {
     const t = S.topic,
       R = S.res || {};
@@ -453,157 +420,27 @@ import { Q, Q1, Z0, toFrac } from '../../math/fractions.js';
     };
     return [...(m[t] || []), 'hints'];
   }
-  function syncTogVis() {
-    const r = relTogs();
-    document.querySelectorAll('#tog label').forEach((l) => {
-      l.style.display = r.includes(l.querySelector('input').dataset.k) ? '' : 'none';
-    });
-  }
+
   function renderAll() {
-    syncTogVis();
+    ECON.syncTogVis();
     renderSolve();
     renderValues();
-    renderPresets();
-    renderOverlay();
-    renderCaption();
+    ECON.renderPresets();
+    ECON.renderOverlay();
+    ECON.renderCaption();
     renderTex();
     const fe = $('#fErr');
     fe.hidden = !S.err;
     if (S.err) fe.textContent = T().err[S.err.msg] || T().err.num;
-    req();
+    ECON.req();
   }
   /* ---------- сцена ---------- */
-  const cv = $('#cv'),
-    ctx = cv.getContext('2d'),
-    stage = $('#stage'),
-    main = $('#main'),
-    side = $('#side');
-  const { buildPanels, applyOrder, showPanel } = createPanels({ side, prefs: () => P, save });
-  let W = 0,
-    H = 0,
-    DPR = 1,
-    raf = 0;
-  new ResizeObserver(() => {
-    const r = stage.getBoundingClientRect();
-    W = r.width;
-    H = r.height;
-    DPR = Math.min(2, window.devicePixelRatio || 1);
-    cv.width = Math.max(1, Math.round(W * DPR));
-    cv.height = Math.max(1, Math.round(H * DPR));
-    req();
-  }).observe(stage);
-  function req() {
-    if (!raf)
-      raf = requestAnimationFrame(() => {
-        raf = 0;
-        renderNow();
-      });
-  }
-  function niceStep(raw) {
-    const p = Math.pow(10, Math.floor(Math.log10(raw))),
-      m = raw / p;
-    return (m < 1.5 ? 1 : m < 3.5 ? 2 : m < 7.5 ? 5 : 10) * p;
-  }
-  function txt(s, x, y, col, sz = 12, al = 'center', bl = 'middle', it = false) {
-    ctx.font = `${it ? 'italic ' : ''}600 ${sz}px "Source Serif 4", Georgia, serif`;
-    ctx.textAlign = al;
-    ctx.textBaseline = bl;
-    ctx.lineWidth = 3;
-    ctx.strokeStyle = P.colors.bg;
-    ctx.lineJoin = 'round';
-    ctx.strokeText(s, x, y);
-    ctx.fillStyle = col;
-    ctx.fillText(s, x, y);
-  }
-  function frame(r, x0, x1, y0, y1, eq, ttl, noX) {
-    const c = P.colors;
-    let sx = r.w / (x1 - x0),
-      sy = r.h / (y1 - y0);
-    if (eq) {
-      const s = Math.min(sx, sy);
-      sx = sy = s;
-    }
-    const X = (x) => r.x + (x - x0) * sx,
-      Y = (y) => r.y + r.h - (y - y0) * sy;
-    const st = niceStep((x1 - x0) / Math.max(2, r.w / 80)),
-      sty = eq ? st : niceStep((y1 - y0) / Math.max(2, r.h / 55));
-    const xe = x0 + r.w / sx,
-      ye = y0 + r.h / sy;
-    if (P.show.bgGrid) {
-      ctx.strokeStyle = c.bgGrid;
-      ctx.lineWidth = 1;
-      ctx.beginPath();
-      for (let x = Math.ceil(x0 / st) * st; x <= xe + 1e-9; x += st) {
-        ctx.moveTo(X(x) + 0.5, r.y);
-        ctx.lineTo(X(x) + 0.5, Y(y0));
-      }
-      for (let y = Math.ceil(y0 / sty) * sty; y <= ye + 1e-9; y += sty) {
-        ctx.moveTo(r.x, Y(y) + 0.5);
-        ctx.lineTo(X(xe), Y(y) + 0.5);
-      }
-      ctx.stroke();
-    }
-    ctx.strokeStyle = c.axis;
-    ctx.globalAlpha = 0.6;
-    ctx.lineWidth = 1.2;
-    ctx.beginPath();
-    ctx.moveTo(X(x0), Y(Math.max(0, y0)));
-    ctx.lineTo(X(xe), Y(Math.max(0, y0)));
-    ctx.moveTo(X(Math.max(0, x0)), Y(y0));
-    ctx.lineTo(X(Math.max(0, x0)), Y(ye));
-    ctx.stroke();
-    ctx.globalAlpha = 1;
-    if (P.show.coords) {
-      ctx.fillStyle = c.axis;
-      ctx.globalAlpha = 0.7;
-      ctx.font = '500 11px Manrope, system-ui, sans-serif';
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'top';
-      const dx = Math.max(0, -Math.floor(Math.log10(st)));
-      if (!noX)
-        for (let x = Math.ceil(x0 / st) * st; x <= xe + 1e-9; x += st)
-          ctx.fillText(dc(fmt(x, dx)), X(x), Y(Math.max(0, y0)) + 4);
-      ctx.textAlign = 'right';
-      ctx.textBaseline = 'middle';
-      const dy = Math.max(0, -Math.floor(Math.log10(sty)));
-      for (let y = Math.ceil(y0 / sty) * sty; y <= ye + 1e-9; y += sty) {
-        if (Math.abs(y) < sty / 2) continue;
-        ctx.fillText(dc(fmt(y, dy)), X(Math.max(0, x0)) - 4, Y(y));
-      }
-      ctx.globalAlpha = 1;
-    }
-    if (ttl) txt(ttl, r.x + 6, r.y + 8, c.axis, 13, 'left', 'middle', true);
-    return { X, Y, r };
-  }
-  function seg(fr, a, b, col, w = 2, dash) {
-    ctx.strokeStyle = col;
-    ctx.lineWidth = w * P.lw;
-    ctx.setLineDash(dash || []);
-    ctx.beginPath();
-    ctx.moveTo(fr.X(a[0]), fr.Y(a[1]));
-    ctx.lineTo(fr.X(b[0]), fr.Y(b[1]));
-    ctx.stroke();
-    ctx.setLineDash([]);
-  }
-  function dotP(fr, p, col, r = 6, lab) {
-    const X = fr.X(p[0]),
-      Y = fr.Y(p[1]);
-    ctx.fillStyle = col;
-    ctx.strokeStyle = P.colors.bg;
-    ctx.lineWidth = 2;
-    ctx.beginPath();
-    ctx.arc(X, Y, r, 0, 7);
-    ctx.fill();
-    ctx.stroke();
-    if (lab) txt(lab, X + 10, Y - 12, col, 14, 'left');
-  }
-  const pT = () => Math.min(100, H * 0.17),
-    pB = () => Math.min(70, H * 0.12);
+
   function renderNow() {
-    ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
-    ctx.fillStyle = P.colors.bg;
-    ctx.fillRect(0, 0, W, H);
-    if (!S.res || S.err || !W) return;
+    ECON.ctx.setTransform(ECON.DPR, 0, 0, ECON.DPR, 0, 0);
+    ECON.ctx.fillStyle = ECON.P.colors.bg;
+    ECON.ctx.fillRect(0, 0, ECON.W, ECON.H);
+    if (!S.res || S.err || !ECON.W) return;
     ({
       mat: drawMat,
       cour: drawCourX,
@@ -622,21 +459,21 @@ import { Q, Q1, Z0, toFrac } from '../../math/fractions.js';
     })[S.topic](S.res);
     if (S.stamp) {
       const t = unesc((S.ans || '').replace(/<[^>]+>/g, ''));
-      ctx.font = '600 15px "Source Serif 4", Georgia, serif';
-      const w = ctx.measureText(t).width + 20;
-      ctx.fillStyle = P.colors.bg;
-      ctx.globalAlpha = 0.85;
-      ctx.fillRect(W - w - 12, H - 38, w, 28);
-      ctx.globalAlpha = 1;
-      ctx.fillStyle = P.colors.axis;
-      ctx.textAlign = 'left';
-      ctx.textBaseline = 'middle';
-      ctx.fillText(t, W - w - 2, H - 24);
+      ECON.ctx.font = '600 15px "Source Serif 4", Georgia, serif';
+      const w = ECON.ctx.measureText(t).width + 20;
+      ECON.ctx.fillStyle = ECON.P.colors.bg;
+      ECON.ctx.globalAlpha = 0.85;
+      ECON.ctx.fillRect(ECON.W - w - 12, ECON.H - 38, w, 28);
+      ECON.ctx.globalAlpha = 1;
+      ECON.ctx.fillStyle = ECON.P.colors.axis;
+      ECON.ctx.textAlign = 'left';
+      ECON.ctx.textBaseline = 'middle';
+      ECON.ctx.fillText(t, ECON.W - w - 2, ECON.H - 24);
     }
   }
   function drawMat(R) {
-    const cS = R.cl ? (j) => `${P.lang === 'ru' ? 'ст.' : 'col'} ${R.cl[j]}` : cS0;
-    const c = P.colors,
+    const cS = R.cl ? (j) => `${ECON.P.lang === 'ru' ? 'ст.' : 'col'} ${R.cl[j]}` : cS0;
+    const c = ECON.P.colors,
       A = R.A,
       B = R.B,
       m = A.length,
@@ -644,11 +481,11 @@ import { Q, Q1, Z0, toFrac } from '../../math/fractions.js';
       zs = R.kind === 'zs',
       bm = R.bm;
     const sq = (!zs && m === 2 && n === 2) || (zs && (m === 2 || n === 2));
-    const areaW = sq ? W * 0.5 : W - 80,
+    const areaW = sq ? ECON.W * 0.5 : ECON.W - 80,
       cw = Math.min(120, (areaW - 60) / (n + (zs ? 1 : 0))),
-      ch = Math.min(70, (H - pT() - pB() - 40) / (m + (zs ? 1 : 0))),
+      ch = Math.min(70, (ECON.H - ECON.pT() - ECON.pB() - 40) / (m + (zs ? 1 : 0))),
       x0 = 40 + (areaW - cw * n) / 2,
-      y0 = pT() + 30;
+      y0 = ECON.pT() + 30;
     const ne = new Set(bm.pure.map(([i, j]) => i + ',' + j)),
       del = R.dom
         ? {
@@ -656,55 +493,68 @@ import { Q, Q1, Z0, toFrac } from '../../math/fractions.js';
             c: new Set(R.dom.steps.filter((s) => s.p === 2).map((s) => s.out)),
           }
         : { r: new Set(), c: new Set() };
-    for (let j = 0; j < n; j++) txt(cS(j), x0 + cw * j + cw / 2, y0 - 14, c.p2, 12);
-    for (let i = 0; i < m; i++) txt(rS(i), x0 - 24, y0 + ch * i + ch / 2, c.p1, 12);
+    for (let j = 0; j < n; j++) ECON.txt(cS(j), x0 + cw * j + cw / 2, y0 - 14, c.p2, 12);
+    for (let i = 0; i < m; i++) ECON.txt(rS(i), x0 - 24, y0 + ch * i + ch / 2, c.p1, 12);
     for (let i = 0; i < m; i++)
       for (let j = 0; j < n; j++) {
         const X = x0 + cw * j,
           Y = y0 + ch * i,
           dl = del.r.has(i) || del.c.has(j);
-        ctx.fillStyle = c.bgGrid;
-        ctx.globalAlpha = dl ? 0.35 : 0.9;
-        ctx.fillRect(X + 3, Y + 3, cw - 6, ch - 6);
-        ctx.globalAlpha = 1;
+        ECON.ctx.fillStyle = c.bgGrid;
+        ECON.ctx.globalAlpha = dl ? 0.35 : 0.9;
+        ECON.ctx.fillRect(X + 3, Y + 3, cw - 6, ch - 6);
+        ECON.ctx.globalAlpha = 1;
         if (ne.has(i + ',' + j)) {
-          ctx.strokeStyle = c.eq;
-          ctx.lineWidth = 3;
-          ctx.strokeRect(X + 3, Y + 3, cw - 6, ch - 6);
+          ECON.ctx.strokeStyle = c.eq;
+          ECON.ctx.lineWidth = 3;
+          ECON.ctx.strokeRect(X + 3, Y + 3, cw - 6, ch - 6);
         }
-        const b1 = P.show.br && bm.br1[j][i],
-          b2 = P.show.br && bm.br2[i][j];
+        const b1 = ECON.P.show.br && bm.br1[j][i],
+          b2 = ECON.P.show.br && bm.br2[i][j];
         {
-          if (zs) txt(dc(fmt(A[i][j], 3)), X + cw / 2, Y + ch / 2, b1 ? c.p1 : c.axis, 16);
+          if (zs) ECON.txt(dc(fmt(A[i][j], 3)), X + cw / 2, Y + ch / 2, b1 ? c.p1 : c.axis, 16);
           else {
-            txt(dc(fmt(A[i][j], 3)), X + cw / 2 - 14, Y + ch / 2, b1 ? c.p1 : c.axis, 15);
-            txt(';', X + cw / 2, Y + ch / 2, c.axis, 14);
-            txt(dc(fmt(B[i][j], 3)), X + cw / 2 + 14, Y + ch / 2, b2 ? c.p2 : c.axis, 15);
+            ECON.txt(dc(fmt(A[i][j], 3)), X + cw / 2 - 14, Y + ch / 2, b1 ? c.p1 : c.axis, 15);
+            ECON.txt(';', X + cw / 2, Y + ch / 2, c.axis, 14);
+            ECON.txt(dc(fmt(B[i][j], 3)), X + cw / 2 + 14, Y + ch / 2, b2 ? c.p2 : c.axis, 15);
           }
         }
         if (dl) {
-          ctx.strokeStyle = c.bad;
-          ctx.globalAlpha = 0.6;
-          ctx.lineWidth = 2;
-          ctx.beginPath();
-          ctx.moveTo(X + 8, Y + 8);
-          ctx.lineTo(X + cw - 8, Y + ch - 8);
-          ctx.stroke();
-          ctx.globalAlpha = 1;
+          ECON.ctx.strokeStyle = c.bad;
+          ECON.ctx.globalAlpha = 0.6;
+          ECON.ctx.lineWidth = 2;
+          ECON.ctx.beginPath();
+          ECON.ctx.moveTo(X + 8, Y + 8);
+          ECON.ctx.lineTo(X + cw - 8, Y + ch - 8);
+          ECON.ctx.stroke();
+          ECON.ctx.globalAlpha = 1;
         }
       }
-    if (zs && P.show.labels) {
+    if (zs && ECON.P.show.labels) {
       R.z.rmin.forEach((v, i) =>
-        txt(dc(fmt(v, 3)), x0 + cw * n + 20, y0 + ch * i + ch / 2, c.mark, 13, 'left')
+        ECON.txt(dc(fmt(v, 3)), x0 + cw * n + 20, y0 + ch * i + ch / 2, c.mark, 13, 'left')
       );
-      R.z.cmax.forEach((v, j) => txt(dc(fmt(v, 3)), x0 + cw * j + cw / 2, y0 + ch * m + 16, c.mark, 13));
-      txt('min', x0 + cw * n + 20, y0 - 14, c.mark, 12, 'left');
-      txt('max', x0 - 24, y0 + ch * m + 16, c.mark, 12);
+      R.z.cmax.forEach((v, j) => ECON.txt(dc(fmt(v, 3)), x0 + cw * j + cw / 2, y0 + ch * m + 16, c.mark, 13));
+      ECON.txt('min', x0 + cw * n + 20, y0 - 14, c.mark, 12, 'left');
+      ECON.txt('max', x0 - 24, y0 + ch * m + 16, c.mark, 12);
     }
     if (!sq) return;
-    const r = { x: W * 0.56, y: pT() + 20, w: W * 0.4, h: Math.min(W * 0.4, H - pT() - pB() - 40) };
+    const r = {
+      x: ECON.W * 0.56,
+      y: ECON.pT() + 20,
+      w: ECON.W * 0.4,
+      h: Math.min(ECON.W * 0.4, ECON.H - ECON.pT() - ECON.pB() - 40),
+    };
     if (!zs) {
-      const fr = frame(r, 0, 1, 0, 1, true, P.lang === 'ru' ? 'наилучшие ответы' : 'best responses');
+      const fr = ECON.frame(
+        r,
+        0,
+        1,
+        0,
+        1,
+        true,
+        ECON.P.lang === 'ru' ? 'наилучшие ответы' : 'best responses'
+      );
       const u1 = (q) => [q * A[0][0] + (1 - q) * A[0][1], q * A[1][0] + (1 - q) * A[1][1]],
         u2 = (p) => [p * B[0][0] + (1 - p) * B[1][0], p * B[0][1] + (1 - p) * B[1][1]];
       // BR1: p(q)
@@ -713,8 +563,8 @@ import { Q, Q1, Z0, toFrac } from '../../math/fractions.js';
         const q = k / 200,
           u = u1(q),
           p = u[0] > u[1] + 1e-12 ? 1 : u[0] < u[1] - 1e-12 ? 0 : 0.5;
-        if (prev !== null) seg(fr, [prev[0], prev[1]], [q, p === 0.5 ? prev[1] : p], c.p1, 3);
-        if (p === 0.5 && prev) seg(fr, [q, 0], [q, 1], c.p1, 3);
+        if (prev !== null) ECON.seg(fr, [prev[0], prev[1]], [q, p === 0.5 ? prev[1] : p], c.p1, 3);
+        if (p === 0.5 && prev) ECON.seg(fr, [q, 0], [q, 1], c.p1, 3);
         prev = [q, p === 0.5 ? (prev ? prev[1] : 0) : p];
       }
       prev = null;
@@ -722,21 +572,21 @@ import { Q, Q1, Z0, toFrac } from '../../math/fractions.js';
         const p = k / 200,
           u = u2(p),
           q = u[0] > u[1] + 1e-12 ? 1 : u[0] < u[1] - 1e-12 ? 0 : 0.5;
-        if (prev !== null) seg(fr, [prev[1], prev[0]], [q === 0.5 ? prev[1] : q, p], c.p2, 3, [6, 4]);
-        if (q === 0.5 && prev) seg(fr, [0, p], [1, p], c.p2, 3, [6, 4]);
+        if (prev !== null) ECON.seg(fr, [prev[1], prev[0]], [q === 0.5 ? prev[1] : q, p], c.p2, 3, [6, 4]);
+        if (q === 0.5 && prev) ECON.seg(fr, [0, p], [1, p], c.p2, 3, [6, 4]);
         prev = [p, q === 0.5 ? (prev ? prev[1] : 0) : q];
       }
-      bm.pure.forEach(([i, j]) => dotP(fr, [j === 0 ? 1 : 0, i === 0 ? 1 : 0], c.eq, 6));
+      bm.pure.forEach(([i, j]) => ECON.dotP(fr, [j === 0 ? 1 : 0, i === 0 ? 1 : 0], c.eq, 6));
       if (bm.mixed)
-        dotP(
+        ECON.dotP(
           fr,
           [bm.mixed.q, bm.mixed.p],
           c.eq,
           6,
-          P.show.labels ? `(${dc(fmt(bm.mixed.q, 2))}; ${dc(fmt(bm.mixed.p, 2))})` : ''
+          ECON.P.show.labels ? `(${dc(fmt(bm.mixed.q, 2))}; ${dc(fmt(bm.mixed.p, 2))})` : ''
         );
-      txt('q', r.x + r.w - 6, fr.Y(0) + 20, c.p2, 13);
-      txt('p', r.x - 14, r.y + 8, c.p1, 13);
+      ECON.txt('q', r.x + r.w - 6, fr.Y(0) + 20, c.p2, 13);
+      ECON.txt('p', r.x - 14, r.y + 8, c.p1, 13);
     } else {
       const two = m === 2,
         K = two ? n : m,
@@ -748,46 +598,47 @@ import { Q, Q1, Z0, toFrac } from '../../math/fractions.js';
           lo = Math.min(lo, line(k, x));
           hi = Math.max(hi, line(k, x));
         }
-      const fr = frame(r, 0, 1, Math.min(0, lo), hi + 0.1 * (hi - lo || 1), false, two ? 'p' : 'q');
-      for (let k = 0; k < K; k++) seg(fr, [0, line(k, 0)], [1, line(k, 1)], c.curve, 1.6);
+      const fr = ECON.frame(r, 0, 1, Math.min(0, lo), hi + 0.1 * (hi - lo || 1), false, two ? 'p' : 'q');
+      for (let k = 0; k < K; k++) ECON.seg(fr, [0, line(k, 0)], [1, line(k, 1)], c.curve, 1.6);
       const env = (x) => {
         let v = two ? Infinity : -Infinity;
         for (let k = 0; k < K; k++) v = two ? Math.min(v, line(k, x)) : Math.max(v, line(k, x));
         return v;
       };
-      ctx.strokeStyle = c.area;
-      ctx.lineWidth = 3.2 * P.lw;
-      ctx.beginPath();
+      ECON.ctx.strokeStyle = c.area;
+      ECON.ctx.lineWidth = 3.2 * ECON.P.lw;
+      ECON.ctx.beginPath();
       for (let i = 0; i <= 200; i++) {
         const x = i / 200;
-        i ? ctx.lineTo(fr.X(x), fr.Y(env(x))) : ctx.moveTo(fr.X(x), fr.Y(env(x)));
+        i ? ECON.ctx.lineTo(fr.X(x), fr.Y(env(x))) : ECON.ctx.moveTo(fr.X(x), fr.Y(env(x)));
       }
-      ctx.stroke();
+      ECON.ctx.stroke();
       const pr = two ? R.z.p[0] : R.z.q[0];
-      if (pr != null) dotP(fr, [pr, R.z.v], c.eq, 6, P.show.labels ? `v = ${dc(fmt(R.z.v, 3))}` : '');
+      if (pr != null)
+        ECON.dotP(fr, [pr, R.z.v], c.eq, 6, ECON.P.show.labels ? `v = ${dc(fmt(R.z.v, 3))}` : '');
     }
   }
   function drawCour(R) {
-    const c = P.colors,
-      r = { x: 60, y: pT(), w: W - 110, h: H - pT() - pB() };
+    const c = ECON.P.colors,
+      r = { x: 60, y: ECON.pT(), w: ECON.W - 110, h: ECON.H - ECON.pT() - ECON.pB() };
     if (R.N === 2) {
       const M = R.M,
         [c1, c2] = R.cs,
         mx = Math.max(M - c1, M - c2) * 1.05;
-      const fr = frame(r, 0, mx, 0, mx, true, 'q₂ ↑  q₁ →');
-      seg(fr, [0, (M - c2) / 2], [M - c2, 0], c.p2, 2.6);
-      seg(fr, [(M - c1) / 2, 0], [0, M - c1], c.p1, 2.6);
-      if (P.show.labels) {
-        txt(
-          P.lang === 'ru' ? 'ответ фирмы 1' : 'firm 1 response',
+      const fr = ECON.frame(r, 0, mx, 0, mx, true, 'q₂ ↑  q₁ →');
+      ECON.seg(fr, [0, (M - c2) / 2], [M - c2, 0], c.p2, 2.6);
+      ECON.seg(fr, [(M - c1) / 2, 0], [0, M - c1], c.p1, 2.6);
+      if (ECON.P.show.labels) {
+        ECON.txt(
+          ECON.P.lang === 'ru' ? 'ответ фирмы 1' : 'firm 1 response',
           fr.X(0) + 8,
           fr.Y(M - c1) + 4,
           c.p1,
           13,
           'left'
         );
-        txt(
-          P.lang === 'ru' ? 'ответ фирмы 2' : 'firm 2 response',
+        ECON.txt(
+          ECON.P.lang === 'ru' ? 'ответ фирмы 2' : 'firm 2 response',
           fr.X(M - c2) - 4,
           fr.Y(0) - 14,
           c.p2,
@@ -795,48 +646,58 @@ import { Q, Q1, Z0, toFrac } from '../../math/fractions.js';
           'right'
         );
       }
-      dotP(fr, R.q, c.eq, 7, P.show.labels ? `(${dc(fmt(R.q[0], 2))}; ${dc(fmt(R.q[1], 2))})` : '');
+      ECON.dotP(fr, R.q, c.eq, 7, ECON.P.show.labels ? `(${dc(fmt(R.q[0], 2))}; ${dc(fmt(R.q[1], 2))})` : '');
       return;
     }
-    const fr = frame(r, -0.6, R.N - 0.4, 0, Math.max(...R.q, 1e-9) * 1.25, false, 'qᵢ', true);
+    const fr = ECON.frame(r, -0.6, R.N - 0.4, 0, Math.max(...R.q, 1e-9) * 1.25, false, 'qᵢ', true);
     const bw = (fr.X(1) - fr.X(0)) * 0.6;
     R.q.forEach((q, i) => {
       const X = fr.X(i),
         Y = fr.Y(q);
-      ctx.fillStyle = c.p1;
-      ctx.globalAlpha = 0.75;
-      ctx.fillRect(X - bw / 2, Y, bw, fr.Y(0) - Y);
-      ctx.globalAlpha = 1;
-      if (P.show.labels) txt(`q${i + 1} = ${dc(fmt(q, 2))}`, X, Y - 12, c.axis, 12);
+      ECON.ctx.fillStyle = c.p1;
+      ECON.ctx.globalAlpha = 0.75;
+      ECON.ctx.fillRect(X - bw / 2, Y, bw, fr.Y(0) - Y);
+      ECON.ctx.globalAlpha = 1;
+      if (ECON.P.show.labels) ECON.txt(`q${i + 1} = ${dc(fmt(q, 2))}`, X, Y - 12, c.axis, 12);
     });
   }
   function drawBarg(R) {
-    const c = P.colors,
+    const c = ECON.P.colors,
       xs = R.H.map((p) => p[0]).concat(R.ideal[0]),
       ys = R.H.map((p) => p[1]).concat(R.ideal[1]),
       x0 = Math.min(0, ...xs),
       y0 = Math.min(0, ...ys),
       x1 = Math.max(...xs) * 1.1,
       y1 = Math.max(...ys) * 1.12;
-    const fr = frame({ x: 60, y: pT(), w: W - 110, h: H - pT() - pB() }, x0, x1, y0, y1, true, 'x₂ ↑  x₁ →');
-    ctx.beginPath();
-    R.H.forEach((p, i) => (i ? ctx.lineTo(fr.X(p[0]), fr.Y(p[1])) : ctx.moveTo(fr.X(p[0]), fr.Y(p[1]))));
-    ctx.closePath();
-    ctx.fillStyle = c.area;
-    ctx.globalAlpha = 0.25;
-    ctx.fill();
-    ctx.globalAlpha = 0.8;
-    ctx.strokeStyle = c.area;
-    ctx.lineWidth = 1.5;
-    ctx.stroke();
-    ctx.globalAlpha = 1;
-    for (let i = 0; i < R.F.length - 1; i++) seg(fr, R.F[i], R.F[i + 1], c.area, 4);
+    const fr = ECON.frame(
+      { x: 60, y: ECON.pT(), w: ECON.W - 110, h: ECON.H - ECON.pT() - ECON.pB() },
+      x0,
+      x1,
+      y0,
+      y1,
+      true,
+      'x₂ ↑  x₁ →'
+    );
+    ECON.ctx.beginPath();
+    R.H.forEach((p, i) =>
+      i ? ECON.ctx.lineTo(fr.X(p[0]), fr.Y(p[1])) : ECON.ctx.moveTo(fr.X(p[0]), fr.Y(p[1]))
+    );
+    ECON.ctx.closePath();
+    ECON.ctx.fillStyle = c.area;
+    ECON.ctx.globalAlpha = 0.25;
+    ECON.ctx.fill();
+    ECON.ctx.globalAlpha = 0.8;
+    ECON.ctx.strokeStyle = c.area;
+    ECON.ctx.lineWidth = 1.5;
+    ECON.ctx.stroke();
+    ECON.ctx.globalAlpha = 1;
+    for (let i = 0; i < R.F.length - 1; i++) ECON.seg(fr, R.F[i], R.F[i + 1], c.area, 4);
     const d = R.d;
     if (R.nash && R.nash.v > 0) {
-      ctx.strokeStyle = c.curve;
-      ctx.lineWidth = 1.6;
-      ctx.setLineDash([5, 4]);
-      ctx.beginPath();
+      ECON.ctx.strokeStyle = c.curve;
+      ECON.ctx.lineWidth = 1.6;
+      ECON.ctx.setLineDash([5, 4]);
+      ECON.ctx.beginPath();
       let pen = false;
       for (let i = 1; i <= 300; i++) {
         const a = d[0] + ((x1 - d[0]) * i) / 300,
@@ -847,53 +708,59 @@ import { Q, Q1, Z0, toFrac } from '../../math/fractions.js';
         }
         const X = fr.X(a),
           Y = fr.Y(b);
-        pen ? ctx.lineTo(X, Y) : ctx.moveTo(X, Y);
+        pen ? ECON.ctx.lineTo(X, Y) : ECON.ctx.moveTo(X, Y);
         pen = true;
       }
-      ctx.stroke();
-      ctx.setLineDash([]);
+      ECON.ctx.stroke();
+      ECON.ctx.setLineDash([]);
     }
-    seg(fr, d, R.ideal, c.mark, 1.6, [3, 4]);
-    dotP(fr, R.ideal, c.mark, 5, P.show.labels ? (P.lang === 'ru' ? 'идеальная' : 'ideal') : '');
-    dotP(fr, d, c.axis, 5, 'd');
-    if (R.ks) dotP(fr, R.ks.x, c.p2, 7, P.show.labels ? `KS ${fV(R.ks.x)}` : 'KS');
-    if (R.nash) dotP(fr, R.nash.x, c.eq, 6, P.show.labels ? `N ${fV(R.nash.x)}` : 'N');
+    ECON.seg(fr, d, R.ideal, c.mark, 1.6, [3, 4]);
+    ECON.dotP(
+      fr,
+      R.ideal,
+      c.mark,
+      5,
+      ECON.P.show.labels ? (ECON.P.lang === 'ru' ? 'идеальная' : 'ideal') : ''
+    );
+    ECON.dotP(fr, d, c.axis, 5, 'd');
+    if (R.ks) ECON.dotP(fr, R.ks.x, c.p2, 7, ECON.P.show.labels ? `KS ${fV(R.ks.x)}` : 'KS');
+    if (R.nash) ECON.dotP(fr, R.nash.x, c.eq, 6, ECON.P.show.labels ? `N ${fV(R.nash.x)}` : 'N');
   }
   function drawCoop(R) {
-    const c = P.colors,
+    const c = ECON.P.colors,
       n = R.n;
     if (n !== 3) {
-      const r = { x: 60, y: pT(), w: W - 110, h: H - pT() - pB() },
+      const r = { x: 60, y: ECON.pT(), w: ECON.W - 110, h: ECON.H - ECON.pT() - ECON.pB() },
         mx = Math.max(...R.sh.phi, ...(R.pn.x || [0]), 1e-9);
-      const fr = frame(r, 0.4, n + 0.6, 0, mx * 1.25, false, 'xᵢ', true);
+      const fr = ECON.frame(r, 0.4, n + 0.6, 0, mx * 1.25, false, 'xᵢ', true);
       const bw = (fr.X(1) - fr.X(0)) * 0.32;
       for (let i = 0; i < n; i++) {
         const X = fr.X(i + 1);
-        if (P.show.sh) {
+        if (ECON.P.show.sh) {
           const Y = fr.Y(R.sh.phi[i]);
-          ctx.fillStyle = c.p1;
-          ctx.globalAlpha = 0.75;
-          ctx.fillRect(X - bw, Y, bw, fr.Y(0) - Y);
-          ctx.globalAlpha = 1;
-          if (P.show.labels) txt(dc(fmt(R.sh.phi[i], 2)), X - bw / 2, Y - 10, c.p1, 12);
+          ECON.ctx.fillStyle = c.p1;
+          ECON.ctx.globalAlpha = 0.75;
+          ECON.ctx.fillRect(X - bw, Y, bw, fr.Y(0) - Y);
+          ECON.ctx.globalAlpha = 1;
+          if (ECON.P.show.labels) ECON.txt(dc(fmt(R.sh.phi[i], 2)), X - bw / 2, Y - 10, c.p1, 12);
         }
-        if (P.show.pn && R.pn.x) {
+        if (ECON.P.show.pn && R.pn.x) {
           const Y = fr.Y(R.pn.x[i]);
-          ctx.fillStyle = c.p2;
-          ctx.globalAlpha = 0.75;
-          ctx.fillRect(X, Y, bw, fr.Y(0) - Y);
-          ctx.globalAlpha = 1;
-          if (P.show.labels) txt(dc(fmt(R.pn.x[i], 2)), X + bw / 2, Y - 10, c.p2, 12);
+          ECON.ctx.fillStyle = c.p2;
+          ECON.ctx.globalAlpha = 0.75;
+          ECON.ctx.fillRect(X, Y, bw, fr.Y(0) - Y);
+          ECON.ctx.globalAlpha = 1;
+          if (ECON.P.show.labels) ECON.txt(dc(fmt(R.pn.x[i], 2)), X + bw / 2, Y - 10, c.p2, 12);
         }
-        txt(String(i + 1), X, fr.Y(0) + 14, c.axis, 13);
+        ECON.txt(String(i + 1), X, fr.Y(0) + 14, c.axis, 13);
       }
       return;
     }
     const v = R.v,
       VN = v[7],
-      cx = W / 2,
-      top = pT() + 20,
-      side = Math.min(W * 0.7, (H - top - pB() - 30) / 0.87),
+      cx = ECON.W / 2,
+      top = ECON.pT() + 20,
+      side = Math.min(ECON.W * 0.7, (ECON.H - top - ECON.pB() - 30) / 0.87),
       hgt = side * 0.866,
       A = [cx, top],
       B = [cx - side / 2, top + hgt],
@@ -942,33 +809,33 @@ import { Q, Q1, Z0, toFrac } from '../../math/fractions.js';
     const toS = (p) => map([p[0], p[1], VN - p[0] - p[1]]);
     const drawP = (pp, col, al, fill) => {
       if (pp.length < 2) return;
-      ctx.beginPath();
+      ECON.ctx.beginPath();
       pp.forEach((p, i) => {
         const s = toS(p);
-        i ? ctx.lineTo(s[0], s[1]) : ctx.moveTo(s[0], s[1]);
+        i ? ECON.ctx.lineTo(s[0], s[1]) : ECON.ctx.moveTo(s[0], s[1]);
       });
-      ctx.closePath();
+      ECON.ctx.closePath();
       if (fill) {
-        ctx.fillStyle = col;
-        ctx.globalAlpha = al;
-        ctx.fill();
-        ctx.globalAlpha = 1;
+        ECON.ctx.fillStyle = col;
+        ECON.ctx.globalAlpha = al;
+        ECON.ctx.fill();
+        ECON.ctx.globalAlpha = 1;
       }
-      ctx.strokeStyle = col;
-      ctx.lineWidth = 1.6;
-      ctx.stroke();
+      ECON.ctx.strokeStyle = col;
+      ECON.ctx.lineWidth = 1.6;
+      ECON.ctx.stroke();
     };
     drawP(imp, c.axis, 0.06, true);
     if (core.length > 2) drawP(core, c.area, 0.4, true);
     else if (core.length) drawP(core, c.area, 1, false);
-    if (P.show.labels) {
+    if (ECON.P.show.labels) {
       [
         [A, '1', -14],
         [B, '2', 16],
         [C, '3', 16],
       ].forEach(([q, s, dy]) =>
-        txt(
-          P.lang === 'ru' ? `игроку ${s} всё сверх v({i})` : `all surplus to ${s}`,
+        ECON.txt(
+          ECON.P.lang === 'ru' ? `игроку ${s} всё сверх v({i})` : `all surplus to ${s}`,
           q[0],
           q[1] + dy,
           c.axis,
@@ -978,140 +845,95 @@ import { Q, Q1, Z0, toFrac } from '../../math/fractions.js';
     }
     const pt = (x, col, l) => {
       const s = map(x);
-      ctx.fillStyle = col;
-      ctx.strokeStyle = c.bg;
-      ctx.lineWidth = 2;
-      ctx.beginPath();
-      ctx.arc(s[0], s[1], 6.5, 0, 7);
-      ctx.fill();
-      ctx.stroke();
-      if (l) txt(l, s[0] + 10, s[1] - 12, col, 13, 'left');
+      ECON.ctx.fillStyle = col;
+      ECON.ctx.strokeStyle = c.bg;
+      ECON.ctx.lineWidth = 2;
+      ECON.ctx.beginPath();
+      ECON.ctx.arc(s[0], s[1], 6.5, 0, 7);
+      ECON.ctx.fill();
+      ECON.ctx.stroke();
+      if (l) ECON.txt(l, s[0] + 10, s[1] - 12, col, 13, 'left');
     };
-    if (P.show.sh) pt(R.sh.phi, c.p1, P.show.labels ? `φ ${fV(R.sh.phi)}` : 'φ');
-    if (P.show.pn && R.pn.x)
+    if (ECON.P.show.sh) pt(R.sh.phi, c.p1, ECON.P.show.labels ? `φ ${fV(R.sh.phi)}` : 'φ');
+    if (ECON.P.show.pn && R.pn.x)
       pt(
         R.pn.x,
         c.p2,
-        P.show.labels ? `${P.lang === 'ru' ? 'пн' : 'pn'} ${fV(R.pn.x)}` : P.lang === 'ru' ? 'пн' : 'pn'
+        ECON.P.show.labels
+          ? `${ECON.P.lang === 'ru' ? 'пн' : 'pn'} ${fV(R.pn.x)}`
+          : ECON.P.lang === 'ru'
+            ? 'пн'
+            : 'pn'
       );
   }
   function drawAuct(R) {
-    const c = P.colors,
+    const c = ECON.P.colors,
       a = R.a,
       w = R.w,
-      r = { x: 60, y: pT(), w: W - 110, h: H - pT() - pB() };
-    const fr = frame(r, 0, w, 0, w * 1.05, false, 'β(v)');
+      r = { x: 60, y: ECON.pT(), w: ECON.W - 110, h: ECON.H - ECON.pT() - ECON.pB() };
+    const fr = ECON.frame(r, 0, w, 0, w * 1.05, false, 'β(v)');
     const plot = (f, col, dash) => {
-      ctx.strokeStyle = col;
-      ctx.lineWidth = 2.6 * P.lw;
-      ctx.setLineDash(dash || []);
-      ctx.beginPath();
+      ECON.ctx.strokeStyle = col;
+      ECON.ctx.lineWidth = 2.6 * ECON.P.lw;
+      ECON.ctx.setLineDash(dash || []);
+      ECON.ctx.beginPath();
       for (let i = 0; i <= 200; i++) {
         const v = (w * i) / 200;
-        i ? ctx.lineTo(fr.X(v), fr.Y(f(v))) : ctx.moveTo(fr.X(v), fr.Y(f(v)));
+        i ? ECON.ctx.lineTo(fr.X(v), fr.Y(f(v))) : ECON.ctx.moveTo(fr.X(v), fr.Y(f(v)));
       }
-      ctx.stroke();
-      ctx.setLineDash([]);
+      ECON.ctx.stroke();
+      ECON.ctx.setLineDash([]);
     };
     plot(a.sp, c.p2);
     plot(a.fp, c.p1);
     plot(a.ap, c.curve, [7, 5]);
     const X = fr.X(R.v);
-    ctx.strokeStyle = c.mark;
-    ctx.setLineDash([4, 4]);
-    ctx.beginPath();
-    ctx.moveTo(X, r.y);
-    ctx.lineTo(X, fr.Y(0));
-    ctx.stroke();
-    ctx.setLineDash([]);
+    ECON.ctx.strokeStyle = c.mark;
+    ECON.ctx.setLineDash([4, 4]);
+    ECON.ctx.beginPath();
+    ECON.ctx.moveTo(X, r.y);
+    ECON.ctx.lineTo(X, fr.Y(0));
+    ECON.ctx.stroke();
+    ECON.ctx.setLineDash([]);
     [
-      [a.sp, c.p2, P.lang === 'ru' ? '2-я цена' : '2nd price'],
-      [a.fp, c.p1, P.lang === 'ru' ? '1-я цена' : '1st price'],
-      [a.ap, c.curve, P.lang === 'ru' ? 'платят все' : 'all-pay'],
+      [a.sp, c.p2, ECON.P.lang === 'ru' ? '2-я цена' : '2nd price'],
+      [a.fp, c.p1, ECON.P.lang === 'ru' ? '1-я цена' : '1st price'],
+      [a.ap, c.curve, ECON.P.lang === 'ru' ? 'платят все' : 'all-pay'],
     ].forEach(([f, col, l]) => {
-      dotP(fr, [R.v, f(R.v)], col, 5, P.show.labels ? `${l}: ${dc(fmt(f(R.v), 3))}` : l);
+      ECON.dotP(fr, [R.v, f(R.v)], col, 5, ECON.P.show.labels ? `${l}: ${dc(fmt(f(R.v), 3))}` : l);
     });
   }
   /* переключатели */
   const TOG = ['bgGrid', 'coords', 'labels', 'br', 'sh', 'pn', 'hints'];
-  function buildToggles() {
-    const box = $('#tog');
-    box.innerHTML = '';
-    TOG.forEach((k) => {
-      const l = document.createElement('label');
-      l.className = 'chk';
-      l.innerHTML = `<input type="checkbox" data-k="${k}"> <span>${T().tog[k]}</span>`;
-      l.querySelector('input').onchange = (e) => {
-        P.show[k] = e.target.checked;
-        save();
-        renderCaption();
-        req();
-      };
-      box.appendChild(l);
-    });
-    syncTogVis();
-  }
-  function syncToggles() {
-    document.querySelectorAll('#tog input').forEach((i) => {
-      i.checked = !!P.show[i.dataset.k];
-    });
-    syncTogVis();
-  }
-  $('#capOpen').onclick = () => {
-    P.show.hints = true;
-    syncToggles();
-    renderCaption();
-    save();
-  };
-  $('#capX').onclick = () => {
-    P.show.hints = false;
-    syncToggles();
-    renderCaption();
-    save();
-  };
-  document.addEventListener('click', (e) => {
-    const q = e.target.closest('[data-term]');
-    if (q) {
-      e.preventDefault();
-      e.stopPropagation();
-      openTerm(q.dataset.term);
-      return;
-    }
-    const p = e.target.closest('[data-pre]');
-    if (p) loadPreset(p.dataset.pre);
-  });
-  function fitView() {
-    req();
-  }
-  function play() {}
+
   /* ---------- олигополия: Курно / Штакельберг / Бертран / сравнение ---------- */
 
   function drawCourX(R) {
     if (R.om === 'cour') return drawCour(R);
-    const c = P.colors,
-      r = { x: 60, y: pT(), w: W - 110, h: H - pT() - pB() };
+    const c = ECON.P.colors,
+      r = { x: 60, y: ECON.pT(), w: ECON.W - 110, h: ECON.H - ECON.pT() - ECON.pB() };
     if (R.om === 'stack') {
       const M = R.M,
         [c1, c2] = [R.c1, R.c2],
         mx = Math.max(M - c1, M - c2) * 1.05;
-      const fr = frame(r, 0, mx, 0, mx, true, 'q₂ ↑  q₁ →');
-      seg(fr, [0, (M - c2) / 2], [M - c2, 0], c.p2, 2.6);
-      seg(fr, [(M - c1) / 2, 0], [0, M - c1], c.p1, 1.4, [5, 4]);
+      const fr = ECON.frame(r, 0, mx, 0, mx, true, 'q₂ ↑  q₁ →');
+      ECON.seg(fr, [0, (M - c2) / 2], [M - c2, 0], c.p2, 2.6);
+      ECON.seg(fr, [(M - c1) / 2, 0], [0, M - c1], c.p1, 1.4, [5, 4]);
       const cq = cournot(M, [c1, c2]).q;
-      dotP(fr, cq, c.mark, 5, P.show.labels ? (P.lang === 'ru' ? 'Курно' : 'Cournot') : '');
-      dotP(fr, R.q, c.eq, 7, P.show.labels ? `S ${fV(R.q)}` : 'S');
+      ECON.dotP(fr, cq, c.mark, 5, ECON.P.show.labels ? (ECON.P.lang === 'ru' ? 'Курно' : 'Cournot') : '');
+      ECON.dotP(fr, R.q, c.eq, 7, ECON.P.show.labels ? `S ${fV(R.q)}` : 'S');
       return;
     }
     if (R.om === 'bert') {
       const mx = Math.max(...R.p, R.c1, R.c2) * 1.4 || 1;
-      const fr = frame(
+      const fr = ECON.frame(
         r,
         -0.6,
         1.6,
         0,
         mx,
         false,
-        P.lang === 'ru' ? 'цены и издержки' : 'prices and costs',
+        ECON.P.lang === 'ru' ? 'цены и издержки' : 'prices and costs',
         true
       );
       const bw = (fr.X(1) - fr.X(0)) * 0.35;
@@ -1120,14 +942,14 @@ import { Q, Q1, Z0, toFrac } from '../../math/fractions.js';
         [R.p[1], R.c2, c.p2],
       ].forEach(([p, cc, col], i) => {
         const X = fr.X(i);
-        ctx.fillStyle = col;
-        ctx.globalAlpha = 0.7;
-        ctx.fillRect(X - bw / 2, fr.Y(p), bw, fr.Y(0) - fr.Y(p));
-        ctx.globalAlpha = 1;
-        seg(fr, [i - 0.3, cc], [i + 0.3, cc], c.bad, 2.4, [4, 3]);
-        if (P.show.labels) {
-          txt(`p${i + 1} = ${dc(fmt(p, 3))}`, X, fr.Y(p) - 12, col, 13);
-          txt(`c${i + 1}`, X + bw / 2 + 16, fr.Y(cc), c.bad, 12);
+        ECON.ctx.fillStyle = col;
+        ECON.ctx.globalAlpha = 0.7;
+        ECON.ctx.fillRect(X - bw / 2, fr.Y(p), bw, fr.Y(0) - fr.Y(p));
+        ECON.ctx.globalAlpha = 1;
+        ECON.seg(fr, [i - 0.3, cc], [i + 0.3, cc], c.bad, 2.4, [4, 3]);
+        if (ECON.P.show.labels) {
+          ECON.txt(`p${i + 1} = ${dc(fmt(p, 3))}`, X, fr.Y(p) - 12, col, 13);
+          ECON.txt(`c${i + 1}`, X + bw / 2 + 16, fr.Y(cc), c.bad, 12);
         }
       });
       return;
@@ -1135,7 +957,7 @@ import { Q, Q1, Z0, toFrac } from '../../math/fractions.js';
     const m = R.cmp,
       ks = Object.keys(m),
       mx = Math.max(...ks.map((k) => Math.max(m[k].Q, m[k].P, m[k].CS / 3)));
-    const fr = frame(r, -0.6, ks.length - 0.4, 0, mx * 1.25, false, 'Q · P', true);
+    const fr = ECON.frame(r, -0.6, ks.length - 0.4, 0, mx * 1.25, false, 'Q · P', true);
     const bw = (fr.X(1) - fr.X(0)) * 0.25;
     ks.forEach((k, i) => {
       const X = fr.X(i);
@@ -1143,118 +965,124 @@ import { Q, Q1, Z0, toFrac } from '../../math/fractions.js';
         [m[k].Q, c.p1, -1],
         [m[k].P, c.p2, 1],
       ].forEach(([v, col, s]) => {
-        ctx.fillStyle = col;
-        ctx.globalAlpha = 0.75;
-        ctx.fillRect(X + (s < 0 ? -bw : 0), fr.Y(v), bw, fr.Y(0) - fr.Y(v));
-        ctx.globalAlpha = 1;
-        if (P.show.labels) txt(dc(fmt(v, 2)), X + (s * bw) / 2, fr.Y(v) - 10, col, 12);
+        ECON.ctx.fillStyle = col;
+        ECON.ctx.globalAlpha = 0.75;
+        ECON.ctx.fillRect(X + (s < 0 ? -bw : 0), fr.Y(v), bw, fr.Y(0) - fr.Y(v));
+        ECON.ctx.globalAlpha = 1;
+        if (ECON.P.show.labels) ECON.txt(dc(fmt(v, 2)), X + (s * bw) / 2, fr.Y(v) - 10, col, 12);
       });
-      txt(T().mods[k], X, fr.Y(0) + 16, c.axis, 11);
+      ECON.txt(T().mods[k], X, fr.Y(0) + 16, c.axis, 11);
     });
   }
   let VALS2_olig = (R, V) =>
     R.om === 'cmp'
       ? Object.keys(R.cmp)
-          .map((k) => prop(T().mods[k], `Q = ${fN(R.cmp[k].Q, 3)}, P = ${fN(R.cmp[k].P, 3)}`))
+          .map((k) => ECON.prop(T().mods[k], `Q = ${fN(R.cmp[k].Q, 3)}, P = ${fN(R.cmp[k].P, 3)}`))
           .join('')
-      : prop(T().v2.q, fV(R.q)) +
-        prop(V.P, fQ(R.P)) +
-        prop(V.pi, fV(R.pi)) +
-        (R.p ? prop(T().v2.p, fV(R.p)) : '');
+      : ECON.prop(T().v2.q, fV(R.q)) +
+        ECON.prop(V.P, fQ(R.P)) +
+        ECON.prop(V.pi, fV(R.pi)) +
+        (R.p ? ECON.prop(T().v2.p, fV(R.p)) : '');
   /* ---------- непрерывные ---------- */
 
   function drawCont(R) {
-    const c = P.colors,
-      r = { x: 60, y: pT(), w: W - 110, h: H - pT() - pB() };
-    const fr = frame(r, R.a1, R.b1, R.a2, R.b2, true, 'y ↑  x →');
-    if (P.show.br) {
-      ctx.fillStyle = c.p1;
+    const c = ECON.P.colors,
+      r = { x: 60, y: ECON.pT(), w: ECON.W - 110, h: ECON.H - ECON.pT() - ECON.pB() };
+    const fr = ECON.frame(r, R.a1, R.b1, R.a2, R.b2, true, 'y ↑  x →');
+    if (ECON.P.show.br) {
+      ECON.ctx.fillStyle = c.p1;
       R.ys.forEach((y, k) =>
         R.br1[k].x.slice(0, 30).forEach((x) => {
-          ctx.globalAlpha = 0.85;
-          ctx.fillRect(fr.X(x) - 1.5, fr.Y(y) - 1.5, 3, 3);
+          ECON.ctx.globalAlpha = 0.85;
+          ECON.ctx.fillRect(fr.X(x) - 1.5, fr.Y(y) - 1.5, 3, 3);
         })
       );
-      ctx.fillStyle = c.p2;
+      ECON.ctx.fillStyle = c.p2;
       R.xs.forEach((x, k) =>
         R.br2[k].x.slice(0, 30).forEach((y) => {
-          ctx.fillRect(fr.X(x) - 1.5, fr.Y(y) - 1.5, 3, 3);
+          ECON.ctx.fillRect(fr.X(x) - 1.5, fr.Y(y) - 1.5, 3, 3);
         })
       );
-      ctx.globalAlpha = 1;
+      ECON.ctx.globalAlpha = 1;
     }
-    if (R.many) R.grid.forEach((p) => dotP(fr, p, c.eq, 3.5));
-    else R.eq.forEach((p) => dotP(fr, p, c.eq, 7, fV(p)));
+    if (R.many) R.grid.forEach((p) => ECON.dotP(fr, p, c.eq, 3.5));
+    else R.eq.forEach((p) => ECON.dotP(fr, p, c.eq, 7, fV(p)));
   }
   /* ---------- байесовские ---------- */
 
   /* ---------- Хотеллинг ---------- */
 
   function drawHotel(R) {
-    const c = P.colors,
+    const c = ECON.P.colors,
       x0 = 70,
-      x1 = W - 70,
-      y = Math.min(H * 0.5, H - 160),
+      x1 = ECON.W - 70,
+      y = Math.min(ECON.H * 0.5, ECON.H - 160),
       X = (t) => x0 + (x1 - x0) * t;
-    ctx.lineWidth = 10;
+    ECON.ctx.lineWidth = 10;
     const loc = R.hm === 'loc',
       a = loc ? 0.5 : R.a,
       b = loc ? 0.5 : 1 - R.b,
       xh = loc ? 0.5 : R.x;
-    ctx.strokeStyle = c.p1;
-    ctx.globalAlpha = 0.6;
-    ctx.beginPath();
-    ctx.moveTo(X(0), y);
-    ctx.lineTo(X(xh), y);
-    ctx.stroke();
-    ctx.strokeStyle = c.p2;
-    ctx.beginPath();
-    ctx.moveTo(X(xh), y);
-    ctx.lineTo(X(1), y);
-    ctx.stroke();
-    ctx.globalAlpha = 1;
-    txt('0', X(0), y + 24, c.axis, 13);
-    txt('1', X(1), y + 24, c.axis, 13);
+    ECON.ctx.strokeStyle = c.p1;
+    ECON.ctx.globalAlpha = 0.6;
+    ECON.ctx.beginPath();
+    ECON.ctx.moveTo(X(0), y);
+    ECON.ctx.lineTo(X(xh), y);
+    ECON.ctx.stroke();
+    ECON.ctx.strokeStyle = c.p2;
+    ECON.ctx.beginPath();
+    ECON.ctx.moveTo(X(xh), y);
+    ECON.ctx.lineTo(X(1), y);
+    ECON.ctx.stroke();
+    ECON.ctx.globalAlpha = 1;
+    ECON.txt('0', X(0), y + 24, c.axis, 13);
+    ECON.txt('1', X(1), y + 24, c.axis, 13);
     const firm = (t, col, l) => {
-      ctx.fillStyle = col;
-      ctx.beginPath();
-      ctx.moveTo(X(t), y - 14);
-      ctx.lineTo(X(t) - 11, y - 36);
-      ctx.lineTo(X(t) + 11, y - 36);
-      ctx.closePath();
-      ctx.fill();
-      txt(l, X(t), y - 50, col, 15);
+      ECON.ctx.fillStyle = col;
+      ECON.ctx.beginPath();
+      ECON.ctx.moveTo(X(t), y - 14);
+      ECON.ctx.lineTo(X(t) - 11, y - 36);
+      ECON.ctx.lineTo(X(t) + 11, y - 36);
+      ECON.ctx.closePath();
+      ECON.ctx.fill();
+      ECON.txt(l, X(t), y - 50, col, 15);
     };
     if (loc) {
-      firm(0.5, c.eq, P.lang === 'ru' ? 'обе фирмы' : 'both firms');
-      if (P.show.labels) {
+      firm(0.5, c.eq, ECON.P.lang === 'ru' ? 'обе фирмы' : 'both firms');
+      if (ECON.P.show.labels) {
         [0.2, 0.8].forEach((t) => {
-          ctx.strokeStyle = c.mark;
-          ctx.setLineDash([4, 4]);
-          ctx.beginPath();
-          ctx.moveTo(X(t), y - 70);
-          ctx.lineTo(X(0.5), y - 70);
-          ctx.stroke();
-          ctx.setLineDash([]);
+          ECON.ctx.strokeStyle = c.mark;
+          ECON.ctx.setLineDash([4, 4]);
+          ECON.ctx.beginPath();
+          ECON.ctx.moveTo(X(t), y - 70);
+          ECON.ctx.lineTo(X(0.5), y - 70);
+          ECON.ctx.stroke();
+          ECON.ctx.setLineDash([]);
         });
-        txt(P.lang === 'ru' ? '→ сдвиг к центру ←' : '→ move to the centre ←', X(0.5), y - 86, c.mark, 13);
+        ECON.txt(
+          ECON.P.lang === 'ru' ? '→ сдвиг к центру ←' : '→ move to the centre ←',
+          X(0.5),
+          y - 86,
+          c.mark,
+          13
+        );
       }
       return;
     }
     firm(a, c.p1, `p₁ = ${dc(fmt(R.p[0], 3))}`);
     firm(b, c.p2, `p₂ = ${dc(fmt(R.p[1], 3))}`);
-    ctx.strokeStyle = c.eq;
-    ctx.lineWidth = 2;
-    ctx.beginPath();
-    ctx.moveTo(X(xh), y - 20);
-    ctx.lineTo(X(xh), y + 20);
-    ctx.stroke();
-    if (P.show.labels) txt(`x̂ = ${dc(fmt(xh, 3))}`, X(xh), y + 44, c.eq, 14);
+    ECON.ctx.strokeStyle = c.eq;
+    ECON.ctx.lineWidth = 2;
+    ECON.ctx.beginPath();
+    ECON.ctx.moveTo(X(xh), y - 20);
+    ECON.ctx.lineTo(X(xh), y + 20);
+    ECON.ctx.stroke();
+    if (ECON.P.show.labels) ECON.txt(`x̂ = ${dc(fmt(xh, 3))}`, X(xh), y + 44, c.eq, 14);
   }
   /* ---------- дерево ---------- */
 
   function drawTree(R) {
-    const c = P.colors,
+    const c = ECON.P.colors,
       Tr = R.T,
       lay = {},
       depth = {};
@@ -1279,25 +1107,25 @@ import { Q, Q1, Z0, toFrac } from '../../math/fractions.js';
     place(Tr.root, 0);
     const maxD = Math.max(...Object.values(lay).map((o) => o.d), ...items.map((i) => i.d)),
       nL = Math.max(1, leafX - 1),
-      top = pT() + 20,
-      bot = H - pB() - 40,
-      X = (x) => 70 + (W - 140) * (nL ? x / nL : 0.5),
+      top = ECON.pT() + 20,
+      bot = ECON.H - ECON.pB() - 40,
+      X = (x) => 70 + (ECON.W - 140) * (nL ? x / nL : 0.5),
       Y = (d) => top + (bot - top) * (maxD ? d / maxD : 0);
     const onPath = new Set(R.path.map(([id, k]) => id + ':' + k));
     const edge = (id, k, tx, td, lab) => {
       const o = lay[id],
         best = R.choice[id] === k,
         path = onPath.has(id + ':' + k);
-      ctx.strokeStyle = best ? c.eq : c.axis;
-      ctx.globalAlpha = best ? 1 : 0.4;
-      ctx.lineWidth = path ? 4 : best ? 2.4 : 1.4;
-      ctx.beginPath();
-      ctx.moveTo(X(o.x), Y(o.d));
-      ctx.lineTo(X(tx), Y(td));
-      ctx.stroke();
-      ctx.globalAlpha = 1;
-      if (P.show.labels)
-        txt(
+      ECON.ctx.strokeStyle = best ? c.eq : c.axis;
+      ECON.ctx.globalAlpha = best ? 1 : 0.4;
+      ECON.ctx.lineWidth = path ? 4 : best ? 2.4 : 1.4;
+      ECON.ctx.beginPath();
+      ECON.ctx.moveTo(X(o.x), Y(o.d));
+      ECON.ctx.lineTo(X(tx), Y(td));
+      ECON.ctx.stroke();
+      ECON.ctx.globalAlpha = 1;
+      if (ECON.P.show.labels)
+        ECON.txt(
           lab,
           (X(o.x) + X(tx)) / 2 + (tx >= o.x ? 10 : -10),
           (Y(o.d) + Y(td)) / 2,
@@ -1316,15 +1144,15 @@ import { Q, Q1, Z0, toFrac } from '../../math/fractions.js';
     for (const id in lay) {
       const o = lay[id],
         col = [c.p1, c.p2, c.mark][(Tr.nodes[id].pl - 1) % 3];
-      ctx.fillStyle = col;
-      ctx.beginPath();
-      ctx.arc(X(o.x), Y(o.d), 13, 0, 7);
-      ctx.fill();
-      txt(String(Tr.nodes[id].pl), X(o.x), Y(o.d), c.bg, 13);
-      txt(id, X(o.x) - 18, Y(o.d) - 14, c.axis, 11, 'right');
+      ECON.ctx.fillStyle = col;
+      ECON.ctx.beginPath();
+      ECON.ctx.arc(X(o.x), Y(o.d), 13, 0, 7);
+      ECON.ctx.fill();
+      ECON.txt(String(Tr.nodes[id].pl), X(o.x), Y(o.d), c.bg, 13);
+      ECON.txt(id, X(o.x) - 18, Y(o.d) - 14, c.axis, 11, 'right');
     }
     items.forEach((it) =>
-      txt(
+      ECON.txt(
         `(${it.pay.map((v) => dc(fmt(v, 2))).join('; ')})`,
         X(it.x),
         Y(it.d) + 18,
@@ -1338,17 +1166,17 @@ import { Q, Q1, Z0, toFrac } from '../../math/fractions.js';
   /* ---------- повторяющиеся ---------- */
 
   function drawRep(R) {
-    const c = P.colors,
-      r = { x: 60, y: pT(), w: W - 110, h: H - pT() - pB() - 30 };
+    const c = ECON.P.colors,
+      r = { x: 60, y: ECON.pT(), w: ECON.W - 110, h: ECON.H - ECON.pT() - ECON.pB() - 30 };
     const mx = Math.max(...R.tot);
-    const fr = frame(
+    const fr = ECON.frame(
       r,
       -0.6,
       STRATS.length - 0.4,
       0,
       mx * 1.15,
       false,
-      P.lang === 'ru' ? 'очки в турнире' : 'tournament points',
+      ECON.P.lang === 'ru' ? 'очки в турнире' : 'tournament points',
       true
     );
     const bw = (fr.X(1) - fr.X(0)) * 0.6,
@@ -1356,33 +1184,33 @@ import { Q, Q1, Z0, toFrac } from '../../math/fractions.js';
     STRATS.forEach((s, i) => {
       const X = fr.X(i),
         Y = fr.Y(R.tot[i]);
-      ctx.fillStyle = R.tot[i] === best ? c.eq : c.p1;
-      ctx.globalAlpha = 0.8;
-      ctx.fillRect(X - bw / 2, Y, bw, fr.Y(0) - Y);
-      ctx.globalAlpha = 1;
-      if (P.show.labels) txt(String(R.tot[i]), X, Y - 10, c.axis, 12);
-      txt(s, X, fr.Y(0) + 16, c.axis, 11);
+      ECON.ctx.fillStyle = R.tot[i] === best ? c.eq : c.p1;
+      ECON.ctx.globalAlpha = 0.8;
+      ECON.ctx.fillRect(X - bw / 2, Y, bw, fr.Y(0) - Y);
+      ECON.ctx.globalAlpha = 1;
+      if (ECON.P.show.labels) ECON.txt(String(R.tot[i]), X, Y - 10, c.axis, 12);
+      ECON.txt(s, X, fr.Y(0) + 16, c.axis, 11);
     });
   }
   /* ---------- эволюционные ---------- */
 
   function drawEvo(R) {
-    const c = P.colors,
-      h = (H - pT() - pB() - 40) / 2,
-      r1 = { x: 60, y: pT(), w: W - 110, h: h * 0.9 },
-      r2 = { x: 60, y: pT() + h + 30, w: W - 110, h: h * 0.9 };
+    const c = ECON.P.colors,
+      h = (ECON.H - ECON.pT() - ECON.pB() - 40) / 2,
+      r1 = { x: 60, y: ECON.pT(), w: ECON.W - 110, h: h * 0.9 },
+      r2 = { x: 60, y: ECON.pT() + h + 30, w: ECON.W - 110, h: h * 0.9 };
     let gm = 0;
     for (let i = 0; i <= 200; i++) gm = Math.max(gm, Math.abs(R.g(i / 200)));
     gm = gm || 1;
-    const f1 = frame(r1, 0, 1, -gm * 1.2, gm * 1.2, false, 'ẋ(x)');
-    ctx.strokeStyle = c.curve;
-    ctx.lineWidth = 2.4 * P.lw;
-    ctx.beginPath();
+    const f1 = ECON.frame(r1, 0, 1, -gm * 1.2, gm * 1.2, false, 'ẋ(x)');
+    ECON.ctx.strokeStyle = c.curve;
+    ECON.ctx.lineWidth = 2.4 * ECON.P.lw;
+    ECON.ctx.beginPath();
     for (let i = 0; i <= 200; i++) {
       const x = i / 200;
-      i ? ctx.lineTo(f1.X(x), f1.Y(R.g(x))) : ctx.moveTo(f1.X(x), f1.Y(R.g(x)));
+      i ? ECON.ctx.lineTo(f1.X(x), f1.Y(R.g(x))) : ECON.ctx.moveTo(f1.X(x), f1.Y(R.g(x)));
     }
-    ctx.stroke();
+    ECON.ctx.stroke();
     for (let i = 1; i < 10; i++) {
       const x = i / 10,
         v = R.g(x);
@@ -1390,45 +1218,45 @@ import { Q, Q1, Z0, toFrac } from '../../math/fractions.js';
       const X = f1.X(x),
         Y = f1.Y(0),
         d = v > 0 ? 1 : -1;
-      ctx.fillStyle = c.mark;
-      ctx.beginPath();
-      ctx.moveTo(X + d * 8, Y);
-      ctx.lineTo(X - d * 6, Y - 6);
-      ctx.lineTo(X - d * 6, Y + 6);
-      ctx.closePath();
-      ctx.fill();
+      ECON.ctx.fillStyle = c.mark;
+      ECON.ctx.beginPath();
+      ECON.ctx.moveTo(X + d * 8, Y);
+      ECON.ctx.lineTo(X - d * 6, Y - 6);
+      ECON.ctx.lineTo(X - d * 6, Y + 6);
+      ECON.ctx.closePath();
+      ECON.ctx.fill();
     }
     const rest = [0, 1];
     if (R.xs !== null) rest.push(R.xs);
     rest.forEach((x) => {
       const st =
         (x === 1 && R.ess.includes('1')) || (x === 0 && R.ess.includes('2')) || (x === R.xs && R.mixedESS);
-      dotP(f1, [x, 0], st ? c.eq : c.bad, 6, P.show.labels ? (st ? 'ESS' : '') : '');
+      ECON.dotP(f1, [x, 0], st ? c.eq : c.bad, 6, ECON.P.show.labels ? (st ? 'ESS' : '') : '');
     });
-    const f2 = frame(r2, 0, 30, 0, 1, false, 'x(t)');
+    const f2 = ECON.frame(r2, 0, 30, 0, 1, false, 'x(t)');
     R.traj.forEach((tr, i) => {
-      ctx.strokeStyle = [c.p1, c.p2, c.area, c.mark][i % 4];
-      ctx.lineWidth = 2;
-      ctx.beginPath();
-      tr.forEach(([t, x], k) => (k ? ctx.lineTo(f2.X(t), f2.Y(x)) : ctx.moveTo(f2.X(t), f2.Y(x))));
-      ctx.stroke();
+      ECON.ctx.strokeStyle = [c.p1, c.p2, c.area, c.mark][i % 4];
+      ECON.ctx.lineWidth = 2;
+      ECON.ctx.beginPath();
+      tr.forEach(([t, x], k) => (k ? ECON.ctx.lineTo(f2.X(t), f2.Y(x)) : ECON.ctx.moveTo(f2.X(t), f2.Y(x))));
+      ECON.ctx.stroke();
     });
   }
   /* ---------- голосование ---------- */
 
   function drawVote(R) {
-    const c = P.colors,
+    const c = ECON.P.colors,
       n = R.w.length,
-      r = { x: 60, y: pT(), w: W - 110, h: H - pT() - pB() - 20 },
+      r = { x: 60, y: ECON.pT(), w: ECON.W - 110, h: ECON.H - ECON.pT() - ECON.pB() - 20 },
       mx = Math.max(...R.w.map((w) => w / R.tot), ...R.ss, ...R.bzN);
-    const fr = frame(
+    const fr = ECON.frame(
       r,
       0.4,
       n + 0.6,
       0,
       mx * 1.2,
       false,
-      P.lang === 'ru' ? 'доля веса · Шепли–Шубик · Банцаф' : 'weight share · Shapley–Shubik · Banzhaf',
+      ECON.P.lang === 'ru' ? 'доля веса · Шепли–Шубик · Банцаф' : 'weight share · Shapley–Shubik · Banzhaf',
       true
     );
     const bw = (fr.X(1) - fr.X(0)) * 0.26;
@@ -1439,67 +1267,67 @@ import { Q, Q1, Z0, toFrac } from '../../math/fractions.js';
         [R.ss[i], c.p1, 0],
         [R.bzN[i], c.p2, 1],
       ].forEach(([v, col, o]) => {
-        ctx.fillStyle = col;
-        ctx.globalAlpha = o === -1 ? 0.3 : 0.8;
-        ctx.fillRect(X + o * bw - bw / 2, fr.Y(v), bw, fr.Y(0) - fr.Y(v));
-        ctx.globalAlpha = 1;
+        ECON.ctx.fillStyle = col;
+        ECON.ctx.globalAlpha = o === -1 ? 0.3 : 0.8;
+        ECON.ctx.fillRect(X + o * bw - bw / 2, fr.Y(v), bw, fr.Y(0) - fr.Y(v));
+        ECON.ctx.globalAlpha = 1;
       });
-      if (P.show.labels && n <= 8) txt(dc(fmt(R.ss[i], 3)), X, fr.Y(R.ss[i]) - 10, c.p1, 11);
-      txt(String(i + 1), X, fr.Y(0) + 14, c.axis, 12);
+      if (ECON.P.show.labels && n <= 8) ECON.txt(dc(fmt(R.ss[i], 3)), X, fr.Y(R.ss[i]) - 10, c.p1, 11);
+      ECON.txt(String(i + 1), X, fr.Y(0) + 14, c.axis, 12);
     });
   }
   /* ---------- паросочетания ---------- */
 
   function drawMatch(R) {
-    const c = P.colors,
+    const c = ECON.P.colors,
       Ps = R.P,
       Rs = R.R,
-      top = pT() + 20,
-      bot = H - pB() - 30,
-      xl = W * 0.28,
-      xr = W * 0.72,
+      top = ECON.pT() + 20,
+      bot = ECON.H - ECON.pB() - 30,
+      xl = ECON.W * 0.28,
+      xr = ECON.W * 0.72,
       y = (i, n) => top + (bot - top) * (n > 1 ? i / (n - 1) : 0.5);
     Object.entries(R.match).forEach(([p, r]) => {
       const i = Ps.indexOf(p),
         j = Rs.indexOf(r);
-      ctx.strokeStyle = c.eq;
-      ctx.lineWidth = 3;
-      ctx.beginPath();
-      ctx.moveTo(xl, y(i, Ps.length));
-      ctx.lineTo(xr, y(j, Rs.length));
-      ctx.stroke();
+      ECON.ctx.strokeStyle = c.eq;
+      ECON.ctx.lineWidth = 3;
+      ECON.ctx.beginPath();
+      ECON.ctx.moveTo(xl, y(i, Ps.length));
+      ECON.ctx.lineTo(xr, y(j, Rs.length));
+      ECON.ctx.stroke();
     });
     Ps.forEach((p, i) => {
-      ctx.fillStyle = c.p1;
-      ctx.beginPath();
-      ctx.arc(xl, y(i, Ps.length), 10, 0, 7);
-      ctx.fill();
-      txt(p, xl - 18, y(i, Ps.length), c.p1, 14, 'right');
-      if (P.show.labels) {
+      ECON.ctx.fillStyle = c.p1;
+      ECON.ctx.beginPath();
+      ECON.ctx.arc(xl, y(i, Ps.length), 10, 0, 7);
+      ECON.ctx.fill();
+      ECON.txt(p, xl - 18, y(i, Ps.length), c.p1, 14, 'right');
+      if (ECON.P.show.labels) {
         const pr = (R.rev ? R.pb : R.pa)[p] || [];
-        txt(pr.join(' > '), xl - 18, y(i, Ps.length) + 16, c.axis, 10, 'right');
+        ECON.txt(pr.join(' > '), xl - 18, y(i, Ps.length) + 16, c.axis, 10, 'right');
       }
     });
     Rs.forEach((r, i) => {
-      ctx.fillStyle = c.p2;
-      ctx.beginPath();
-      ctx.arc(xr, y(i, Rs.length), 10, 0, 7);
-      ctx.fill();
-      txt(r, xr + 18, y(i, Rs.length), c.p2, 14, 'left');
-      if (P.show.labels) {
+      ECON.ctx.fillStyle = c.p2;
+      ECON.ctx.beginPath();
+      ECON.ctx.arc(xr, y(i, Rs.length), 10, 0, 7);
+      ECON.ctx.fill();
+      ECON.txt(r, xr + 18, y(i, Rs.length), c.p2, 14, 'left');
+      if (ECON.P.show.labels) {
         const pr = (R.rev ? R.pa : R.pb)[r] || [];
-        txt(pr.join(' > '), xr + 18, y(i, Rs.length) + 16, c.axis, 10, 'left');
+        ECON.txt(pr.join(' > '), xr + 18, y(i, Rs.length) + 16, c.axis, 10, 'left');
       }
     });
   }
   /* ---------- Браес ---------- */
 
   function drawBraess(R) {
-    const c = P.colors,
-      cx = W / 2,
-      cy = (pT() + H - pB()) / 2,
-      dx = Math.min(W * 0.33, 260),
-      dy = Math.min((H - pT() - pB()) * 0.36, 170);
+    const c = ECON.P.colors,
+      cx = ECON.W / 2,
+      cy = (ECON.pT() + ECON.H - ECON.pB()) / 2,
+      dx = Math.min(ECON.W * 0.33, 260),
+      dy = Math.min((ECON.H - ECON.pT() - ECON.pB()) * 0.36, 170);
     const A = [cx - dx, cy],
       B = [cx + dx, cy],
       C = [cx, cy - dy],
@@ -1507,15 +1335,15 @@ import { Q, Q1, Z0, toFrac } from '../../math/fractions.js';
     const x = R.eq.x,
       N = R.N;
     const ed = (p, q, f, lab) => {
-      ctx.strokeStyle = f > 1e-9 ? c.p1 : c.axis;
-      ctx.globalAlpha = f > 1e-9 ? 0.9 : 0.3;
-      ctx.lineWidth = 2 + (10 * f) / N;
-      ctx.beginPath();
-      ctx.moveTo(...p);
-      ctx.lineTo(...q);
-      ctx.stroke();
-      ctx.globalAlpha = 1;
-      if (P.show.labels) txt(lab, (p[0] + q[0]) / 2, (p[1] + q[1]) / 2 - 12, c.axis, 12);
+      ECON.ctx.strokeStyle = f > 1e-9 ? c.p1 : c.axis;
+      ECON.ctx.globalAlpha = f > 1e-9 ? 0.9 : 0.3;
+      ECON.ctx.lineWidth = 2 + (10 * f) / N;
+      ECON.ctx.beginPath();
+      ECON.ctx.moveTo(...p);
+      ECON.ctx.lineTo(...q);
+      ECON.ctx.stroke();
+      ECON.ctx.globalAlpha = 1;
+      if (ECON.P.show.labels) ECON.txt(lab, (p[0] + q[0]) / 2, (p[1] + q[1]) / 2 - 12, c.axis, 12);
     };
     const fAC = x[0] + x[2],
       fDB = x[1] + x[2];
@@ -1530,70 +1358,36 @@ import { Q, Q1, Z0, toFrac } from '../../math/fractions.js';
       [C, 'C'],
       [D, 'D'],
     ].forEach(([p, l]) => {
-      ctx.fillStyle = c.eq;
-      ctx.beginPath();
-      ctx.arc(p[0], p[1], 12, 0, 7);
-      ctx.fill();
-      txt(l, p[0], p[1], c.bg, 13);
+      ECON.ctx.fillStyle = c.eq;
+      ECON.ctx.beginPath();
+      ECON.ctx.arc(p[0], p[1], 12, 0, 7);
+      ECON.ctx.fill();
+      ECON.txt(l, p[0], p[1], c.bg, 13);
     });
   }
   const VALS2 = {
     olig: (R, V) => VALS2_olig(R, V),
-    cont: (R, V) => prop(T().v2.eqs, R.many ? String(R.grid.length) : R.eq.map(fV).join(', ') || '—'),
-    bayes: (R, V) => prop(T().v2.type, R.bm.pure.map(([i, j]) => `(${i + 1}; ${R.cl[j]})`).join(', ') || '—'),
+    cont: (R, V) => ECON.prop(T().v2.eqs, R.many ? String(R.grid.length) : R.eq.map(fV).join(', ') || '—'),
+    bayes: (R, V) =>
+      ECON.prop(T().v2.type, R.bm.pure.map(([i, j]) => `(${i + 1}; ${R.cl[j]})`).join(', ') || '—'),
     hotel: (R, V) =>
       R.hm === 'loc'
-        ? prop(T().v2.eqs, '(0.5; 0.5)'.replace(/\./g, P.lang === 'ru' ? ',' : '.'))
-        : prop(T().v2.p, `${fN(R.p[0], 4)}; ${fN(R.p[1], 4)}`) + prop(T().v2.x, fN(R.x, 4)),
-    tree: (R, V) => prop(T().v2.pay, fV(R.v)),
+        ? ECON.prop(T().v2.eqs, '(0.5; 0.5)'.replace(/\./g, ECON.P.lang === 'ru' ? ',' : '.'))
+        : ECON.prop(T().v2.p, `${fN(R.p[0], 4)}; ${fN(R.p[1], 4)}`) + ECON.prop(T().v2.x, fN(R.x, 4)),
+    tree: (R, V) => ECON.prop(T().v2.pay, fV(R.v)),
     rep: (R, V) =>
-      prop(T().v2.grim, fQ(R.grim)) + prop(T().v2.win, T().stn[STRATS[R.tot.indexOf(Math.max(...R.tot))]]),
+      ECON.prop(T().v2.grim, fQ(R.grim)) +
+      ECON.prop(T().v2.win, T().stn[STRATS[R.tot.indexOf(Math.max(...R.tot))]]),
     evo: (R, V) =>
-      prop(T().v2.ess, R.ess.join(', ') || '—') + (R.xs !== null ? prop(T().v2.xs, fQ(R.xs)) : ''),
-    vote: (R, V) => prop(T().v2.ss, fV(R.ss)) + prop(T().v2.bz, fV(R.bzN)),
-    match: (R, V) => prop(T().v2.stable, R.block.length ? V.no : V.yes),
-    braess: (R, V) => prop(T().v2.T, fN(R.eq.T, 3)) + prop(T().v2.opt, fN(R.opt.avg, 3)),
+      ECON.prop(T().v2.ess, R.ess.join(', ') || '—') + (R.xs !== null ? ECON.prop(T().v2.xs, fQ(R.xs)) : ''),
+    vote: (R, V) => ECON.prop(T().v2.ss, fV(R.ss)) + ECON.prop(T().v2.bz, fV(R.bzN)),
+    match: (R, V) => ECON.prop(T().v2.stable, R.block.length ? V.no : V.yes),
+    braess: (R, V) => ECON.prop(T().v2.T, fN(R.eq.T, 3)) + ECON.prop(T().v2.opt, fN(R.opt.avg, 3)),
   };
   /* ---------- справочник ---------- */
-  const gloss = createGlossary({
-    prefs: () => P,
-    save,
-    T,
-    content: { TERMS, FORMAL, ILL, CHAP, REL, DEMOS },
-    onDemo: (id) => runDemo(id),
-    illSvg,
-  });
-  const { termTitle, renderGloss, rerenderGloss, openTerm } = gloss;
-  gloss.init();
-  initDrawers();
 
   /* ---------- экспорт ---------- */
-  const keysUi = createKeys({ T, keys: KEYS });
-  const { renderKeys, openKeys } = keysUi;
-  keysUi.init();
-  const ex = createExport({ name: 'game-theory', T, state: S, cv, renderNow, req });
-  const { canSave, updExport, flash, exportPng } = ex;
-  ex.init();
-  let fmtMode = 'tex';
 
-  document.querySelectorAll('#xFmt button').forEach(
-    (b) =>
-      (b.onclick = () => {
-        fmtMode = b.dataset.f;
-        document.querySelectorAll('#xFmt button').forEach((x) => x.classList.toggle('on', x === b));
-        renderTex();
-      })
-  );
-
-  function illSvg() {
-    return '';
-  }
-  function runDemo(id) {
-    const d = DEMOS[id];
-    if (!d) return;
-    loadPreset(d.p);
-    showPanel('solve');
-  }
   function renderTex() {
     const ta = $('#xTex');
     if (!ta) return;
@@ -1604,11 +1398,11 @@ import { Q, Q1, Z0, toFrac } from '../../math/fractions.js';
     const R = S.res,
       t = S.topic,
       a = unesc((S.ans || '').replace(/<[^>]+>/g, ''));
-    if (fmtMode === 'txt') {
+    if (ECON.fmtMode === 'txt') {
       ta.value = `${T()['t_' + t]}\n${a}`;
       return;
     }
-    if (fmtMode === 'tex') {
+    if (ECON.fmtMode === 'tex') {
       ta.value = a.replace(/≈/g, '\\approx ').replace(/φ/g, '\\varphi ');
       return;
     }
@@ -1629,32 +1423,23 @@ import { Q, Q1, Z0, toFrac } from '../../math/fractions.js';
     ta.value = py;
   }
 
-  function flip(k) {
-    P.show[k] = !P.show[k];
-    syncToggles();
-    save();
-    renderCaption();
-    req();
-    const L = T();
-    toast(`${L.tog[k]}: ${P.show[k] ? L.on : L.off}`);
-  }
   onShortcut((c, e, isQ) => {
     const L = T();
     let h = true;
-    if (isQ) openKeys();
+    if (isQ) ECON.openKeys();
     else if (/^(Digit|Numpad)[1-9]$/.test(c)) {
-      setTopic(TOPICS[+c.slice(-1) - 1]);
+      ECON.setTopic(TOPICS[+c.slice(-1) - 1]);
       toast(L['t_' + S.topic]);
     } else if (c === 'BracketLeft' || c === 'BracketRight') {
       const list = PRE[S.topic];
       let i = list.findIndex((p) => p[0] === S.preset);
       i = (i + (c === 'BracketLeft' ? -1 : 1) + list.length) % list.length;
       loadPreset(list[i][0]);
-      toast(P.lang === 'ru' ? list[i][2] : list[i][3]);
-    } else if (c === 'KeyG') flip('bgGrid');
-    else if (c === 'KeyH') flip('hints');
+      toast(ECON.P.lang === 'ru' ? list[i][2] : list[i][3]);
+    } else if (c === 'KeyG') ECON.flip('bgGrid');
+    else if (c === 'KeyH') ECON.flip('hints');
     else if (c === 'KeyS') {
-      if (canSave()) exportPng();
+      if (ECON.canSave()) ECON.exportPng();
       else toast(L.xNoDl);
     } else if (c === 'Slash') {
       $('#openGloss').click();
@@ -1663,49 +1448,6 @@ import { Q, Q1, Z0, toFrac } from '../../math/fractions.js';
     return h;
   });
   /* ---------- настройки ---------- */
-  const settings = createSettings({
-    prefs: () => P,
-    setPrefs: (np) => {
-      P = np;
-    },
-    save,
-    T,
-    defaults: DEF,
-    panels: PANELS,
-    palettes: PAL,
-    main,
-    side,
-    hooks: { applyLang, applyOrder, syncToggles, renderAll, req },
-  });
-  const { buildSettings, buildPal, syncSettings, applyDock, applyPrefs } = settings;
-  settings.init();
 
-  function applyLang() {
-    const L = T();
-    LNG = P.lang;
-    document.documentElement.lang = P.lang;
-    document.title = L.title;
-    applyTexts(L);
-    $('#gq').placeholder = L.search;
-    cv.setAttribute('aria-label', L.canvas);
-    document
-      .querySelectorAll('#langSeg button,#langSeg2 button')
-      .forEach((b) => b.classList.toggle('on', b.dataset.l === P.lang));
-    buildPal();
-    buildToggles();
-    syncToggles();
-    syncSettings();
-    updExport();
-    renderKeys();
-    if ($('#dGloss').classList.contains('open')) rerenderGloss();
-    renderForm();
-    recompute();
-  }
-
-  buildPanels();
-  buildSettings();
-  applyPrefs();
-  renderForm();
-  applyLang();
-  if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => req());
+  ECON.start();
 })();
