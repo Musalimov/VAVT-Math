@@ -1,3 +1,4 @@
+import { applyTexts, createSettings } from '../../shared/settings.js';
 import { createKeys, onShortcut } from '../../shared/keys.js';
 import { KEYS } from './content/keys.js';
 import { createExport } from '../../shared/export.js';
@@ -1643,114 +1644,29 @@ import { lang, langFrom } from '../../shared/i18n.js';
     return h;
   });
   /* ---------- настройки ---------- */
-  $('#openSet').onclick = () => {
-    syncSettings();
-    openDrawer('dSet');
-  };
-  function buildSettings() {
-    document.querySelectorAll('#langSeg button,#langSeg2 button').forEach(
-      (b) =>
-        (b.onclick = () => {
-          P.lang = b.dataset.l;
-          applyLang();
-          save();
-        })
-    );
-    document.querySelectorAll('#uiSeg button').forEach(
-      (b) =>
-        (b.onclick = () => {
-          P.ui = b.dataset.v;
-          applyPrefs();
-        })
-    );
-    document.querySelectorAll('#dockSeg button').forEach(
-      (b) =>
-        (b.onclick = () => {
-          P.dock = b.dataset.v;
-          applyPrefs();
-        })
-    );
-    $('#wR').oninput = (e) => {
-      P.width = +e.target.value;
-      applyPrefs();
-    };
-    $('#hR').oninput = (e) => {
-      P.bottomH = +e.target.value;
-      applyPrefs();
-    };
-    $('#fR').oninput = (e) => {
-      P.font = +e.target.value;
-      applyPrefs();
-    };
-    $('#lR').oninput = (e) => {
-      P.lw = +e.target.value;
-      applyPrefs();
-    };
-    $('#resetOrder').onclick = () => {
-      P.order = PANELS.slice();
-      P.collapsed = {};
-      applyPrefs();
-    };
-    $('#resetAll').onclick = () => {
-      const lg = P.lang,
-        rd = P.read,
-        last = P.last;
-      P = clone(DEF);
-      P.lang = lg;
-      P.read = rd || {};
-      P.last = last;
-      syncToggles();
-      applyPrefs();
-      renderAll();
-    };
-  }
-  function buildPal() {
-    const L = T();
-    const pc = $('#palChips');
-    pc.innerHTML = '';
-    Object.entries(PAL).forEach(([k, p]) => {
-      const b = document.createElement('button');
-      b.className = 'chip';
-      b.dataset.p = k;
-      b.innerHTML = `<span class="sw" style="background:${p.bg};box-shadow:inset 0 0 0 3px ${p.f || Object.values(p)[3]}"></span>${L.pal[k]}`;
-      b.onclick = () => {
-        P.palette = k;
-        P.colors = { ...PAL[k] };
-        applyPrefs();
-      };
-      pc.appendChild(b);
-    });
-    const cs = $('#colors');
-    cs.innerHTML = '';
-    Object.keys(L.colors).forEach((k) => {
-      const l = document.createElement('label');
-      l.innerHTML = `<input type="color" data-k="${k}"> ${L.colors[k]}`;
-      l.querySelector('input').oninput = (e) => {
-        P.colors[k] = e.target.value;
-        P.palette = 'custom';
-        applyPrefs();
-      };
-      cs.appendChild(l);
-    });
-  }
+  const settings = createSettings({
+    prefs: () => P,
+    setPrefs: (np) => {
+      P = np;
+    },
+    save,
+    T,
+    defaults: DEF,
+    panels: PANELS,
+    palettes: PAL,
+    main,
+    side,
+    hooks: { applyLang, applyOrder, syncToggles, renderAll, req },
+  });
+  const { buildSettings, buildPal, syncSettings, applyDock, applyPrefs } = settings;
+  settings.init();
+
   function applyLang() {
     const L = T();
     LNG = P.lang;
     document.documentElement.lang = P.lang;
     document.title = L.title;
-    document.querySelectorAll('[data-i]').forEach((e) => {
-      e.textContent = L[e.dataset.i];
-    });
-    document.querySelectorAll('[data-ih]').forEach((e) => {
-      e.innerHTML = L[e.dataset.ih];
-    });
-    document.querySelectorAll('[data-it]').forEach((e) => {
-      e.title = L[e.dataset.it];
-      e.setAttribute('aria-label', L[e.dataset.it]);
-    });
-    document.querySelectorAll('[data-ia]').forEach((e) => {
-      e.setAttribute('aria-label', L[e.dataset.ia]);
-    });
+    applyTexts(L);
     $('#gq').placeholder = L.search;
     cv.setAttribute('aria-label', L.canvas);
     document
@@ -1766,81 +1682,6 @@ import { lang, langFrom } from '../../shared/i18n.js';
     renderForm();
     recompute();
   }
-  function syncSettings() {
-    document.querySelectorAll('#uiSeg button').forEach((b) => b.classList.toggle('on', b.dataset.v === P.ui));
-    document
-      .querySelectorAll('#dockSeg button')
-      .forEach((b) => b.classList.toggle('on', b.dataset.v === P.dock));
-    document
-      .querySelectorAll('#palChips .chip')
-      .forEach((b) => b.classList.toggle('on', b.dataset.p === P.palette));
-    document.querySelectorAll('#colors input').forEach((i) => {
-      i.value = P.colors[i.dataset.k];
-    });
-    $('#wR').value = P.width;
-    $('#wOut').textContent = P.width + ' px';
-    $('#hR').value = P.bottomH;
-    $('#hOut').textContent = P.bottomH + ' %';
-    $('#fR').value = P.font;
-    $('#fOut').textContent = P.font + ' %';
-    $('#lR').value = P.lw;
-    $('#lOut').textContent = '×' + fmt(P.lw, 1);
-  }
-  function effDock() {
-    return P.dock === 'auto' ? (innerWidth < 760 ? 'bottom' : 'right') : P.dock;
-  }
-  function applyDock() {
-    const d = effDock();
-    main.dataset.dock = d;
-    if (d === 'float') {
-      const mr = main.getBoundingClientRect(),
-        sw = side.offsetWidth || P.width;
-      P.float.x = Math.max(8, Math.min(P.float.x, mr.width - Math.min(sw, mr.width) - 8));
-      P.float.y = Math.max(8, Math.min(P.float.y, mr.height - 80));
-      side.style.left = P.float.x + 'px';
-      side.style.top = P.float.y + 'px';
-    } else {
-      side.style.left = '';
-      side.style.top = '';
-    }
-  }
-  function applyPrefs() {
-    const r = document.documentElement;
-    if (P.ui === 'auto') r.removeAttribute('data-theme');
-    else r.setAttribute('data-theme', P.ui);
-    r.style.fontSize = (16 * P.font) / 100 + 'px';
-    r.style.setProperty('--side-w', P.width + 'px');
-    r.style.setProperty('--side-h', P.bottomH + '%');
-    Object.entries(P.colors).forEach(([k, v]) => r.style.setProperty('--s-' + k, v));
-    applyDock();
-    applyOrder();
-    syncSettings();
-    save();
-    req();
-  }
-  (() => {
-    const g = $('#grip');
-    let st = null;
-    g.addEventListener('pointerdown', (e) => {
-      g.setPointerCapture(e.pointerId);
-      st = { x: e.clientX, y: e.clientY, fx: P.float.x, fy: P.float.y };
-    });
-    g.addEventListener('pointermove', (e) => {
-      if (!st) return;
-      P.float.x = st.fx + e.clientX - st.x;
-      P.float.y = st.fy + e.clientY - st.y;
-      applyDock();
-    });
-    const end = () => {
-      if (st) {
-        st = null;
-        save();
-      }
-    };
-    g.addEventListener('pointerup', end);
-    g.addEventListener('pointercancel', end);
-  })();
-  window.addEventListener('resize', () => applyDock());
 
   buildPanels();
   buildSettings();
