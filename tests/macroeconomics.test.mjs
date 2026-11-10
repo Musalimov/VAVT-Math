@@ -21,11 +21,12 @@ const norm = (v) =>
     )
   );
 
-// Числа — с относительной точностью 1e-12: Math.pow и т. п. в Node и в браузере
-// могут расходиться в последнем бите (разные версии V8), это не изменение кода.
+// Числа — с относительной точностью 1e-6: Math.pow, exp и т. п. в Node и в браузере
+// могут расходиться в последнем бите (разные версии V8), а численный поиск минимума
+// (средние издержки) усиливает это до ~1e-7. Текст решения сравнивается точно.
 function close(a, b, where = '') {
   if (typeof a === 'number' && typeof b === 'number') {
-    assert.ok(Math.abs(a - b) <= 1e-12 * Math.max(1, Math.abs(a), Math.abs(b)), `${where}: ${a} ≠ ${b}`);
+    assert.ok(Math.abs(a - b) <= 1e-6 * Math.max(1, Math.abs(a), Math.abs(b)), `${where}: ${a} ≠ ${b}`);
   } else if (a && b && typeof a === 'object' && typeof b === 'object') {
     assert.deepEqual(Object.keys(a).sort(), Object.keys(b).sort(), `${where}: набор полей`);
     for (const k of Object.keys(a)) close(a[k], b[k], `${where}.${k}`);
