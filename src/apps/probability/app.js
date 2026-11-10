@@ -1,3 +1,10 @@
+import { closeDrawers } from '../../shared/drawers.js';
+import { openDrawer } from '../../shared/drawers.js';
+import { toast } from '../../shared/toast.js';
+import { clone } from '../../shared/dom.js';
+import { $ } from '../../shared/dom.js';
+import { dc } from '../../shared/format.js';
+import { fmt } from '../../shared/format.js';
 import { lang, langFrom } from '../../shared/i18n.js';
 (()=>{
 'use strict';
@@ -231,7 +238,7 @@ function parseLim(str){const s=str.trim();if(/^\+?(inf|∞|infinity)$/i.test(s))
   const e=parse(s);if(hasInf(e))throw{msg:'inf'};if(has(e))throw{msg:'x'};const v=compile(simp(e))(0);if(!isFinite(v))throw{msg:'nan'};return{v,e:simp(e)}}
 
 /* ---------- печать ---------- */
-let PV='x';
+const PRINT={v:'x'};
 const FNAME={ru:{sin:'sin',cos:'cos',tan:'tg',cot:'ctg',ln:'ln',asin:'arcsin',acos:'arccos',atan:'arctg',sinh:'sh',cosh:'ch',tanh:'th'},
   en:{sin:'sin',cos:'cos',tan:'tan',cot:'cot',ln:'ln',asin:'arcsin',acos:'arccos',atan:'arctan',sinh:'sinh',cosh:'cosh',tanh:'tanh'}};
 const TRIG=new Set(['sin','cos','tan','cot','ln','sinh','cosh','tanh']);
@@ -246,7 +253,7 @@ function hp(e,p=0,sup=false){const s=hp0(e,sup);return prec(e)<p?`(${s})`:s}
 const juxOK=b=>!(isN(b))&&!(b[0]==='*'&&isN(b[1]))&&b[0]!=='neg';
 function hp0(e,sup){switch(e[0]){
   case 'n':return(e[1]<0?'−':'')+numH(e[1],sup);
-  case 'v':return`<i>${e[1]==='x'?PV:e[1]}</i>`;
+  case 'v':return`<i>${e[1]==='x'?PRINT.v:e[1]}</i>`;
   case 'c':return e[1]==='pi'?'π':'e';
   case '+':return`${hp(e[1],1,sup)} + ${hp(e[2],1.5,sup)}`;
   case '-':return`${hp(e[1],1,sup)} − ${hp(e[2],2,sup)}`;
@@ -411,12 +418,12 @@ const HH=e=>hp(e,0);
 const dd=h=>h==='1'?'':h==='−1'?'−':h+' ';
 const cH=c=>isNum(Nn(c),1)?'':isNum(Nn(c),-1)?'−':hp(Nn(c),2)+'·';
 function polyAsc(p,v){let r=null;p.forEach((c,k)=>{if(Math.abs(c)<1e-12)return;const t=k===0?Nn(Math.abs(c)):mul(Nn(Math.abs(c)),pow(v,Nn(k)));r=r===null?(c<0?neg(t):t):(c<0?sub(r,t):add(r,t))});return r||Nn(0)}
-const dxh=()=>` d<i>${PV}</i>`;
+const dxh=()=>` d<i>${PRINT.v}</i>`;
 const IH=e=>`<span class="ig">∫</span>${hp(e,2)}${dxh()}`;
 const EQ=(e,F)=>`${IH(e)} = ${HH(F)}`;
 function subI(e){DEP++;const r=integ(e);DEP--;return r}
 function quiet(e){QUIET++;const r=integ(e);QUIET--;return r}
-function withVar(fnc){const o=PV,i=VN.indexOf(o);PV=VN[Math.min(VN.length-1,i+1)];try{return fnc()}finally{PV=o}}
+function withVar(fnc){const o=PRINT.v,i=VN.indexOf(o);PRINT.v=VN[Math.min(VN.length-1,i+1)];try{return fnc()}finally{PRINT.v=o}}
 let BUDGET=0;
 function integ(e){if(DEP>9||--BUDGET<0)return null;e=tidy(e);
   if(!has(e)){meth('table');const F=mul(e,X);step(`${Q().const} ${EQ(e,F)}`);return F}
@@ -579,7 +586,7 @@ function R_usub(e){const E=asFactors(e);
     if(has(R)){const t=tidy(R0);R=replKey(t,gk,['v','u']);if(has(R))continue}
     const Ru=subst(R,'u',X);const m=mark();
     meth('usub');step(Q().usub(HH(g),dd(HH(dg))));
-    let G=null;withVar(()=>{step(`${IH(e).replace(new RegExp(`<i>${PV}</i>`,'g'),'§')}`.replace(/§/g,`<i>${VN[VN.indexOf(PV)-1]||'x'}</i>`)+` = ${cH(c)}${IH(Ru)}`);G=subI(Ru)});
+    let G=null;withVar(()=>{step(`${IH(e).replace(new RegExp(`<i>${PRINT.v}</i>`,'g'),'§')}`.replace(/§/g,`<i>${VN[VN.indexOf(PRINT.v)-1]||'x'}</i>`)+` = ${cH(c)}${IH(Ru)}`);G=subI(Ru)});
     if(!G){reset(m);continue}
     const F=mul(Nn(c),subst(G,'x',g));step(`${Q().usubBack} ${HH(tidy(F))}`);return F}
   return null}
@@ -620,7 +627,7 @@ function onlyTrigX(e){if(e[0]==='f'){if((e[1]==='sin'||e[1]==='cos'||e[1]==='tan
 function R_weier(e){if(!onlyTrigX(e))return null;const t=X,s=div(mul(Nn(2),t),add(Nn(1),pow(t,Nn(2)))),c=div(sub(Nn(1),pow(t,Nn(2))),add(Nn(1),pow(t,Nn(2))));
   const rep=z=>{if(z[0]==='f'&&z[2][0]==='v'){return z[1]==='sin'?s:z[1]==='cos'?c:div(s,c)}if(z[0]==='n'||z[0]==='c'||z[0]==='v')return z;if(z[0]==='f')return fn(z[1],rep(z[2]));if(z[0]==='neg')return neg(rep(z[1]));return OPS[z[0]](rep(z[1]),rep(z[2]))};
   const R=mul(rep(e),div(Nn(2),add(Nn(1),pow(t,Nn(2)))));const rf=ratFun(R);if(!rf)return null;const[P,Qp]=pcancel(rf[0],rf[1]);const Rt=pdeg(Qp)<1?polyAst(P):ratAst(P,Qp);
-  meth('weier');step(Q().weier);let G=null;{const o=PV;PV='t';try{step(`= ${IH(Rt)}`);G=subI(Rt)}finally{PV=o}}if(!G)return null;
+  meth('weier');step(Q().weier);let G=null;{const o=PRINT.v;PRINT.v='t';try{step(`= ${IH(Rt)}`);G=subI(Rt)}finally{PRINT.v=o}}if(!G)return null;
   const F=subst(G,'x',fn('tan',div(X,Nn(2))));step(`${Q().usubBack} ${HH(tidy(F))}`);return F}
 const RULES=[R_poly,R_neg,R_sum,R_cmul,R_powlin,R_table,R_rational,R_trigpow,R_trigsub,R_divsplit,R_usub,R_parts,R_linu,R_dist,R_weier];
 
@@ -638,7 +645,7 @@ function checkF(f,F,a,b){const ff=compile(f),FF=compile(F);let lo=isFinite(a)?a:
     if(isFinite(d)&&Math.abs(d-y)<=2e-4*Math.max(1,Math.abs(y)))good++}
   if(n===0){for(const x of[0.31,0.77,1.3,-0.6,2.2]){const y=ff(x);if(!isFinite(y))continue;const h=1e-5,d=(FF(x+h)-FF(x-h))/(2*h);n++;if(isFinite(d)&&Math.abs(d-y)<=2e-4*Math.max(1,Math.abs(y)))good++}}
   return n>0&&good===n}
-function solve(f,a,b){STP=[];MS=[];DEP=0;QUIET=0;PV='x';BUDGET=4000;let F=null;try{F=integ(f)}catch(e){F=null}
+function solve(f,a,b){STP=[];MS=[];DEP=0;QUIET=0;PRINT.v='x';BUDGET=4000;let F=null;try{F=integ(f)}catch(e){F=null}
   if(F){F=dropConst(tidy(F));if(!checkF(f,F,a,b))F=null}
   return{F,steps:F?STP.slice():[],meth:F?MS.slice():[],ne:F?null:nonElem(f)}}
 /* ---------- математика теории вероятностей ---------- */
@@ -971,9 +978,9 @@ CHAP.unshift({ru:'1. Комбинаторика',en:'1. Combinatorics',ids:['per
 Object.assign(DEMOS,{perm:{p:'c1'},arr:{p:'c2'},combs:{p:'c113'},mult:{p:'c116'},classic:{p:'k4'},urn:{p:'k216'},addth:{p:'o5'},multh:{p:'o6'},atleast:{p:'o320b'},total:{p:'h7'},bayes:{p:'h438'}});
 Object.assign(REL,{perm:['arr','mult'],arr:['perm','combs'],combs:['arr','classic'],mult:['perm'],classic:['urn','combs'],urn:['hyper','classic'],addth:['multh'],multh:['addth','atleast','indep'],atleast:['multh','bernoulli'],total:['bayes'],bayes:['total']});
 Object.assign(ILL,{combs:{k:'bars',v:[1,4,6,4,1].map(c=>c/16),sel:[2]},total:{k:'grid',P:[[.3,.1],[.2,.4]]},addth:{k:'scatter'}});
-const $=s=>document.querySelector(s);
+
 const KEY='prob-viz-v1';
-function fmt(x,d=2){if(!isFinite(x))return x>0?'∞':x<0?'−∞':'—';if(Math.abs(x)<5e-12)x=0;let s=String(+x.toFixed(d));if(s==='-0')s='0';return s.replace('-','−')}
+
 const PAL={
   classic:{bg:'#0b0c10',bgGrid:'#262b33',axis:'#f2f2f2',bar:'#58c4dd',sel:'#f4d345',curve:'#ff7aa8',area:'#83c167',aux:'#ff9f43',mark:'#c77dff',F:'#fc6255'},
   paper:{bg:'#fbfaf7',bgGrid:'#e3e1da',axis:'#23262b',bar:'#2b6cb0',sel:'#c98a00',curve:'#c0398b',area:'#3f9a3a',aux:'#e67e22',mark:'#8e44ad',F:'#d1453b'},
@@ -983,14 +990,14 @@ const T=()=>TX[lang()]||TX.ru;
 const PANELS=['topic','presets','solve','values','show','export'];
 const DEF={palette:'classic',colors:{...PAL.classic},dock:'auto',width:380,bottomH:46,ui:'auto',font:100,speed:1,lw:1,order:PANELS.slice(),collapsed:{export:true},read:{},float:{x:12,y:12},
   show:{bgGrid:true,coords:true,labels:true,approx:true,sigma:true,Fplot:true,hints:true},topic:'bern',inp:null,preset:null};
-const clone=o=>JSON.parse(JSON.stringify(o));
+
 function load(){let r=null;try{r=JSON.parse(localStorage.getItem(KEY)||'null')}catch(e){}const p=clone(DEF);if(!r||typeof r!=='object')return p;
   Object.assign(p,r);p.colors={...DEF.colors,...(r.colors||{})};p.show={...DEF.show,...(r.show||{})};const ord=Array.isArray(r.order)?r.order.filter(x=>PANELS.includes(x)):[];PANELS.forEach(x=>{if(!ord.includes(x))ord.push(x)});p.order=ord;p.collapsed=r.collapsed||{};p.float=r.float||{x:12,y:12};
   /* защита от повреждённых/старых настроек: числа — в пределах ползунков, иначе по умолчанию */const RNG={width:[240,560],bottomH:[25,75],font:[80,130],speed:[.25,3],lw:[.5,2.5]};for(const k in RNG){const v=p[k],[a,b]=RNG[k];p[k]=typeof v==='number'&&isFinite(v)?Math.min(b,Math.max(a,v)):DEF[k]}if(!p.float||typeof p.float!=='object'||!isFinite(p.float.x)||!isFinite(p.float.y))p.float={x:12,y:12};if(!p.collapsed||typeof p.collapsed!=='object'||Array.isArray(p.collapsed))p.collapsed={};return p}
 let P=load();langFrom(()=>P.lang);if(!P.lang)P.lang=(navigator.language||'').toLowerCase().startsWith('ru')?'ru':'en';let saveT=0;
 function save(){clearTimeout(saveT);saveT=setTimeout(()=>{try{localStorage.setItem(KEY,JSON.stringify(P))}catch(e){}},250)}
 /* ---------- числа ---------- */
-const dc=s=>lang()==='ru'?s.replace(/(\d)\.(\d)/g,'$1,$2'):s;
+
 function fN(v,d=4){if(!isFinite(v))return v>0?'∞':v<0?'−∞':'—';if(Math.abs(v)>=1e5||(Math.abs(v)<1e-4&&v!==0)){const[m,e]=v.toExponential(3).split('e');return dc(String(+m)).replace('-','−')+'·10<sup>'+String(+e).replace('-','−')+'</sup>'}return dc(fmt(v,d))}
 function fQ(v,d=4){const f=toFrac(v,10000,1e-12);if(f&&f[1]>1&&f[1]<=10000&&Math.abs(f[0])<1e6)return`${f[0]<0?'−':''}${Math.abs(f[0])}/${f[1]} ≈ ${fN(v,d)}`;return fN(v,d)}
 const fT=(v,d=4)=>fN(v,d).replace(/<\/?sup>/g,'');
@@ -1085,22 +1092,22 @@ function compDvu(I){let J;if(I.jm==='ind'){const X=parseSeries(I.tx||''),Y=parse
   let dep=null;if(!st.indep){outer:for(let i=0;i<J.x.length;i++)for(let j=0;j<J.y.length;j++)if(Math.abs(J.P[i][j]-st.px[i]*st.py[j])>1e-9){dep={i,j};break outer}}
   return{J,st,a,b,zc,zt,Z,zs,cond,dep,DZchk:a*a*st.sx.D+b*b*st.sy.D+2*a*b*st.cov}}
 function quadN(f,a,b){return quadF(f,a,b).v}
-function compNsv(I){let a,b,f,F,Fexpr=null,fexpr=null,C=1,I0=null,lo,hi,kind=I.mode;
+function compNsv(I){let lamV=null,FaV=null;let a,b,f,F,Fexpr=null,fexpr=null,C=1,I0=null,lo,hi,kind=I.mode;
   if(kind==='uni'){a=nI(I.a);b=nI(I.b);if(!(a<b))E('ab');f=x=>x>=a&&x<=b?1/(b-a):0;F=x=>x<=a?0:x>=b?1:(x-a)/(b-a);lo=a;hi=b}
-  else if(kind==='exp'){const l=nI(I.lam);if(!(l>0))E('lam');a=0;b=Infinity;f=x=>x<0?0:l*Math.exp(-l*x);F=x=>x<0?0:1-Math.exp(-l*x);lo=0;hi=-Math.log(1e-4)/l;S._lam=l}
+  else if(kind==='exp'){const l=nI(I.lam);if(!(l>0))E('lam');a=0;b=Infinity;f=x=>x<0?0:l*Math.exp(-l*x);F=x=>x<0?0:1-Math.exp(-l*x);lo=0;hi=-Math.log(1e-4)/l;lamV=l}
   else if(kind==='f'){a=nI(I.a);b=nI(I.b);if(!(a<b))E('ab');let g;try{g=parseFx(I.fx||'')}catch(e){E('f')}const gc=compile(g);
     {const q=quadF(gc,a,b);I0=q.v;if(!q.ok||!isFinite(I0)||Math.abs(I0)>1e9)E('diverg')}if(I.C){if(!(I0>0))E('norm1');C=1/I0}else if(Math.abs(I0-1)>1e-6)E('norm1');fexpr=g;
     for(let i=0;i<=200;i++){const x=a+(b-a)*i/200,v=gc(x);if(isFinite(v)&&v*C<-1e-9)E('neg')}
     f=x=>x<a||x>b?0:C*gc(x);let sol=null;try{sol=solve(g,a,b)}catch(e){}
-    if(sol&&sol.F){const Fg=compile(sol.F),Fa=Fg(a);Fexpr=sol.F;F=x=>x<=a?0:x>=b?1:C*(Fg(x)-Fa);S._Fa=Fa}else{F=x=>x<=a?0:x>=b?1:C*quadN(gc,a,x);S._Fa=null}lo=a;hi=b}
+    if(sol&&sol.F){const Fg=compile(sol.F),Fa=Fg(a);Fexpr=sol.F;F=x=>x<=a?0:x>=b?1:C*(Fg(x)-Fa);FaV=Fa}else{F=x=>x<=a?0:x>=b?1:C*quadN(gc,a,x);FaV=null}lo=a;hi=b}
   else{a=nI(I.a);b=nI(I.b);if(!(a<b))E('ab');let g;try{g=parseFx(I.Fx||'')}catch(e){E('f')}const Fg=compile(g);Fexpr=g;
     if(Math.abs(Fg(a))>1e-6||Math.abs(Fg(b)-1)>1e-6)E('Fbad');for(let i=0;i<200;i++){const x1=a+(b-a)*i/200,x2=a+(b-a)*(i+1)/200;if(Fg(x2)<Fg(x1)-1e-9)E('Fbad')}
     F=x=>x<=a?0:x>=b?1:Fg(x);try{fexpr=tidy(D(g))}catch(e){fexpr=null}const fd=fexpr?compile(fexpr):(x=>(Fg(x+1e-6)-Fg(x-1e-6))/2e-6);f=x=>x<a||x>b?0:fd(x);lo=a;hi=b}
-  const M=kind==='exp'?1/S._lam:quadN(x=>x*f(x),lo,hi),M2=kind==='exp'?2/(S._lam*S._lam):quadN(x=>x*x*f(x),lo,hi),Dv=Math.max(0,M2-M*M);
-  const inv=pp=>{if(kind==='exp')return-Math.log(1-pp)/S._lam;let l0=lo,h0=hi;for(let i=0;i<100;i++){const m=(l0+h0)/2;if(F(m)<pp)l0=m;else h0=m}return(l0+h0)/2};
+  const M=kind==='exp'?1/lamV:quadN(x=>x*f(x),lo,hi),M2=kind==='exp'?2/(lamV*lamV):quadN(x=>x*x*f(x),lo,hi),Dv=Math.max(0,M2-M*M);
+  const inv=pp=>{if(kind==='exp')return-Math.log(1-pp)/lamV;let l0=lo,h0=hi;for(let i=0;i<100;i++){const m=(l0+h0)/2;if(F(m)<pp)l0=m;else h0=m}return(l0+h0)/2};
   const al=I.al===''?null:nI(I.al),be=I.be===''?null:nI(I.be);const Pab=al!==null&&be!==null?F(Math.max(al,be))-F(Math.min(al,be)):null;
   const ql=I.ql===''?null:nI(I.ql);let mode=null;{let best=-1,bx=null;const N=400;for(let i=0;i<=N;i++){const x=lo+(hi-lo)*i/N,v=f(x);if(v>best+1e-12){best=v;bx=x}}mode=bx}
-  return{kind,a,b,f,F,C,I0,fexpr,Fexpr,lo,hi,M,M2,D:Dv,s:Math.sqrt(Dv),med:inv(.5),qv:ql!==null&&ql>0&&ql<1?inv(ql):null,ql,al,be,Pab,mode,lam:S._lam}}
+  return{kind,a,b,f,F,C,I0,fexpr,Fexpr,lo,hi,M,M2,D:Dv,s:Math.sqrt(Dv),med:inv(.5),qv:ql!==null&&ql>0&&ql<1?inv(ql):null,ql,al,be,Pab,mode,lam:lamV,Fa:FaV}}
 function compNorm(I){const q=I.q;let m=I.m===''||I.m==null?null:nI(I.m),s=I.sg===''||I.sg==null?null:nI(I.sg);const R={q};
   if(['fm','fmg'].includes(q)){if(!(s>0))E('sig');const x1=nI(I.x1),pv=nI(I.pv);if(!(pv>0&&pv<1))E('p01');const pl=q==='fm'?pv:1-pv,z=PhiInv(pl);m=x1-s*z;Object.assign(R,{x1,pv,pl,z,find:'m'})}
   else if(['fs','fsg'].includes(q)){if(m===null)E('num');const x1=nI(I.x1),pv=nI(I.pv);if(!(pv>0&&pv<1))E('p01');const pl=q==='fs'?pv:1-pv,z=PhiInv(pl);s=(x1-m)/z;if(!(s>0))E('sig');Object.assign(R,{x1,pv,pl,z,find:'s'})}
@@ -1184,7 +1191,7 @@ function solveBern(R){const L=T(),st=[];st.push(L.s_bern(fQ(R.p),fQ(R.q)));st.pu
     st.push(L.s_tab);main=`${evT(R)} ≈ ${fN(R.approx,4)}`}
   if(ap)st.push(L.s_exact(fQ(R.exact,5)));return{st,ans:main,sub:ap?`${L.ex}: ${fQ(R.exact,5)}`:''}}
 function serTab(x,p,nm='X'){return mtab([[nm,...x.map(v=>fN(v,4))],['p',...p.map(v=>fQ(v,4).replace(/ ≈ .*/,''))]])}
-function sumTerms(x,p,f){return x.length<=8?x.map((v,i)=>`${fN(f(v),3)}·${fN(p[i],4)}`).join(' + ')+' = ':''}
+function sumRow(x,p,f){return x.length<=8?x.map((v,i)=>`${fN(f(v),3)}·${fN(p[i],4)}`).join(' + ')+' = ':''}
 function zLin(a,b,c){const t=(v,n,first)=>v===0?'':`${first?(v<0?'−':''):(v<0?' − ':' + ')}${Math.abs(v)===1&&n?'':fN(Math.abs(v))}${n}`;let s=t(a,'X',true);s+=t(b,'Y',!s);if(c)s+=t(c,'',!s);return s||'0'}
 function solveDsv(R){const L=T();if(R.mode==='prop'){const st=[],z=zLin(R.a,R.b,R.c);st.push(L.p_M(z)+` = ${fN(R.a)}·${fN(R.mx)} ${R.b<0?'−':'+'} ${fN(Math.abs(R.b))}·${R.my<0?'('+fN(R.my)+')':fN(R.my)} ${R.c<0?'−':'+'} ${fN(Math.abs(R.c))} = ${fQ(R.MZ)}`);
     if(R.rl==='r')st.push(`${L.p_cov} cov = r·σₓσᵧ = ${fN(nI(R.rv))}·√${fN(R.dx)}·√${fN(R.dy)} = ${fQ(R.cov)}`);else if(R.rl==='ind')st.push(L.p_ind);
@@ -1192,7 +1199,7 @@ function solveDsv(R){const L=T();if(R.mode==='prop'){const st=[],z=zLin(R.a,R.b,
     st.push(`σ(Z) = √D(Z) = ${fN(R.sZ,4)}`);return{st,ans:`M(Z) = ${fQ(R.MZ)}, D(Z) = ${fQ(R.DZ)}`}}
   const st=[],s=R.st;if(R.gen)st.push(L.s_gen[R.mode]);if(R.unk)st.push(L.s_unk(fN(R.unk.x),fN(R.unk.p,4)));
   st.push(serTab(R.x,R.p));st.push(L.s_sumP(fN(R.sum,6)));
-  st.push(`${L.s_M} ${sumTerms(R.x,R.p,v=>v)}${fQ(s.M)}`);st.push(`${L.s_M2} ${sumTerms(R.x,R.p,v=>v*v)}${fQ(s.M2)}`);
+  st.push(`${L.s_M} ${sumRow(R.x,R.p,v=>v)}${fQ(s.M)}`);st.push(`${L.s_M2} ${sumRow(R.x,R.p,v=>v*v)}${fQ(s.M2)}`);
   st.push(`${L.s_D} ${fN(s.M2,4)} − ${s.M<0?'('+fN(s.M,4)+')':fN(s.M,4)}² = ${fQ(s.D)}`);st.push(`${L.s_s} √${fN(s.D,4)} = ${fN(s.s,4)}`);st.push(L.s_mod(s.modes.map(v=>fN(v)).join(', ')));
   if(R.x.length<=10){let acc=0;const lines=[`0, x ⩽ ${fN(R.x[0])}`];R.x.forEach((v,i)=>{acc+=R.p[i];lines.push(i<R.x.length-1?`${fN(acc,4)}, ${fN(v)} < x ⩽ ${fN(R.x[i+1])}`:`1, x > ${fN(v)}`)});st.push(`${L.s_F}<div class="mx2">F(x) = { ${lines.join('<br>')} }</div>`)}
   if(!(R.a===1&&R.b===0))st.push(`${L.s_Z(fN(R.a),(R.b<0?'− ':'+ ')+fN(Math.abs(R.b)))} M(Z) = ${fN(R.a)}·${fN(s.M,4)} ${R.b<0?'−':'+'} ${fN(Math.abs(R.b))} = ${fQ(R.MZ)}; D(Z) = ${fN(R.a*R.a)}·${fN(s.D,4)} = ${fQ(R.DZ)}`);
@@ -1205,12 +1212,12 @@ function solveDvu(R){const L=T(),st=[],J=R.J,s=R.st;const rows=[['X\\Y',...J.y.m
   const zs_=R.zt==='prod'?`XY${R.zc?(R.zc<0?' − ':' + ')+fN(Math.abs(R.zc)):''}`:zLin(R.a,R.b,R.zc);st.push(`${L.s_Zj} Z = ${zs_}:${serTab(R.Z.x,R.Z.p,'Z')}M(Z) = ${fQ(R.zs.M)}, D(Z) = ${fQ(R.zs.D)}`);
   if(R.zt!=='prod')st.push(`${L.s_ZjD} ${fN(R.a*R.a)}·${fN(s.sx.D,4)} + ${fN(R.b*R.b)}·${fN(s.sy.D,4)} ${2*R.a*R.b*s.cov<0?'−':'+'} ${fN(Math.abs(2*R.a*R.b),4)}·${fN(Math.abs(s.cov),4)} = ${fN(R.DZchk,4)}`);
   return{st,ans:J.ind?`M(Z) = ${fQ(R.zs.M)}, D(Z) = ${fQ(R.zs.D)}`:`cov = ${fQ(s.cov)}, r = ${fN(s.r,4)}${R.cond?`; M(${R.cond.given==='X'?'Y':'X'} | ${R.cond.given} = ${fN(R.cond.val)}) = ${fQ(R.cond.M)}`:''}`}}
-function exH(e){PV='x';return hp(e,0)}
+function exH(e){PRINT.v='x';return hp(e,0)}
 function solveNsv(R){const L=T(),st=[];
   if(R.kind==='uni')st.push(L.s_uni(fN(R.a),fN(R.b))+` F(x) = (x − ${fN(R.a)})/${fN(R.b-R.a)} на [${fN(R.a)}; ${fN(R.b)}].`);
   else if(R.kind==='exp')st.push(L.s_exp(fN(R.lam)));
   else if(R.kind==='f'){if(R.C!==1||S.inp.nsv.C)st.push(L.s_C(fQ(R.I0),fQ(R.C)));else st.push(L.s_norm);st.push(`f(x) = ${R.C!==1?fQ(R.C).replace(/ ≈ .*/,'')+'·':''}(${exH(R.fexpr)}) на [${fN(R.a)}; ${fN(R.b)}], 0 вне отрезка.`.replace('на [',lang()==='ru'?'на [':'on [').replace(', 0 вне отрезка',lang()==='ru'?', 0 вне отрезка':', 0 outside'));
-    if(R.Fexpr)st.push(`${L.s_Ff} F(x) = ${R.C!==1?fQ(R.C).replace(/ ≈ .*/,'')+'·':''}(${exH(R.Fexpr)}${S._Fa&&Math.abs(S._Fa)>1e-12?' − '+fN(S._Fa,4):''}) ${lang()==='ru'?'при':'for'} ${fN(R.a)} ⩽ x ⩽ ${fN(R.b)}.`)}
+    if(R.Fexpr)st.push(`${L.s_Ff} F(x) = ${R.C!==1?fQ(R.C).replace(/ ≈ .*/,'')+'·':''}(${exH(R.Fexpr)}${R.Fa&&Math.abs(R.Fa)>1e-12?(R.Fa>0?' − '+fN(R.Fa,4):' + '+fN(-R.Fa,4)):''}) ${lang()==='ru'?'при':'for'} ${fN(R.a)} ⩽ x ⩽ ${fN(R.b)}.`)}
   else{st.push(`F(x) = ${exH(R.Fexpr)} ${lang()==='ru'?'при':'for'} ${fN(R.a)} ⩽ x ⩽ ${fN(R.b)}; 0 ${lang()==='ru'?'левее, 1 правее':'to the left, 1 to the right'}.`);if(R.fexpr)st.push(`${L.s_fF} f(x) = ${exH(R.fexpr)}`)}
   st.push(`${L.s_Mi} ${fQ(R.M)}`);st.push(`${L.s_Di} ${fQ(R.M2)} − ${fN(R.M,4)}² = ${fQ(R.D)}; σ = ${fN(R.s,4)}`);
   if(R.Pab!==null){const a=Math.min(R.al,R.be),b=Math.max(R.al,R.be);st.push(`${L.s_P} F(${fN(b)}) − F(${fN(a)}) = ${fN(R.F(b),4)} − ${fN(R.F(a),4)} = ${fQ(R.Pab)}`)}
@@ -1433,8 +1440,8 @@ $('#gl').addEventListener('click',e=>{const tb=e.target.closest('[data-tab]');if
   box.querySelectorAll('[data-tab]').forEach(x=>x.classList.toggle('on',x.dataset.tab===P.gTab));box.querySelectorAll('.pane').forEach(p=>{p.hidden=p.dataset.pane!==P.gTab});save()});
 $('#gl').addEventListener('click',e=>{const b=e.target.closest('[data-demo]');if(!b)return;closeDrawers();runDemo(b.dataset.demo)});
 
-function openDrawer(id){document.getElementById(id).classList.add('open')}
-function closeDrawers(){document.querySelectorAll('.drawer').forEach(d=>d.classList.remove('open'))}
+
+
 document.querySelectorAll('[data-close]').forEach(el=>el.onclick=closeDrawers);
 document.addEventListener('keydown',e=>{if(e.key==='Escape')closeDrawers()});
 $('#openGloss').onclick=()=>{$('#gq').value='';renderGloss();openDrawer('dGloss')};
@@ -1498,7 +1505,7 @@ const KEYS=[['1 – 9','k_topic'],['[ / ]','k_prev'],['G','k_grid'],['F','k_F'],
 function renderKeys(){const L=T();$('#keysList').innerHTML=KEYS.map(([k,d])=>`<span>${k.split(' ').map((p,i)=>i>0&&/^[+\/–]$/.test(p)?p:`<kbd>${p}</kbd>`).join(' ')}</span><span>${L[d]}</span>`).join('')}
 function openKeys(){renderKeys();closeDrawers();openDrawer('dKeys')}
 $('#openKeys').onclick=openKeys;$('#openKeys2').onclick=openKeys;
-function toast(msg,ms=1600){const t=$('#toast');t.textContent=msg;t.classList.add('on');clearTimeout(toast.t);toast.t=setTimeout(()=>t.classList.remove('on'),ms)}
+
 function flip(k){P.show[k]=!P.show[k];syncToggles();save();renderCaption();req();const L=T();toast(`${L.tog[k]}: ${P.show[k]?L.on:L.off}`)}
 document.addEventListener('keydown',e=>{if(e.ctrlKey||e.metaKey||e.altKey)return;const tg=e.target,tag=tg&&tg.tagName;
   if((tag==='INPUT'&&!['checkbox','range','radio','color'].includes(tg.type))||tag==='TEXTAREA'||tag==='SELECT'||(tg&&tg.isContentEditable))return;
