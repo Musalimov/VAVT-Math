@@ -1,3 +1,4 @@
 # Коммиты, которые только переформатируют код: git blame их пропускает
 # (git config blame.ignoreRevsFile .git-blame-ignore-revs; GitHub учитывает файл сам).
 8bab5761d9bececfdb76ff62c657a8d1d4521168 # Макро: форматирование src/
+ceada518fdd98b8f178a6dd712f2512539f33f11 # Микро: форматирование src/
