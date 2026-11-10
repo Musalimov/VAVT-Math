@@ -1,3 +1,4 @@
+import { lang, langFrom } from '../../shared/i18n.js';
 (()=>{
 'use strict';
 /* ---------- математическое ядро: выражения ---------- */
@@ -230,7 +231,7 @@ function parseLim(str){const s=str.trim();if(/^\+?(inf|∞|infinity)$/i.test(s))
   const e=parse(s);if(hasInf(e))throw{msg:'inf'};if(has(e))throw{msg:'x'};const v=compile(simp(e))(0);if(!isFinite(v))throw{msg:'nan'};return{v,e:simp(e)}}
 
 /* ---------- печать ---------- */
-let PV='x',LNG='ru';
+let PV='x';
 const FNAME={ru:{sin:'sin',cos:'cos',tan:'tg',cot:'ctg',ln:'ln',asin:'arcsin',acos:'arccos',atan:'arctg',sinh:'sh',cosh:'ch',tanh:'th'},
   en:{sin:'sin',cos:'cos',tan:'tan',cot:'cot',ln:'ln',asin:'arcsin',acos:'arccos',atan:'arctan',sinh:'sinh',cosh:'cosh',tanh:'tanh'}};
 const TRIG=new Set(['sin','cos','tan','cot','ln','sinh','cosh','tanh']);
@@ -262,13 +263,13 @@ function hp0(e,sup){switch(e[0]){
   case '^':{const b=e[1],x=e[2];
     if(isN(x)){const v=x[1];if(v<0){const d=hp(pow(b,Nn(-v)),0,sup);return sup?`1/${d}`:frac('1',d)}
       if(v===.5)return hp0(['f','sqrt',b],sup);
-      if(b[0]==='f'&&TRIG.has(b[1])&&Number.isInteger(v))return`${FNAME[LNG][b[1]]}<sup>${v}</sup>${fArg(b[2],sup)}`}
+      if(b[0]==='f'&&TRIG.has(b[1])&&Number.isInteger(v))return`${FNAME[lang()][b[1]]}<sup>${v}</sup>${fArg(b[2],sup)}`}
     return`${hp(b,5,sup)}<sup>${hp(x,0,true)}</sup>`}
   case 'f':{const[,nm,a]=e;
     if(nm==='exp')return`e<sup>${hp(a,0,true)}</sup>`;
     if(nm==='sqrt')return`<span class="sq">√<span class="rad">${hp(a,0,sup)}</span></span>`;
     if(nm==='abs')return`|${hp(a,0,sup)}|`;
-    return FNAME[LNG][nm]+fArg(a,sup)}
+    return FNAME[lang()][nm]+fArg(a,sup)}
   default:return'?'}}
 function fArg(a,sup){if(a[0]==='f'&&a[1]==='abs')return hp0(a,sup);if(a[0]==='v')return' '+hp0(a,sup);return`(${hp(a,0,sup)})`}
 
@@ -399,7 +400,7 @@ en:{sum:'The integral of a sum is the sum of the integrals, so take each term se
   weier:'The integrand is a rational expression in sin <i>x</i> and cos <i>x</i>. The universal substitution <i>t</i> = tan(<i>x</i>/2): sin <i>x</i> = 2<i>t</i>/(1 + <i>t</i>²), cos <i>x</i> = (1 − <i>t</i>²)/(1 + <i>t</i>²), d<i>x</i> = 2 d<i>t</i>/(1 + <i>t</i>²). That gives a rational fraction:',
   dist:'Expand the brackets and integrate each term:',
   result:'Result:'}};
-const Q=()=>SX[LNG]||SX.ru;
+const Q=()=>SX[lang()]||SX.ru;
 let STP=[],MS=[],DEP=0,QUIET=0;
 const VN=['x','u','t','w','z','s'];
 const mark=()=>[STP.length,MS.length];
@@ -978,7 +979,7 @@ const PAL={
   paper:{bg:'#fbfaf7',bgGrid:'#e3e1da',axis:'#23262b',bar:'#2b6cb0',sel:'#c98a00',curve:'#c0398b',area:'#3f9a3a',aux:'#e67e22',mark:'#8e44ad',F:'#d1453b'},
   neon:{bg:'#07020f',bgGrid:'#1f1533',axis:'#ffffff',bar:'#4dd2ff',sel:'#fff35c',curve:'#ff9ecf',area:'#39ff88',aux:'#ffa53d',mark:'#a98bff',F:'#ff4d6d'},
   nord:{bg:'#2e3440',bgGrid:'#3b4252',axis:'#eceff4',bar:'#88c0d0',sel:'#ebcb8b',curve:'#e5a0c0',area:'#a3be8c',aux:'#d08770',mark:'#b48ead',F:'#bf616a'}};
-const T=()=>TX[P.lang]||TX.ru;
+const T=()=>TX[lang()]||TX.ru;
 const PANELS=['topic','presets','solve','values','show','export'];
 const DEF={palette:'classic',colors:{...PAL.classic},dock:'auto',width:380,bottomH:46,ui:'auto',font:100,speed:1,lw:1,order:PANELS.slice(),collapsed:{export:true},read:{},float:{x:12,y:12},
   show:{bgGrid:true,coords:true,labels:true,approx:true,sigma:true,Fplot:true,hints:true},topic:'bern',inp:null,preset:null};
@@ -986,10 +987,10 @@ const clone=o=>JSON.parse(JSON.stringify(o));
 function load(){let r=null;try{r=JSON.parse(localStorage.getItem(KEY)||'null')}catch(e){}const p=clone(DEF);if(!r||typeof r!=='object')return p;
   Object.assign(p,r);p.colors={...DEF.colors,...(r.colors||{})};p.show={...DEF.show,...(r.show||{})};const ord=Array.isArray(r.order)?r.order.filter(x=>PANELS.includes(x)):[];PANELS.forEach(x=>{if(!ord.includes(x))ord.push(x)});p.order=ord;p.collapsed=r.collapsed||{};p.float=r.float||{x:12,y:12};
   /* защита от повреждённых/старых настроек: числа — в пределах ползунков, иначе по умолчанию */const RNG={width:[240,560],bottomH:[25,75],font:[80,130],speed:[.25,3],lw:[.5,2.5]};for(const k in RNG){const v=p[k],[a,b]=RNG[k];p[k]=typeof v==='number'&&isFinite(v)?Math.min(b,Math.max(a,v)):DEF[k]}if(!p.float||typeof p.float!=='object'||!isFinite(p.float.x)||!isFinite(p.float.y))p.float={x:12,y:12};if(!p.collapsed||typeof p.collapsed!=='object'||Array.isArray(p.collapsed))p.collapsed={};return p}
-let P=load();if(!P.lang)P.lang=(navigator.language||'').toLowerCase().startsWith('ru')?'ru':'en';let saveT=0;
+let P=load();langFrom(()=>P.lang);if(!P.lang)P.lang=(navigator.language||'').toLowerCase().startsWith('ru')?'ru':'en';let saveT=0;
 function save(){clearTimeout(saveT);saveT=setTimeout(()=>{try{localStorage.setItem(KEY,JSON.stringify(P))}catch(e){}},250)}
 /* ---------- числа ---------- */
-const dc=s=>P.lang==='ru'?s.replace(/(\d)\.(\d)/g,'$1,$2'):s;
+const dc=s=>lang()==='ru'?s.replace(/(\d)\.(\d)/g,'$1,$2'):s;
 function fN(v,d=4){if(!isFinite(v))return v>0?'∞':v<0?'−∞':'—';if(Math.abs(v)>=1e5||(Math.abs(v)<1e-4&&v!==0)){const[m,e]=v.toExponential(3).split('e');return dc(String(+m)).replace('-','−')+'·10<sup>'+String(+e).replace('-','−')+'</sup>'}return dc(fmt(v,d))}
 function fQ(v,d=4){const f=toFrac(v,10000,1e-12);if(f&&f[1]>1&&f[1]<=10000&&Math.abs(f[0])<1e6)return`${f[0]<0?'−':''}${Math.abs(f[0])}/${f[1]} ≈ ${fN(v,d)}`;return fN(v,d)}
 const fT=(v,d=4)=>fN(v,d).replace(/<\/?sup>/g,'');
@@ -1090,7 +1091,7 @@ function compNsv(I){let a,b,f,F,Fexpr=null,fexpr=null,C=1,I0=null,lo,hi,kind=I.m
   else if(kind==='f'){a=nI(I.a);b=nI(I.b);if(!(a<b))E('ab');let g;try{g=parseFx(I.fx||'')}catch(e){E('f')}const gc=compile(g);
     {const q=quadF(gc,a,b);I0=q.v;if(!q.ok||!isFinite(I0)||Math.abs(I0)>1e9)E('diverg')}if(I.C){if(!(I0>0))E('norm1');C=1/I0}else if(Math.abs(I0-1)>1e-6)E('norm1');fexpr=g;
     for(let i=0;i<=200;i++){const x=a+(b-a)*i/200,v=gc(x);if(isFinite(v)&&v*C<-1e-9)E('neg')}
-    f=x=>x<a||x>b?0:C*gc(x);let sol=null;try{LNG=P.lang;sol=solve(g,a,b)}catch(e){}
+    f=x=>x<a||x>b?0:C*gc(x);let sol=null;try{sol=solve(g,a,b)}catch(e){}
     if(sol&&sol.F){const Fg=compile(sol.F),Fa=Fg(a);Fexpr=sol.F;F=x=>x<=a?0:x>=b?1:C*(Fg(x)-Fa);S._Fa=Fa}else{F=x=>x<=a?0:x>=b?1:C*quadN(gc,a,x);S._Fa=null}lo=a;hi=b}
   else{a=nI(I.a);b=nI(I.b);if(!(a<b))E('ab');let g;try{g=parseFx(I.Fx||'')}catch(e){E('f')}const Fg=compile(g);Fexpr=g;
     if(Math.abs(Fg(a))>1e-6||Math.abs(Fg(b)-1)>1e-6)E('Fbad');for(let i=0;i<200;i++){const x1=a+(b-a)*i/200,x2=a+(b-a)*(i+1)/200;if(Fg(x2)<Fg(x1)-1e-9)E('Fbad')}
@@ -1165,7 +1166,7 @@ const ol=a=>`<ol class="stp">${a.filter(Boolean).map(s=>`<li>${s}</li>`).join(''
 const mtab=(rows)=>`<div class="tw"><table class="tab">${rows.map((r,i)=>`<tr>${r.map((c,j)=>j===0?`<th>${c}</th>`:`<td>${c}</td>`).join('')}</tr>`).join('')}</table></div>`;
 function evT(R){const n=sb(R.n);if(R.ev==='eq')return`P${n}(${R.k1})`;if(R.ev==='one')return`P${n}(k ⩾ 1)`;if(R.ev==='mode')return'k*';return`P${n}(${R.k1} ⩽ k ⩽ ${R.k2})`}
 function solveBern(R){const L=T(),st=[];st.push(L.s_bern(fQ(R.p),fQ(R.q)));st.push(L.s_par(R.n,fN(R.np),fN(R.npq)));
-  if(R.ev==='mode'){st.push(L.s_mode(fN(R.lo),fN(R.hi)));st.push(L.s_mode2(R.kstar.join(P.lang==='ru'?' и ':' and ')));return{st,ans:`k* = ${R.kstar.join(P.lang==='ru'?' или ':' or ')}`}}
+  if(R.ev==='mode'){st.push(L.s_mode(fN(R.lo),fN(R.hi)));st.push(L.s_mode2(R.kstar.join(lang()==='ru'?' и ':' and ')));return{st,ans:`k* = ${R.kstar.join(lang()==='ru'?' или ':' or ')}`}}
   st.push(R.auto?(R.meth==='bern'?L.s_mB:R.meth==='pois'?L.s_mP(fN(R.np)):L.s_mL(fN(R.npq))):L.s_mU);
   const ap=R.meth!=='bern';let main='';
   if(R.meth==='bern'){st.push(L.s_fB);
@@ -1204,13 +1205,13 @@ function solveDvu(R){const L=T(),st=[],J=R.J,s=R.st;const rows=[['X\\Y',...J.y.m
   const zs_=R.zt==='prod'?`XY${R.zc?(R.zc<0?' − ':' + ')+fN(Math.abs(R.zc)):''}`:zLin(R.a,R.b,R.zc);st.push(`${L.s_Zj} Z = ${zs_}:${serTab(R.Z.x,R.Z.p,'Z')}M(Z) = ${fQ(R.zs.M)}, D(Z) = ${fQ(R.zs.D)}`);
   if(R.zt!=='prod')st.push(`${L.s_ZjD} ${fN(R.a*R.a)}·${fN(s.sx.D,4)} + ${fN(R.b*R.b)}·${fN(s.sy.D,4)} ${2*R.a*R.b*s.cov<0?'−':'+'} ${fN(Math.abs(2*R.a*R.b),4)}·${fN(Math.abs(s.cov),4)} = ${fN(R.DZchk,4)}`);
   return{st,ans:J.ind?`M(Z) = ${fQ(R.zs.M)}, D(Z) = ${fQ(R.zs.D)}`:`cov = ${fQ(s.cov)}, r = ${fN(s.r,4)}${R.cond?`; M(${R.cond.given==='X'?'Y':'X'} | ${R.cond.given} = ${fN(R.cond.val)}) = ${fQ(R.cond.M)}`:''}`}}
-function exH(e){LNG=P.lang;PV='x';return hp(e,0)}
+function exH(e){PV='x';return hp(e,0)}
 function solveNsv(R){const L=T(),st=[];
   if(R.kind==='uni')st.push(L.s_uni(fN(R.a),fN(R.b))+` F(x) = (x − ${fN(R.a)})/${fN(R.b-R.a)} на [${fN(R.a)}; ${fN(R.b)}].`);
   else if(R.kind==='exp')st.push(L.s_exp(fN(R.lam)));
-  else if(R.kind==='f'){if(R.C!==1||S.inp.nsv.C)st.push(L.s_C(fQ(R.I0),fQ(R.C)));else st.push(L.s_norm);st.push(`f(x) = ${R.C!==1?fQ(R.C).replace(/ ≈ .*/,'')+'·':''}(${exH(R.fexpr)}) на [${fN(R.a)}; ${fN(R.b)}], 0 вне отрезка.`.replace('на [',P.lang==='ru'?'на [':'on [').replace(', 0 вне отрезка',P.lang==='ru'?', 0 вне отрезка':', 0 outside'));
-    if(R.Fexpr)st.push(`${L.s_Ff} F(x) = ${R.C!==1?fQ(R.C).replace(/ ≈ .*/,'')+'·':''}(${exH(R.Fexpr)}${S._Fa&&Math.abs(S._Fa)>1e-12?' − '+fN(S._Fa,4):''}) ${P.lang==='ru'?'при':'for'} ${fN(R.a)} ⩽ x ⩽ ${fN(R.b)}.`)}
-  else{st.push(`F(x) = ${exH(R.Fexpr)} ${P.lang==='ru'?'при':'for'} ${fN(R.a)} ⩽ x ⩽ ${fN(R.b)}; 0 ${P.lang==='ru'?'левее, 1 правее':'to the left, 1 to the right'}.`);if(R.fexpr)st.push(`${L.s_fF} f(x) = ${exH(R.fexpr)}`)}
+  else if(R.kind==='f'){if(R.C!==1||S.inp.nsv.C)st.push(L.s_C(fQ(R.I0),fQ(R.C)));else st.push(L.s_norm);st.push(`f(x) = ${R.C!==1?fQ(R.C).replace(/ ≈ .*/,'')+'·':''}(${exH(R.fexpr)}) на [${fN(R.a)}; ${fN(R.b)}], 0 вне отрезка.`.replace('на [',lang()==='ru'?'на [':'on [').replace(', 0 вне отрезка',lang()==='ru'?', 0 вне отрезка':', 0 outside'));
+    if(R.Fexpr)st.push(`${L.s_Ff} F(x) = ${R.C!==1?fQ(R.C).replace(/ ≈ .*/,'')+'·':''}(${exH(R.Fexpr)}${S._Fa&&Math.abs(S._Fa)>1e-12?' − '+fN(S._Fa,4):''}) ${lang()==='ru'?'при':'for'} ${fN(R.a)} ⩽ x ⩽ ${fN(R.b)}.`)}
+  else{st.push(`F(x) = ${exH(R.Fexpr)} ${lang()==='ru'?'при':'for'} ${fN(R.a)} ⩽ x ⩽ ${fN(R.b)}; 0 ${lang()==='ru'?'левее, 1 правее':'to the left, 1 to the right'}.`);if(R.fexpr)st.push(`${L.s_fF} f(x) = ${exH(R.fexpr)}`)}
   st.push(`${L.s_Mi} ${fQ(R.M)}`);st.push(`${L.s_Di} ${fQ(R.M2)} − ${fN(R.M,4)}² = ${fQ(R.D)}; σ = ${fN(R.s,4)}`);
   if(R.Pab!==null){const a=Math.min(R.al,R.be),b=Math.max(R.al,R.be);st.push(`${L.s_P} F(${fN(b)}) − F(${fN(a)}) = ${fN(R.F(b),4)} − ${fN(R.F(a),4)} = ${fQ(R.Pab)}`)}
   st.push(`${L.s_modN} x_mod ≈ ${fN(R.mode,3)}`);st.push(`${L.s_med} x_med ≈ ${fN(R.med,4)}`);if(R.qv!==null)st.push(`${L.s_qu(fN(R.ql))} x<sub>${fN(R.ql)}</sub> ≈ ${fN(R.qv,4)}`);
@@ -1240,7 +1241,7 @@ function renderValues(){const box=$('#props'),V=T().v;if(S.err||!S.res){box.inne
   else if(S.topic==='nsv'){h+=(R.kind==='f'?prop(V.C,fQ(R.C)):'')+prop(V.M,fQ(R.M))+prop(V.D,fQ(R.D))+prop(V.s,fN(R.s,4))+prop(V.mod,fN(R.mode,3))+prop(V.med,fN(R.med,4))+(R.Pab!==null?prop(V.P,fQ(R.Pab)):'')}
   else{h+=prop('m',fN(R.m,4))+prop('σ',fN(R.s,4))+prop('σ²',fN(R.s*R.s,4));if(R.P!=null)h+=prop(V.P,fN(R.P,4),T().appr)+prop(T().ex,fN(R.Pe,5));if(R.xq!=null)h+=prop('x_p',fN(R.xq,4))}
   box.innerHTML=h}
-function renderPresets(){const box=$('#pre');box.innerHTML='';PRE[S.topic].forEach(([id,,ru,en])=>{const b=document.createElement('button');b.className='chip'+(S.preset===id?' on':'');b.dataset.pre=id;b.textContent=P.lang==='ru'?ru:en;box.appendChild(b)})}
+function renderPresets(){const box=$('#pre');box.innerHTML='';PRE[S.topic].forEach(([id,,ru,en])=>{const b=document.createElement('button');b.className='chip'+(S.preset===id?' on':'');b.dataset.pre=id;b.textContent=lang()==='ru'?ru:en;box.appendChild(b)})}
 function renderOverlay(){const ov=$('#ov'),L=T();if(S.err||!S.res){ov.innerHTML=`<span class="tt">${L.cap.err}</span>`;return}ov.innerHTML=`<span>${S.ans||''}</span><span class="tt">${L['t_'+S.topic]}</span>`}
 function renderCaption(){const cap=$('#cap');$('#capOpen').hidden=!!P.show.hints;if(!P.show.hints){cap.hidden=true;return}cap.hidden=false;$('#capT').textContent=S.err?T().cap.err:(S.topic==='dsv'&&S.res&&S.res.mode==='prop'?T().cap.prop:T().cap[S.topic])}
 function renderAll(){syncTogVis();renderSolve();renderValues();renderPresets();renderOverlay();renderCaption();renderTex();const fe=$('#fErr');fe.hidden=!S.err;if(S.err){const f=T().err[S.err.msg];fe.textContent=typeof f==='function'?f(S.err.x):(f||T().err.num)}req()}
@@ -1272,8 +1273,8 @@ function drawBern(R){const c=P.colors;let k0=0,k1=R.n;if(R.n>40){k0=Math.max(0,M
   const bw=Math.max(1,fr.X(1)-fr.X(0))*.72,inEv=k=>R.ev==='mode'?R.kstar.includes(k):k>=(R.ev==='one'?1:R.k1)&&k<=R.k2;
   for(let k=k0;k<=k1;k++){const v=binom(R.n,R.p,k),x=fr.X(k),y=fr.Y(v),sel=inEv(k);ctx.fillStyle=sel?c.sel:c.bar;ctx.globalAlpha=sel?.9:.55;ctx.fillRect(x-bw/2,y,bw,fr.Y(0)-y);ctx.globalAlpha=1;
     if(P.show.labels&&k1-k0<=16&&v>ym*.02)txt(dc(fmt(v,3)),x,y-9,sel?c.sel:c.axis,11)}
-  if(P.show.approx&&R.n>=8){if(R.np<=10&&R.p<.3){ctx.fillStyle=c.curve;for(let k=k0;k<=k1;k++){const v=poiss(R.np,k);ctx.beginPath();ctx.arc(fr.X(k),fr.Y(v),3.2,0,7);ctx.fill()}txt('Пуассон'.replace('Пуассон',P.lang==='ru'?'Пуассон':'Poisson'),r.x+r.w-6,r.y+10,c.curve,13,'right')}
-    else if(R.sq>0){plotFn(fr,x=>phiG((x-R.np)/R.sq)/R.sq,c.curve,2.2*P.lw,[7,5]);txt(P.lang==='ru'?'Муавр–Лаплас':'de Moivre–Laplace',r.x+r.w-6,r.y+10,c.curve,13,'right')}}
+  if(P.show.approx&&R.n>=8){if(R.np<=10&&R.p<.3){ctx.fillStyle=c.curve;for(let k=k0;k<=k1;k++){const v=poiss(R.np,k);ctx.beginPath();ctx.arc(fr.X(k),fr.Y(v),3.2,0,7);ctx.fill()}txt('Пуассон'.replace('Пуассон',lang()==='ru'?'Пуассон':'Poisson'),r.x+r.w-6,r.y+10,c.curve,13,'right')}
+    else if(R.sq>0){plotFn(fr,x=>phiG((x-R.np)/R.sq)/R.sq,c.curve,2.2*P.lw,[7,5]);txt(lang()==='ru'?'Муавр–Лаплас':'de Moivre–Laplace',r.x+r.w-6,r.y+10,c.curve,13,'right')}}
   if(P.show.sigma)vline(fr,R.np,c.mark,'np')}
 function stepsF(fr,x,p,col){let acc=0;ctx.strokeStyle=col;ctx.lineWidth=2.2*P.lw;const xs=[fr.x0,...x,fr.x1];for(let i=0;i<xs.length-1;i++){const y=fr.Y(acc);ctx.beginPath();ctx.moveTo(fr.X(xs[i]),y);ctx.lineTo(fr.X(xs[i+1]),y);ctx.stroke();
     if(i>0){ctx.fillStyle=col;ctx.beginPath();ctx.arc(fr.X(xs[i]),y,3.5,0,7);ctx.fill()}if(i<x.length){ctx.strokeStyle=col;ctx.fillStyle=P.colors.bg;ctx.beginPath();ctx.arc(fr.X(xs[i+1]),y,3.5,0,7);ctx.fill();ctx.stroke();acc+=p[i]}}}
@@ -1386,43 +1387,43 @@ function drawComb(R){const c=P.colors,pT=Math.min(110,H*.2);let slots=[],tail=''
     const cols=Math.min(10,Math.ceil(Math.sqrt(items.length*2))),cw=Math.min(90,(W-80)/cols),yy=y0+bw+110;items.slice(0,60).forEach((s,i)=>txt(s,40+cw*(i%cols)+cw/2,yy+Math.floor(i/cols)*24,c.bar,15))}}
 function drawGauge(p,y,lab){const c=P.colors,w=Math.min(520,W-120),x=(W-w)/2;box(x,y,w,26,c.axis,.06);ctx.fillStyle=c.sel;ctx.globalAlpha=.8;ctx.fillRect(x,y,w*p,26);ctx.globalAlpha=1;txt(lab,W/2,y+46,c.sel,18)}
 function drawClas(R){const c=P.colors,pT=Math.min(110,H*.2);
-  if(R.m==='dice'){const[r]=layout(false),d=R.d,lo=R.s,hi=6*R.s,ym=Math.max(...d)/R.tot;const fr=frame(r,lo-.6,hi+.6,0,ym*1.2,{noYA:true,title:`P(${P.lang==='ru'?'сумма':'sum'} = s)`,xs:R.s>3?2:1});const bw=(fr.X(1)-fr.X(0))*.72;
+  if(R.m==='dice'){const[r]=layout(false),d=R.d,lo=R.s,hi=6*R.s,ym=Math.max(...d)/R.tot;const fr=frame(r,lo-.6,hi+.6,0,ym*1.2,{noYA:true,title:`P(${lang()==='ru'?'сумма':'sum'} = s)`,xs:R.s>3?2:1});const bw=(fr.X(1)-fr.X(0))*.72;
     for(let s=lo;s<=hi;s++){const v=d[s]/R.tot,sel=R.dev==='eq'?s===R.v:R.dev==='ge'?s>=R.v:s<=R.v,X=fr.X(s),Y=fr.Y(v);ctx.fillStyle=sel?c.sel:c.bar;ctx.globalAlpha=sel?.9:.5;ctx.fillRect(X-bw/2,Y,bw,fr.Y(0)-Y);ctx.globalAlpha=1;if(P.show.labels&&hi-lo<=16)txt(String(d[s]),X,Y-9,sel?c.sel:c.axis,11)}return}
   if(R.m==='mn'){const n=R.tot,cols=Math.ceil(Math.sqrt(n*1.8)),cs=Math.min(36,(W-120)/cols,(H*.45)/Math.ceil(n/cols)),x0=(W-cols*cs)/2;if(n<=600)for(let i=0;i<n;i++){const x=x0+(i%cols)*cs,y=pT+20+Math.floor(i/cols)*cs;ctx.fillStyle=i<R.fav?c.sel:c.bar;ctx.globalAlpha=i<R.fav?.85:.35;ctx.fillRect(x+1,y+1,cs-2,cs-2);ctx.globalAlpha=1}
     drawGauge(R.P,H-Math.min(140,H*.24),`P = ${R.fav}/${R.tot}`);return}
   const tot=R.N,rad=Math.max(5,Math.min(16,Math.sqrt((W*H*.18)/Math.max(tot,1))/2.4)),per=Math.max(1,Math.floor((W-120)/(rad*2.6)));let i=0,x0=60,y0=pT+20;
   R.a.forEach((cnt,ci)=>{for(let j=0;j<Math.min(cnt,400);j++,i++){const x=x0+(i%per)*rad*2.6+rad,y=y0+Math.floor(i/per)*rad*2.6+rad;ctx.fillStyle=COLS()[ci%7];ctx.beginPath();ctx.arc(x,y,rad,0,7);ctx.fill()}});
   const rows=Math.ceil(Math.min(i,400*R.a.length)/per),yy=y0+rows*rad*2.6+24;const pat=R.cev==='exact'?R.terms[0]:null;
-  txt((P.lang==='ru'?'Берём ':'Draw ')+R.n+(pat?(P.lang==='ru'?': нужно ':': need ')+pat.join(' + '):''),W/2,yy,c.axis,16);drawGauge(Math.min(1,R.P),yy+28,`P = ${fracB(R.num,R.den).replace(/ ≈ .*/,'')} ≈ ${fT(R.P,4)}`)}
+  txt((lang()==='ru'?'Берём ':'Draw ')+R.n+(pat?(lang()==='ru'?': нужно ':': need ')+pat.join(' + '):''),W/2,yy,c.axis,16);drawGauge(Math.min(1,R.P),yy+28,`P = ${fracB(R.num,R.den).replace(/ ≈ .*/,'')} ≈ ${fT(R.P,4)}`)}
 function drawOps(R){const c=P.colors;if(R.mode==='two'){const cx=W/2,cy=Math.min(H*.52,H-180),r=Math.min(W*.18,H*.26),d=r*.95;
     ctx.globalAlpha=.25;ctx.fillStyle=c.bar;ctx.beginPath();ctx.arc(cx-d/2,cy,r,0,7);ctx.fill();ctx.fillStyle=c.aux;ctx.beginPath();ctx.arc(cx+d/2,cy,r,0,7);ctx.fill();ctx.globalAlpha=1;
     ctx.lineWidth=2.4;ctx.strokeStyle=c.bar;ctx.beginPath();ctx.arc(cx-d/2,cy,r,0,7);ctx.stroke();ctx.strokeStyle=c.aux;ctx.beginPath();ctx.arc(cx+d/2,cy,r,0,7);ctx.stroke();ctx.strokeStyle=c.axis;ctx.globalAlpha=.4;ctx.strokeRect(cx-d/2-r-40,cy-r-30,d+2*r+80,2*r+60);ctx.globalAlpha=1;
     txt('A',cx-d/2-r*.7,cy-r*.8,c.bar,20,'center','middle',true);txt('B',cx+d/2+r*.7,cy-r*.8,c.aux,20,'center','middle',true);
     if(P.show.labels){txt(dc(fmt(R.onlyA,4)),cx-d/2-r*.45,cy,c.axis,15);txt(dc(fmt(R.pab,4)),cx,cy,c.sel,16);txt(dc(fmt(R.onlyB,4)),cx+d/2+r*.45,cy,c.axis,15);txt(dc(fmt(R.none,4)),cx-d/2-r-20,cy+r+14,c.axis,13,'left')}return}
-  const[r]=layout(false),n=R.n,fr=frame(r,-.6,n+.6,0,Math.max(...R.c)*1.2,{noYA:true,title:P.lang==='ru'?'P(произошло ровно k)':'P(exactly k happened)',xs:1});const bw=(fr.X(1)-fr.X(0))*.6;
+  const[r]=layout(false),n=R.n,fr=frame(r,-.6,n+.6,0,Math.max(...R.c)*1.2,{noYA:true,title:lang()==='ru'?'P(произошло ровно k)':'P(exactly k happened)',xs:1});const bw=(fr.X(1)-fr.X(0))*.6;
   const inE=k=>R.ev==='all'?k===n:R.ev==='none'?k===0:R.ev==='one1'?k>=1:R.ev==='exact'?k===R.k:R.ev==='ge'?k>=R.k:R.ev==='le'?k<=R.k:false;
   R.c.forEach((v,k)=>{const X=fr.X(k),Y=fr.Y(v),s=inE(k);ctx.fillStyle=s?c.sel:c.bar;ctx.globalAlpha=s?.9:.5;ctx.fillRect(X-bw/2,Y,bw,fr.Y(0)-Y);ctx.globalAlpha=1;if(P.show.labels)txt(dc(fmt(v,4)),X,Y-10,s?c.sel:c.axis,12)})}
 function drawBayes(R){const c=P.colors,pT=Math.min(110,H*.2),pB=Math.min(80,H*.14),hh=H-pT-pB-30,w=Math.min(W*.55,W-260),x0=50,y0=pT+18;let x=x0;
   R.pr.forEach((p,i)=>{const cw=w*p,col=COLS()[i%7];box(x,y0,cw,hh,col,.12);const fh=hh*R.L[i];ctx.fillStyle=col;ctx.globalAlpha=.75;ctx.fillRect(x,y0+hh-fh,cw,fh);ctx.globalAlpha=1;
     if(cw>26){txt(`H${sb(i+1)}`,x+cw/2,y0-10,col,14,'center','middle',true);if(P.show.labels)txt(dc(fmt(R.L[i],3)),x+cw/2,y0+hh-fh-10,c.axis,12)}x+=cw});
-  txt(P.lang==='ru'?`ширина — P(Hᵢ), закрашено — P(${R.bev==='notA'?'Ā':'A'} | Hᵢ)`:`width — P(Hᵢ), filled — P(${R.bev==='notA'?'Ā':'A'} | Hᵢ)`,x0+w/2,y0+hh+18,c.axis,12);
-  const bx=x0+w+70,bw=Math.min(90,W-bx-90);let y=y0;txt(P.lang==='ru'?'после опыта':'posterior',bx+bw/2,y0-10,c.axis,13);
+  txt(lang()==='ru'?`ширина — P(Hᵢ), закрашено — P(${R.bev==='notA'?'Ā':'A'} | Hᵢ)`:`width — P(Hᵢ), filled — P(${R.bev==='notA'?'Ā':'A'} | Hᵢ)`,x0+w/2,y0+hh+18,c.axis,12);
+  const bx=x0+w+70,bw=Math.min(90,W-bx-90);let y=y0;txt(lang()==='ru'?'после опыта':'posterior',bx+bw/2,y0-10,c.axis,13);
   R.post.forEach((p,i)=>{const h=hh*p,col=COLS()[i%7];ctx.fillStyle=col;ctx.globalAlpha=.75;ctx.fillRect(bx,y,bw,h);ctx.globalAlpha=1;if(h>16)txt(P.show.labels?`H${sb(i+1)}: ${dc(fmt(p,3))}`:`H${sb(i+1)}`,bx+bw+8,y+h/2,col,13,'left');y+=h})}
 /* ---------- справочник ---------- */
-const termTitle=id=>{const t=TERMS.find(x=>x.id===id);return t?(t[P.lang]||t.ru)[0]:id};
+const termTitle=id=>{const t=TERMS.find(x=>x.id===id);return t?(t[lang()]||t.ru)[0]:id};
 function mathify(h){return h}
 function gTabs(id,html){const f=FORMAL[id];if(!f)return html;const L=T(),ft=P.gTab==='f';
-  return`<div class="seg gtabs"><button data-tab="i" class="${ft?'':'on'}">${L.tabI}</button><button data-tab="f" class="${ft?'on':''}">${L.tabF}</button></div><div class="pane" data-pane="i"${ft?' hidden':''}>${html}</div><div class="pane" data-pane="f"${ft?'':' hidden'}>${f[P.lang]||f.ru}</div>`}
-function termHtml(t,L){const x=t[P.lang]||t.ru,rd=!!P.read[t.id];
+  return`<div class="seg gtabs"><button data-tab="i" class="${ft?'':'on'}">${L.tabI}</button><button data-tab="f" class="${ft?'on':''}">${L.tabF}</button></div><div class="pane" data-pane="i"${ft?' hidden':''}>${html}</div><div class="pane" data-pane="f"${ft?'':' hidden'}>${f[lang()]||f.ru}</div>`}
+function termHtml(t,L){const x=t[lang()]||t.ru,rd=!!P.read[t.id];
   return`<details class="term${rd?' read':''}" id="g-${t.id}"><summary><span>${rd?'<b class="rd">✓</b>':''}${x[0]}</span><small>${x[1]}</small></summary><div class="tb">${ILL[t.id]?`<figure class="ill">${illSvg(t.id)}</figure>`:''}${gTabs(t.id,x[2])}${DEMOS[t.id]?`<button class="btn sm primary" data-demo="${t.id}">${L.showDemo}</button>`:''}${REL[t.id]?`<div class="rel">${L.seeAlso} ${REL[t.id].map(r=>`<button class="chip" data-term="${r}">${termTitle(r)}</button>`).join('')}</div>`:''}<div class="row" style="margin-top:.8rem"><button class="btn sm readbtn${rd?' on':''}" data-read="${t.id}">${rd?L.readDone:L.readMark}</button></div></div></details>`}
 function renderGloss(q=''){q=q.trim().toLowerCase();const L=T();if(!P.read||typeof P.read!=='object')P.read={};
   const total=TERMS.length,done=TERMS.filter(t=>P.read[t.id]).length;
-  const match=t=>{if(!q)return true;const x=t[P.lang]||t.ru,o=t[P.lang==='ru'?'en':'ru'],f=FORMAL[t.id];return(x[0]+' '+x[1]+' '+x[2]+' '+o[0]+' '+(f?(f[P.lang]||f.ru):'')).replace(/<[^>]+>/g,'').toLowerCase().includes(q)};
+  const match=t=>{if(!q)return true;const x=t[lang()]||t.ru,o=t[lang()==='ru'?'en':'ru'],f=FORMAL[t.id];return(x[0]+' '+x[1]+' '+x[2]+' '+o[0]+' '+(f?(f[lang()]||f.ru):'')).replace(/<[^>]+>/g,'').toLowerCase().includes(q)};
   let html=`<div class="prog"><span>${L.readOf(done,total)}</span><span class="bar"><i style="width:${Math.round(done/total*100)}%"></i></span>${done?`<button class="linkbtn" id="readReset">${L.readReset}</button>`:''}</div>`;
   let any=false,num=0;
   CHAP.forEach(ch=>{if(!ch.extra)num++;const ts=ch.ids.map(id=>TERMS.find(t=>t.id===id)).filter(Boolean).filter(match);if(!ts.length)return;any=true;
     const r=ch.ids.filter(id=>P.read[id]).length;
-    html+=`<section class="chap"><h3>${ch.extra?'':num+'. '}${ch[P.lang]||ch.ru}<span class="cnt">${r} / ${ch.ids.length}</span></h3>${ts.map(t=>termHtml(t,L)).join('')}</section>`});
+    html+=`<section class="chap"><h3>${ch.extra?'':num+'. '}${ch[lang()]||ch.ru}<span class="cnt">${r} / ${ch.ids.length}</span></h3>${ts.map(t=>termHtml(t,L)).join('')}</section>`});
   $('#gl').innerHTML=any?html:html+`<p class="note">${L.noFound}</p>`}
 function rerenderGloss(){const sh=$('#dGloss .sheet'),st=sh.scrollTop,open=[...document.querySelectorAll('#gl details[open]')].map(d=>d.id);renderGloss($('#gq').value);open.forEach(id=>{const e=document.getElementById(id);if(e)e.open=true});sh.scrollTop=st}
 $('#gq').oninput=e=>renderGloss(e.target.value);
@@ -1473,7 +1474,7 @@ function illSvg(id){const sp=ILL[id];if(!sp)return'';const W=200,H=140,c=k=>`var
     o+=`<path d="${path(ff,x0,x1,X,Y,160)}" fill="none" stroke="${c('bar')}" stroke-width="2.4"/>`;if(sp.sig)for(const k of[-3,-2,-1,1,2,3])o+=`<line x1="${F(X(k))}" y1="122" x2="${F(X(k))}" y2="${F(Y(f(k)))}" stroke="${c('mark')}" stroke-dasharray="3 3"/>`;
     if(sp.F){let d='';for(let i=0;i<=80;i++){const x=x0+(x1-x0)*i/80;let s=0;for(let j=0;j<=40;j++){const t=-6+(x+6)*j/40;s+=Math.exp(-t*t/2)*(j===0||j===40?.5:1)}s*=(x+6)/40/Math.sqrt(2*Math.PI);d+=(i?'L':'M')+F(X(x))+' '+F(122-s*92)}o+=`<path d="${d}" fill="none" stroke="${c('F')}" stroke-width="2"/>`}}
   else if(sp.k==='steps'){let acc=0;const n=sp.v.length,X=i=>30+i*50;o+=`<line x1="14" y1="122" x2="${X(0)}" y2="122" stroke="${c('F')}" stroke-width="2.4"/>`;sp.v.forEach((v,i)=>{acc+=v;const y=122-acc*95;o+=`<line x1="${X(i)}" y1="${F(y)}" x2="${X(i+1)}" y2="${F(y)}" stroke="${c('F')}" stroke-width="2.4"/><circle cx="${X(i)}" cy="${F(y)}" r="3" fill="${c('F')}"/>`})}
-  else if(sp.k==='grid'){sp.P.forEach((r,i)=>r.forEach((v,j)=>{o+=`<rect x="${40+j*45}" y="${20+i*45}" width="42" height="42" fill="${c('area')}" fill-opacity="${.15+v*2.5}"/><text x="${61+j*45}" y="${43+i*45}" fill="${c('axis')}" font-size="12" text-anchor="middle" dominant-baseline="middle">${String(v).replace('.',P.lang==='ru'?',':'.')}</text>`}))}
+  else if(sp.k==='grid'){sp.P.forEach((r,i)=>r.forEach((v,j)=>{o+=`<rect x="${40+j*45}" y="${20+i*45}" width="42" height="42" fill="${c('area')}" fill-opacity="${.15+v*2.5}"/><text x="${61+j*45}" y="${43+i*45}" fill="${c('axis')}" font-size="12" text-anchor="middle" dominant-baseline="middle">${String(v).replace('.',lang()==='ru'?',':'.')}</text>`}))}
   else if(sp.k==='scatter'){let s=7;const rnd=()=>{s=(s*9301+49297)%233280;return s/233280};for(let i=0;i<40;i++){const x=rnd(),y=.8*x+.2*rnd();o+=`<circle cx="${F(20+x*165)}" cy="${F(122-y*100)}" r="2.6" fill="${c('bar')}"/>`}o+=`<line x1="20" y1="118" x2="185" y2="30" stroke="${c('curve')}" stroke-width="2"/>`}
   return`<svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false"><rect width="${W}" height="${H}" fill="var(--s-bg)"/>${ax}${o}</svg>`}
 function runDemo(id){const d=DEMOS[id];if(!d)return;loadPreset(d.p);showPanel('solve')}
@@ -1503,7 +1504,7 @@ document.addEventListener('keydown',e=>{if(e.ctrlKey||e.metaKey||e.altKey)return
   if((tag==='INPUT'&&!['checkbox','range','radio','color'].includes(tg.type))||tag==='TEXTAREA'||tag==='SELECT'||(tg&&tg.isContentEditable))return;
   const isQ=e.key==='?'||(e.code==='Slash'&&e.shiftKey);if(document.querySelector('.drawer.open')&&!isQ)return;const c=e.code,L=T();let h=true;
   if(isQ)openKeys();else if(/^(Digit|Numpad)[1-9]$/.test(c)){setTopic(TOPICS[+c.slice(-1)-1]);toast(L['t_'+S.topic])}
-  else if(c==='BracketLeft'||c==='BracketRight'){const list=PRE[S.topic];let i=list.findIndex(p=>p[0]===S.preset);i=(i+(c==='BracketLeft'?-1:1)+list.length)%list.length;loadPreset(list[i][0]);toast(P.lang==='ru'?list[i][2]:list[i][3])}
+  else if(c==='BracketLeft'||c==='BracketRight'){const list=PRE[S.topic];let i=list.findIndex(p=>p[0]===S.preset);i=(i+(c==='BracketLeft'?-1:1)+list.length)%list.length;loadPreset(list[i][0]);toast(lang()==='ru'?list[i][2]:list[i][3])}
   else if(c==='KeyG')flip('bgGrid');else if(c==='KeyF')flip('Fplot');else if(c==='KeyP')flip('approx');else if(c==='KeyM')flip('sigma');else if(c==='KeyH')flip('hints');
   else if(c==='KeyS'){if(canSave())exportPng();else toast(L.xNoDl)}else if(c==='Slash'){$('#openGloss').click();setTimeout(()=>$('#gq').focus(),30)}else h=false;if(h)e.preventDefault()});
 /* ---------- настройки ---------- */
@@ -1517,7 +1518,7 @@ function buildSettings(){
   $('#fR').oninput=e=>{P.font=+e.target.value;applyPrefs()};
   $('#lR').oninput=e=>{P.lw=+e.target.value;applyPrefs()};
   $('#resetOrder').onclick=()=>{P.order=PANELS.slice();P.collapsed={};applyPrefs()};
-  $('#resetAll').onclick=()=>{const lg=P.lang,rd=P.read,last=P.last;P=clone(DEF);P.lang=lg;P.read=rd||{};P.last=last;syncToggles();applyPrefs();renderAll()};
+  $('#resetAll').onclick=()=>{const lg=lang(),rd=P.read,last=P.last;P=clone(DEF);P.lang=lg;P.read=rd||{};P.last=last;syncToggles();applyPrefs();renderAll()};
 }
 function buildPal(){const L=T();
   const pc=$('#palChips');pc.innerHTML='';Object.entries(PAL).forEach(([k,p])=>{const b=document.createElement('button');b.className='chip';b.dataset.p=k;b.innerHTML=`<span class="sw" style="background:${p.bg};box-shadow:inset 0 0 0 3px ${p.f||Object.values(p)[3]}"></span>${L.pal[k]}`;
@@ -1525,13 +1526,13 @@ function buildPal(){const L=T();
   const cs=$('#colors');cs.innerHTML='';Object.keys(L.colors).forEach(k=>{const l=document.createElement('label');l.innerHTML=`<input type="color" data-k="${k}"> ${L.colors[k]}`;
     l.querySelector('input').oninput=e=>{P.colors[k]=e.target.value;P.palette='custom';applyPrefs()};cs.appendChild(l)});
 }
-function applyLang(){const L=T();LNG=P.lang;document.documentElement.lang=P.lang;document.title=L.title;
+function applyLang(){const L=T();document.documentElement.lang=lang();document.title=L.title;
   document.querySelectorAll('[data-i]').forEach(e=>{e.textContent=L[e.dataset.i]});
   document.querySelectorAll('[data-ih]').forEach(e=>{e.innerHTML=L[e.dataset.ih]});
   document.querySelectorAll('[data-it]').forEach(e=>{e.title=L[e.dataset.it];e.setAttribute('aria-label',L[e.dataset.it])});
   document.querySelectorAll('[data-ia]').forEach(e=>{e.setAttribute('aria-label',L[e.dataset.ia])});
   $('#gq').placeholder=L.search;cv.setAttribute('aria-label',L.canvas);
-  document.querySelectorAll('#langSeg button,#langSeg2 button').forEach(b=>b.classList.toggle('on',b.dataset.l===P.lang));
+  document.querySelectorAll('#langSeg button,#langSeg2 button').forEach(b=>b.classList.toggle('on',b.dataset.l===lang()));
   buildPal();buildToggles();syncToggles();syncSettings();updExport();renderKeys();
   if($('#dGloss').classList.contains('open'))rerenderGloss();
   renderForm();recompute()}
