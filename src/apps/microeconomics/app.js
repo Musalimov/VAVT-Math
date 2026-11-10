@@ -1,3 +1,4 @@
+import { createCurves } from '../../shared/econ/curves.js';
 import { createEconApp } from '../../shared/econ/app.js';
 import { applyTexts, createSettings } from '../../shared/settings.js';
 import { createKeys, onShortcut } from '../../shared/keys.js';
@@ -183,8 +184,6 @@ import { exprXY, numG } from '../../shared/econ/expr-xy.js';
 
   /* ---------- примеры (задачи Серякова, ВАВТ) ---------- */
 
-  const q4 = (v) => dc(String(+(+v).toFixed(4)));
-
   const SHOCKS = {
     sd: [
       {
@@ -193,7 +192,7 @@ import { exprXY, numG } from '../../shared/econ/expr-xy.js';
         en: 'Higher incomes (normal good)',
         c: 'D вправо',
         cen: 'D right',
-        set: (I) => ({ shD: q4(spanP(I)) }),
+        set: (I) => ({ shD: CUR.q4(spanP(I)) }),
       },
       {
         id: 'incI',
@@ -201,7 +200,7 @@ import { exprXY, numG } from '../../shared/econ/expr-xy.js';
         en: 'Higher incomes (inferior good)',
         c: 'D влево',
         cen: 'D left',
-        set: (I) => ({ shD: q4(-spanP(I)) }),
+        set: (I) => ({ shD: CUR.q4(-spanP(I)) }),
       },
       {
         id: 'sub',
@@ -209,7 +208,7 @@ import { exprXY, numG } from '../../shared/econ/expr-xy.js';
         en: 'A substitute gets pricier',
         c: 'D вправо',
         cen: 'D right',
-        set: (I) => ({ shD: q4(spanP(I)) }),
+        set: (I) => ({ shD: CUR.q4(spanP(I)) }),
       },
       {
         id: 'comp',
@@ -217,7 +216,7 @@ import { exprXY, numG } from '../../shared/econ/expr-xy.js';
         en: 'A complement gets pricier',
         c: 'D влево',
         cen: 'D left',
-        set: (I) => ({ shD: q4(-spanP(I)) }),
+        set: (I) => ({ shD: CUR.q4(-spanP(I)) }),
       },
       {
         id: 'exp',
@@ -225,7 +224,7 @@ import { exprXY, numG } from '../../shared/econ/expr-xy.js';
         en: 'Expected future price rise',
         c: 'D вправо',
         cen: 'D right',
-        set: (I) => ({ shD: q4(spanP(I)) }),
+        set: (I) => ({ shD: CUR.q4(spanP(I)) }),
       },
       {
         id: 'buy',
@@ -233,7 +232,7 @@ import { exprXY, numG } from '../../shared/econ/expr-xy.js';
         en: 'More buyers',
         c: 'D вправо',
         cen: 'D right',
-        set: (I) => ({ shD: q4(spanP(I)) }),
+        set: (I) => ({ shD: CUR.q4(spanP(I)) }),
       },
       {
         id: 'cost',
@@ -241,7 +240,7 @@ import { exprXY, numG } from '../../shared/econ/expr-xy.js';
         en: 'Inputs get pricier',
         c: 'S влево (вверх)',
         cen: 'S left (up)',
-        set: (I) => ({ shS: q4(spanP(I)) }),
+        set: (I) => ({ shS: CUR.q4(spanP(I)) }),
       },
       {
         id: 'tech',
@@ -249,7 +248,7 @@ import { exprXY, numG } from '../../shared/econ/expr-xy.js';
         en: 'New technology',
         c: 'S вправо (вниз)',
         cen: 'S right (down)',
-        set: (I) => ({ shS: q4(-spanP(I)) }),
+        set: (I) => ({ shS: CUR.q4(-spanP(I)) }),
       },
       {
         id: 'sel',
@@ -257,7 +256,7 @@ import { exprXY, numG } from '../../shared/econ/expr-xy.js';
         en: 'More sellers',
         c: 'S вправо',
         cen: 'S right',
-        set: (I) => ({ shS: q4(-spanP(I)) }),
+        set: (I) => ({ shS: CUR.q4(-spanP(I)) }),
       },
       {
         id: 'both',
@@ -265,7 +264,7 @@ import { exprXY, numG } from '../../shared/econ/expr-xy.js';
         en: 'Higher incomes and new technology',
         c: 'D и S вправо: q растёт, направление P зависит от силы сдвигов',
         cen: 'D and S right: q rises, the direction of P depends on the size of the shifts',
-        set: (I) => ({ shD: q4(spanP(I)), shS: q4(-spanP(I)) }),
+        set: (I) => ({ shD: CUR.q4(spanP(I)), shS: CUR.q4(-spanP(I)) }),
       },
     ],
     cons: [
@@ -275,7 +274,7 @@ import { exprXY, numG } from '../../shared/econ/expr-xy.js';
         en: 'Higher income I',
         c: 'бюджетная линия параллельно вправо',
         cen: 'budget line shifts out',
-        set: (I) => ({ dI: q4(nI(I.I) * 0.3) }),
+        set: (I) => ({ dI: CUR.q4(nI(I.I) * 0.3) }),
       },
       {
         id: 'incd',
@@ -283,7 +282,7 @@ import { exprXY, numG } from '../../shared/econ/expr-xy.js';
         en: 'Lower income I',
         c: 'бюджетная линия параллельно влево',
         cen: 'budget line shifts in',
-        set: (I) => ({ dI: q4(-nI(I.I) * 0.3) }),
+        set: (I) => ({ dI: CUR.q4(-nI(I.I) * 0.3) }),
       },
       {
         id: 'pxd',
@@ -291,7 +290,7 @@ import { exprXY, numG } from '../../shared/econ/expr-xy.js';
         en: 'X gets cheaper',
         c: 'бюджетная линия поворачивается наружу',
         cen: 'budget line rotates out',
-        set: (I) => ({ px2: q4(nI(I.px) * 0.7) }),
+        set: (I) => ({ px2: CUR.q4(nI(I.px) * 0.7) }),
       },
       {
         id: 'pxu',
@@ -299,7 +298,7 @@ import { exprXY, numG } from '../../shared/econ/expr-xy.js';
         en: 'X gets pricier',
         c: 'бюджетная линия поворачивается внутрь',
         cen: 'budget line rotates in',
-        set: (I) => ({ px2: q4(nI(I.px) * 1.5) }),
+        set: (I) => ({ px2: CUR.q4(nI(I.px) * 1.5) }),
       },
     ],
     labor: [
@@ -309,7 +308,7 @@ import { exprXY, numG } from '../../shared/econ/expr-xy.js';
         en: 'Higher output price',
         c: 'спрос на труд (MRP) вправо',
         cen: 'labor demand (MRP) right',
-        set: (I) => ({ dDl: q4(spanW(I)) }),
+        set: (I) => ({ dDl: CUR.q4(spanW(I)) }),
       },
       {
         id: 'tech',
@@ -317,7 +316,7 @@ import { exprXY, numG } from '../../shared/econ/expr-xy.js';
         en: 'Higher productivity',
         c: 'спрос на труд вправо',
         cen: 'labor demand right',
-        set: (I) => ({ dDl: q4(spanW(I)) }),
+        set: (I) => ({ dDl: CUR.q4(spanW(I)) }),
       },
       {
         id: 'imm',
@@ -325,7 +324,7 @@ import { exprXY, numG } from '../../shared/econ/expr-xy.js';
         en: 'Immigration',
         c: 'предложение труда вправо',
         cen: 'labor supply right',
-        set: (I) => ({ dSl: q4(-spanW(I)) }),
+        set: (I) => ({ dSl: CUR.q4(-spanW(I)) }),
       },
       {
         id: 'alt',
@@ -333,7 +332,7 @@ import { exprXY, numG } from '../../shared/econ/expr-xy.js';
         en: 'Higher pay in other industries',
         c: 'предложение труда влево',
         cen: 'labor supply left',
-        set: (I) => ({ dSl: q4(spanW(I)) }),
+        set: (I) => ({ dSl: CUR.q4(spanW(I)) }),
       },
     ],
   };
@@ -434,6 +433,32 @@ import { exprXY, numG } from '../../shared/econ/expr-xy.js';
     preset: ECON.P.preset || null,
     stamp: false,
   };
+  const CUR = createCurves({
+    get COMP() {
+      return COMP;
+    },
+    get DELTAS() {
+      return DELTAS;
+    },
+    get ECON() {
+      return ECON;
+    },
+    get EFFV() {
+      return EFFV;
+    },
+    get S() {
+      return S;
+    },
+    get SHOCKS() {
+      return SHOCKS;
+    },
+    get T() {
+      return T;
+    },
+    get nI() {
+      return nI;
+    },
+  });
 
   document.addEventListener('click', (e) => {
     const b = e.target.closest('#topicBox button[data-t]');
@@ -484,19 +509,11 @@ import { exprXY, numG } from '../../shared/econ/expr-xy.js';
     }
     const r = SOLVE[S.topic](S.res);
     S.ans = r.ans;
-    box.innerHTML = `<p class="idea">${L.tt[S.topic]}</p>${typeof shockNote === 'function' ? shockNote() : ''}${ECON.ol(r.st)}<div class="ans"><div class="k">${L.ans}</div><div class="big">${r.ans}</div></div>`;
+    box.innerHTML = `<p class="idea">${L.tt[S.topic]}</p>${typeof CUR.shockNote === 'function' ? CUR.shockNote() : ''}${ECON.ol(r.st)}<div class="ans"><div class="k">${L.ans}</div><div class="big">${r.ans}</div></div>`;
   }
 
   /* ---------- решения ---------- */
 
-  function shockNote() {
-    const t = S.topic;
-    if (!S.shock || !SHOCKS[t]) return '';
-    const sh = SHOCKS[t].find((s) => s.id === S.shock);
-    return sh
-      ? `<p class="idea"><b>${sh[ECON.P.lang] || sh.ru}:</b> ${ECON.P.lang === 'en' ? sh.cen : sh.c}</p>`
-      : '';
-  }
   function renderValues() {
     const box = $('#props'),
       V = T().v;
@@ -608,7 +625,7 @@ import { exprXY, numG } from '../../shared/econ/expr-xy.js';
 
   function renderAll() {
     ECON.syncTogVis();
-    if (typeof renderFactors === 'function') renderFactors();
+    if (typeof CUR.renderFactors === 'function') CUR.renderFactors();
     renderSolve();
     renderValues();
     ECON.renderPresets();
@@ -623,7 +640,7 @@ import { exprXY, numG } from '../../shared/econ/expr-xy.js';
   /* ---------- сцена ---------- */
 
   function renderNow() {
-    DRAGS.length = 0;
+    CUR.DRAGS.length = 0;
     ECON.ctx.setTransform(ECON.DPR, 0, 0, ECON.DPR, 0, 0);
     ECON.ctx.fillStyle = ECON.P.colors.bg;
     ECON.ctx.fillRect(0, 0, ECON.W, ECON.H);
@@ -645,7 +662,7 @@ import { exprXY, numG } from '../../shared/econ/expr-xy.js';
       ECON.ctx.fillText(t, ECON.W - w - 2, ECON.H - 24);
     }
   }
-  const RR = () => ({ x: 64, y: ECON.pT(), w: ECON.W - 110, h: ECON.H - ECON.pT() - ECON.pB() });
+
   function polyF(fr, pts, col, al) {
     if (!ECON.P.show.areas || pts.length < 3) return;
     ECON.ctx.save();
@@ -665,55 +682,11 @@ import { exprXY, numG } from '../../shared/econ/expr-xy.js';
     ECON.ctx.globalAlpha = 1;
     ECON.ctx.restore();
   }
-  function curve(fr, f, x0, x1, col, w = 2.4, dash) {
-    ECON.ctx.save();
-    ECON.ctx.beginPath();
-    ECON.ctx.rect(fr.r.x - 2, fr.r.y - 2, fr.r.w + 4, fr.r.h + 4);
-    ECON.ctx.clip();
-    ECON.ctx.strokeStyle = col;
-    ECON.ctx.lineWidth = w * ECON.P.lw;
-    ECON.ctx.setLineDash(dash || []);
-    ECON.ctx.beginPath();
-    let pen = false;
-    for (let i = 0; i <= 600; i++) {
-      const x = x0 + ((x1 - x0) * i) / 600,
-        y = f(x);
-      if (!isFinite(y) || Math.abs(y) > 1e9) {
-        pen = false;
-        continue;
-      }
-      const X = fr.X(x),
-        Y = Math.max(-1e5, Math.min(1e5, fr.Y(y)));
-      pen ? ECON.ctx.lineTo(X, Y) : ECON.ctx.moveTo(X, Y);
-      pen = true;
-    }
-    ECON.ctx.stroke();
-    ECON.ctx.setLineDash([]);
-    ECON.ctx.restore();
-  }
+
   function lab(fr, x, y, s, col, al = 'left') {
     if (ECON.P.show.labels) ECON.txt(s, fr.X(x) + (al === 'left' ? 8 : -8), fr.Y(y) - 10, col, 13, al);
   }
-  function hline(fr, y, x0, x1, col, dash = [5, 4]) {
-    ECON.ctx.strokeStyle = col;
-    ECON.ctx.lineWidth = 1.4;
-    ECON.ctx.setLineDash(dash);
-    ECON.ctx.beginPath();
-    ECON.ctx.moveTo(fr.X(x0), fr.Y(y));
-    ECON.ctx.lineTo(fr.X(x1), fr.Y(y));
-    ECON.ctx.stroke();
-    ECON.ctx.setLineDash([]);
-  }
-  function vline2(fr, x, y0, y1, col, dash = [5, 4]) {
-    ECON.ctx.strokeStyle = col;
-    ECON.ctx.lineWidth = 1.4;
-    ECON.ctx.setLineDash(dash);
-    ECON.ctx.beginPath();
-    ECON.ctx.moveTo(fr.X(x), fr.Y(y0));
-    ECON.ctx.lineTo(fr.X(x), fr.Y(y1));
-    ECON.ctx.stroke();
-    ECON.ctx.setLineDash([]);
-  }
+
   function drawSD(R) {
     const c = ECON.P.colors,
       D = R.D,
@@ -721,7 +694,7 @@ import { exprXY, numG } from '../../shared/econ/expr-xy.js';
     const qD = D.kind === 'lin' ? -D.a / D.b : R.E.q * 2;
     const qx = Math.max(qD, R.E.q * 1.6, R.qd || 0, R.qs || 0) * 1.08;
     const Pm = Math.max(D.kind === 'lin' ? D.a : R.E.P * 2, R.Pb || 0, R.E.P * 1.5) * 1.08;
-    const fr = ECON.frame(RR(), 0, qx, 0, Pm, false, 'P ↑   q →');
+    const fr = ECON.frame(CUR.RR(), 0, qx, 0, Pm, false, 'P ↑   q →');
     const Dq = (q) => Pof(D, q),
       Sq = (q) => Math.max(0, Pof(Sp, q));
     const E = R.E;
@@ -800,26 +773,26 @@ import { exprXY, numG } from '../../shared/econ/expr-xy.js';
     }
     const line = (L, col, dash) => {
       if (L.kind === 'vert') {
-        vline2(fr, L.q0, 0, Pm, col, dash || []);
+        CUR.vline2(fr, L.q0, 0, Pm, col, dash || []);
         return;
       }
-      curve(fr, (q) => Pof(L, q), 0, qx, col, 2.6, dash);
+      CUR.curve(fr, (q) => Pof(L, q), 0, qx, col, 2.6, dash);
     };
     if (R.D0 && ECON.P.show.areas) {
-      if (R.shD) curve(fr, (q) => Pof(R.D0, q), 0, qx, c.p1, 1.4, [4, 5]);
-      if (R.shS) curve(fr, (q) => Pof(R.S0, q), 0, qx, c.p2, 1.4, [4, 5]);
+      if (R.shD) CUR.curve(fr, (q) => Pof(R.D0, q), 0, qx, c.p1, 1.4, [4, 5]);
+      if (R.shS) CUR.curve(fr, (q) => Pof(R.S0, q), 0, qx, c.p2, 1.4, [4, 5]);
       ECON.dotP(fr, [R.E0.q, R.E0.P], c.axis, 4, ECON.P.show.labels ? 'E₀' : '');
     }
     line(D, c.p1);
     line(Sp, c.p2);
-    if (D.kind === 'lin') addDrag(fr, 'fy', (q) => Pof(D, q), 'shD', 1);
-    if (Sp.kind === 'lin' || Sp.kind === 'horiz') addDrag(fr, 'fy', (q) => Pof(Sp, q), 'shS', 1);
+    if (D.kind === 'lin') CUR.addDrag(fr, 'fy', (q) => Pof(D, q), 'shD', 1);
+    if (Sp.kind === 'lin' || Sp.kind === 'horiz') CUR.addDrag(fr, 'fy', (q) => Pof(Sp, q), 'shS', 1);
     if (R.S2) line(R.S2, c.p2, [7, 5]);
     lab(fr, qx * 0.02, Pof(D, qx * 0.02), 'D', c.p1);
     lab(fr, qx * 0.9, Pof(Sp, qx * 0.9), 'S', c.p2);
     if (R.S2) lab(fr, qx * 0.8, Pof(R.S2, qx * 0.8), R.iv === 'tax' ? 'S + t' : 'S − s', c.p2);
-    hline(fr, E.P, 0, E.q, c.axis);
-    vline2(fr, E.q, 0, E.P, c.axis);
+    CUR.hline(fr, E.P, 0, E.q, c.axis);
+    CUR.vline2(fr, E.q, 0, E.P, c.axis);
     ECON.dotP(
       fr,
       [E.q, E.P],
@@ -828,7 +801,7 @@ import { exprXY, numG } from '../../shared/econ/expr-xy.js';
       ECON.P.show.labels ? `E (${dc(fmt(E.q, 2))}; ${dc(fmt(E.P, 2))})` : 'E'
     );
     if (R.iv === 'ceil' || R.iv === 'floor') {
-      hline(fr, R.v, 0, qx, c.mark, []);
+      CUR.hline(fr, R.v, 0, qx, c.mark, []);
       lab(fr, qx * 0.98, R.v, R.iv === 'ceil' ? 'Pmax' : 'Pmin', c.mark, 'right');
       if (R.bind) {
         ECON.dotP(fr, [R.qs, R.v], c.p2, 4);
@@ -887,7 +860,7 @@ import { exprXY, numG } from '../../shared/econ/expr-xy.js';
     const c = ECON.P.colors;
     if (R.em === 'pts') {
       const fr = ECON.frame(
-        RR(),
+        CUR.RR(),
         0,
         Math.max(R.q1, R.q2) * 1.3,
         0,
@@ -909,7 +882,7 @@ import { exprXY, numG } from '../../shared/econ/expr-xy.js';
         );
       return;
     }
-    const r = RR(),
+    const r = CUR.RR(),
       h1 = r.h * 0.58,
       r1 = { x: r.x, y: r.y, w: r.w, h: h1 },
       r2 = { x: r.x, y: r.y + h1 + 28, w: r.w, h: r.h - h1 - 28 };
@@ -938,8 +911,8 @@ import { exprXY, numG } from '../../shared/econ/expr-xy.js';
           ]
         : [[R.q, R.P]];
     pts.forEach(([q, p]) => {
-      hline(fr, p, 0, q, c.axis);
-      vline2(fr, q, 0, p, c.axis);
+      CUR.hline(fr, p, 0, q, c.axis);
+      CUR.vline2(fr, q, 0, p, c.axis);
       ECON.dotP(fr, [q, p], c.mark, 6);
       if (ECON.P.show.areas && R.em !== 'find') {
         ECON.ctx.fillStyle = c.mark;
@@ -949,7 +922,7 @@ import { exprXY, numG } from '../../shared/econ/expr-xy.js';
       }
     });
     const f2 = ECON.frame(r2, 0, R.qmax * 1.05, 0, R.TRmax * 1.2, false, 'TR(q)');
-    curve(f2, (q) => q * Pof(R.D, q), 0, R.qmax, c.area, 2.6);
+    CUR.curve(f2, (q) => q * Pof(R.D, q), 0, R.qmax, c.area, 2.6);
     ECON.dotP(f2, [R.qmid, R.TRmax], c.eq, 5, ECON.P.show.labels ? 'TR max' : '');
     pts.forEach(([q, p]) => ECON.dotP(f2, [q, q * p], c.mark, 5));
   }
@@ -960,11 +933,11 @@ import { exprXY, numG } from '../../shared/econ/expr-xy.js';
         Math.max(R.I / R.px, R.px2 ? R.I / R.px2 : 0, R.Is && R.px2 ? R.Is / R.px2 : 0, R.H ? R.H.x : 0) *
         1.12,
       ym = Math.max(R.I / R.py, R.Is ? R.Is / R.py : 0, R.H ? R.H.y : 0) * 1.12;
-    const fr = ECON.frame(RR(), 0, xm, 0, ym, false, 'y ↑   x →');
+    const fr = ECON.frame(CUR.RR(), 0, xm, 0, ym, false, 'y ↑   x →');
     const bud = (Iv, px, col, dash) => ECON.seg(fr, [0, Iv / R.py], [Iv / px, 0], col, 2.4, dash);
     const ic = (U, col, dash) => {
       if (R.t === 'cd') {
-        curve(fr, (x) => Math.pow(U / Math.pow(x, R.al), 1 / R.be), xm * 0.01, xm, col, 2, dash);
+        CUR.curve(fr, (x) => Math.pow(U / Math.pow(x, R.al), 1 / R.be), xm * 0.01, xm, col, 2, dash);
       } else if (R.t === 'sub') {
         ECON.seg(fr, [0, U / R.be], [U / R.al, 0], col, 2, dash);
       } else {
@@ -980,7 +953,7 @@ import { exprXY, numG } from '../../shared/econ/expr-xy.js';
     }
     bud(R.I, R.px, c.p2);
     ic(A.U, c.p1);
-    addDrag(fr, 'fy', (x) => (R.I - R.px * x) / R.py, 'dI', R.py);
+    CUR.addDrag(fr, 'fy', (x) => (R.I - R.px * x) / R.py, 'dI', R.py);
     ECON.dotP(
       fr,
       [A.x, A.y],
@@ -1027,7 +1000,7 @@ import { exprXY, numG } from '../../shared/econ/expr-xy.js';
     const c = ECON.P.colors,
       C = R.C,
       qm = R.qmax;
-    const r = RR(),
+    const r = CUR.RR(),
       h1 = r.h * 0.56,
       r1 = { x: r.x, y: r.y, w: r.w, h: h1 },
       r2 = { x: r.x, y: r.y + h1 + 28, w: r.w, h: r.h - h1 - 28 };
@@ -1041,10 +1014,10 @@ import { exprXY, numG } from '../../shared/econ/expr-xy.js';
       false,
       ECON.P.lang === 'ru' ? 'средние и предельные' : 'average and marginal'
     );
-    curve(fr, C.MC, qm * 0.005, qm, c.bad, 2.6);
-    curve(fr, C.AC, qm * 0.01, qm, c.p1, 2.6);
-    curve(fr, C.AVC, qm * 0.005, qm, c.p2, 2.4);
-    if (R.FC > 0) curve(fr, C.AFC, qm * 0.02, qm, c.mark, 1.6, [5, 4]);
+    CUR.curve(fr, C.MC, qm * 0.005, qm, c.bad, 2.6);
+    CUR.curve(fr, C.AC, qm * 0.01, qm, c.p1, 2.6);
+    CUR.curve(fr, C.AVC, qm * 0.005, qm, c.p2, 2.4);
+    if (R.FC > 0) CUR.curve(fr, C.AFC, qm * 0.02, qm, c.mark, 1.6, [5, 4]);
     ECON.dotP(fr, [R.mAVC.q, R.mAVC.v], c.p2, 5, ECON.P.show.labels ? 'min AVC' : '');
     ECON.dotP(fr, [R.mAC.q, R.mAC.v], c.p1, 5, ECON.P.show.labels ? 'min AC' : '');
     if (ECON.P.show.labels) {
@@ -1055,9 +1028,9 @@ import { exprXY, numG } from '../../shared/econ/expr-xy.js';
     }
     const tm = C.TC(qm) * 1.1 || 1;
     const f2 = ECON.frame(r2, 0, qm, 0, tm, false, ECON.P.lang === 'ru' ? 'совокупные' : 'totals');
-    curve(f2, C.TC, 0, qm, c.p1, 2.4);
-    curve(f2, C.VC, 0, qm, c.p2, 2.2);
-    hline(f2, R.FC, 0, qm, c.mark, [5, 4]);
+    CUR.curve(f2, C.TC, 0, qm, c.p1, 2.4);
+    CUR.curve(f2, C.VC, 0, qm, c.p2, 2.2);
+    CUR.hline(f2, R.FC, 0, qm, c.mark, [5, 4]);
     if (ECON.P.show.labels) {
       ECON.txt('TC', f2.X(qm * 0.96), f2.Y(C.TC(qm * 0.96)) - 10, c.p1, 12);
       ECON.txt('VC', f2.X(qm * 0.96), f2.Y(C.VC(qm * 0.96)) + 12, c.p2, 12);
@@ -1069,7 +1042,7 @@ import { exprXY, numG } from '../../shared/econ/expr-xy.js';
       C = R.C,
       qm = R.qmax;
     const ymax = Math.max(R.P, R.minAC.v, R.minAVC.v) * 2;
-    const fr = ECON.frame(RR(), 0, qm, 0, ymax, false, 'P, MC, AC ↑   q →');
+    const fr = ECON.frame(CUR.RR(), 0, qm, 0, ymax, false, 'P, MC, AC ↑   q →');
     if (R.q > 0) {
       const ac = C.AC(R.q);
       polyF(
@@ -1084,11 +1057,11 @@ import { exprXY, numG } from '../../shared/econ/expr-xy.js';
         0.35
       );
     }
-    curve(fr, C.MC, qm * 0.005, qm, c.bad, 2.6);
-    curve(fr, C.AC, qm * 0.01, qm, c.p1, 2.4);
-    curve(fr, C.AVC, qm * 0.005, qm, c.p2, 2.2);
-    hline(fr, R.P, 0, qm, c.eq, []);
-    addDrag(fr, 'hl', R.P, 'P', 1, { base: () => R.P, clamp: (v) => Math.max(0.01, v) });
+    CUR.curve(fr, C.MC, qm * 0.005, qm, c.bad, 2.6);
+    CUR.curve(fr, C.AC, qm * 0.01, qm, c.p1, 2.4);
+    CUR.curve(fr, C.AVC, qm * 0.005, qm, c.p2, 2.2);
+    CUR.hline(fr, R.P, 0, qm, c.eq, []);
+    CUR.addDrag(fr, 'hl', R.P, 'P', 1, { base: () => R.P, clamp: (v) => Math.max(0.01, v) });
     if (ECON.P.show.labels) {
       ECON.txt(`P = MR = ${dc(fmt(R.P, 2))}`, fr.X(qm * 0.98), fr.Y(R.P) - 10, c.eq, 13, 'right');
       const lq = qm * 0.9;
@@ -1111,14 +1084,14 @@ import { exprXY, numG } from '../../shared/econ/expr-xy.js';
       ECON.P.show.labels ? (ECON.P.lang === 'ru' ? 'безубыточность' : 'break-even') : ''
     );
     if (R.q > 0) {
-      vline2(fr, R.q, 0, R.P, c.axis);
+      CUR.vline2(fr, R.q, 0, R.P, c.axis);
       ECON.dotP(fr, [R.q, R.P], c.eq, 6, ECON.P.show.labels ? `q* = ${dc(fmt(R.q, 2))}` : '');
     }
   }
   function drawMono(R) {
     const c = ECON.P.colors;
     if (R.dm === 'disc') {
-      const r = RR(),
+      const r = CUR.RR(),
         w = (r.w - 40) / 2;
       [
         [R.D, R.r1, '1'],
@@ -1145,11 +1118,11 @@ import { exprXY, numG } from '../../shared/econ/expr-xy.js';
           c.area,
           0.35
         );
-        curve(fr, (q) => Pof(D, q), 0, qx, c.p1, 2.6);
-        curve(fr, (q) => D.a + 2 * D.b * q, 0, qx / 2, c.curve, 2, [6, 4]);
-        hline(fr, R.c, 0, qx, c.bad, []);
+        CUR.curve(fr, (q) => Pof(D, q), 0, qx, c.p1, 2.6);
+        CUR.curve(fr, (q) => D.a + 2 * D.b * q, 0, qx / 2, c.curve, 2, [6, 4]);
+        CUR.hline(fr, R.c, 0, qx, c.bad, []);
         ECON.dotP(fr, [m.q, m.P], c.eq, 6, ECON.P.show.labels ? `P${k} = ${dc(fmt(m.P, 2))}` : '');
-        vline2(fr, m.q, 0, m.P, c.axis);
+        CUR.vline2(fr, m.q, 0, m.P, c.axis);
       });
       return;
     }
@@ -1157,7 +1130,7 @@ import { exprXY, numG } from '../../shared/econ/expr-xy.js';
       C = R.C,
       qx = Math.min(-D.a / D.b, R.qmax) * 1.05,
       Pm = D.a * 1.08;
-    const fr = ECON.frame(RR(), 0, qx, 0, Pm, false, 'P ↑   q →');
+    const fr = ECON.frame(CUR.RR(), 0, qx, 0, Pm, false, 'P ↑   q →');
     polyF(
       fr,
       [
@@ -1196,10 +1169,10 @@ import { exprXY, numG } from '../../shared/econ/expr-xy.js';
       ECON.ctx.fill();
       ECON.ctx.globalAlpha = 1;
     }
-    curve(fr, (q) => Pof(D, q), 0, -D.a / D.b, c.p1, 2.6);
-    curve(fr, (q) => D.a + 2 * D.b * q, 0, -D.a / (2 * D.b), c.curve, 2.2, [7, 5]);
-    curve(fr, C.MC, qx * 0.003, qx, c.p2, 2.4);
-    curve(fr, C.AC, qx * 0.01, qx, c.mark, 1.8);
+    CUR.curve(fr, (q) => Pof(D, q), 0, -D.a / D.b, c.p1, 2.6);
+    CUR.curve(fr, (q) => D.a + 2 * D.b * q, 0, -D.a / (2 * D.b), c.curve, 2.2, [7, 5]);
+    CUR.curve(fr, C.MC, qx * 0.003, qx, c.p2, 2.4);
+    CUR.curve(fr, C.AC, qx * 0.01, qx, c.mark, 1.8);
     if (ECON.P.show.labels) {
       ECON.txt('D', fr.X(qx * 0.05), fr.Y(Pof(D, qx * 0.05)) - 12, c.p1, 13);
       ECON.txt(
@@ -1213,8 +1186,8 @@ import { exprXY, numG } from '../../shared/econ/expr-xy.js';
       ECON.txt('MC', fr.X(qx * 0.95), fr.Y(C.MC(qx * 0.95)) - 10, c.p2, 13);
       ECON.txt('AC', fr.X(qx * 0.95), fr.Y(C.AC(qx * 0.95)) + 12, c.mark, 12);
     }
-    hline(fr, R.P, 0, R.q, c.axis);
-    vline2(fr, R.q, 0, R.P, c.axis);
+    CUR.hline(fr, R.P, 0, R.q, c.axis);
+    CUR.vline2(fr, R.q, 0, R.P, c.axis);
     ECON.dotP(
       fr,
       [R.q, R.P],
@@ -1238,7 +1211,7 @@ import { exprXY, numG } from '../../shared/econ/expr-xy.js';
       s = R.s,
       xm = Math.max(...s.map((p) => p[0])) * 1.15,
       ym = Math.max(...s.map((p) => p[1])) * 1.15;
-    const fr = ECON.frame(RR(), 0, xm, 0, ym, false, 'y ↑   x →');
+    const fr = ECON.frame(CUR.RR(), 0, xm, 0, ym, false, 'y ↑   x →');
     polyF(fr, [[0, 0], ...s, [s[s.length - 1][0], 0]], c.area, 0.18);
     ECON.ctx.strokeStyle = c.p1;
     ECON.ctx.lineWidth = 2.8 * ECON.P.lw;
@@ -1262,7 +1235,7 @@ import { exprXY, numG } from '../../shared/econ/expr-xy.js';
   function drawProd(R) {
     const c = ECON.P.colors;
     if (R.pm === 'short') {
-      const r = RR(),
+      const r = CUR.RR(),
         h1 = r.h * 0.5,
         r1 = { x: r.x, y: r.y, w: r.w, h: h1 },
         r2 = { x: r.x, y: r.y + h1 + 28, w: r.w, h: r.h - h1 - 28 };
@@ -1270,13 +1243,13 @@ import { exprXY, numG } from '../../shared/econ/expr-xy.js';
       let tm = 0;
       for (let i = 1; i <= 200; i++) tm = Math.max(tm, R.TP((Lm * i) / 200));
       const f1 = ECON.frame(r1, 0, Lm, 0, tm * 1.15 || 1, false, 'TP(L)');
-      curve(f1, R.TP, 0, Lm, c.p1, 2.6);
+      CUR.curve(f1, R.TP, 0, Lm, c.p1, 2.6);
       if (R.mpZero != null)
         ECON.dotP(f1, [R.mpZero, R.TP(R.mpZero)], c.eq, 5, ECON.P.show.labels ? 'max TP' : '');
       let am = Math.max(R.apMaxV, R.MP(Lm * 0.01)) * 1.2;
       const f2 = ECON.frame(r2, 0, Lm, Math.min(0, R.MP(Lm)), am, false, 'AP, MP');
-      curve(f2, R.AP, Lm * 0.005, Lm, c.p2, 2.4);
-      curve(f2, R.MP, Lm * 0.005, Lm, c.bad, 2.4);
+      CUR.curve(f2, R.AP, Lm * 0.005, Lm, c.p2, 2.4);
+      CUR.curve(f2, R.MP, Lm * 0.005, Lm, c.bad, 2.4);
       ECON.dotP(f2, [R.apMax, R.apMaxV], c.eq, 5, ECON.P.show.labels ? 'max AP' : '');
       if (ECON.P.show.labels) {
         ECON.txt('AP', f2.X(Lm * 0.95), f2.Y(R.AP(Lm * 0.95)) - 10, c.p2, 12);
@@ -1286,7 +1259,7 @@ import { exprXY, numG } from '../../shared/econ/expr-xy.js';
     }
     const Lx = Math.max(R.L * 2.2, R.pm === 'long' ? R.C / R.w : R.C / R.w) * 1.05,
       Kx = Math.max(R.K * 2.2, R.C / R.r) * 1.05;
-    const fr = ECON.frame(RR(), 0, Lx, 0, Kx, false, 'K ↑   L →');
+    const fr = ECON.frame(CUR.RR(), 0, Lx, 0, Kx, false, 'K ↑   L →');
     const C = R.C;
     ECON.seg(fr, [0, C / R.r], [C / R.w, 0], c.p2, 2.6);
     const q = R.pm === 'long' ? R.q : R.q0,
@@ -1303,7 +1276,7 @@ import { exprXY, numG } from '../../shared/econ/expr-xy.js';
       }
       return hi;
     };
-    curve(fr, Kof, Lx * 0.02, Lx, c.p1, 2.4);
+    CUR.curve(fr, Kof, Lx * 0.02, Lx, c.p1, 2.4);
     ECON.dotP(fr, [R.L, R.K], c.eq, 6, ECON.P.show.labels ? `(${dc(fmt(R.L, 2))}; ${dc(fmt(R.K, 2))})` : '');
     if (ECON.P.show.labels) {
       ECON.txt(
@@ -1327,15 +1300,15 @@ import { exprXY, numG } from '../../shared/econ/expr-xy.js';
       D = R.D,
       C = R.C,
       qx = Math.min(-D.a / D.b, R.qmax) * 1.05;
-    const fr = ECON.frame(RR(), 0, qx, 0, D.a * 1.1, false, 'P ↑   q →');
-    curve(fr, (q) => Pof(D, q), 0, -D.a / D.b, c.p1, 2.6);
-    curve(fr, (q) => D.a + 2 * D.b * q, 0, -D.a / (2 * D.b), c.curve, 2, [7, 5]);
-    curve(fr, C.MC, qx * 0.003, qx, c.p2, 2.4);
-    curve(fr, C.AC, qx * 0.01, qx, c.mark, 2.2);
+    const fr = ECON.frame(CUR.RR(), 0, qx, 0, D.a * 1.1, false, 'P ↑   q →');
+    CUR.curve(fr, (q) => Pof(D, q), 0, -D.a / D.b, c.p1, 2.6);
+    CUR.curve(fr, (q) => D.a + 2 * D.b * q, 0, -D.a / (2 * D.b), c.curve, 2, [7, 5]);
+    CUR.curve(fr, C.MC, qx * 0.003, qx, c.p2, 2.4);
+    CUR.curve(fr, C.AC, qx * 0.01, qx, c.mark, 2.2);
     ECON.dotP(fr, [R.q, R.P], c.eq, 6, ECON.P.show.labels ? `(${dc(fmt(R.q, 2))}; ${dc(fmt(R.P, 2))})` : '');
     ECON.dotP(fr, [R.mAC.q, R.mAC.v], c.mark, 5, ECON.P.show.labels ? 'min LAC' : '');
-    vline2(fr, R.q, 0, R.P, c.axis);
-    vline2(fr, R.mAC.q, 0, R.mAC.v, c.mark);
+    CUR.vline2(fr, R.q, 0, R.P, c.axis);
+    CUR.vline2(fr, R.mAC.q, 0, R.mAC.v, c.mark);
     if (ECON.P.show.labels) {
       ECON.txt(
         ECON.P.lang === 'ru' ? 'избыточная мощность' : 'excess capacity',
@@ -1350,7 +1323,7 @@ import { exprXY, numG } from '../../shared/econ/expr-xy.js';
     const c = ECON.P.colors;
     if (R.om === 'hhi') {
       const fr = ECON.frame(
-        RR(),
+        CUR.RR(),
         -0.6,
         R.s.length - 0.4,
         0,
@@ -1370,8 +1343,8 @@ import { exprXY, numG } from '../../shared/econ/expr-xy.js';
       return;
     }
     const qm = Math.max(R.br1(0), R.br2(0), R.cour.q[0], R.cour.q[1]) * 1.15;
-    const fr = ECON.frame(RR(), 0, qm, 0, qm, true, 'q₂ ↑   q₁ →');
-    curve(fr, (q1) => R.br2(q1), 0, qm, c.p2, 2.6);
+    const fr = ECON.frame(CUR.RR(), 0, qm, 0, qm, true, 'q₂ ↑   q₁ →');
+    CUR.curve(fr, (q1) => R.br2(q1), 0, qm, c.p2, 2.6);
     ECON.ctx.save();
     ECON.ctx.strokeStyle = c.p1;
     ECON.ctx.lineWidth = 2.6 * ECON.P.lw;
@@ -1399,18 +1372,18 @@ import { exprXY, numG } from '../../shared/econ/expr-xy.js';
       const Lm = R.Lmax;
       let mx = 0;
       for (let i = 1; i <= 200; i++) mx = Math.max(mx, R.MRP((Lm * i) / 200));
-      const fr = ECON.frame(RR(), 0, Lm, 0, Math.max(mx, R.w) * 1.2, false, 'w, MRP ↑   L →');
-      curve(fr, R.MRP, Lm * 0.005, Lm, c.p1, 2.6);
-      hline(fr, R.w, 0, Lm, c.p2, []);
+      const fr = ECON.frame(CUR.RR(), 0, Lm, 0, Math.max(mx, R.w) * 1.2, false, 'w, MRP ↑   L →');
+      CUR.curve(fr, R.MRP, Lm * 0.005, Lm, c.p1, 2.6);
+      CUR.hline(fr, R.w, 0, Lm, c.p2, []);
       ECON.dotP(fr, [R.L, R.w], c.eq, 6, ECON.P.show.labels ? `L = ${dc(fmt(R.L, 2))}` : '');
       return;
     }
     const Dl = R.Dl,
       Sl = R.Sl,
       Lx = (-Dl.a / Dl.b) * 1.05;
-    const fr = ECON.frame(RR(), 0, Lx, 0, Dl.a * 1.1, false, 'w ↑   L →');
-    curve(fr, (q) => Pof(Dl, q), 0, Lx, c.p1, 2.6);
-    curve(fr, (q) => Pof(Sl, q), 0, Lx, c.p2, 2.6);
+    const fr = ECON.frame(CUR.RR(), 0, Lx, 0, Dl.a * 1.1, false, 'w ↑   L →');
+    CUR.curve(fr, (q) => Pof(Dl, q), 0, Lx, c.p1, 2.6);
+    CUR.curve(fr, (q) => Pof(Sl, q), 0, Lx, c.p2, 2.6);
     if (R.lm === 'mkt') {
       polyF(
         fr,
@@ -1423,16 +1396,16 @@ import { exprXY, numG } from '../../shared/econ/expr-xy.js';
         0.35
       );
       if (R.D0 && ECON.P.show.areas) {
-        if (R.sD) curve(fr, (q) => Pof(R.D0, q), 0, Lx, c.p1, 1.4, [4, 5]);
-        if (R.sS) curve(fr, (q) => Pof(R.S0, q), 0, Lx, c.p2, 1.4, [4, 5]);
+        if (R.sD) CUR.curve(fr, (q) => Pof(R.D0, q), 0, Lx, c.p1, 1.4, [4, 5]);
+        if (R.sS) CUR.curve(fr, (q) => Pof(R.S0, q), 0, Lx, c.p2, 1.4, [4, 5]);
         ECON.dotP(fr, [R.Eb.q, R.Eb.P], c.axis, 4, 'E₀');
       }
       ECON.dotP(fr, [R.E.q, R.E.P], c.eq, 6, ECON.P.show.labels ? 'E' : '');
-      addDrag(fr, 'fy', (q) => Pof(Dl, q), 'dDl', 1);
-      addDrag(fr, 'fy', (q) => Pof(Sl, q), 'dSl', 1);
+      CUR.addDrag(fr, 'fy', (q) => Pof(Dl, q), 'dDl', 1);
+      CUR.addDrag(fr, 'fy', (q) => Pof(Sl, q), 'dSl', 1);
       return;
     }
-    curve(fr, (q) => Sl.a + 2 * Sl.b * q, 0, Lx, c.curve, 2, [7, 5]);
+    CUR.curve(fr, (q) => Sl.a + 2 * Sl.b * q, 0, Lx, c.curve, 2, [7, 5]);
     ECON.dotP(
       fr,
       [R.comp.q, R.comp.P],
@@ -1447,8 +1420,8 @@ import { exprXY, numG } from '../../shared/econ/expr-xy.js';
       6,
       ECON.P.show.labels ? (ECON.P.lang === 'ru' ? 'монопсония' : 'monopsony') : ''
     );
-    vline2(fr, R.L, R.w, R.mrp, c.bad);
-    if (R.mw) hline(fr, R.mw.w, 0, Lx, c.mark, []);
+    CUR.vline2(fr, R.L, R.w, R.mrp, c.bad);
+    if (R.mw) CUR.hline(fr, R.mw.w, 0, Lx, c.mark, []);
     if (ECON.P.show.labels)
       ECON.txt('MRC', fr.X(Lx * 0.55), fr.Y(Sl.a + 2 * Sl.b * Lx * 0.55) - 12, c.curve, 12);
   }
@@ -1472,16 +1445,16 @@ import { exprXY, numG } from '../../shared/econ/expr-xy.js';
     } else if (R.km === 'land') {
       const D = R.D,
         Tx = -D.a / D.b;
-      const fr = ECON.frame(RR(), 0, Tx * 1.05, 0, D.a * 1.1, false, 'R ↑   T →');
-      curve(fr, (q) => Pof(D, q), 0, Tx, c.p1, 2.6);
-      vline2(fr, R.Ts, 0, D.a * 1.1, c.p2, []);
+      const fr = ECON.frame(CUR.RR(), 0, Tx * 1.05, 0, D.a * 1.1, false, 'R ↑   T →');
+      CUR.curve(fr, (q) => Pof(D, q), 0, Tx, c.p1, 2.6);
+      CUR.vline2(fr, R.Ts, 0, D.a * 1.1, c.p2, []);
       ECON.dotP(fr, [R.Ts, R.R], c.eq, 6, ECON.P.show.labels ? `R = ${dc(fmt(R.R, 2))}` : '');
       return;
     }
     if (!pts.length) return;
     const ys = pts.map((p) => p[1]);
     const fr = ECON.frame(
-      RR(),
+      CUR.RR(),
       -0.6,
       pts.length - 0.4,
       Math.min(0, ...ys) * 1.15,
@@ -1518,7 +1491,7 @@ import { exprXY, numG } from '../../shared/econ/expr-xy.js';
       D = R.D;
     const qx = Math.max(D.kind === 'lin' ? -D.a / D.b : R.m.q * 2, R.m.q * 1.6) * 1.05,
       Pm = Math.max(D.kind === 'lin' ? D.a : R.m.P * 2, R.s.P, Pof(R.Ss, R.m.q * 1.8)) * 1.08;
-    const fr = ECON.frame(RR(), 0, qx, 0, Pm, false, 'P ↑   q →');
+    const fr = ECON.frame(CUR.RR(), 0, qx, 0, Pm, false, 'P ↑   q →');
     polyF(
       fr,
       [
@@ -1529,9 +1502,9 @@ import { exprXY, numG } from '../../shared/econ/expr-xy.js';
       c.bad,
       0.45
     );
-    curve(fr, (q) => Pof(D, q), 0, qx, c.p1, 2.6);
-    curve(fr, (q) => Pof(R.S, q), 0, qx, c.p2, 2.6);
-    curve(fr, (q) => Pof(R.Ss, q), 0, qx, c.bad, 2.2, [7, 5]);
+    CUR.curve(fr, (q) => Pof(D, q), 0, qx, c.p1, 2.6);
+    CUR.curve(fr, (q) => Pof(R.S, q), 0, qx, c.p2, 2.6);
+    CUR.curve(fr, (q) => Pof(R.Ss, q), 0, qx, c.bad, 2.2, [7, 5]);
     ECON.dotP(
       fr,
       [R.m.q, R.m.P],
@@ -1556,12 +1529,12 @@ import { exprXY, numG } from '../../shared/econ/expr-xy.js';
     const c = ECON.P.colors,
       qx = R.qmax * 1.05;
     let mx = R.sumP(0);
-    const fr = ECON.frame(RR(), 0, qx, 0, Math.max(mx, Pof(R.MC, 0)) * 1.1, false, 'P ↑   q →');
+    const fr = ECON.frame(CUR.RR(), 0, qx, 0, Math.max(mx, Pof(R.MC, 0)) * 1.1, false, 'P ↑   q →');
     R.list.forEach((o) =>
-      curve(fr, (q) => Math.max(0, o.n * Pof(o.L, q)), 0, -o.L.a / o.L.b, c.p1, 1.6, [5, 4])
+      CUR.curve(fr, (q) => Math.max(0, o.n * Pof(o.L, q)), 0, -o.L.a / o.L.b, c.p1, 1.6, [5, 4])
     );
-    curve(fr, R.sumP, 0, qx, c.p1, 3);
-    curve(fr, (q) => Pof(R.MC, q), 0, qx, c.p2, 2.6);
+    CUR.curve(fr, R.sumP, 0, qx, c.p1, 3);
+    CUR.curve(fr, (q) => Pof(R.MC, q), 0, qx, c.p2, 2.6);
     ECON.dotP(fr, [R.qPub, R.sumP(R.qPub)], c.eq, 6, ECON.P.show.labels ? `q* = ${dc(fmt(R.qPub, 2))}` : '');
     if (ECON.P.show.labels)
       ECON.txt('ΣMB', fr.X(qx * 0.05) + 14, fr.Y(R.sumP(qx * 0.05)) - 10, c.p1, 13, 'left');
@@ -1581,181 +1554,11 @@ import { exprXY, numG } from '../../shared/econ/expr-xy.js';
   const TOG = ['bgGrid', 'coords', 'labels', 'areas', 'hints'];
 
   /* ---------- перетаскивание кривых ---------- */
-  const DRAGS = [];
-  let dragNow = null,
-    dragRaf = 0;
-  function addDrag(fr, kind, fn, field, scale, o = {}) {
-    DRAGS.push({ fr, kind, fn, field, scale, ...o });
-  } // kind: 'fy' y=f(x) верт.; 'fx' x=f(y) гориз.; 'hl' y=const; 'vl' x=const
-  const invX = (fr, px) => (px - fr.X(0)) / (fr.X(1) - fr.X(0)),
-    invY = (fr, py) => (py - fr.Y(0)) / (fr.Y(1) - fr.Y(0));
-  function dragDist(d, px, py) {
-    const fr = d.fr,
-      r = fr.r;
-    if (px < r.x - 6 || px > r.x + r.w + 6 || py < r.y - 6 || py > r.y + r.h + 6) return Infinity;
-    let best = Infinity;
-    if (d.kind === 'hl') return Math.abs(fr.Y(d.fn) - py);
-    if (d.kind === 'vl') return Math.abs(fr.X(d.fn) - px);
-    for (let i = 0; i <= 160; i++) {
-      if (d.kind === 'fy') {
-        const x = invX(fr, r.x + (r.w * i) / 160),
-          y = d.fn(x);
-        if (!isFinite(y)) continue;
-        best = Math.min(best, Math.hypot(fr.X(x) - px, fr.Y(y) - py));
-      } else {
-        const y = invY(fr, r.y + (r.h * i) / 160),
-          x = d.fn(y);
-        if (!isFinite(x)) continue;
-        best = Math.min(best, Math.hypot(fr.X(x) - px, fr.Y(y) - py));
-      }
-    }
-    return best;
-  }
-  function pickDrag(px, py) {
-    let b = null,
-      bd = 12;
-    for (const d of DRAGS) {
-      const v = dragDist(d, px, py);
-      if (v < bd) {
-        bd = v;
-        b = d;
-      }
-    }
-    return b;
-  }
-  const cvPos = (e) => {
-    const r = ECON.cv.getBoundingClientRect();
-    return { x: e.clientX - r.left, y: e.clientY - r.top };
-  };
-  const niceRound = (v) => {
-    if (!isFinite(v)) return 0;
-    const a = Math.abs(v);
-    const d = a >= 1000 ? 0 : a >= 100 ? 1 : a >= 10 ? 2 : a >= 1 ? 3 : 4;
-    return +v.toFixed(d);
-  };
-  ECON.cv.addEventListener('pointerdown', (e) => {
-    const p = cvPos(e),
-      d = pickDrag(p.x, p.y);
-    if (!d) return;
-    const I = S.inp[S.topic];
-    const raw = I[d.field];
-    const pv = (x) => {
-      const t = String(x).trim();
-      return t.endsWith('%') ? nI(t.slice(0, -1)) / 100 : nI(t);
-    };
-    let v0;
-    try {
-      v0 = raw === '' || raw == null ? (d.base ? d.base() : 0) : pv(raw);
-    } catch (err) {
-      v0 = d.base ? d.base() : 0;
-    }
-    dragNow = { d, px: p.x, py: p.y, v0 };
-    ECON.cv.setPointerCapture(e.pointerId);
-    ECON.cv.style.cursor = 'grabbing';
-    e.preventDefault();
-  });
-  ECON.cv.addEventListener('pointermove', (e) => {
-    const p = cvPos(e);
-    if (!dragNow) {
-      ECON.cv.style.cursor = pickDrag(p.x, p.y) ? 'grab' : 'default';
-      return;
-    }
-    const { d, px, py, v0 } = dragNow,
-      fr = d.fr;
-    const delta =
-      d.kind === 'fy' || d.kind === 'hl' ? invY(fr, p.y) - invY(fr, py) : invX(fr, p.x) - invX(fr, px);
-    let v = niceRound(v0 + delta * d.scale);
-    if (d.clamp) v = d.clamp(v);
-    S.inp[S.topic][d.field] = v === 0 && !d.base ? '' : dc(String(v));
-    S.shock = null;
-    S.preset = null;
-    const el = document.querySelector(`#form [data-k="${d.field}"]`);
-    if (el) el.value = S.inp[S.topic][d.field];
-    if (!dragRaf)
-      dragRaf = requestAnimationFrame(() => {
-        dragRaf = 0;
-        ECON.recompute();
-      });
-  });
-  const endDrag = () => {
-    if (dragNow) {
-      dragNow = null;
-      ECON.cv.style.cursor = 'default';
-    }
-  };
-  ECON.cv.addEventListener('pointerup', endDrag);
-  ECON.cv.addEventListener('pointercancel', endDrag);
+
+  // kind: 'fy' y=f(x) верт.; 'fx' x=f(y) гориз.; 'hl' y=const; 'vl' x=const
+
   /* ---------- факторы и сдвиги ---------- */
-  const arrowOf = (a, b) => {
-    const t = 1e-7 * Math.max(1, Math.abs(a), Math.abs(b));
-    return b > a + t ? '<b class="up">↑</b>' : b < a - t ? '<b class="dn">↓</b>' : '<span class="z">—</span>';
-  };
-  function cleared(t) {
-    const I = { ...S.inp[t] };
-    (DELTAS[t] || []).forEach((k) => {
-      I[k] = '';
-    });
-    return I;
-  }
-  function renderFactors() {
-    const box = $('#fac');
-    if (!box) return;
-    const t = S.topic,
-      L = T(),
-      list = SHOCKS[t];
-    if (!list) {
-      box.innerHTML = `<p class="note">${L.fac_none}</p>`;
-      return;
-    }
-    let base;
-    try {
-      base = COMP[t](cleared(t));
-    } catch (e) {
-      box.innerHTML = `<p class="note">${L.cap.err}</p>`;
-      return;
-    }
-    const ev = EFFV[t],
-      b0 = ev(base, true),
-      vars = Object.keys(b0);
-    if (!vars.length) {
-      box.innerHTML = `<p class="note">${L.fac_mode || L.fac_none}</p>`;
-      return;
-    }
-    const rows = list
-      .map((sh) => {
-        let r;
-        try {
-          r = COMP[t]({ ...cleared(t), ...sh.set(cleared(t)) });
-        } catch (e) {
-          return null;
-        }
-        const b1 = ev(r, false);
-        return { sh, b1 };
-      })
-      .filter(Boolean);
-    box.innerHTML =
-      `<p class="note" style="margin:.1rem 0 .5rem">${L.fac_note}</p><div class="tw"><table class="tab fac"><tr><th style="text-align:left">${L.fac_f}</th><th style="text-align:left">${L.fac_c}</th>${vars.map((v) => `<th>${v}</th>`).join('')}</tr>${rows.map(({ sh, b1 }) => `<tr data-shock="${sh.id}" class="${S.shock === sh.id ? 'on' : ''}"><td style="text-align:left">${sh[ECON.P.lang] || sh.ru}</td><td style="text-align:left">${(ECON.P.lang === 'en' ? sh.cen : sh.c) || ''}</td>${vars.map((v) => `<td>${arrowOf(b0[v], b1[v])}</td>`).join('')}</tr>`).join('')}</table></div>` +
-      (S.shock ? `<div class="row"><button class="btn sm" id="facReset">${L.fac_reset}</button></div>` : '');
-  }
-  document.addEventListener('click', (e) => {
-    const tr = e.target.closest('tr[data-shock]');
-    if (tr) {
-      const sh = SHOCKS[S.topic].find((s) => s.id === tr.dataset.shock);
-      if (!sh) return;
-      S.inp[S.topic] = { ...cleared(S.topic), ...sh.set(cleared(S.topic)) };
-      S.shock = sh.id;
-      S.preset = null;
-      ECON.renderForm();
-      ECON.recompute();
-      return;
-    }
-    if (e.target.id === 'facReset') {
-      S.inp[S.topic] = cleared(S.topic);
-      S.shock = null;
-      ECON.renderForm();
-      ECON.recompute();
-    }
-  });
+
   /* ---------- справочник ---------- */
 
   /* ---------- экспорт ---------- */
