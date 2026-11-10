@@ -1,3 +1,5 @@
+import { analyzeX, calcRSX } from './solvers/analysis.js';
+import { limF, limFx, limN } from '../../math/expr/limits.js';
 import { FNAME, PRINT, TRIG, TXN, fArg, frac, hp, hp0, juxOK, numH, numT, prec, precT, tp, tp0 } from '../../math/expr/print.js';
 import { asFactors, dropConst, frank, fromFactors, linAst, linOf, linTerms, padd, pdeg, pder, pdiv, pgcd, pmul, polyAst, polyOf, ppow, pscale, ptrim, pval, sumTerms, tidy, tidyS } from '../../math/expr/poly.js';
 import { ALIAS, WORDS, hasInf, parse, parseFx, parseLim, tokenize } from '../../math/expr/parse.js';
@@ -522,125 +524,34 @@ const M2T={power:'table',numeric:'simpson',polydiv:'polydiv',prodsum:'trigid'};
 
 /* ---------- состояние ---------- */
 const S={mode:'A',fs:'x^2',as:'0',bs:'2',fe:null,ff:null,aE:Nn(0),bE:Nn(2),a:0,b:2,t:1,xs:1.2,anim:null,C:0,rule:P.rule||'mid',n:P.n||8,V:{cx:1,cy:1,sx:80,sy:80},R:null,err:null,preset:null,drag:false};
-const memo=new Map();
-function getSol(){const k=key(S.fe)+'|'+lang();if(!memo.has(k)){memo.set(k,solve(S.fe,S.a,S.b));if(memo.size>60)memo.delete(memo.keys().next().value)}return memo.get(k)}
-const BASIS=[[1,Nn(1)],[Math.PI,['c','pi']],[Math.E,['c','e']],[Math.SQRT2,['f','sqrt',Nn(2)]],[Math.sqrt(3),['f','sqrt',Nn(3)]],[Math.LN2,['f','ln',Nn(2)]],[Math.log(3),['f','ln',Nn(3)]],[Math.log(5),['f','ln',Nn(5)]],
- [Math.sqrt(Math.PI),['f','sqrt',['c','pi']]],[Math.exp(Math.PI),['f','exp',['c','pi']]],[Math.PI*Math.PI,['^',['c','pi'],Nn(2)]],[Math.PI*Math.sqrt(3),['*',['c','pi'],['f','sqrt',Nn(3)]]],[Math.PI*Math.SQRT2,['*',['c','pi'],['f','sqrt',Nn(2)]]],[1/Math.E,['/',Nn(1),['c','e']]],[Math.E*Math.E,['f','exp',Nn(2)]]];
-const gcd=(a,b)=>b?gcd(b,a%b):a;
-const recMemo=new Map();
-function recognize(v,tol){if(!isFinite(v))return null;if(Math.abs(v)<1e-11)return Nn(0);const rk=v.toPrecision(13)+tol;if(recMemo.has(rk))return recMemo.get(rk);
-  let best=null,bc=1e9;const cx=f=>Math.abs(f[0])+f[1];
-  for(const[K,A]of BASIS){const f=toFrac(v/K,60,tol);if(f){const c=cx(f)+(K===1?0:3);if(c<bc){bc=c;best=mul(Nn(f[0]/f[1]),A)}}}
-  if(!best||bc>14){let b2=null,c2=1e9;for(let i=0;i<BASIS.length;i++)for(let j=1;j<BASIS.length;j++){if(i===j)continue;const[K1,A1]=BASIS[i],[K2,A2]=BASIS[j];
-      for(let q=1;q<=12;q++)for(let p=-24;p<=24;p++){if(!p||gcd(Math.abs(p),q)!==1)continue;const r2=p/q,rem=v-r2*K2;if(Math.abs(rem)<1e-9)continue;const f=toFrac(rem/K1,12,tol);if(!f)continue;
-        const c=cx(f)+Math.abs(p)+q+6;if(c<c2){c2=c;b2=add(mul(Nn(r2),A2),mul(Nn(f[0]/f[1]),A1))}}}
-    if(b2&&c2<=26&&c2<bc){best=b2;bc=c2}}
-  if(best&&bc>40)best=null;
-  recMemo.set(rk,best);return best}
+
+
+
+
+
+
 /* символьный предел первообразной: только детерминированные формы (константа · ∞, ∞ + конст., x^p, ln, exp, arctan…);
    неопределённости (∞ − ∞, 0 · ∞, ∞/∞, колебания) → null, и тогда работает численный limN.
    Неточный ноль (|v| < 1e-9, например cos(π/2) в float) считается нулём с неизвестной стороной.
    Значение: {t:'f',v,s} — конечный предел (s: +1 сверху, −1 снизу, 0 точная константа, NaN неизвестно), {t:'i',s} — ±∞. */
-function limS(E,x0,dir){
-  const F=(v,s)=>!isFinite(v)?null:v!==0&&s!==0&&Math.abs(v)<1e-9?{t:'f',v:0,s:NaN}:{t:'f',v,s},I=s=>({t:'i',s}),U=NaN;
-  const sideMul=(a,b)=>a.v===0&&b.v!==0?(a.s===0?0:a.s*Math.sign(b.v)):b.v===0&&a.v!==0?(b.s===0?0:b.s*Math.sign(a.v)):a.v===0&&b.v===0?a.s*b.s:U;
-  const pw=(a,p)=>{if(!a)return null;const ip=Number.isInteger(p);
-    if(a.t==='i'){if(p===0)return F(1,0);if(a.s>0)return p>0?I(1):F(0,1);if(!ip)return null;return p>0?I(p%2?-1:1):F(0,p%2?-1:1)}
-    if(a.v>0)return F(Math.pow(a.v,p),U);if(a.v<0)return ip?F(Math.pow(a.v,p),U):null;
-    if(p>0){if(a.s===1||a.s===0)return F(0,a.s);if(a.s===-1&&ip)return F(0,p%2?-1:1);return null}
-    if(p<0&&(a.s===1||a.s===-1)){if(a.s===1)return I(1);return ip?I(p%2?-1:1):null}return null};
-  const ex=(b,g)=>{if(!g||!(b>0))return null;if(b===1)return F(1,0);const up=b>1;if(g.t==='i')return(g.s>0)===up?I(1):F(0,1);return F(Math.pow(b,g.v),U)};
-  const go=e=>{switch(e[0]){
-    case 'n':return F(e[1],0);
-    case 'c':return F(CV[e[1]],0);
-    case 'v':return isFinite(x0)?F(x0,dir):I(x0>0?1:-1);
-    case 'neg':{const a=go(e[1]);return !a?null:a.t==='i'?I(-a.s):F(-a.v,-a.s)}
-    case '+':case '-':{const a=go(e[1]);let b=go(e[2]);if(!a||!b)return null;if(e[0]==='-')b=b.t==='i'?I(-b.s):F(-b.v,-b.s);
-      if(a.t==='i'&&b.t==='i')return a.s===b.s?a:null;if(a.t==='i')return a;if(b.t==='i')return b;
-      const s=a.s===0?b.s:b.s===0?a.s:a.s===b.s?a.s:U;return F(a.v+b.v,s)}
-    case '*':{const a=go(e[1]),b=go(e[2]);if(!a||!b)return null;
-      if(a.t==='i'&&b.t==='i')return I(a.s*b.s);if(a.t==='i'||b.t==='i'){const f=a.t==='f'?a:b,i=a.t==='i'?a:b;return f.v===0?null:I(i.s*Math.sign(f.v))}
-      return F(a.v*b.v,sideMul(a,b))}
-    case '/':{const a=go(e[1]),b=go(e[2]);if(!a||!b)return null;
-      if(b.t==='i'){if(a.t==='i')return null;return a.v===0?(a.s===0?F(0,0):null):F(0,Math.sign(a.v)*b.s)}
-      if(b.v!==0)return a.t==='i'?I(a.s*Math.sign(b.v)):F(a.v/b.v,a.v===0?(a.s===0?0:a.s*Math.sign(b.v)):U);
-      if(!(b.s===1||b.s===-1))return null;if(a.t==='i')return I(a.s*b.s);return a.v===0?null:I(Math.sign(a.v)*b.s)}
-    case '^':{const a=go(e[1]),q=go(e[2]);if(!q)return null;
-      if(q.t==='f'&&q.s===0)return pw(a,q.v);
-      if(a&&a.t==='f'&&a.s===0)return ex(a.v,q);return null}
-    case 'f':{const nm=e[1],a=go(e[2]);if(!a)return null;
-      if(nm==='exp')return ex(Math.E,a);
-      if(nm==='sqrt')return pw(a,.5);
-      if(nm==='ln'){if(a.t==='i')return a.s>0?I(1):null;if(a.v>0)return F(Math.log(a.v),U);return a.v===0&&a.s===1?I(-1):null}
-      if(nm==='abs'){if(a.t==='i')return I(1);return F(Math.abs(a.v),a.v===0?(a.s===0?0:1):U)}
-      if(nm==='atan')return a.t==='i'?F(a.s*Math.PI/2,-a.s):F(Math.atan(a.v),U);
-      if(nm==='tanh')return a.t==='i'?F(a.s,-a.s):F(Math.tanh(a.v),U);
-      if(nm==='sinh')return a.t==='i'?I(a.s):F(Math.sinh(a.v),U);
-      if(nm==='cosh')return a.t==='i'?I(1):F(Math.cosh(a.v),U);
-      if(a.t==='i')return null;
-      if(nm==='sin'||nm==='cos')return F(FN[nm](a.v),U);
-      if(nm==='tan')return Math.abs(Math.cos(a.v))>1e-12?F(Math.tan(a.v),U):null;
-      if(nm==='cot')return Math.abs(Math.sin(a.v))>1e-12?F(1/Math.tan(a.v),U):null;
-      if(nm==='asin'||nm==='acos')return Math.abs(a.v)<1?F(FN[nm](a.v),U):null;
-      return null}
-    default:return null}};
-  try{return go(E)}catch(_){return null}}
+
 /* предел первообразной: сначала символьно (точно), иначе численно. ex — предел найден точно */
-function limFx(F,E,x0,dir){const r=E?limS(E,x0,dir):null;if(r&&r.t==='i')return{v:null,ex:true};if(r&&r.t==='f')return{v:r.v,ex:true};return{v:limN(F,x0,dir),ex:false}}
-function limF(F,x0,dir,E){return limFx(F,E,x0,dir).v}
-function limN(F,x0,dir){if(!isFinite(x0)){const s=x0>0?1:-1,vs=[1e3,1e5,1e7,1e9].map(X=>F(s*X));return conv(vs)}
-  const v0=F(x0),sc=Math.max(1,Math.abs(x0)),g1=Math.abs(S.ff(x0+dir*1e-4*sc)),g2=Math.abs(S.ff(x0+dir*1e-9*sc)),blow=!isFinite(S.ff(x0))||!(isFinite(g2)&&g2<=1e3*Math.max(1,g1));
-  if(isFinite(v0)&&!blow)return v0;
-  const vs=[1e-5,1e-7,1e-9,1e-11].map(e=>F(x0+dir*e*Math.max(1,Math.abs(x0))));return conv(vs)}
-function conv(vs){if(vs.some(v=>!isFinite(v)))return null;const d1=Math.abs(vs[1]-vs[0]),d2=Math.abs(vs[2]-vs[1]),d3=Math.abs(vs[3]-vs[2]),sc=Math.max(1,Math.abs(vs[3]));
-  if(d3<1e-9*sc)return vs[3];if(d2>0&&d3/d2<.5&&d1>0&&d2/d1<.5&&d3<1e-3*sc)return vs[3];return null}
+
+
+
+
 
 /* условно сходящиеся несобственные интегралы с колебаниями: признак Лейбница + ускорение Эйлера */
-function oscTail(g,A){const h=.004,Xmax=A+3000;let prev=g(A),xp=A;const zs=[];for(let x=A+h;x<=Xmax&&zs.length<400;x+=h){const v=g(x);if(!isFinite(v))return null;if(v===0||(prev!==0&&Math.sign(v)!==Math.sign(prev))){let l=xp,r=x;for(let i=0;i<60;i++){const m=(l+r)/2;if(Math.sign(g(m))===Math.sign(g(l)))l=m;else r=m}zs.push((l+r)/2)}prev=v;xp=x}
-  if(zs.length<80)return null;const q0=quadF(g,A,zs[0]);if(!q0.ok)return null;const a=[];for(let k=0;k+1<zs.length;k++){const q=quadF(g,zs[k],zs[k+1]);if(!q.ok)return null;a.push(q.v)}
-  const n=a.length;for(let k=1;k<n;k++)if(Math.sign(a[k])===Math.sign(a[k-1]))return null;const allAlt=true;const st=Math.floor(n*.2);for(let k=st+1;k<n;k++)if(Math.abs(a[k])>Math.abs(a[k-1])*(1+1e-9))return null;
-  {const A1=Math.abs(a[Math.floor(n/4)]),A2=Math.abs(a[Math.floor(n/2)]),A3=Math.abs(a[n-1]),d1=A1-A2,d2=A2-A3;if(!(d1>0&&d2>0))return A3>.95*A1?OSCDIV:UNDEC;const r=d2/d1;if(!(r<1))return UNDEC;const Lim=A3-d2*r/(1-r);if(!(Lim<.02*A1))return(r<.72&&Lim>.3*A1)?OSCDIV:UNDEC}
-  const est=m=>{let s=[],t=0;for(let k=0;k<m;k++){t+=a[k];s.push(t)}let w=s.slice(-40);for(let r=0;r<30&&w.length>1;r++){const u=[];for(let i=0;i+1<w.length;i++)u.push((w[i]+w[i+1])/2);w=u}return w[w.length-1]};
-  const e1=est(n),e2=est(n-40);if(!(Math.abs(e1-e2)<=1e-8*Math.max(1,Math.abs(e1))))return UNDEC;return q0.v+e1}
-const UNDEC={undec:true},OSCDIV={oscdiv:true};
-function oscInf(f,lo,hi,sing){const side=(g,A)=>oscTail(g,A);
-  if(isFinite(lo)&&hi===Infinity){const A=Math.max(lo,...sing.filter(x=>isFinite(x)),0)+1;let base=0;const pts=[lo,...sing.filter(x=>x>lo&&x<A),A];for(let i=0;i<pts.length-1;i++){const q=quadF(f,pts[i],pts[i+1]);if(!q.ok)return null;base+=q.v}const t=side(f,A);return t===null||t===UNDEC||t===OSCDIV?t:base+t}
-  if(lo===-Infinity&&isFinite(hi)){const r=oscInf(x=>f(-x),-hi,Infinity,sing.map(x=>-x));return r}
-  if(lo===-Infinity&&hi===Infinity){const r=oscInf(f,0,Infinity,sing.filter(x=>x>0)),l=oscInf(x=>f(-x),0,Infinity,sing.filter(x=>x<0).map(x=>-x));if(r===null||l===null)return null;if(r===OSCDIV||l===OSCDIV)return OSCDIV;if(r===UNDEC||l===UNDEC)return UNDEC;return r+l}return null}
-function analyze(full=true){const R={};S.R=R;if(S.err)return;const f=S.ff,a=S.a,b=S.b;
-  R.sol=getSol();R.F=R.sol.F;R.FF=R.F?compile(R.F):null;
-  const lo=Math.min(a,b),hi=Math.max(a,b),sg=a<=b?1:-1;R.inf=!isFinite(lo)||!isFinite(hi);
-  const big=(x,s)=>{if(!isFinite(x))return false;const y=f(x),sc=Math.max(1,Math.abs(x));
-    if(isFinite(y)){const g1=Math.abs(f(x+s*1e-4*sc)),g2=Math.abs(f(x+s*1e-9*sc));return isFinite(g1)&&isFinite(g2)&&g2>1e3*Math.max(1,g1)}
-    if(isNaN(y)){const d=1e-7*sc,y1=f(x+d),y2=f(x-d),o1=isFinite(y1)&&Math.abs(y1)<1e7,o2=isFinite(y2)&&Math.abs(y2)<1e7;
-      if((o1||o2)&&(!(o1&&o2)||Math.abs(y1-y2)<1e-3*(1+Math.abs(y1))))return false}return true};
-  let sing=singular(f,Math.max(lo,-60),Math.min(hi,60)).filter(x=>x>lo&&x<hi);
-  const endS=[big(lo,1),big(hi,-1)];R.sing=sing;R.improper=R.inf||sing.length>0||endS[0]||endS[1];
-  {const u0=Math.max(lo,-60),u1=Math.min(hi,60);let bad=0;if(u1>u0)for(let i=0;i<=400;i++){const x=u0+(u1-u0)*(i+.5)/401;if(isNaN(f(x))){const d=1e-7*Math.max(1,Math.abs(x));if(!(isFinite(f(x+d))&&isFinite(f(x-d))))bad++}}
-    if(bad>4){R.undef=true;R.div=true;R.how='div';R.improper=false;R.pieces=[];R.val=NaN;R.num=NaN;R.numOk=false;return}}
-  const pts=[lo,...sing,hi];let num=0,ok=true;const pieces=[];
-  for(let i=0;i<pts.length-1;i++){pieces.push([pts[i],pts[i+1]]);const q=quadF(f,pts[i],pts[i+1]);num+=q.v;ok=ok&&q.ok}
-  if(Math.abs(num)>1e10||!isFinite(num))ok=false;R.pieces=pieces;R.num=sg*num;R.numOk=ok;
-  if(R.FF){
-    if(!R.improper){const Fa=R.FF(a),Fb=R.FF(b),v=Fb-Fa;if(isFinite(v)&&(!ok||Math.abs(v-R.num)<=1e-6*Math.max(1,Math.abs(v)))){R.val=v;R.how='nl';R.Fa=Fa;R.Fb=Fb}else{R.val=R.num;R.how='jump'}}
-    else{let tot=0,div=false,ex=true;for(const[p0,p1]of pieces){const L=limFx(R.FF,R.F,p0,1),U=limFx(R.FF,R.F,p1,-1);if(L.v===null||U.v===null){div=true;break}tot+=U.v-L.v;ex=ex&&L.ex&&U.ex}
-      if(div){R.div=true;R.how='div';if(R.inf){const side=isFinite(hi)?-1:1;let okF=true,rev=0,pd=0,pv=null;for(let i=0;i<=4000;i++){const X=side*(50+i*.37),v=R.FF(X);if(!isFinite(v)){okF=false;break}if(pv!==null){const d=v-pv;if(Math.abs(d)>1e-12){if(pd&&Math.sign(d)!==pd)rev++;pd=Math.sign(d)}}pv=v}if(okF&&rev>=6)R.divOsc=true}}else{tot*=sg;if(ok&&Math.abs(tot-R.num)>1e-5*Math.max(1,Math.abs(tot))){R.val=R.num;R.how='jump'}else{R.val=ex||!ok?tot:R.num;R.how='lim'}}}}
-  else{if(R.improper&&!ok){const o=R.inf?oscInf(f,lo,hi,sing):null;if(o===UNDEC){R.div=true;R.undec=true;R.how='div'}else if(o===OSCDIV){R.div=true;R.divOsc=true;R.how='div'}else if(o!==null){R.val=R.num=sg*o;R.numOk=true;R.how='num';R.osc=true}else{R.div=true;R.how='div'}}else{R.val=R.num;R.how='num'}}
-  if(!R.div&&full){R.exact=(R.how==='nl'||R.numOk||R.how==='lim')?recognize(R.val,R.how==='nl'?1e-10:1e-9):null;
-    const q=g=>{let s=0;for(const[p0,p1]of pieces)s+=quadF(g,p0,p1).v;return s};
-    R.pos=q(x=>{const y=f(x);return y>0?y:0});R.neg=q(x=>{const y=f(x);return y<0?y:0});R.abs=R.pos-R.neg;
-    if(sg<0){[R.pos,R.neg]=[-R.neg,-R.pos]}
-    if(!R.inf)R.mean=R.val/(b-a)}
-  if(isFinite(a)&&isFinite(b)&&Math.abs(a+b)<1e-12&&a!==b){let odd=true,even=true;for(let i=1;i<=9;i++){const x=Math.abs(a)*i/9.3,p=f(x),m=f(-x);if(!isFinite(p)||!isFinite(m))continue;
-      if(Math.abs(p+m)>1e-9*(1+Math.abs(p)))odd=false;if(Math.abs(p-m)>1e-9*(1+Math.abs(p)))even=false}R.odd=odd&&!even;R.even=even&&!odd}
-  calcRS()}
-function calcRS(){const R=S.R;if(!R||S.err)return;R.rs=null;if(R.improper||R.undef)return;const f=S.ff,a=S.a,b=S.b;let n=S.n;if(S.rule==='simp'&&n%2)n++;const h=(b-a)/n;let s=0;
-  const y=x=>{const v=f(x);return isFinite(v)?v:0};
-  if(S.rule==='simp'){for(let i=0;i<=n;i++)s+=y(a+i*h)*(i===0||i===n?1:i%2?4:2);s*=h/3}
-  else for(let i=0;i<n;i++){const xl=a+i*h,xr=xl+h;s+=S.rule==='left'?y(xl):S.rule==='right'?y(xr):S.rule==='mid'?y(xl+h/2):(y(xl)+y(xr))/2}
-  if(S.rule!=='simp')s*=h;R.rs=s;R.rsN=n}
 
-/* ---------- ввод интеграла ---------- */
+
+
+/* анализ интеграла: X — задача (ff, fe, a, b, err, n, rule); результат — в X.R */
+function analyze(full=true){return analyzeX(S,full)}
+
+
+
+/* ---------- ввод интеграла ---------- */function calcRS(){calcRSX(S)}
+
 function fmtLim(v){if(v===Infinity)return'inf';if(v===-Infinity)return'-inf';return String(+v.toFixed(4))}
 function limH(e,v){if(v===Infinity)return'∞';if(v===-Infinity)return'−∞';const s=e===S.aE?S.as:e===S.bE?S.bs:'';if(!e||/^\s*[-−]?[\d.,]+(e[-+]?\d+)?\s*$/i.test(s))return Math.abs(v)<1e-3&&v!==0?String(v).replace('-','−'):fmt(v,4);return hp(e,0,true)}
 function setIntegral(fs,as,bs,o={}){const prevF=S.fs;S.fs=fs;S.as=as;S.bs=bs;S.err=null;
@@ -694,7 +605,7 @@ function accumAt(x0,x1,N){const out=[];if(!isFinite(S.a))return out;for(let i=0;
 let ACC=null;
 function accum(base){const a=base===undefined?S.a:base,k=[key(S.fe),a,S.V.cx,S.V.sx,W].join('|');if(ACC&&ACC.k===k)return ACC;const f=S.ff,st=2,xs=[],vs=[];
   for(let X=-4;X<=W+4;X+=st)xs.push(s2w(X,0)[0]);const n=xs.length;for(let i=0;i<n;i++)vs.push(NaN);
-  if(!isFinite(a)){if(S.R&&S.R.FF){const L=limF(S.R.FF,a,1,S.R.F);if(L!==null)for(let i=0;i<n;i++)vs[i]=S.R.FF(xs[i])-L}ACC={k,xs,vs};return ACC}
+  if(!isFinite(a)){if(S.R&&S.R.FF){const L=limF(S.R.FF,a,1,S.R.F,S.ff);if(L!==null)for(let i=0;i<n;i++)vs[i]=S.R.FF(xs[i])-L}ACC={k,xs,vs};return ACC}
   const g2=(p,q)=>{const m=(p+q)/2,h=(q-p)/2,d=h/Math.sqrt(3),u=f(m-d),v=f(m+d);return h*(u+v)};
   let k0=xs.findIndex(x=>x>=a);if(k0<0)k0=n;
   if(k0<n){let A=quadF(f,a,xs[k0]).v;vs[k0]=A;for(let i=k0+1;i<n;i++){A+=g2(xs[i-1],xs[i]);if(!isFinite(A)||Math.abs(A)>1e9)break;vs[i]=A}}
@@ -753,7 +664,7 @@ function drawI(){if(!P.show.Fcurve)return;const c=P.colors,lw=P.lw,R=S.R||{},st=
   const A=accum(iBase());const path=(off,al,w)=>{ctx.strokeStyle=c.F;ctx.globalAlpha=al;ctx.lineWidth=w;ctx.beginPath();let pen=false;A.xs.forEach((x,i)=>{const v=A.vs[i];if(!isFinite(v)){pen=false;return}const X=sX(x),Y=clampY(sY(v+off));if(!pen){ctx.moveTo(X,Y);pen=true}else ctx.lineTo(X,Y)});ctx.stroke();ctx.globalAlpha=1};
   for(const k of ks)path(S.C+k*st,.28,1.5*lw);path(S.C,1,2.6*lw)}
 function Aval(x){return S.mode==='I'?Fi(x):Aat(x)}
-function Aat(x){return isFinite(S.a)?quadF(S.ff,S.a,x).v:(S.R&&S.R.FF?(()=>{const L=limF(S.R.FF,S.a,1);return L===null?NaN:S.R.FF(x)-L})():NaN)}
+function Aat(x){return isFinite(S.a)?quadF(S.ff,S.a,x).v:(S.R&&S.R.FF?(()=>{const L=limF(S.R.FF,S.a,1,undefined,S.ff);return L===null?NaN:S.R.FF(x)-L})():NaN)}
 function drawXs(){const c=P.colors,x=S.xs,X=sX(x),Y0=sY(0),fx=S.ff(x),Ax=Aval(x);ctx.setLineDash([3,4]);ctx.strokeStyle=c.axis;ctx.globalAlpha=.5;ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(X,0);ctx.lineTo(X,H);ctx.stroke();ctx.setLineDash([]);ctx.globalAlpha=1;
   if(isFinite(fx)){ctx.fillStyle=c.f;ctx.beginPath();ctx.arc(X,clampY(sY(fx)),4.5,0,7);ctx.fill()}
   if(isFinite(Ax)&&P.show.Fcurve){const AY=sY(Ax);if(P.show.tangent&&isFinite(fx)){const vx=S.V.sx,vy=-fx*S.V.sy,L=Math.hypot(vx,vy)||1,k=80/L;ctx.strokeStyle=c.tan;ctx.lineWidth=2*P.lw;ctx.beginPath();ctx.moveTo(X-vx*k,AY-vy*k);ctx.lineTo(X+vx*k,AY+vy*k);ctx.stroke()}
