@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Теория игр</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,wght@0,400;0,600;1,400;1,600&family=Manrope:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="./app.css">
+<body>
+<div class="app">
+  <header class="top">
+    <div class="brand" data-ih="brand"></div>
+    <div class="spacer"></div>
+    <div class="seg" id="langSeg"><button data-l="ru">RU</button><button data-l="en">EN</button></div>
+    <button class="btn ghost" id="openGloss" data-it="glossT"><span class="ic">?</span><span class="lbl" data-i="gloss"></span></button>
+    <button class="btn ghost hk" id="openKeys" data-it="keys"><span class="ic">⌨</span></button>
+    <button class="btn ghost" id="openSet" data-it="settings"><span class="ic">⚙</span><span class="lbl" data-i="settings"></span></button>
+  </header>
+  <div class="main" id="main">
+    <div class="stage" id="stage">
+      <canvas id="cv"></canvas>
+      <div class="ov" id="ov"></div>
+      <div class="toast" id="toast"></div>
+      <button class="capOpen" id="capOpen" hidden><span aria-hidden="true">💡</span><span data-i="capOpen"></span></button>
+      <div class="cap" id="cap"><span id="capT"></span><button id="capX" data-it="capX">×</button></div>
+    </div>
+    <aside class="side" id="side">
+      <div class="grip" id="grip" data-i="grip"></div>
+      <section class="panel" data-id="topic">
+        <div class="pb">
+          <div id="topicBox"></div>
+          
+          <div class="frm" id="form"></div>
+          <p class="note err" id="fErr" hidden></p>
+          <details class="more"><summary data-i="howType"></summary><div class="note" data-ih="typeHelp"></div></details>
+        </div>
+      </section>
+      <section class="panel" data-id="presets"><div class="pb"><div class="chips" id="pre"></div></div></section>
+      <section class="panel" data-id="solve"><div class="pb"><div id="solve"></div></div></section>
+      <section class="panel" data-id="values"><div class="pb"><div class="props" id="props"></div></div></section>
+      <section class="panel" data-id="show"><div class="pb"><div class="toggles" id="tog"></div></div></section>
+      <section class="panel" data-id="export">
+        <div class="pb">
+          <div class="row" style="margin-top:.2rem"><button class="btn sm" id="xPng" data-i="xPng" disabled></button><button class="btn sm" id="xVid" data-i="xVid" disabled style="display:none"></button></div>
+          <label class="chk"><input type="checkbox" id="xStamp" checked> <span data-i="xStamp"></span></label>
+          <p class="note" id="xNote"></p>
+          <div class="tex">
+            <div class="seg" id="xFmt"><button data-f="tex" class="on">LaTeX</button><button data-f="np">Python</button><button data-f="txt" data-i="fmtText"></button></div>
+            <textarea id="xTex" readonly rows="6" aria-label="LaTeX"></textarea>
+            <div class="row"><button class="btn sm" id="xCopy" data-i="xCopy"></button></div>
+          </div>
+        </div>
+      </section>
+    </aside>
+  </div>
+</div>
+<div class="drawer" id="dGloss" role="dialog">
+  <div class="scrim" data-close></div>
+  <div class="sheet">
+    <div class="sh-h"><h2 data-i="gloss"></h2><button class="icon" data-close data-it="close">✕</button></div>
+    <input class="search" id="gq" type="search">
+    <div id="gl"></div>
+  </div>
+</div>
+
+<div class="drawer" id="dKeys" role="dialog">
+  <div class="scrim" data-close></div>
+  <div class="sheet">
+    <div class="sh-h"><h2 data-i="keys"></h2><button class="icon" data-close data-it="close">✕</button></div>
+    <p class="note" data-i="keysNote"></p>
+    <div class="keys" id="keysList"></div>
+  </div>
+</div>
+
+<div class="drawer" id="dSet" role="dialog">
+  <div class="scrim" data-close></div>
+  <div class="sheet">
+    <div class="sh-h"><h2 data-i="settings"></h2><button class="icon" data-close data-it="close">✕</button></div>
+    <h4 data-i="s_lang"></h4>
+    <div class="seg" id="langSeg2"><button data-l="ru">Русский</button><button data-l="en">English</button></div>
+    <h4 data-i="s_ui"></h4>
+    <div class="seg" id="uiSeg"><button data-v="auto" data-i="ui_auto"></button><button data-v="light" data-i="ui_light"></button><button data-v="dark" data-i="ui_dark"></button></div>
+    <h4 data-i="s_dock"></h4>
+    <div class="seg" id="dockSeg"><button data-v="auto" data-i="d_auto"></button><button data-v="right" data-i="d_right"></button><button data-v="left" data-i="d_left"></button><button data-v="bottom" data-i="d_bottom"></button><button data-v="float" data-i="d_float"></button></div>
+    <label class="rng"><span data-i="s_w"></span><output id="wOut"></output><input type="range" id="wR" min="240" max="560" step="10"></label>
+    <label class="rng"><span data-i="s_h"></span><output id="hOut"></output><input type="range" id="hR" min="25" max="75" step="1"></label>
+    <label class="rng"><span data-i="s_f"></span><output id="fOut"></output><input type="range" id="fR" min="80" max="130" step="5"></label>
+    <label class="rng"><span data-i="s_l"></span><output id="lOut"></output><input type="range" id="lR" min="0.5" max="2.5" step="0.1"></label>
+    <h4 data-i="s_pal"></h4>
+    <div class="chips" id="palChips"></div>
+    <p class="note" data-i="palNote"></p>
+    <div class="colors" id="colors"></div>
+    <h4 data-i="s_blocks"></h4>
+    <p class="note" data-i="blocksNote"></p>
+    <h4 data-i="keys"></h4>
+    <div class="row"><button class="btn sm" id="openKeys2" data-i="showKeys"></button></div>
+    <h4 data-i="s_reset"></h4>
+    <div class="row"><button class="btn sm" id="resetOrder" data-i="resetOrder"></button><button class="btn sm" id="resetAll" data-i="resetAll"></button></div>
+  </div>
+</div>
+
+<script type="module" src="./app.js"></script>
+</body>
+</html>
