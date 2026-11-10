@@ -2,6 +2,10 @@ import { fNsci as fN } from '../../../shared/format.js';
 import { lang } from '../../../shared/i18n.js';
 export const TX = {
   ru: {
+    prefsReset:
+      'Сохранённые настройки повреждены — восстановлены настройки по умолчанию. Копия старых сохранена в браузере.',
+    prefsNoSave:
+      'Хранилище браузера переполнено или недоступно — настройки не сохранятся после закрытия страницы.',
     title: 'Теория вероятностей',
     brand: 'Тервер <span class="sub">наглядно</span>',
     gloss: 'Справочник',
@@ -313,6 +317,9 @@ export const TX = {
     s_F: 'Функция распределения F(x) = P(X < x):',
     s_Z: (a, b) => `Для Z = ${a}X ${b}: M(Z) = a·M(X) + b, D(Z) = a²·D(X).`,
     s_gen: {
+      prefsReset:
+        'Saved settings were damaged — defaults restored. A copy of the old ones is kept in the browser.',
+      prefsNoSave: 'Browser storage is full or unavailable — settings won’t be saved after closing the page.',
       bin: 'Число успехов в n независимых испытаниях — биномиальное распределение: P(X = k) = Cₙᵏpᵏqⁿ⁻ᵏ.',
       hyp: 'Из N предметов, среди которых M отмеченных, берём n без возвращения: P(X = k) = C_Mᵏ·C_(N−M)ⁿ⁻ᵏ / C_Nⁿ.',
       geo: 'Испытания до первого успеха, но не больше заданного числа попыток: P(X = k) = q^(k−1)p, а последняя попытка забирает остаток q^(n−1).',
