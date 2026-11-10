@@ -1,3 +1,5 @@
+import { createKeys, onShortcut } from '../../shared/keys.js';
+import { KEYS } from './content/keys.js';
 import { createExport } from '../../shared/export.js';
 import { createPanels } from '../../shared/panels.js';
 import { closeDrawers, initDrawers, openDrawer } from '../../shared/drawers.js';
@@ -1553,6 +1555,9 @@ import { lang, langFrom } from '../../shared/i18n.js';
   initDrawers();
 
   /* ---------- экспорт ---------- */
+  const keysUi = createKeys({ T, keys: KEYS });
+  const { renderKeys, openKeys } = keysUi;
+  keysUi.init();
   const ex = createExport({ name: 'macroeconomics', T, state: S, cv, renderNow, req });
   const { canSave, updExport, flash, exportPng } = ex;
   ex.init();
@@ -1603,33 +1608,6 @@ import { lang, langFrom } from '../../shared/i18n.js';
     else py = `# ${T()['t_' + t]}\nprint(${JSON.stringify(a)})`;
     ta.value = py;
   }
-  const KEYS = [
-    ['1 – 9', 'k_topic'],
-    ['[ / ]', 'k_prev'],
-    ['G', 'k_grid'],
-    ['H', 'k_hint'],
-    ['S', 'k_png'],
-    ['/', 'k_gloss'],
-    ['?', 'k_keys'],
-    ['Esc', 'k_esc'],
-  ];
-  function renderKeys() {
-    const L = T();
-    $('#keysList').innerHTML = KEYS.map(
-      ([k, d]) =>
-        `<span>${k
-          .split(' ')
-          .map((p, i) => (i > 0 && /^[+\/–]$/.test(p) ? p : `<kbd>${p}</kbd>`))
-          .join(' ')}</span><span>${L[d]}</span>`
-    ).join('');
-  }
-  function openKeys() {
-    renderKeys();
-    closeDrawers();
-    openDrawer('dKeys');
-  }
-  $('#openKeys').onclick = openKeys;
-  $('#openKeys2').onclick = openKeys;
 
   function flip(k) {
     P.show[k] = !P.show[k];
@@ -1640,21 +1618,8 @@ import { lang, langFrom } from '../../shared/i18n.js';
     const L = T();
     toast(`${L.tog[k]}: ${P.show[k] ? L.on : L.off}`);
   }
-  document.addEventListener('keydown', (e) => {
-    if (e.ctrlKey || e.metaKey || e.altKey) return;
-    const tg = e.target,
-      tag = tg && tg.tagName;
-    if (
-      (tag === 'INPUT' && !['checkbox', 'range', 'radio', 'color'].includes(tg.type)) ||
-      tag === 'TEXTAREA' ||
-      tag === 'SELECT' ||
-      (tg && tg.isContentEditable)
-    )
-      return;
-    const isQ = e.key === '?' || (e.code === 'Slash' && e.shiftKey);
-    if (document.querySelector('.drawer.open') && !isQ) return;
-    const c = e.code,
-      L = T();
+  onShortcut((c, e, isQ) => {
+    const L = T();
     let h = true;
     if (isQ) openKeys();
     else if (/^(Digit|Numpad)[1-9]$/.test(c)) {
@@ -1675,7 +1640,7 @@ import { lang, langFrom } from '../../shared/i18n.js';
       $('#openGloss').click();
       setTimeout(() => $('#gq').focus(), 30);
     } else h = false;
-    if (h) e.preventDefault();
+    return h;
   });
   /* ---------- настройки ---------- */
   $('#openSet').onclick = () => {
