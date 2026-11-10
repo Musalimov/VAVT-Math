@@ -1,3 +1,4 @@
+import { lang, langFrom } from '../../shared/i18n.js';
 (()=>{
 'use strict';
 /* ---------- математическое ядро: выражения ---------- */
@@ -231,7 +232,7 @@ function parseLim(str){let s=str.trim().replace(/[\u00a0\u202f]/g,' ');if(/^[-+�
   const e=parse(s);if(hasInf(e))throw{msg:'inf'};if(has(e))throw{msg:'x'};const v=compile(simp(e))(0);if(!isFinite(v))throw{msg:'nan'};return{v,e:simp(e)}}
 
 /* ---------- печать ---------- */
-let PV='x',LNG='ru';
+const PRINT={v:'x'};
 const FNAME={ru:{sin:'sin',cos:'cos',tan:'tg',cot:'ctg',ln:'ln',asin:'arcsin',acos:'arccos',atan:'arctg',sinh:'sh',cosh:'ch',tanh:'th'},
   en:{sin:'sin',cos:'cos',tan:'tan',cot:'cot',ln:'ln',asin:'arcsin',acos:'arccos',atan:'arctan',sinh:'sinh',cosh:'cosh',tanh:'tanh'}};
 const TRIG=new Set(['sin','cos','tan','cot','ln','sinh','cosh','tanh']);
@@ -246,7 +247,7 @@ function hp(e,p=0,sup=false){const s=hp0(e,sup);return prec(e)<p?`(${s})`:s}
 const juxOK=b=>!(isN(b))&&!(b[0]==='*'&&isN(b[1]))&&b[0]!=='neg';
 function hp0(e,sup){switch(e[0]){
   case 'n':return(e[1]<0?'−':'')+numH(e[1],sup);
-  case 'v':return`<i>${e[1]==='x'?PV:e[1]}</i>`;
+  case 'v':return`<i>${e[1]==='x'?PRINT.v:e[1]}</i>`;
   case 'c':return e[1]==='pi'?'π':'e';
   case '+':return`${hp(e[1],1,sup)} + ${hp(e[2],1.5,sup)}`;
   case '-':return`${hp(e[1],1,sup)} − ${hp(e[2],2,sup)}`;
@@ -263,13 +264,13 @@ function hp0(e,sup){switch(e[0]){
   case '^':{const b=e[1],x=e[2];
     if(isN(x)){const v=x[1];if(v<0){const d=hp(pow(b,Nn(-v)),0,sup);return sup?`1/${d}`:frac('1',d)}
       if(v===.5)return hp0(['f','sqrt',b],sup);
-      if(b[0]==='f'&&TRIG.has(b[1])&&Number.isInteger(v))return`${FNAME[LNG][b[1]]}<sup>${v}</sup>${fArg(b[2],sup)}`}
+      if(b[0]==='f'&&TRIG.has(b[1])&&Number.isInteger(v))return`${FNAME[lang()][b[1]]}<sup>${v}</sup>${fArg(b[2],sup)}`}
     return`${hp(b,5,sup)}<sup>${hp(x,0,true)}</sup>`}
   case 'f':{const[,nm,a]=e;
     if(nm==='exp')return`e<sup>${hp(a,0,true)}</sup>`;
     if(nm==='sqrt')return`<span class="sq">√<span class="rad">${hp(a,0,sup)}</span></span>`;
     if(nm==='abs')return`|${hp(a,0,sup)}|`;
-    return FNAME[LNG][nm]+fArg(a,sup)}
+    return FNAME[lang()][nm]+fArg(a,sup)}
   default:return'?'}}
 function fArg(a,sup){if(a[0]==='f'&&a[1]==='abs')return hp0(a,sup);if(a[0]==='v')return' '+hp0(a,sup);return`(${hp(a,0,sup)})`}
 
@@ -405,7 +406,7 @@ en:{sum:'The integral of a sum is the sum of the integrals, so take each term se
   prodsum:'Turn a product of sines and cosines of different arguments into a sum: sin A cos B = ½(sin(A + B) + sin(A − B)), sin A sin B = ½(cos(A − B) − cos(A + B)), cos A cos B = ½(cos(A − B) + cos(A + B)):',
   dist:'Expand the brackets and integrate each term:',
   result:'Result:'}};
-const Q=()=>SX[LNG]||SX.ru;
+const Q=()=>SX[lang()]||SX.ru;
 let STP=[],MS=[],DEP=0,QUIET=0;
 const VN=['x','u','t','w','z','s'];
 const mark=()=>[STP.length,MS.length];
@@ -416,12 +417,12 @@ const HH=e=>hp(e,0);
 const dd=h=>h==='1'?'':h==='−1'?'−':h+' ';
 const cH=c=>isNum(Nn(c),1)?'':isNum(Nn(c),-1)?'−':hp(Nn(c),2)+'·';
 function polyAsc(p,v){let r=null;p.forEach((c,k)=>{if(Math.abs(c)<1e-12)return;const t=k===0?Nn(Math.abs(c)):mul(Nn(Math.abs(c)),pow(v,Nn(k)));r=r===null?(c<0?neg(t):t):(c<0?sub(r,t):add(r,t))});return r||Nn(0)}
-const dxh=()=>` d<i>${PV}</i>`;
+const dxh=()=>` d<i>${PRINT.v}</i>`;
 const IH=e=>`<span class="ig">∫</span>${hp(e,2)}${dxh()}`;
 const EQ=(e,F)=>`${IH(e)} = ${HH(F)}`;
 function subI(e){DEP++;const r=integ(e);DEP--;return r}
 function quiet(e){QUIET++;const r=integ(e);QUIET--;return r}
-function withVar(fnc){const o=PV,i=VN.indexOf(o);PV=VN[Math.min(VN.length-1,i+1)];try{return fnc()}finally{PV=o}}
+function withVar(fnc){const o=PRINT.v,i=VN.indexOf(o);PRINT.v=VN[Math.min(VN.length-1,i+1)];try{return fnc()}finally{PRINT.v=o}}
 let BUDGET=0;
 function integ(e){if(DEP>9||--BUDGET<0)return null;e=tidy(e);
   if(!has(e)){meth('table');const F=mul(e,X);step(`${Q().const} ${EQ(e,F)}`);return F}
@@ -590,7 +591,7 @@ function R_usub(e){const E=asFactors(e);
     if(has(R)){const t=tidy(R0);R=replKey(t,gk,['v','u']);if(has(R))continue}
     const Ru=subst(R,'u',X);const m=mark();
     meth('usub');step(Q().usub(HH(g),dd(HH(dg))));
-    let G=null;withVar(()=>{step(`${IH(e).replace(new RegExp(`<i>${PV}</i>`,'g'),'§')}`.replace(/§/g,`<i>${VN[VN.indexOf(PV)-1]||'x'}</i>`)+` = ${cH(c)}${IH(Ru)}`);G=subI(Ru)});
+    let G=null;withVar(()=>{step(`${IH(e).replace(new RegExp(`<i>${PRINT.v}</i>`,'g'),'§')}`.replace(/§/g,`<i>${VN[VN.indexOf(PRINT.v)-1]||'x'}</i>`)+` = ${cH(c)}${IH(Ru)}`);G=subI(Ru)});
     if(!G){reset(m);continue}
     const F=mul(Nn(c),subst(G,'x',g));step(`${Q().usubBack} ${HH(tidy(F))}`);return F}
   return null}
@@ -631,7 +632,7 @@ function onlyTrigX(e){if(e[0]==='f'){if((e[1]==='sin'||e[1]==='cos'||e[1]==='tan
 function R_weier(e){if(!onlyTrigX(e))return null;const t=X,s=div(mul(Nn(2),t),add(Nn(1),pow(t,Nn(2)))),c=div(sub(Nn(1),pow(t,Nn(2))),add(Nn(1),pow(t,Nn(2))));
   const rep=z=>{if(z[0]==='f'&&z[2][0]==='v'){return z[1]==='sin'?s:z[1]==='cos'?c:div(s,c)}if(z[0]==='n'||z[0]==='c'||z[0]==='v')return z;if(z[0]==='f')return fn(z[1],rep(z[2]));if(z[0]==='neg')return neg(rep(z[1]));return OPS[z[0]](rep(z[1]),rep(z[2]))};
   const R=mul(rep(e),div(Nn(2),add(Nn(1),pow(t,Nn(2)))));const rf=ratFun(R);if(!rf)return null;const[P,Qp]=pcancel(rf[0],rf[1]);const Rt=pdeg(Qp)<1?polyAst(P):ratAst(P,Qp);
-  meth('weier');step(Q().weier);let G=null;{const o=PV;PV='t';try{step(`= ${IH(Rt)}`);G=subI(Rt)}finally{PV=o}}if(!G)return null;
+  meth('weier');step(Q().weier);let G=null;{const o=PRINT.v;PRINT.v='t';try{step(`= ${IH(Rt)}`);G=subI(Rt)}finally{PRINT.v=o}}if(!G)return null;
   const F=subst(G,'x',fn('tan',div(X,Nn(2))));step(`${Q().usubBack} ${HH(tidy(F))}`);return F}
 const RULES=[R_poly,R_neg,R_sum,R_cmul,R_powlin,R_table,R_rational,R_trigpow,R_prodsum,R_trigsub,R_divsplit,R_usub,R_parts,R_linu,R_dist,R_weier];
 
@@ -649,7 +650,7 @@ function checkF(f,F,a,b){const ff=compile(f),FF=compile(F);let lo=isFinite(a)?a:
     if(isFinite(d)&&Math.abs(d-y)<=2e-4*Math.max(1,Math.abs(y)))good++}
   if(n===0){for(const x of[0.31,0.77,1.3,-0.6,2.2]){const y=ff(x);if(!isFinite(y))continue;const h=1e-5,d=(FF(x+h)-FF(x-h))/(2*h);n++;if(isFinite(d)&&Math.abs(d-y)<=2e-4*Math.max(1,Math.abs(y)))good++}}
   return n>0&&good===n}
-function solve(f,a,b){STP=[];MS=[];DEP=0;QUIET=0;PV='x';BUDGET=4000;let F=null;try{F=integ(f)}catch(e){F=null}
+function solve(f,a,b){STP=[];MS=[];DEP=0;QUIET=0;PRINT.v='x';BUDGET=4000;let F=null;try{F=integ(f)}catch(e){F=null}
   if(F){F=dropConst(tidy(F));if(!checkF(f,F,a,b))F=null}
   return{F,steps:F?STP.slice():[],meth:F?MS.slice():[],ne:F?null:nonElem(f)}}
 const TX={
@@ -982,7 +983,7 @@ const PAL={
   neon:{bg:'#07020f',bgGrid:'#1f1533',axis:'#ffffff',f:'#4dd2ff',F:'#fff35c',pos:'#39ff88',neg:'#ff4d6d',rect:'#ffa53d',lim:'#a98bff',tan:'#ff9ecf'},
   nord:{bg:'#2e3440',bgGrid:'#3b4252',axis:'#eceff4',f:'#88c0d0',F:'#ebcb8b',pos:'#a3be8c',neg:'#bf616a',rect:'#d08770',lim:'#b48ead',tan:'#e5a0c0'}
 };
-const T=()=>TX[P.lang]||TX.ru;
+const T=()=>TX[lang()]||TX.ru;
 const PANELS=['integral','presets','solve','anim','values','riemann','methods','show','export'];
 const DEF={palette:'classic',colors:{...PAL.classic},dock:'auto',width:360,bottomH:46,ui:'auto',font:100,speed:1,lw:1,order:PANELS.slice(),collapsed:{methods:true,export:true},read:{},float:{x:12,y:12},
   show:{bgGrid:true,coords:true,area:true,riemann:false,dots:true,Fcurve:true,tangent:true,family:false,labels:true,snap:true,hints:true},last:null,rule:'mid',n:8};
@@ -993,7 +994,7 @@ function load(){let r=null;try{r=JSON.parse(localStorage.getItem(KEY)||'null')}c
   const ord=Array.isArray(r.order)?r.order.filter(x=>PANELS.includes(x)):[];PANELS.forEach(x=>{if(!ord.includes(x))ord.push(x)});p.order=ord;
   p.collapsed=r.collapsed||{};p.float=r.float||{x:12,y:12};
   /* защита от повреждённых/старых настроек: числа — в пределах ползунков, иначе по умолчанию */const RNG={width:[240,560],bottomH:[25,75],font:[80,130],speed:[.25,3],lw:[.5,2.5]};for(const k in RNG){const v=p[k],[a,b]=RNG[k];p[k]=typeof v==='number'&&isFinite(v)?Math.min(b,Math.max(a,v)):DEF[k]}if(!p.float||typeof p.float!=='object'||!isFinite(p.float.x)||!isFinite(p.float.y))p.float={x:12,y:12};if(!p.collapsed||typeof p.collapsed!=='object'||Array.isArray(p.collapsed))p.collapsed={};return p}
-let P=load();if(!P.lang)P.lang=(navigator.language||'').toLowerCase().startsWith('ru')?'ru':'en';let saveT=0;
+let P=load();langFrom(()=>P.lang);if(!P.lang)P.lang=(navigator.language||'').toLowerCase().startsWith('ru')?'ru':'en';let saveT=0;
 function save(){clearTimeout(saveT);saveT=setTimeout(()=>{try{localStorage.setItem(KEY,JSON.stringify(P))}catch(e){}},250)}
 
 /* ---------- примеры ---------- */
@@ -1008,7 +1009,7 @@ const M2T={power:'table',numeric:'simpson',polydiv:'polydiv',prodsum:'trigid'};
 /* ---------- состояние ---------- */
 const S={mode:'A',fs:'x^2',as:'0',bs:'2',fe:null,ff:null,aE:Nn(0),bE:Nn(2),a:0,b:2,t:1,xs:1.2,anim:null,C:0,rule:P.rule||'mid',n:P.n||8,V:{cx:1,cy:1,sx:80,sy:80},R:null,err:null,preset:null,drag:false};
 const memo=new Map();
-function getSol(){const k=key(S.fe)+'|'+P.lang;if(!memo.has(k)){LNG=P.lang;memo.set(k,solve(S.fe,S.a,S.b));if(memo.size>60)memo.delete(memo.keys().next().value)}return memo.get(k)}
+function getSol(){const k=key(S.fe)+'|'+lang();if(!memo.has(k)){memo.set(k,solve(S.fe,S.a,S.b));if(memo.size>60)memo.delete(memo.keys().next().value)}return memo.get(k)}
 const BASIS=[[1,Nn(1)],[Math.PI,['c','pi']],[Math.E,['c','e']],[Math.SQRT2,['f','sqrt',Nn(2)]],[Math.sqrt(3),['f','sqrt',Nn(3)]],[Math.LN2,['f','ln',Nn(2)]],[Math.log(3),['f','ln',Nn(3)]],[Math.log(5),['f','ln',Nn(5)]],
  [Math.sqrt(Math.PI),['f','sqrt',['c','pi']]],[Math.exp(Math.PI),['f','exp',['c','pi']]],[Math.PI*Math.PI,['^',['c','pi'],Nn(2)]],[Math.PI*Math.sqrt(3),['*',['c','pi'],['f','sqrt',Nn(3)]]],[Math.PI*Math.SQRT2,['*',['c','pi'],['f','sqrt',Nn(2)]]],[1/Math.E,['/',Nn(1),['c','e']]],[Math.E*Math.E,['f','exp',Nn(2)]]];
 const gcd=(a,b)=>b?gcd(b,a%b):a;
@@ -1254,7 +1255,7 @@ function drawLabels(){const c=P.colors,f=S.ff;for(const X of[W-70,W-140,W*.6,W*.
   if(S.mode==='I'&&P.show.Fcurve){for(const X of[W*.25,W*.15,W*.35]){const v=Fi(s2w(X,0)[0]),Y=sY(v);if(isFinite(v)&&Y>24&&Y<H-24){label('F + C',X,Y-18,c.F,18);break}}}
   if(S.mode==='F'&&P.show.Fcurve){const A=accum();for(let i=A.xs.length-40;i>20;i-=15){const v=A.vs[i];if(!isFinite(v))continue;const Y=sY(v);if(Y>24&&Y<H-24){label('F',sX(A.xs[i]),Y+18,c.F,19);break}}}}
 function drawStamp(){const txt=textOf(),c=P.colors;ctx.font='600 15px "Source Serif 4", Georgia, serif';const w=ctx.measureText(txt).width+20;ctx.globalAlpha=.85;ctx.fillStyle=c.bg;ctx.fillRect(W-w-12,H-38,w,28);ctx.globalAlpha=1;ctx.fillStyle=c.axis;ctx.textAlign='left';ctx.textBaseline='middle';ctx.fillText(txt,W-w-2,H-24)}
-function textOf(){if(S.err)return'';LNG=P.lang;const R=S.R||{};if(S.mode==='I')return R.F?`∫ ${tp(S.fe,0,'txt')} dx = ${tp(R.F,0,'txt')} + C`:`∫ ${tp(S.fe,0,'txt')} dx`;const v=R.div?T().v_div:R.exact?tp(R.exact,0,'txt'):fmt(R.val,5);return`∫[${S.as}; ${S.bs}] ${tp(S.fe,0,'txt')} dx = ${v}`}
+function textOf(){if(S.err)return'';const R=S.R||{};if(S.mode==='I')return R.F?`∫ ${tp(S.fe,0,'txt')} dx = ${tp(R.F,0,'txt')} + C`:`∫ ${tp(S.fe,0,'txt')} dx`;const v=R.div?T().v_div:R.exact?tp(R.exact,0,'txt'):fmt(R.val,5);return`∫[${S.as}; ${S.bs}] ${tp(S.fe,0,'txt')} dx = ${v}`}
 
 /* ---------- указатель ---------- */
 const ptrs=new Map();let drag=null;
@@ -1304,11 +1305,11 @@ const intH=()=>`${IGL(limH(S.aE,S.a),limH(S.bE,S.b))}${hp(S.fe,2)} d<i>x</i>`;
 const noV=R=>R.undef?T().v_undef:R.undec?T().v_undec:T().v_div;
 function valH(R,approx=true){if(R.div)return noV(R);if(R.exact){const ex=hp(R.exact,0),n=fmt(R.val,5);return ex===n||ex===n.replace('−','−')?ex:`${ex} ≈ ${n}`}return`${approx?'≈ ':''}${fmt(R.val,6)}`}
 const intI=()=>`<span class="ig">∫</span>${hp(S.fe,2)} d<i>x</i>`;
-function renderFx(){LNG=P.lang;PV='x';const L=T(),er=$('#fErr');
+function renderFx(){PRINT.v='x';const L=T(),er=$('#fErr');
   if(S.err){er.hidden=false;er.textContent=S.err==='f'?L.errParse:S.err==='inf'?L.errInfF:S.err==='x'?L.errX:L.errLim;$('#fPrev').innerHTML='';return}
   er.hidden=true;$('#fPrev').innerHTML=S.mode==='I'?intI():intH()}
 function methsOf(R){const s=R.sol;let m=s.F?s.meth.slice():[s.ne?'nonelem':'numeric'];if(S.mode==='I')return m;if(R.improper)m.push('improper');if(R.odd)m.push('symmetry');return m}
-function renderSolve(){const box=$('#solve'),L=T();LNG=P.lang;PV='x';if(S.err){box.innerHTML=`<p class="note">${L.cap.err}</p>`;return}
+function renderSolve(){const box=$('#solve'),L=T();PRINT.v='x';if(S.err){box.innerHTML=`<p class="note">${L.cap.err}</p>`;return}
   const R=S.R,s=R.sol,ms=methsOf(R);let h=`<div class="mchips">${ms.map(m=>`<button class="chip" data-term="${M2T[m]||m}">${L.mn[m]||m}</button>`).join('')}</div>`;
   const pre=S.mode!=='I'&&S.preset&&L.ideas[S.preset],idea=pre||L.why[ms[0]];if(idea)h+=`<p class="idea"><b>${L.s_idea}</b> ${idea}</p>`;
   if(s.F){h+=`<details class="steps"${P.stepsClosed?'':' open'} id="stpD"><summary>${L.s_steps}</summary><ol class="stp">${s.steps.map(z=>`<li class="${z.d?'sub':''}" style="--d:${z.d}">${z.h}</li>`).join('')}</ol></details>`;
@@ -1324,7 +1325,7 @@ function renderSolve(){const box=$('#solve'),L=T();LNG=P.lang;PV='x';if(S.err){b
   if(R.odd)h+=`<p class="note">${L.s_odd}<button class="q" data-term="symmetry">?</button></p>`;else if(R.even)h+=`<p class="note">${L.s_even}<button class="q" data-term="symmetry">?</button></p>`;
   h+='</div>';box.innerHTML=h;const d=$('#stpD');if(d)d.ontoggle=()=>{P.stepsClosed=!d.open;save()}}
 function prop(k,v,s,sw){return`<div class="prop"><span class="k">${sw?`<span class="sw" style="background:${sw}"></span>`:''}${k}</span><span class="v">${v}</span>${s?`<span class="s">${s}</span>`:''}</div>`}
-function renderValues(){const L=T(),box=$('#props');LNG=P.lang;if(S.err){box.innerHTML='';return}const R=S.R;let h='';
+function renderValues(){const L=T(),box=$('#props');if(S.err){box.innerHTML='';return}const R=S.R;let h='';
   if(S.mode==='I'){const x=S.xs;h+=prop(L.v_Fi,`<i>F</i>(${fmt(x,3)}) + <i>C</i> = ${fmt(Fi(x),5)}`,L.v_FiS,'var(--s-F)');h+=prop(L.v_fx,fmt(S.ff(x),5),L.v_fxS,'var(--s-f)');h+=prop(L.v_C,fmt(S.C,2),L.v_CS);if(!R.F)h+=prop(L.v_num,L.v_none,L.noF);box.innerHTML=h;return}
   h+=prop(L.v_int,R.div?noV(R):R.exact?hp(R.exact,0):fmt(R.val,6),L.v_intS);
   h+=prop(L.v_num,R.numOk?fmt(R.num,8):L.v_none,L.v_numS);
@@ -1334,14 +1335,14 @@ function renderValues(){const L=T(),box=$('#props');LNG=P.lang;if(S.err){box.inn
     if(R.mean!=null&&isFinite(R.mean))h+=prop(L.v_mean,fmt(R.mean,5),L.v_meanS)}
   if(S.mode==='F'){const A=Aat(S.xs);h+=prop(L.v_F,`<i>F</i>(${fmt(S.xs,3)}) = ${fmt(A,5)}`,L.v_FS,'var(--s-F)')}
   box.innerHTML=h}
-function renderPresets(){LNG=P.lang;PV='x';const box=$('#pre'),L=T();box.innerHTML='';
+function renderPresets(){PRINT.v='x';const box=$('#pre'),L=T();box.innerHTML='';
   PRE.forEach(([id,f,a,b,m,hid])=>{if(hid)return;const btn=document.createElement('button');btn.className='chip mxc'+(S.preset===id?' on':'');btn.dataset.pre=id;let e;try{e=parseFx(f)}catch(_){return}
     btn.innerHTML=`<span class="ig">∫</span>${hp(e,2)}`;btn.title=L.mn[m]||'';box.appendChild(btn)});
   renderHist()}
 function renderHist(){const L=T();if(S.err){$('#hist').innerHTML='';return}const ms=methsOf(S.R);$('#hist').innerHTML=`${L.now} <b>${ms.map(m=>L.mn[m]||m).join(', ')}</b>`}
 function renderGuide(){const L=T(),ms=S.err?[]:methsOf(S.R);const act={table:['table','power','linsub'],linearity:['linearity'],usub:['usub'],parts:['parts','cyclic'],partial:['partial','polydiv','square'],trigid:['trigid','oddpow','weier','prodsum'],trigsub:['trigsub'],nonelem:['nonelem','numeric']};
   $('#guide').innerHTML=`<p class="note" style="margin-top:.2rem">${L.g_intro}</p><ol class="guide">${L.guide.map(([id,q,ex,p])=>`<li class="${act[id].some(m=>ms.includes(m))?'on':''}"><div><button class="linkbtn" data-term="${id}">${L.mn[id]||T().mn.numeric}</button> ${q}</div><button class="chip" data-pre="${p}">${L.g_ex}: ${ex}</button></li>`).join('')}</ol>`}
-function renderOverlay(){const ov=$('#ov');if(S.err){ov.innerHTML=`<span class="tt">${T().cap.err}</span>`;return}LNG=P.lang;PV='x';const R=S.R;
+function renderOverlay(){const ov=$('#ov');if(S.err){ov.innerHTML=`<span class="tt">${T().cap.err}</span>`;return}PRINT.v='x';const R=S.R;
   if(S.mode==='I'){const fx=S.ff(S.xs),F=Fi(S.xs);ov.innerHTML=`<span>${intI()} = ${R.F?hp(R.F,0)+' + <i>C</i>':'?'}</span><span class="tt">${R.F?'':T().noF+'. '}C = ${fmt(S.C,2)},  x = ${fmt(S.xs,3)},  F(x) + C = ${fmt(F,4)},  F′(x) = f(x) = ${fmt(fx,4)}</span>`;return}
   if(S.mode==='F'){const A=Aat(S.xs),fx=S.ff(S.xs);ov.innerHTML=`<span><i>F</i>(<i>x</i>) = ${IGL(limH(S.aE,S.a),'<i>x</i>')}${hp(S.fe,2).replace(/<i>x<\/i>/g,'<i>t</i>')} d<i>t</i></span><span class="tt">x = ${fmt(S.xs,3)},  F(x) = ${fmt(A,4)},  F′(x) = f(x) = ${fmt(fx,4)}</span>`;return}
   if(S.t<1&&isFinite(S.a)&&isFinite(S.b)){const x=S.a+S.t*(S.b-S.a),v=quadF(S.ff,S.a,x).v;ov.innerHTML=`<span>${IGL(limH(S.aE,S.a),fmt(x,2))}${hp(S.fe,2)} d<i>x</i> ≈ ${fmt(v,4)}</span><span class="tt">t = ${fmt(S.t)}</span>`;return}
@@ -1394,10 +1395,10 @@ function buildToggles(){const box=$('#tog');box.innerHTML='';TOG.forEach(([k,m])
 function syncToggles(){document.querySelectorAll('#tog input').forEach(i=>{i.checked=!!P.show[i.dataset.k]});const r=$('#rOn');if(r)r.checked=!!P.show.riemann}
 
 /* ---------- справочник ---------- */
-const termTitle=id=>{const t=TERMS.find(x=>x.id===id);return t?(t[P.lang]||t.ru)[0]:id};
+const termTitle=id=>{const t=TERMS.find(x=>x.id===id);return t?(t[lang()]||t.ru)[0]:id};
 function mathify(h){return h}
 function gTabs(id,html){const f=FORMAL[id];if(!f)return html;const L=T(),ft=P.gTab==='f';
-  return`<div class="seg gtabs"><button data-tab="i" class="${ft?'':'on'}">${L.tabI}</button><button data-tab="f" class="${ft?'on':''}">${L.tabF}</button></div><div class="pane" data-pane="i"${ft?' hidden':''}>${html}</div><div class="pane" data-pane="f"${ft?'':' hidden'}>${f[P.lang]||f.ru}</div>`}
+  return`<div class="seg gtabs"><button data-tab="i" class="${ft?'':'on'}">${L.tabI}</button><button data-tab="f" class="${ft?'on':''}">${L.tabF}</button></div><div class="pane" data-pane="i"${ft?' hidden':''}>${html}</div><div class="pane" data-pane="f"${ft?'':' hidden'}>${f[lang()]||f.ru}</div>`}
 function illSvg(id){const sp=ILL[id];if(!sp)return'';const W=200,H=140,o=sp.o,sx=sp.sx,sy=sp.sy;
   const X=x=>o[0]+x*sx,Y=y=>o[1]-y*sy,c=k=>`var(--s-${k})`,F=v=>(+v).toFixed(1);let out='';
   const line=(x1,y1,x2,y2,col,w=1.5,op=1,dash)=>`<line x1="${F(x1)}" y1="${F(y1)}" x2="${F(x2)}" y2="${F(y2)}" stroke="${c(col)}" stroke-width="${w}" stroke-opacity="${op}"${dash?' stroke-dasharray="4 3"':''}/>`;
@@ -1419,16 +1420,16 @@ function illSvg(id){const sp=ILL[id];if(!sp)return'';const W=200,H=140,o=sp.o,sx
     else if(k==='T'){const[x,y,t,col,sz]=a;out+=tx(x,y,t,col,sz)}
     else if(k==='raw')out+=a[0]}
   return`<svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false"><rect width="${W}" height="${H}" fill="var(--s-bg)"/>${out}</svg>`}
-function termHtml(t,L){const x=t[P.lang]||t.ru,rd=!!P.read[t.id];
+function termHtml(t,L){const x=t[lang()]||t.ru,rd=!!P.read[t.id];
   return`<details class="term${rd?' read':''}" id="g-${t.id}"><summary><span>${rd?'<b class="rd">✓</b>':''}${x[0]}</span><small>${x[1]}</small></summary><div class="tb">${ILL[t.id]?`<figure class="ill">${illSvg(t.id)}</figure>`:''}${gTabs(t.id,x[2])}${DEMOS[t.id]?`<button class="btn sm primary" data-demo="${t.id}">${L.showDemo}</button>`:''}${REL[t.id]?`<div class="rel">${L.seeAlso} ${REL[t.id].map(r=>`<button class="chip" data-term="${r}">${termTitle(r)}</button>`).join('')}</div>`:''}<div class="row" style="margin-top:.8rem"><button class="btn sm readbtn${rd?' on':''}" data-read="${t.id}">${rd?L.readDone:L.readMark}</button></div></div></details>`}
 function renderGloss(q=''){q=q.trim().toLowerCase();const L=T();if(!P.read||typeof P.read!=='object')P.read={};
   const total=TERMS.length,done=TERMS.filter(t=>P.read[t.id]).length;
-  const match=t=>{if(!q)return true;const x=t[P.lang]||t.ru,o=t[P.lang==='ru'?'en':'ru'],f=FORMAL[t.id];return(x[0]+' '+x[1]+' '+x[2]+' '+o[0]+' '+(f?(f[P.lang]||f.ru):'')).replace(/<[^>]+>/g,'').toLowerCase().includes(q)};
+  const match=t=>{if(!q)return true;const x=t[lang()]||t.ru,o=t[lang()==='ru'?'en':'ru'],f=FORMAL[t.id];return(x[0]+' '+x[1]+' '+x[2]+' '+o[0]+' '+(f?(f[lang()]||f.ru):'')).replace(/<[^>]+>/g,'').toLowerCase().includes(q)};
   let html=`<div class="prog"><span>${L.readOf(done,total)}</span><span class="bar"><i style="width:${Math.round(done/total*100)}%"></i></span>${done?`<button class="linkbtn" id="readReset">${L.readReset}</button>`:''}</div>`;
   let any=false,num=0;
   CHAP.forEach(ch=>{if(!ch.extra)num++;const ts=ch.ids.map(id=>TERMS.find(t=>t.id===id)).filter(Boolean).filter(match);if(!ts.length)return;any=true;
     const r=ch.ids.filter(id=>P.read[id]).length;
-    html+=`<section class="chap"><h3>${ch.extra?'':num+'. '}${ch[P.lang]||ch.ru}<span class="cnt">${r} / ${ch.ids.length}</span></h3>${ts.map(t=>termHtml(t,L)).join('')}</section>`});
+    html+=`<section class="chap"><h3>${ch.extra?'':num+'. '}${ch[lang()]||ch.ru}<span class="cnt">${r} / ${ch.ids.length}</span></h3>${ts.map(t=>termHtml(t,L)).join('')}</section>`});
   $('#gl').innerHTML=any?html:html+`<p class="note">${L.noFound}</p>`}
 function rerenderGloss(){const sh=$('#dGloss .sheet'),st=sh.scrollTop,open=[...document.querySelectorAll('#gl details[open]')].map(d=>d.id);renderGloss($('#gq').value);open.forEach(id=>{const e=document.getElementById(id);if(e)e.open=true});sh.scrollTop=st}
 $('#gq').oninput=e=>renderGloss(e.target.value);
@@ -1468,7 +1469,7 @@ async function exportVideo(){const m=vidMime();if(!canSave()||!m||S.rec||S.err||
     play();await new Promise(r=>{const f=()=>S.anim?requestAnimationFrame(f):r();f()});await keep(900);rec.stop();await stopped}
   catch(err){S.rec=false;S.stamp=false;req();flash(T().xFail);return}
   S.rec=false;S.stamp=false;req();updExport();const blob=new Blob(chunks,{type:m});if(blob.size)saveFile(`integral.${m.startsWith('video/mp4')?'mp4':'webm'}`,blob);else flash(T().xFail)}
-function renderTex(){const ta=$('#xTex');if(S.err){ta.value='';return}LNG=P.lang;const R=S.R,F=R.sol.F;
+function renderTex(){const ta=$('#xTex');if(S.err){ta.value='';return}const R=S.R,F=R.sol.F;
   const lim=(v,e,m)=>v===Infinity?(m==='tex'?'\\infty':m==='py'?'oo':'inf'):v===-Infinity?(m==='tex'?'-\\infty':m==='py'?'-oo':'-inf'):(e?tp(e,0,m):String(v));
   const val=m=>R.div?(m==='tex'?'\\infty':'diverges'):R.exact?tp(R.exact,0,m):String(+R.val.toFixed(10));
   if(S.mode==='I'){if(fmtMode==='tex')ta.value=F?`\\int ${tp(S.fe,2,'tex')}\\,dx = ${tp(F,0,'tex')} + C`:`\\int ${tp(S.fe,2,'tex')}\\,dx`;else if(fmtMode==='np')ta.value=`from sympy import *\nx = symbols('x')\nf = ${tp(S.fe,0,'py')}\nprint(integrate(f, x))`;else ta.value=F?`∫ ${tp(S.fe,2,'txt')} dx = ${tp(F,0,'txt')} + C`:`∫ ${tp(S.fe,2,'txt')} dx`;return}
@@ -1527,7 +1528,7 @@ function buildSettings(){
   $('#fR').oninput=e=>{P.font=+e.target.value;applyPrefs()};
   $('#lR').oninput=e=>{P.lw=+e.target.value;applyPrefs()};
   $('#resetOrder').onclick=()=>{P.order=PANELS.slice();P.collapsed={};applyPrefs()};
-  $('#resetAll').onclick=()=>{const lg=P.lang,rd=P.read,last=P.last;P=clone(DEF);P.lang=lg;P.read=rd||{};P.last=last;S.rule=P.rule;S.n=P.n;syncToggles();$('#spR').value=P.speed;$('#spOut').textContent='×1';applyPrefs();calcRS();renderAll()};
+  $('#resetAll').onclick=()=>{const lg=lang(),rd=P.read,last=P.last;P=clone(DEF);P.lang=lg;P.read=rd||{};P.last=last;S.rule=P.rule;S.n=P.n;syncToggles();$('#spR').value=P.speed;$('#spOut').textContent='×1';applyPrefs();calcRS();renderAll()};
 }
 function buildPal(){const L=T();
   const pc=$('#palChips');pc.innerHTML='';Object.entries(PAL).forEach(([k,p])=>{const b=document.createElement('button');b.className='chip';b.dataset.p=k;b.innerHTML=`<span class="sw" style="background:${p.bg};box-shadow:inset 0 0 0 3px ${p.f||Object.values(p)[3]}"></span>${L.pal[k]}`;
@@ -1535,13 +1536,13 @@ function buildPal(){const L=T();
   const cs=$('#colors');cs.innerHTML='';Object.keys(L.colors).forEach(k=>{const l=document.createElement('label');l.innerHTML=`<input type="color" data-k="${k}"> ${L.colors[k]}`;
     l.querySelector('input').oninput=e=>{P.colors[k]=e.target.value;P.palette='custom';applyPrefs()};cs.appendChild(l)});
 }
-function applyLang(){const L=T();LNG=P.lang;document.documentElement.lang=P.lang;document.title=L.title;
+function applyLang(){const L=T();document.documentElement.lang=lang();document.title=L.title;
   document.querySelectorAll('[data-i]').forEach(e=>{e.textContent=L[e.dataset.i]});
   document.querySelectorAll('[data-ih]').forEach(e=>{e.innerHTML=L[e.dataset.ih]});
   document.querySelectorAll('[data-it]').forEach(e=>{e.title=L[e.dataset.it];e.setAttribute('aria-label',L[e.dataset.it])});
   document.querySelectorAll('[data-ia]').forEach(e=>{e.setAttribute('aria-label',L[e.dataset.ia])});
   $('#gq').placeholder=L.search;cv.setAttribute('aria-label',L.canvas);
-  document.querySelectorAll('#langSeg button,#langSeg2 button').forEach(b=>b.classList.toggle('on',b.dataset.l===P.lang));
+  document.querySelectorAll('#langSeg button,#langSeg2 button').forEach(b=>b.classList.toggle('on',b.dataset.l===lang()));
   buildPal();buildToggles();syncToggles();syncSettings();updExport();renderKeys();
   if($('#dGloss').classList.contains('open'))rerenderGloss();
   if(S.fe||S.err){analyze(true);renderAll()}}
@@ -1571,7 +1572,7 @@ window.addEventListener('resize',()=>applyDock());
 buildPanels();buildSettings();
 $('#spR').value=P.speed;$('#spOut').textContent='×'+fmt(P.speed);
 applyPrefs();
-{const l=P.last;LNG=P.lang;if(l&&typeof l.f==='string')setIntegral(l.f,l.a,l.b,{preset:l.p||null});else loadPreset('p_pow')}
+{const l=P.last;if(l&&typeof l.f==='string')setIntegral(l.f,l.a,l.b,{preset:l.p||null});else loadPreset('p_pow')}
 applyLang();setMode(['A','F','I'].includes(P.mode)?P.mode:'A');
 if(document.fonts&&document.fonts.ready)document.fonts.ready.then(()=>{fitView();req()});
 })();
