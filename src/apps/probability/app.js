@@ -1,9 +1,17 @@
+import { SOLVE, fracB, nP, sb, zLin } from './solvers/steps.js';
+import { COMP, nI } from './solvers/compute.js';
+import { fQ, fT } from './solvers/format.js';
+import { FORMS, PRE, TOPICS } from './content/topics.js';
+import { CHAP, DEMOS, FORMAL, ILL, REL, TERMS } from './content/glossary.js';
+import { T } from './content/tx.js';
+import { Cnk, PhiInv, PhiN, bA, bC, bPow, bStr, bf, binom, diceDist, distOf, gcdB, genBinom, genGeom, genHyper, jointStats, numIn, parseJoint, parseSeries, phiG, poiss, polyEvents, r2, rowNums, seriesStats } from './solvers/theory.js';
+import { CL, notationFrom } from './solvers/notation.js';
 import { mark, meth, solve, step } from '../../math/expr/integrate.js';
 import { dropConst } from '../../math/expr/poly.js';
 import { quadF } from '../../math/expr/numeric.js';
 import { PRINT, hp, numH } from '../../math/expr/print.js';
 import { hasInf, parse, parseFx } from '../../math/expr/parse.js';
-import { fNsci as fN } from '../../shared/format.js';
+import {fNsci as fN} from '../../shared/format.js';
 import { toFrac } from '../../math/expr/core.js';
 import { asFactors, fromFactors, linAst, linOf, padd, pdeg, pder, pdiv, pmul, polyAst, polyOf, ppow, pscale, ptrim, pval, sumTerms, tidy } from '../../math/expr/poly.js';
 import { D, Nn, OPS, X, add, compile, div, fn, has, isN, isNum, key, mul, neg, pow, powParts, replKey, simp, snap, sqrtAst, sub, subst } from '../../math/expr/core.js';
@@ -12,8 +20,8 @@ import { openDrawer } from '../../shared/drawers.js';
 import { toast } from '../../shared/toast.js';
 import { clone } from '../../shared/dom.js';
 import { $ } from '../../shared/dom.js';
-import { dc } from '../../shared/format.js';
-import { fmt } from '../../shared/format.js';
+import {dc} from '../../shared/format.js';
+import {fmt} from '../../shared/format.js';
 import { lang, langFrom } from '../../shared/i18n.js';
 (()=>{
 'use strict';
@@ -176,335 +184,56 @@ import { lang, langFrom } from '../../shared/i18n.js';
 
 
 /* ---------- математика теории вероятностей ---------- */
-function lgam(x){const g=7,c=[0.99999999999980993,676.5203681218851,-1259.1392167224028,771.32342877765313,-176.61502916214059,12.507343278686905,-0.13857109526572012,9.9843695780195716e-6,1.5056327351493116e-7];
-  if(x<0.5)return Math.log(Math.PI/Math.abs(Math.sin(Math.PI*x)))-lgam(1-x);x-=1;let a=c[0];const t=x+g+0.5;for(let i=1;i<9;i++)a+=c[i]/(x+i);return 0.5*Math.log(2*Math.PI)+(x+0.5)*Math.log(t)-t+Math.log(a)}
-function Cnk(n,k){if(k<0||k>n)return 0;if(n<=60){let r=1;for(let i=1;i<=k;i++)r=r*(n-k+i)/i;return Math.round(r)}return Math.exp(lgam(n+1)-lgam(k+1)-lgam(n-k+1))}
-function binom(n,p,k){if(k<0||k>n)return 0;if(p===0)return k===0?1:0;if(p===1)return k===n?1:0;return Math.exp(lgam(n+1)-lgam(k+1)-lgam(n-k+1)+k*Math.log(p)+(n-k)*Math.log(1-p))}
-function poiss(l,k){if(k<0)return 0;return Math.exp(-l+k*Math.log(l)-lgam(k+1))}
-function erfc(x){const z=Math.abs(x),t=1/(1+.5*z);const r=t*Math.exp(-z*z-1.26551223+t*(1.00002368+t*(.37409196+t*(.09678418+t*(-.18628806+t*(.27886807+t*(-1.13520398+t*(1.48851587+t*(-.82215223+t*.17087277)))))))));return x>=0?r:2-r}
+
+
+
+
+
 /* точнее: ряд и цепная дробь */
-function PhiN(x){if(!isFinite(x))return x>0?1:0;const a=Math.abs(x);let r;
-  if(a<5){let s=0,t=a,n=1;s=a;for(let i=1;i<200;i++){t*=a*a/(2*i+1);s+=t;if(t<1e-17*s)break}r=.5+s*Math.exp(-a*a/2)/Math.sqrt(2*Math.PI)}
-  else{let f=0;for(let k=60;k>=1;k--)f=k/(a+f);r=1-Math.exp(-a*a/2)/Math.sqrt(2*Math.PI)/(a+f)}
-  return x>=0?r:1-r}
-const phiG=x=>Math.exp(-x*x/2)/Math.sqrt(2*Math.PI);
-function PhiInv(p){if(p<=0)return-Infinity;if(p>=1)return Infinity;
-  const a=[-39.69683028665376,220.9460984245205,-275.9285104469687,138.357751867269,-30.66479806614716,2.506628277459239],b=[-54.47609879822406,161.5858368580409,-155.6989798598866,66.80131188771972,-13.28068155288572],c=[-.007784894002430293,-.3223964580411365,-2.400758277161838,-2.549732539343734,4.374664141464968,2.938163982698783],d=[.007784695709041462,.3224671290700398,2.445134137142996,3.754408661907416];
-  const pl=.02425;let q,r,x;if(p<pl){q=Math.sqrt(-2*Math.log(p));x=(((((c[0]*q+c[1])*q+c[2])*q+c[3])*q+c[4])*q+c[5])/((((d[0]*q+d[1])*q+d[2])*q+d[3])*q+1)}
-  else if(p<=1-pl){q=p-.5;r=q*q;x=(((((a[0]*r+a[1])*r+a[2])*r+a[3])*r+a[4])*r+a[5])*q/(((((b[0]*r+b[1])*r+b[2])*r+b[3])*r+b[4])*r+1)}
-  else{q=Math.sqrt(-2*Math.log(1-p));x=-(((((c[0]*q+c[1])*q+c[2])*q+c[3])*q+c[4])*q+c[5])/((((d[0]*q+d[1])*q+d[2])*q+d[3])*q+1)}
-  for(let i=0;i<2;i++){const e=PhiN(x)-p;x-=e/phiG(x)}return x}
-const r2=x=>Math.round(x*100)/100,r4=x=>Math.round(x*1e4)/1e4;
+
+
+
+
 /* ---------- разбор чисел ---------- */
 /* число из поля: «1 000» и «1 000,5» — разряды через пробел (ровно по 3 цифры); две десятичные точки («0,1,2», «1.5.2»)
    и числа через пробел («2 3») — ошибка, а не молчаливое «0,1» или «6» */
-function numIn(s){if(s===undefined||s===null)throw{msg:'num'};s=String(s).trim().replace(/[−–]/g,'-').replace(/[\u00a0\u202f]/g,' ');
-  if(/^[-+]?\d{1,3}( \d{3})+([.,]\d+)?%?$/.test(s))s=s.replace(/ /g,'');s=s.replace(/,/g,'.');if(!s)throw{msg:'num'};
-  if(/\d*\.\d*\./.test(s)||/[\d.]\s+[\d.]/.test(s))throw{msg:'num'};
-  let pct=false;if(s.endsWith('%')){pct=true;s=s.slice(0,-1)}
-  let v;if(/^[-+]?\d*\.?\d+(e[-+]?\d+)?$/i.test(s))v=parseFloat(s);else{const e=parse(s);if(hasInf(e))v=e[0]==='neg'?-Infinity:Infinity;else{if(has(simp(e)))throw{msg:'num'};v=compile(simp(e))(0)}}
-  if(!isFinite(v)&&!/inf|∞/.test(s))throw{msg:'num'};return pct?v/100:v}
-function rowNums(s){return s.trim().replace(/[−–]/g,'-').split(/[\s;|\t]+/).filter(Boolean)}
+
+
 /* ---------- ряд распределения ---------- */
-function parseSeries(txt){const lines=txt.split('\n').map(l=>l.trim()).filter(Boolean);if(lines.length<2)throw{msg:'rows'};
-  const strip=l=>l.replace(/^\s*[a-zA-Zа-яА-Я()]+\s*[:=]?\s*/,'');const xs=rowNums(strip(lines[0])).map(numIn);const ps0=rowNums(strip(lines[1]));
-  if(xs.length!==ps0.length)throw{msg:'len'};{const sx=[...xs].sort((a,b)=>a-b);for(let i=1;i<sx.length;i++)if(Math.abs(sx[i]-sx[i-1])<1e-12)throw{msg:'dupx',x:sx[i]}}let unk=-1;const ps=ps0.map((s,i)=>{if(s==='?'){if(unk>=0)throw{msg:'unk2'};unk=i;return NaN}return numIn(s)});
-  if(unk>=0){const rest=ps.reduce((a,v,i)=>i===unk?a:a+v,0);ps[unk]=1-rest}
-  if(ps.some(p=>p<-1e-12||p>1+1e-12))throw{msg:'prob'};const sum=ps.reduce((a,b)=>a+b,0);
-  const idx=xs.map((_,i)=>i).sort((a,b)=>xs[a]-xs[b]);return{x:idx.map(i=>xs[i]),p:idx.map(i=>ps[i]),sum,unk:unk>=0?{x:xs[unk],p:ps[unk]}:null}}
-function seriesStats(x,p){const M=x.reduce((s,v,i)=>s+v*p[i],0),M2=x.reduce((s,v,i)=>s+v*v*p[i],0),D=M2-M*M;let mi=0;p.forEach((v,i)=>{if(v>p[mi]+1e-12)mi=i});const modes=x.filter((_,i)=>Math.abs(p[i]-p[mi])<1e-12);
-  return{M,M2,D:Math.max(0,D),s:Math.sqrt(Math.max(0,D)),modes}}
-function genBinom(n,p){const x=[],q=[];for(let k=0;k<=n;k++){x.push(k);q.push(binom(n,p,k))}return{x,p:q}}
-function genHyper(N,M,n){const x=[],q=[],den=Cnk(N,n);for(let k=Math.max(0,n-(N-M));k<=Math.min(n,M);k++){x.push(k);q.push(Cnk(M,k)*Cnk(N-M,n-k)/den)}return{x,p:q}}
-function genGeom(p,nmax){const x=[],q=[];for(let k=1;k<=nmax;k++){x.push(k);q.push(k<nmax?Math.pow(1-p,k-1)*p:Math.pow(1-p,nmax-1))}return{x,p:q}}
+
+
+
+
+
 /* ---------- двумерная таблица ---------- */
-function parseJoint(txt){const lines=txt.split('\n').map(l=>l.trim()).filter(Boolean);if(lines.length<2)throw{msg:'rows'};
-  const head=rowNums(lines[0]);let ys=head;if(head.length&&!/^[-+]?[\d.,/]+$/.test(head[0].replace(/,/g,'.')))ys=head.slice(1);ys=ys.map(numIn);
-  const xs=[],P=[];for(const l of lines.slice(1)){const c=rowNums(l.replace(/:/,' '));if(c.length!==ys.length+1)throw{msg:'len'};xs.push(numIn(c[0]));P.push(c.slice(1).map(numIn))}
-  const sum=P.flat().reduce((a,b)=>a+b,0);if(P.flat().some(v=>v<-1e-12))throw{msg:'prob'};return{x:xs,y:ys,P,sum}}
-function jointStats(J){const px=J.P.map(r=>r.reduce((a,b)=>a+b,0)),py=J.y.map((_,j)=>J.P.reduce((a,r)=>a+r[j],0));
-  const sx=seriesStats(J.x,px),sy=seriesStats(J.y,py);let Mxy=0;J.P.forEach((r,i)=>r.forEach((v,j)=>{Mxy+=J.x[i]*J.y[j]*v}));
-  const cov=Mxy-sx.M*sy.M,r=sx.s>0&&sy.s>0?cov/(sx.s*sy.s):NaN;let indep=true;J.P.forEach((row,i)=>row.forEach((v,j)=>{if(Math.abs(v-px[i]*py[j])>1e-9)indep=false}));
-  return{px,py,sx,sy,Mxy,cov,r,indep}}
-function distOf(J,f){const m=new Map();J.P.forEach((r,i)=>r.forEach((v,j)=>{const z=+f(J.x[i],J.y[j]).toFixed(10);m.set(z,(m.get(z)||0)+v)}));const zs=[...m.keys()].sort((a,b)=>a-b);return{x:zs,p:zs.map(z=>m.get(z))}}
+
+
+
 /* ---------- комбинаторика (точно, BigInt) ---------- */
-function bf(n){let r=1n;for(let i=2n;i<=BigInt(n);i++)r*=i;return r}
-function bA(n,k){let r=1n;for(let i=0;i<k;i++)r*=BigInt(n-i);return r}
-function bC(n,k){if(k<0||k>n)return 0n;k=Math.min(k,n-k);let r=1n;for(let i=1;i<=k;i++){r=r*BigInt(n-k+i)/BigInt(i)}return r}
-function bPow(n,k){return BigInt(n)**BigInt(k)}
-const bStr=b=>{const s=b.toString();return s.length>15?s.slice(0,1)+','+s.slice(1,5)+'·10^'+(s.length-1):s.replace(/\B(?=(\d{3})+(?!\d))/g,'\u2009')};
-const bNum=b=>Number(b);
-function gcdB(a,b){a=a<0n?-a:a;b=b<0n?-b:b;while(b){[a,b]=[b,a%b]}return a}
+
+
+
+
+
+
+
 /* ---------- кубики ---------- */
-function diceDist(s){let d=[1];for(let i=0;i<s;i++){const n=new Array(d.length+6).fill(0);d.forEach((v,j)=>{for(let f=1;f<=6;f++)n[j+f]+=v});d=n}return d}/* индекс = сумма */
+/* индекс = сумма */
 /* ---------- независимые события ---------- */
-function polyEvents(ps){let c=[1];for(const p of ps){const n=new Array(c.length+1).fill(0);c.forEach((v,k)=>{n[k]+=v*(1-p);n[k+1]+=v*p});c=n}return c}
-const TX={
-ru:{title:'Теория вероятностей',brand:'Тервер <span class="sub">наглядно</span>',gloss:'Справочник',glossT:'Справочник понятий и формул',settings:'Настройки',canvas:'График распределения',
- capX:'Скрыть подсказки',capOpen:'Подсказки',grip:'перетащите панель',close:'Закрыть',drag:'Перетащить',up:'Выше',down:'Ниже',collapse:'Свернуть',
- p_topic:'Задача',p_presets:'Задачи из сборника',p_solve:'Решение',p_values:'Характеристики',p_show:'Что показывать',p_export:'Экспорт',
- t_bern:'Бернулли',t_dsv:'Дискретная СВ',t_dvu:'Двумерная',t_nsv:'Непрерывная СВ',t_norm:'Нормальное',
- tt:{comb:'Раздел 1. Элементы комбинаторики: перестановки, размещения, сочетания',clas:'Раздел 2. Классическая вероятность: P(A) = m/n, урновые схемы, кости',ops:'Раздел 3. Теоремы сложения и умножения, независимые события',bayes:'Раздел 4. Формула полной вероятности и формула Байеса',bern:'Раздел 5. Повторные испытания: формула Бернулли, Пуассон, Муавр–Лаплас',dsv:'Раздел 6. Дискретная случайная величина: ряд распределения, M, D, F(x)',dvu:'Раздел 7. Двумерная дискретная величина: частные и условные законы, ковариация, корреляция',nsv:'Раздел 8. Непрерывная случайная величина: плотность, F(x), M, D, мода, медиана',norm:'Раздел 9. Нормальное распределение: вероятности, квантили, обратные задачи'},
- p_M:z=>`Свойства математического ожидания: M(${z}) = a·M(X) + b·M(Y) + c`,p_D:z=>`Свойства дисперсии: D(${z}) = a²D(X) + b²D(Y) + 2ab·cov(X, Y)`,p_ind:'X и Y независимы, поэтому cov(X, Y) = 0, а константа c на дисперсию не влияет.',p_cov:'Ковариация через коэффициент корреляции:',j_ind:'X и Y независимы, поэтому совместная вероятность — произведение: pᵢⱼ = P(X = xᵢ)·P(Y = yⱼ).',
- t_comb:'Комбинаторика',t_clas:'Классическая',t_ops:'Сложение, умножение',t_bayes:'Полная, Байес',
- nota_lbl:'Обозначения:',nota_v:'ВАВТ: Φ(x)',nota_c:'Классические: Φ₀(x)',nota_vT:'Как в задачнике ВАВТ: Φ(x) — функция распределения N(0; 1) от −∞ до x',nota_cT:'Как во многих учебниках: Φ₀(x) — функция Лапласа, интеграл от 0 до x (нечётная, до 0,5)',
- opt:{rl:{ind:'независимы',r:'известен r(X, Y)',cov:'известна cov(X, Y)'},jm:{tab:'совместной таблицей',ind:'двумя независимыми рядами'},zt:{lin:'Z = aX + bY + c',prod:'Z = X·Y + c'},kind:{perm:'перестановки Pₙ',arr:'размещения Aₙᵏ',comb:'сочетания Cₙᵏ',arrRep:'размещения с повторениями',combRep:'сочетания с повторениями',permRep:'перестановки с повторениями',prod:'правило умножения'},
-  cmode:{urn:'урна: шары разных цветов',mn:'m благоприятных из n',dice:'игральные кости'},cev:{exact:'ровно столько каждого цвета',ge:'не менее k шаров 1-го цвета',le:'не более k шаров 1-го цвета'},dev:{eq:'сумма равна',ge:'сумма не меньше',le:'сумма не больше'},
-  omode:{indep:'n независимых событий',two:'два события A и B'},oev:{all:'все произошли',none:'ни одно не произошло',one1:'хотя бы одно',exact:'ровно k',ge:'не менее k',le:'не более k',only:'только k-е'},rel:{ind:'A и B независимы',ab:'известна P(AB)',agb:'известна P(A | B)',bga:'известна P(B | A)'},bev:{A:'событие A произошло',notA:'событие A не произошло'}},
- c_perm:'Перестановки — упорядоченные наборы из всех n различных элементов: Pₙ = n!.',c_arr:'Размещения — упорядоченные наборы k элементов из n (порядок важен): Aₙᵏ = n!/(n − k)! = n(n − 1)…(n − k + 1). Это правило умножения: на первое место n вариантов, на второе n − 1 и так далее.',
- c_comb:'Сочетания — неупорядоченные наборы k элементов из n (порядок не важен): Cₙᵏ = n!/(k!(n − k)!). Это размещения, делённые на k! — число способов упорядочить выбранное.',c_arrR:'Размещения с повторениями: на каждое из k мест — любой из n вариантов, всего nᵏ.',
- c_combR:'Сочетания с повторениями (например, k одинаковых предметов по n ящикам): C̄ₙᵏ = Cₙ₊ₖ₋₁ᵏ.',c_permR:'Перестановки с повторениями: n предметов, среди которых n₁, n₂, … одинаковых: P(n₁, n₂, …) = n!/(n₁!·n₂!·…).',c_prod:'Правило умножения: если k действий выполняются одно за другим n₁, n₂, …, nₖ способами, то всех вариантов N = n₁·n₂·…·nₖ.',
- k_def:'Классическое определение: P(A) = m/n, где n — число всех равновозможных исходов, m — число благоприятных.',k_dice:(s,t)=>`Бросаем ${s} кост${s===1?'ь':s<5?'и':'ей'}: всего исходов n = 6${s>1?'<sup>'+s+'</sup>':''} = ${t}. Перебираем суммы и считаем благоприятные.`,
- k_urn:(N,n,c)=>`Всего шаров ${N}, берём ${n}: общее число исходов n = ${c}.`,k_fav:'Благоприятные исходы — выбираем нужное число шаров каждого цвета (правило умножения):',k_sum:'Складываем варианты по числу шаров 1-го цвета:',
- o_ind:'События независимы, поэтому',o_mul:'Теорема умножения:',o_add:'Теорема сложения для совместных событий:',o_cond:'Условные вероятности:',o_rest:'Остальные части:',o_one:'ровно одно из двух:',o_isInd:'P(AB) = P(A)·P(B): события независимы.',o_notInd:'P(AB) ≠ P(A)·P(B): события зависимы.',
- o_list:(p,q)=>`События независимы: ${p}; вероятности противоположных: ${q}.`,o_all:'Все события произошли — по теореме умножения:',o_none:'Ни одно не произошло:',o_one1:'Хотя бы одно — через противоположное «ни одного»:',o_only:k=>`Только ${k}-е событие: оно произошло, остальные нет.`,
- o_exact:k=>`Ровно ${k}: складываем все варианты, где произошло ровно ${k} событи${k===1?'е':'я'}.`,o_gen:'Производящая функция: коэффициент при zᵏ — вероятность ровно k событий.',o_coef:k=>`Ровно ${k} — коэффициент при z^${k}:`,o_ge:k=>`Не менее ${k} — сумма коэффициентов от z^${k}:`,o_le:k=>`Не более ${k} — сумма коэффициентов до z^${k}:`,
- h_unk:(i,v)=>`Вероятность гипотезы H${i} = 1 − (сумма остальных) = ${v}.`,h_hyp:'Гипотезы образуют полную группу:',h_not:'Наблюдали противоположное событие Ā:',h_total:'Формула полной вероятности:',h_bayes:A=>`Формула Байеса: P(Hᵢ | ${A}) = P(Hᵢ)·P(${A} | Hᵢ)/P(${A}):`,
- c_fI:'Интегральная теорема: Pₙ(k₁ ⩽ k ⩽ k₂) ≈ Φ₀(x₂) − Φ₀(x₁), xᵢ = (kᵢ − np)/√(npq); Φ₀ — функция Лапласа (интеграл от 0 до x).',
- c_Nst:(m,s)=>`X ~ N(${m}; ${s}²). Используем функцию Лапласа Φ₀(x) = ∫₀ˣ φ(t)dt (нечётная, Φ₀(∞) = 0,5).`,c_Nrng:'P(x₁ < X < x₂) = Φ₀((x₂ − m)/σ) − Φ₀((x₁ − m)/σ):',c_Nlt:'P(X < x₁) = 0,5 + Φ₀((x₁ − m)/σ):',c_Ngt:'P(X > x₁) = 0,5 − Φ₀((x₁ − m)/σ):',c_Ndev:'P(|X − m| < δ) = 2Φ₀(δ/σ):',
- c_Nqu:(p,q)=>`Квантиль: 0,5 + Φ₀((x_p − m)/σ) = ${p}, то есть Φ₀(z) = ${q}:`,c_inv:(p,q)=>`0,5 + Φ₀(z) = ${p}, значит Φ₀(z) = ${q}.`,c_Nfm:'Отсюда z = (x₁ − m)/σ и m = x₁ − σ·z:',c_Nfs:'Отсюда z = (x₁ − m)/σ и σ = (x₁ − m)/z:',
- howType:'Как вводить',
- typeHelp:'<p>Числа можно писать с запятой или точкой, дробью или в процентах: <code>0,25</code>, <code>1/3</code>, <code>25%</code>, <code>sqrt(9)</code>.</p><p>Ряд распределения — две строки: значения и вероятности, например <code>X: -1 0 1</code> и <code>p: 0,1 0,8 0,1</code>. Одну неизвестную вероятность можно заменить знаком <code>?</code>.</p><p>Двумерная таблица: первая строка — значения Y, дальше строки «x и вероятности», числа через пробел или точку с запятой.</p><p>Плотность или функция распределения — формула от x, как в «Интегралах»: <code>x^2</code>, <code>sin x</code>, <code>e^(-3x)</code>.</p>',
- err:{diverg:'Интеграл от g(x) по отрезку расходится — такую функцию нельзя сделать плотностью.',lam:'λ должно быть положительным.',int:'Нужны целые неотрицательные числа.',big:'Слишком большие числа (до 500).',kn:'Проверьте числа: выбрать больше, чем есть, нельзя.',tsum:'Сумма «нужно каждого цвета» должна равняться числу взятых шаров.',pab:'Такой P(AB) невозможен при данных P(A) и P(B).',pa0:'P(A) получилась равной 0.',bug:'Не удалось вычислить: внутренняя ошибка или слишком большие числа. Если ввод верный — сообщите, пожалуйста, в Issues на GitHub (раздел и ввод).',num:'Не получилось прочитать число.',rows:'Нужно минимум две строки.',len:'В строках разное количество чисел.',dupx:x=>`Значение X = ${fN(x)} встречается дважды. В ряду распределения значения X различны — объедините их, сложив вероятности.`,unk2:'Неизвестной может быть только одна вероятность.',prob:'Вероятность должна быть от 0 до 1.',sum:s=>`Сумма вероятностей равна ${s}, а должна быть 1.`,f:'Не получилось разобрать формулу.',ab:'Нужно a < b.',neg:'Плотность принимает отрицательные значения.',norm1:'Интеграл от плотности не равен 1. Включите «f = C·g(x)», чтобы найти C.',Fbad:'F(x) должна возрастать от 0 до 1 на отрезке.',p01:'p должно быть между 0 и 1.',n:'n должно быть целым и положительным.',k:'k должно быть целым от 0 до n.',sig:'σ должно быть положительным.'},
- f:{mx:'M(X)',dx:'D(X)',my:'M(Y)',dy:'D(Y)',rl:'Связь X и Y',rv:'Значение',a1:'Z = aX + bY + c: a',b1:'b',c1:'c',jm:'Как заданы',zt:'Вид Z',zc:'c',txt_tx:'Ряд X',txt_ty:'Ряд Y',kind:'Что считаем',cn:'n',ck:'k',list:'Числа через пробел',cmode:'Модель',counts:'Шаров каждого цвета',draw:'Берём шаров',cev:'Событие',targets:'Нужно каждого цвета',kk:'k',fav:'m — благоприятных',tot:'n — всех исходов',nd:'Число костей',dev:'Событие',dsum:'Сумма очков',omode:'События',ps:'Вероятности pᵢ',oev:'Найти',ok:'k',pa:'P(A)',pb:'P(B)',rel:'Связь',pab:'Значение',bev:'Наблюдение',hyp:'P(Hᵢ)  P(A | Hᵢ) — по строке на гипотезу',n:'n — число испытаний',p:'p — вероятность успеха',ev:'Событие',k1:'k₁',k2:'k₂',meth:'Метод',mode:'Как задана',a:'a',b:'b',lam:'λ',N:'N — всего',M:'M — «отмеченных»',nn:'n — берём',nmax:'Число попыток',za:'Z = a·X + b: a',zb:'b',fx:'g(x) или f(x)',Fx:'F(x)',C:'f = C·g(x), найти C',al:'P(α < X < β): α',be:'β',ql:'Квантиль уровня',m:'m = M(X)',sg:'σ',q:'Найти',x1:'x₁',x2:'x₂',pv:'p',del:'δ',cond:'Условное распределение',cv:'при значении',zaj:'Z = a·X + b·Y: a',zbj:'b'},
- ev:{eq:'ровно k₁ раз',rng:'от k₁ до k₂ раз',ge:'не менее k₁ раз',le:'не более k₁ раз',one:'хотя бы один раз',mode:'наивероятнейшее число'},
- mt:{auto:'по задачнику (авто)',bern:'формула Бернулли',pois:'формула Пуассона',lap:'Муавр–Лаплас'},
- dm:{prop:'свойства M и D (без таблицы)',tab:'рядом распределения',bin:'биномиальное: n, p',hyp:'урна (гипергеометрическое)',geo:'до первого успеха'},
- nm:{uni:'равномерное на [a; b]',exp:'показательное с параметром λ',f:'плотностью на [a; b]',F:'функцией распределения на [a; b]'},
- nq:{rng:'P(x₁ < X < x₂)',lt:'P(X < x₁)',gt:'P(X > x₁)',dev:'P(|X − m| < δ)',qu:'квантиль x_p',fm:'m по P(X < x₁) = p',fs:'σ по P(X < x₁) = p'},
- cd:{yx:'Y при X =',xy:'X при Y ='},
- s_bern:(p,q)=>`Испытания независимы, в каждом два исхода, вероятность успеха постоянна: p = ${p}, q = 1 − p = ${q}. Это схема Бернулли.`,
- s_par:(n,np,npq)=>`n = ${n}, np = ${np}, npq = ${npq}.`,
- s_mB:'Число испытаний невелико, поэтому считаем точно по формуле Бернулли.',
- s_mP:l=>`Испытаний много, а λ = np = ${l} ⩽ 10, поэтому применяем формулу Пуассона.`,
- s_mL:v=>`npq = ${v} > 10, поэтому применяем теорему Муавра–Лапласа.`,
- s_mU:'Метод выбран вручную.',
- s_fB:'Формула Бернулли: Pₙ(k) = Cₙᵏ pᵏ qⁿ⁻ᵏ.',s_fP:'Формула Пуассона: Pₙ(k) ≈ λᵏe^(−λ)/k!.',
- s_fL:'Локальная теорема: Pₙ(k) ≈ φ(x)/√(npq), x = (k − np)/√(npq).',s_fI:'Интегральная теорема: Pₙ(k₁ ⩽ k ⩽ k₂) ≈ Φ(x₂) − Φ(x₁), xᵢ = (kᵢ − np)/√(npq).',
- s_compl:'Переходим к противоположному событию «ни одного раза»:',s_sum:'Складываем вероятности по всем k:',
- s_mode:(a,b)=>`Наивероятнейшее число k* удовлетворяет неравенству np − q ⩽ k* ⩽ np + p: ${a} ⩽ k* ⩽ ${b}.`,s_mode2:k=>`Целых чисел в этом промежутке: ${k}.`,
- s_exact:v=>`Точное значение по формуле Бернулли: ${v}.`,s_tab:'Аргументы φ и Φ округлены до сотых, как при работе с таблицами приложения.',
- s_sumP:(s)=>`Проверяем, что сумма вероятностей равна 1: ${s}.`,s_unk:(x,v)=>`Неизвестная вероятность при X = ${x}: p = 1 − (сумма остальных) = ${v}.`,
- s_M:'Математическое ожидание M(X) = Σ xᵢpᵢ:',s_M2:'M(X²) = Σ xᵢ²pᵢ:',s_D:'Дисперсия D(X) = M(X²) − M²(X):',s_s:'Среднее квадратическое отклонение σ = √D:',
- s_mod:m=>`Мода — значение с наибольшей вероятностью: ${m}.`,s_F:'Функция распределения F(x) = P(X < x):',s_Z:(a,b)=>`Для Z = ${a}X ${b}: M(Z) = a·M(X) + b, D(Z) = a²·D(X).`,
- s_gen:{bin:'Число успехов в n независимых испытаниях — биномиальное распределение: P(X = k) = Cₙᵏpᵏqⁿ⁻ᵏ.',hyp:'Из N предметов, среди которых M отмеченных, берём n без возвращения: P(X = k) = C_Mᵏ·C_(N−M)ⁿ⁻ᵏ / C_Nⁿ.',geo:'Испытания до первого успеха, но не больше заданного числа попыток: P(X = k) = q^(k−1)p, а последняя попытка забирает остаток q^(n−1).'},
- s_marg:'Частные законы распределения: суммируем таблицу по строкам и по столбцам.',s_Mxy:'M(XY) = Σ xᵢyⱼpᵢⱼ:',s_cov:'Ковариация cov(X, Y) = M(XY) − M(X)·M(Y):',s_r:'Коэффициент корреляции r = cov / (σₓσᵧ):',
- s_ind:'Все pᵢⱼ = pᵢ·pⱼ: X и Y независимы.',s_dep:(x,y,a,b)=>`P(X = ${x}, Y = ${y}) = ${a}, а произведение частных вероятностей ${b}: X и Y зависимы.`,
- s_cond:(w,v,pv)=>`Условное распределение ${w} при условии ${v}: делим строку (столбец) на P = ${pv}.`,s_condM:'Условное математическое ожидание:',
- s_Zj:'Закон распределения Z = aX + bY: перебираем все пары (xᵢ, yⱼ).',s_ZjD:'Проверка: D(aX + bY) = a²D(X) + b²D(Y) + 2ab·cov(X, Y).',
- s_uni:(a,b)=>`Равномерное распределение: f(x) = 1/(b − a) = 1/(${b} − ${a}) на [a; b] и 0 вне отрезка.`,s_exp:l=>`Показательное распределение: f(x) = λe^(−λx) при x ⩾ 0, λ = ${l}; F(x) = 1 − e^(−λx); M = 1/λ, D = 1/λ².`,
- s_C:(I,C)=>`Константу находим из условия ∫f(x)dx = 1: ∫g(x)dx = ${I}, значит C = ${C}.`,s_norm:'Проверка: интеграл плотности по отрезку равен 1.',
- s_Ff:'F(x) = ∫ f(t)dt от a до x:',s_fF:'Плотность f(x) = F′(x):',s_Mi:'M(X) = ∫ x·f(x)dx:',s_Di:'D(X) = ∫ x²·f(x)dx − M²:',s_P:'P(α < X < β) = F(β) − F(α):',
- s_med:'Медиана: F(x_med) = 0,5.',s_qu:p=>`Квантиль уровня ${p}: F(x_p) = ${p}.`,s_modN:'Мода — точка максимума плотности:',
- s_Nst:(m,s)=>`X ~ N(${m}; ${s}²): переходим к стандартной величине, F(x) = Φ((x − m)/σ).`,s_Nrng:'P(x₁ < X < x₂) = Φ((x₂ − m)/σ) − Φ((x₁ − m)/σ):',s_Nlt:'P(X < x₁) = Φ((x₁ − m)/σ):',s_Ngt:'P(X > x₁) = 1 − Φ((x₁ − m)/σ):',
- s_Ndev:'P(|X − m| < δ) = 2Φ(δ/σ) − 1:',s_Nqu:'Квантиль: Φ((x_p − m)/σ) = p, значит (x_p − m)/σ = z_p и x_p = m + σ·z_p:',s_Nfm:'Из Φ((x₁ − m)/σ) = p находим (x₁ − m)/σ = z_p, откуда m = x₁ − σ·z_p:',s_Nfs:'Из Φ((x₁ − m)/σ) = p находим (x₁ − m)/σ = z_p, откуда σ = (x₁ − m)/z_p:',
- s_Nbad:'z_p и (x₁ − m) должны иметь один знак, иначе σ получится отрицательным.',s_3s:'Правило трёх сигм: P(|X − m| < 3σ) ≈ 0,9973 — практически все значения лежат в (m − 3σ; m + 3σ).',
- ans:'Ответ',ex:'Точно',appr:'Приближённо',
- v:{dig:'Цифр в числе',ex:'ровно',prior:'до опыта',n:'n',np:'np = λ',npq:'npq',k:'Наивероятнейшее k*',M:'M(X)',D:'D(X)',s:'σ(X)',mod:'Мода',med:'Медиана',sum:'Σp',Mx:'M(X)',My:'M(Y)',Dx:'D(X)',Dy:'D(Y)',cov:'cov(X, Y)',r:'r(X, Y)',ind:'Независимы?',P:'Вероятность',C:'C',yes:'да',no:'нет'},
- tog:{bgGrid:'Сетка',coords:'Числа на осях',labels:'Подписи значений (вероятности, списки наборов)',approx:'Приближение (Пуассон / нормальное)',sigma:'M и ±σ, три сигмы',Fplot:'График F(x)',hints:'Подсказки на сцене'},
- cap:{err:'Исправьте данные в блоке «Задача».',prop:'Без таблицы распределения: M и D находятся по свойствам. Полосы — промежутки M ± σ и M ± 2σ.',comb:'Каждая клетка — одно действие и число вариантов для него; по правилу умножения варианты перемножаются. При малых числах ниже перечислены все наборы.',clas:'Вероятность — доля благоприятных исходов среди всех равновозможных.',ops:'Для двух событий — диаграмма Венна с вероятностями частей; для n независимых — вероятности того, что произошло ровно k.',bayes:'Ширина полосы — вероятность гипотезы, закрашенная часть — P(A | Hᵢ). Справа — как гипотезы перераспределились после опыта.',bern:'Столбики — вероятности Pₙ(k); подсвечены k, входящие в событие. Пунктир — приближённая формула.',dsv:'Сверху — многоугольник распределения, снизу — ступенчатая функция F(x). Отмечены M(X) и M ± σ.',
-  dvu:'Ячейки — совместные вероятности pᵢⱼ, справа и снизу — частные законы. Подсвечена строка или столбец условия.',nsv:'Сверху — плотность f(x), закрашена P(α < X < β); снизу — F(x). Границы α и β можно тянуть.',norm:'Закрашенная площадь под колоколом — искомая вероятность. Границы можно тянуть мышью или пальцем.'},
- xPng:'Снимок PNG',xVid:'Видео',xStamp:'Добавлять ответ на изображение',xCopy:'Копировать',fmtText:'Текст',
- xNoDl:'Сохранение файлов недоступно в этом окне. Откройте страницу в claude.ai.',xNoVid:'',xRec:'',xSaved:'Файл передан на сохранение.',xBusy:'Окно сохранения уже открыто, попробуйте чуть позже.',xFail:'Не удалось сохранить файл.',xCopied:'Скопировано.',xSelect:'Текст выделен: нажмите Ctrl+C или ⌘C.',
- keys:'Горячие клавиши',keysNote:'Работают в любой раскладке и не срабатывают, пока курсор стоит в поле ввода.',showKeys:'Показать список',s_reset:'Сброс',seeAlso:'См. также:',on:'вкл',off:'выкл',
- k_topic:'разделы задачника 1–9',k_prev:'предыдущая / следующая задача',k_grid:'сетка',k_F:'график F(x)',k_ap:'приближение',k_sig:'M ± σ',k_hint:'подсказки',k_png:'снимок PNG',k_gloss:'справочник',k_keys:'этот список',k_esc:'закрыть окно',
- search:'Найти: Бернулли, дисперсия, квантиль…',noFound:'Ничего не нашлось. Попробуйте другое слово, например «Лаплас».',showDemo:'▶ Показать на сцене',
- tabI:'Интуиция',tabF:'Строго',readOf:(a,b)=>`Прочитано ${a} из ${b}`,readReset:'Сбросить отметки',readMark:'Отметить прочитанным',readDone:'✓ Прочитано',
- s_lang:'Язык',s_ui:'Тема интерфейса',ui_auto:'Как в системе',ui_light:'Светлая',ui_dark:'Тёмная',s_dock:'Где стоит панель',d_auto:'Авто',d_right:'Справа',d_left:'Слева',d_bottom:'Снизу',d_float:'Плавает',
- s_w:'Ширина боковой панели',s_h:'Высота нижней панели',s_f:'Размер текста интерфейса',s_l:'Толщина линий на сцене',s_pal:'Палитра сцены',palNote:'Любой цвет можно поменять вручную, тогда палитра станет «Своя».',
- s_blocks:'Блоки',blocksNote:'Порядок блоков меняется перетаскиванием за ⠿ или стрелками ↑ ↓ в заголовке. Нажатие на заголовок сворачивает блок. Всё запоминается в этом браузере.',resetOrder:'Вернуть порядок блоков',resetAll:'Сбросить все настройки',
- pal:{classic:'Классика',paper:'Бумага',neon:'Неон',nord:'Норд',custom:'Своя'},
- colors:{bg:'Фон сцены',bgGrid:'Сетка',axis:'Оси и текст',bar:'Столбики, кривые',sel:'Выбранные значения',curve:'Приближение',area:'Площадь',aux:'Вторая величина',mark:'M и σ',F:'График F(x)'}},
-en:{title:'Probability theory',brand:'Probability <span class="sub">visually</span>',gloss:'Glossary',glossT:'Glossary of concepts and formulas',settings:'Settings',canvas:'Distribution graph',
- capX:'Hide hints',capOpen:'Hints',grip:'drag the panel',close:'Close',drag:'Drag',up:'Up',down:'Down',collapse:'Collapse',
- p_topic:'Problem',p_presets:'Problems from the book',p_solve:'Solution',p_values:'Characteristics',p_show:'Show',p_export:'Export',
- t_bern:'Bernoulli',t_dsv:'Discrete RV',t_dvu:'Bivariate',t_nsv:'Continuous RV',t_norm:'Normal',
- tt:{comb:'Section 1. Combinatorics: permutations, arrangements, combinations',clas:'Section 2. Classical probability: P(A) = m/n, urns, dice',ops:'Section 3. Addition and multiplication theorems, independent events',bayes:'Section 4. Total probability and Bayes formulas',bern:'Section 5. Repeated trials: Bernoulli, Poisson, de Moivre–Laplace',dsv:'Section 6. Discrete random variable: distribution table, M, D, F(x)',dvu:'Section 7. Bivariate discrete variable: marginal and conditional laws, covariance, correlation',nsv:'Section 8. Continuous random variable: density, F(x), M, D, mode, median',norm:'Section 9. Normal distribution: probabilities, quantiles, inverse problems'},
- p_M:z=>`Properties of expectation: M(${z}) = a·M(X) + b·M(Y) + c`,p_D:z=>`Properties of variance: D(${z}) = a²D(X) + b²D(Y) + 2ab·cov(X, Y)`,p_ind:'X and Y are independent, so cov(X, Y) = 0, and the constant c doesn’t affect the variance.',p_cov:'Covariance via the correlation coefficient:',j_ind:'X and Y are independent, so the joint probability is a product: pᵢⱼ = P(X = xᵢ)·P(Y = yⱼ).',
- t_comb:'Combinatorics',t_clas:'Classical',t_ops:'Addition, multiplication',t_bayes:'Total, Bayes',
- nota_lbl:'Notation:',nota_v:'VAVT: Φ(x)',nota_c:'Classical: Φ₀(x)',nota_vT:'As in the VAVT book: Φ(x) is the N(0; 1) distribution function from −∞ to x',nota_cT:'As in many textbooks: Φ₀(x) is the Laplace function, the integral from 0 to x (odd, up to 0.5)',
- opt:{rl:{ind:'independent',r:'r(X, Y) known',cov:'cov(X, Y) known'},jm:{tab:'a joint table',ind:'two independent series'},zt:{lin:'Z = aX + bY + c',prod:'Z = X·Y + c'},kind:{perm:'permutations Pₙ',arr:'arrangements Aₙᵏ',comb:'combinations Cₙᵏ',arrRep:'arrangements with repetition',combRep:'combinations with repetition',permRep:'permutations with repetition',prod:'multiplication rule'},
-  cmode:{urn:'urn: balls of several colors',mn:'m favorable of n',dice:'dice'},cev:{exact:'exactly so many of each color',ge:'at least k balls of color 1',le:'at most k balls of color 1'},dev:{eq:'sum equals',ge:'sum at least',le:'sum at most'},
-  omode:{indep:'n independent events',two:'two events A and B'},oev:{all:'all happened',none:'none happened',one1:'at least one',exact:'exactly k',ge:'at least k',le:'at most k',only:'only the k-th'},rel:{ind:'A and B independent',ab:'P(AB) known',agb:'P(A | B) known',bga:'P(B | A) known'},bev:{A:'event A happened',notA:'event A did not happen'}},
- c_perm:'Permutations are ordered arrangements of all n distinct elements: Pₙ = n!.',c_arr:'Arrangements are ordered selections of k of n elements: Aₙᵏ = n!/(n − k)! = n(n − 1)…(n − k + 1). It is the multiplication rule: n options for the first place, n − 1 for the second, and so on.',
- c_comb:'Combinations are unordered selections of k of n: Cₙᵏ = n!/(k!(n − k)!). They are arrangements divided by k!, the number of ways to order the selection.',c_arrR:'Arrangements with repetition: each of k places takes any of n options, nᵏ in total.',
- c_combR:'Combinations with repetition (e.g. k identical items into n boxes): C̄ₙᵏ = Cₙ₊ₖ₋₁ᵏ.',c_permR:'Permutations with repetition: n items with groups of n₁, n₂, … identical ones: P(n₁, n₂, …) = n!/(n₁!·n₂!·…).',c_prod:'Multiplication rule: if k actions are done in turn in n₁, n₂, …, nₖ ways, there are N = n₁·n₂·…·nₖ options in total.',
- k_def:'Classical definition: P(A) = m/n, where n is the number of all equally likely outcomes and m the number of favorable ones.',k_dice:(s,t)=>`Roll ${s} di${s===1?'e':'ce'}: n = 6${s>1?'<sup>'+s+'</sup>':''} = ${t} outcomes. Go through the sums and count the favorable ones.`,
- k_urn:(N,n,c)=>`There are ${N} balls, draw ${n}: total outcomes n = ${c}.`,k_fav:'Favorable outcomes: choose the needed number of balls of each color (multiplication rule):',k_sum:'Add up the cases by the number of balls of color 1:',
- o_ind:'The events are independent, so',o_mul:'Multiplication theorem:',o_add:'Addition theorem for compatible events:',o_cond:'Conditional probabilities:',o_rest:'Other parts:',o_one:'exactly one of the two:',o_isInd:'P(AB) = P(A)·P(B): the events are independent.',o_notInd:'P(AB) ≠ P(A)·P(B): the events are dependent.',
- o_list:(p,q)=>`The events are independent: ${p}; complements: ${q}.`,o_all:'All events happened, by the multiplication theorem:',o_none:'None happened:',o_one1:'At least one, via the complement “none”:',o_only:k=>`Only the ${k}-th event: it happened, the others didn’t.`,
- o_exact:k=>`Exactly ${k}: add all cases where exactly ${k} event${k===1?'':'s'} happened.`,o_gen:'Generating function: the coefficient of zᵏ is the probability of exactly k events.',o_coef:k=>`Exactly ${k} is the coefficient of z^${k}:`,o_ge:k=>`At least ${k}: sum of coefficients from z^${k}:`,o_le:k=>`At most ${k}: sum of coefficients up to z^${k}:`,
- h_unk:(i,v)=>`Probability of hypothesis H${i} = 1 − (sum of the others) = ${v}.`,h_hyp:'The hypotheses form a complete group:',h_not:'The complementary event Ā was observed:',h_total:'Total probability formula:',h_bayes:A=>`Bayes formula: P(Hᵢ | ${A}) = P(Hᵢ)·P(${A} | Hᵢ)/P(${A}):`,
- c_fI:'Integral theorem: Pₙ(k₁ ⩽ k ⩽ k₂) ≈ Φ₀(x₂) − Φ₀(x₁), xᵢ = (kᵢ − np)/√(npq); Φ₀ is the Laplace function (integral from 0 to x).',
- c_Nst:(m,s)=>`X ~ N(${m}; ${s}²). Use the Laplace function Φ₀(x) = ∫₀ˣ φ(t)dt (odd, Φ₀(∞) = 0.5).`,c_Nrng:'P(x₁ < X < x₂) = Φ₀((x₂ − m)/σ) − Φ₀((x₁ − m)/σ):',c_Nlt:'P(X < x₁) = 0.5 + Φ₀((x₁ − m)/σ):',c_Ngt:'P(X > x₁) = 0.5 − Φ₀((x₁ − m)/σ):',c_Ndev:'P(|X − m| < δ) = 2Φ₀(δ/σ):',
- c_Nqu:(p,q)=>`Quantile: 0.5 + Φ₀((x_p − m)/σ) = ${p}, i.e. Φ₀(z) = ${q}:`,c_inv:(p,q)=>`0.5 + Φ₀(z) = ${p}, so Φ₀(z) = ${q}.`,c_Nfm:'So z = (x₁ − m)/σ and m = x₁ − σ·z:',c_Nfs:'So z = (x₁ − m)/σ and σ = (x₁ − m)/z:',
- howType:'How to enter',
- typeHelp:'<p>Numbers can use a comma or a dot, fractions or percent: <code>0.25</code>, <code>1/3</code>, <code>25%</code>, <code>sqrt(9)</code>.</p><p>A distribution table is two lines: values and probabilities, e.g. <code>X: -1 0 1</code> and <code>p: 0.1 0.8 0.1</code>. One unknown probability can be replaced with <code>?</code>.</p><p>A bivariate table: the first line holds the values of Y, then lines “x and probabilities”, separated by spaces or semicolons.</p><p>A density or distribution function is a formula in x, as in Integrals: <code>x^2</code>, <code>sin x</code>, <code>e^(-3x)</code>.</p>',
- err:{diverg:'The integral of g(x) over the interval diverges, so it can’t be made a density.',lam:'λ must be positive.',int:'Non-negative integers are needed.',big:'The numbers are too large (up to 500).',kn:'Check the numbers: you can’t choose more than there is.',tsum:'“Needed of each color” must add up to the number drawn.',pab:'Such P(AB) is impossible for the given P(A) and P(B).',pa0:'P(A) came out as 0.',bug:'Couldn’t compute: an internal error or numbers too large. If the input is right, please report it in GitHub Issues (section and input).',num:'Couldn’t read a number.',rows:'At least two lines are needed.',len:'The lines have different numbers of entries.',dupx:x=>`The value X = ${fN(x)} appears twice. Values in a distribution series must differ — merge them by adding their probabilities.`,unk2:'Only one probability can be unknown.',prob:'A probability must be between 0 and 1.',sum:s=>`The probabilities add up to ${s}, not 1.`,f:'Couldn’t parse the formula.',ab:'Need a < b.',neg:'The density takes negative values.',norm1:'The density doesn’t integrate to 1. Turn on “f = C·g(x)” to find C.',Fbad:'F(x) must increase from 0 to 1 on the interval.',p01:'p must be between 0 and 1.',n:'n must be a positive integer.',k:'k must be an integer from 0 to n.',sig:'σ must be positive.'},
- f:{mx:'M(X)',dx:'D(X)',my:'M(Y)',dy:'D(Y)',rl:'Relation of X and Y',rv:'Value',a1:'Z = aX + bY + c: a',b1:'b',c1:'c',jm:'Given as',zt:'Form of Z',zc:'c',txt_tx:'Series X',txt_ty:'Series Y',kind:'What to count',cn:'n',ck:'k',list:'Numbers separated by spaces',cmode:'Model',counts:'Balls of each color',draw:'Balls drawn',cev:'Event',targets:'Needed of each color',kk:'k',fav:'m — favorable',tot:'n — all outcomes',nd:'Number of dice',dev:'Event',dsum:'Sum of points',omode:'Events',ps:'Probabilities pᵢ',oev:'Find',ok:'k',pa:'P(A)',pb:'P(B)',rel:'Relation',pab:'Value',bev:'Observation',hyp:'P(Hᵢ)  P(A | Hᵢ) — one line per hypothesis',n:'n — number of trials',p:'p — success probability',ev:'Event',k1:'k₁',k2:'k₂',meth:'Method',mode:'Given by',a:'a',b:'b',lam:'λ',N:'N — total',M:'M — “marked”',nn:'n — drawn',nmax:'Number of tries',za:'Z = a·X + b: a',zb:'b',fx:'g(x) or f(x)',Fx:'F(x)',C:'f = C·g(x), find C',al:'P(α < X < β): α',be:'β',ql:'Quantile level',m:'m = M(X)',sg:'σ',q:'Find',x1:'x₁',x2:'x₂',pv:'p',del:'δ',cond:'Conditional law',cv:'for the value',zaj:'Z = a·X + b·Y: a',zbj:'b'},
- ev:{eq:'exactly k₁ times',rng:'from k₁ to k₂ times',ge:'at least k₁ times',le:'at most k₁ times',one:'at least once',mode:'most probable number'},
- mt:{auto:'as in the book (auto)',bern:'Bernoulli formula',pois:'Poisson formula',lap:'de Moivre–Laplace'},
- dm:{prop:'properties of M and D (no table)',tab:'a distribution table',bin:'binomial: n, p',hyp:'urn (hypergeometric)',geo:'until the first success'},
- nm:{uni:'uniform on [a; b]',exp:'exponential with rate λ',f:'a density on [a; b]',F:'a distribution function on [a; b]'},
- nq:{rng:'P(x₁ < X < x₂)',lt:'P(X < x₁)',gt:'P(X > x₁)',dev:'P(|X − m| < δ)',qu:'quantile x_p',fm:'m from P(X < x₁) = p',fs:'σ from P(X < x₁) = p'},
- cd:{yx:'Y given X =',xy:'X given Y ='},
- s_bern:(p,q)=>`Trials are independent, each has two outcomes, the success probability is constant: p = ${p}, q = 1 − p = ${q}. This is the Bernoulli scheme.`,
- s_par:(n,np,npq)=>`n = ${n}, np = ${np}, npq = ${npq}.`,
- s_mB:'The number of trials is small, so compute exactly with the Bernoulli formula.',
- s_mP:l=>`There are many trials and λ = np = ${l} ⩽ 10, so use the Poisson formula.`,
- s_mL:v=>`npq = ${v} > 10, so use the de Moivre–Laplace theorem.`,
- s_mU:'The method was chosen manually.',
- s_fB:'Bernoulli formula: Pₙ(k) = Cₙᵏ pᵏ qⁿ⁻ᵏ.',s_fP:'Poisson formula: Pₙ(k) ≈ λᵏe^(−λ)/k!.',
- s_fL:'Local theorem: Pₙ(k) ≈ φ(x)/√(npq), x = (k − np)/√(npq).',s_fI:'Integral theorem: Pₙ(k₁ ⩽ k ⩽ k₂) ≈ Φ(x₂) − Φ(x₁), xᵢ = (kᵢ − np)/√(npq).',
- s_compl:'Switch to the complementary event “not once”:',s_sum:'Add the probabilities over all k:',
- s_mode:(a,b)=>`The most probable number k* satisfies np − q ⩽ k* ⩽ np + p: ${a} ⩽ k* ⩽ ${b}.`,s_mode2:k=>`Integers in this range: ${k}.`,
- s_exact:v=>`Exact value by the Bernoulli formula: ${v}.`,s_tab:'Arguments of φ and Φ are rounded to hundredths, as when using the tables in the appendix.',
- s_sumP:(s)=>`Check that the probabilities add up to 1: ${s}.`,s_unk:(x,v)=>`The unknown probability at X = ${x}: p = 1 − (sum of the rest) = ${v}.`,
- s_M:'Expectation M(X) = Σ xᵢpᵢ:',s_M2:'M(X²) = Σ xᵢ²pᵢ:',s_D:'Variance D(X) = M(X²) − M²(X):',s_s:'Standard deviation σ = √D:',
- s_mod:m=>`The mode is the most probable value: ${m}.`,s_F:'Distribution function F(x) = P(X < x):',s_Z:(a,b)=>`For Z = ${a}X ${b}: M(Z) = a·M(X) + b, D(Z) = a²·D(X).`,
- s_gen:{bin:'The number of successes in n independent trials is binomial: P(X = k) = Cₙᵏpᵏqⁿ⁻ᵏ.',hyp:'From N items, M of them marked, draw n without replacement: P(X = k) = C_Mᵏ·C_(N−M)ⁿ⁻ᵏ / C_Nⁿ.',geo:'Trials until the first success, but no more than the given number of tries: P(X = k) = q^(k−1)p, and the last try takes the remainder q^(n−1).'},
- s_marg:'Marginal laws: sum the table over rows and columns.',s_Mxy:'M(XY) = Σ xᵢyⱼpᵢⱼ:',s_cov:'Covariance cov(X, Y) = M(XY) − M(X)·M(Y):',s_r:'Correlation coefficient r = cov / (σₓσᵧ):',
- s_ind:'All pᵢⱼ = pᵢ·pⱼ: X and Y are independent.',s_dep:(x,y,a,b)=>`P(X = ${x}, Y = ${y}) = ${a}, but the product of marginals is ${b}: X and Y are dependent.`,
- s_cond:(w,v,pv)=>`Conditional law of ${w} given ${v}: divide the row (column) by P = ${pv}.`,s_condM:'Conditional expectation:',
- s_Zj:'Law of Z = aX + bY: go through all pairs (xᵢ, yⱼ).',s_ZjD:'Check: D(aX + bY) = a²D(X) + b²D(Y) + 2ab·cov(X, Y).',
- s_uni:(a,b)=>`Uniform distribution: f(x) = 1/(b − a) = 1/(${b} − ${a}) on [a; b] and 0 outside.`,s_exp:l=>`Exponential distribution: f(x) = λe^(−λx) for x ⩾ 0, λ = ${l}; F(x) = 1 − e^(−λx); M = 1/λ, D = 1/λ².`,
- s_C:(I,C)=>`Find the constant from ∫f(x)dx = 1: ∫g(x)dx = ${I}, so C = ${C}.`,s_norm:'Check: the density integrates to 1 over the interval.',
- s_Ff:'F(x) = ∫ f(t)dt from a to x:',s_fF:'Density f(x) = F′(x):',s_Mi:'M(X) = ∫ x·f(x)dx:',s_Di:'D(X) = ∫ x²·f(x)dx − M²:',s_P:'P(α < X < β) = F(β) − F(α):',
- s_med:'Median: F(x_med) = 0.5.',s_qu:p=>`Quantile of level ${p}: F(x_p) = ${p}.`,s_modN:'The mode is the maximum point of the density:',
- s_Nst:(m,s)=>`X ~ N(${m}; ${s}²): standardize, F(x) = Φ((x − m)/σ).`,s_Nrng:'P(x₁ < X < x₂) = Φ((x₂ − m)/σ) − Φ((x₁ − m)/σ):',s_Nlt:'P(X < x₁) = Φ((x₁ − m)/σ):',s_Ngt:'P(X > x₁) = 1 − Φ((x₁ − m)/σ):',
- s_Ndev:'P(|X − m| < δ) = 2Φ(δ/σ) − 1:',s_Nqu:'Quantile: Φ((x_p − m)/σ) = p, so (x_p − m)/σ = z_p and x_p = m + σ·z_p:',s_Nfm:'From Φ((x₁ − m)/σ) = p, (x₁ − m)/σ = z_p, so m = x₁ − σ·z_p:',s_Nfs:'From Φ((x₁ − m)/σ) = p, (x₁ − m)/σ = z_p, so σ = (x₁ − m)/z_p:',
- s_Nbad:'z_p and (x₁ − m) must have the same sign, otherwise σ is negative.',s_3s:'Three-sigma rule: P(|X − m| < 3σ) ≈ 0.9973 — practically all values lie in (m − 3σ; m + 3σ).',
- ans:'Answer',ex:'Exact',appr:'Approximate',
- v:{dig:'Digits',ex:'exactly',prior:'prior',n:'n',np:'np = λ',npq:'npq',k:'Most probable k*',M:'M(X)',D:'D(X)',s:'σ(X)',mod:'Mode',med:'Median',sum:'Σp',Mx:'M(X)',My:'M(Y)',Dx:'D(X)',Dy:'D(Y)',cov:'cov(X, Y)',r:'r(X, Y)',ind:'Independent?',P:'Probability',C:'C',yes:'yes',no:'no'},
- tog:{bgGrid:'Grid',coords:'Axis numbers',labels:'Value labels (probabilities, lists of selections)',approx:'Approximation (Poisson / normal)',sigma:'M and ±σ, three sigma',Fplot:'Graph of F(x)',hints:'Hints on the scene'},
- cap:{err:'Fix the data in the Problem block.',prop:'No distribution table: M and D come from the properties. Bands show M ± σ and M ± 2σ.',comb:'Each cell is one action and its number of options; by the multiplication rule the options multiply. For small numbers all selections are listed below.',clas:'Probability is the share of favorable outcomes among all equally likely ones.',ops:'For two events, a Venn diagram with the probabilities of its parts; for n independent events, the probabilities that exactly k happened.',bayes:'Strip width is the hypothesis probability, the filled part is P(A | Hᵢ). On the right, how the hypotheses are redistributed after the experiment.',bern:'Bars are the probabilities Pₙ(k); the k in the event are highlighted. Dashed: the approximate formula.',dsv:'Top: the distribution polygon; bottom: the step function F(x). M(X) and M ± σ are marked.',
-  dvu:'Cells are joint probabilities pᵢⱼ; on the right and bottom are the marginals. The condition row or column is highlighted.',nsv:'Top: the density f(x), with P(α < X < β) shaded; bottom: F(x). Drag the bounds α and β.',norm:'The shaded area under the bell is the probability. Drag the bounds with the mouse or a finger.'},
- xPng:'PNG snapshot',xVid:'Video',xStamp:'Add the answer to the image',xCopy:'Copy',fmtText:'Text',
- xNoDl:'Saving files isn’t available in this window. Open the page in claude.ai.',xNoVid:'',xRec:'',xSaved:'File handed off for saving.',xBusy:'A save dialog is already open, try again shortly.',xFail:'Couldn’t save the file.',xCopied:'Copied.',xSelect:'Text selected: press Ctrl+C or ⌘C.',
- keys:'Keyboard shortcuts',keysNote:'They work in any keyboard layout and are off while the cursor is in an input field.',showKeys:'Show list',s_reset:'Reset',seeAlso:'See also:',on:'on',off:'off',
- k_topic:'book sections 1–9',k_prev:'previous / next problem',k_grid:'grid',k_F:'graph of F(x)',k_ap:'approximation',k_sig:'M ± σ',k_hint:'hints',k_png:'PNG snapshot',k_gloss:'glossary',k_keys:'this list',k_esc:'close the window',
- search:'Find: Bernoulli, variance, quantile…',noFound:'Nothing found. Try another word, such as “Laplace”.',showDemo:'▶ Show on the scene',
- tabI:'Intuition',tabF:'Formal',readOf:(a,b)=>`Read ${a} of ${b}`,readReset:'Clear marks',readMark:'Mark as read',readDone:'✓ Read',
- s_lang:'Language',s_ui:'Interface theme',ui_auto:'System',ui_light:'Light',ui_dark:'Dark',s_dock:'Panel position',d_auto:'Auto',d_right:'Right',d_left:'Left',d_bottom:'Bottom',d_float:'Floating',
- s_w:'Side panel width',s_h:'Bottom panel height',s_f:'Interface text size',s_l:'Line width on the scene',s_pal:'Scene palette',palNote:'You can change any color by hand; the palette then becomes “Custom”.',
- s_blocks:'Blocks',blocksNote:'Reorder blocks by dragging ⠿ or with the ↑ ↓ arrows in their header. Click a header to collapse the block. Everything is remembered in this browser.',resetOrder:'Restore block order',resetAll:'Reset all settings',
- pal:{classic:'Classic',paper:'Paper',neon:'Neon',nord:'Nord',custom:'Custom'},
- colors:{bg:'Scene background',bgGrid:'Grid',axis:'Axes and text',bar:'Bars, curves',sel:'Selected values',curve:'Approximation',area:'Area',aux:'Second variable',mark:'M and σ',F:'Graph of F(x)'}}
-};
+
+
 /* ---------- справочник ---------- */
-const TERMS=[
- {id:'scheme',ru:['Схема Бернулли','биномиальная схема','<p>Последовательность испытаний, в которой: 1) у каждого испытания два исхода — «успех» A и «неудача» Ā; 2) испытания независимы; 3) вероятность успеха одна и та же, <span class="m">P(A) = p</span>, <span class="m">q = 1 − p</span>.</p><p>Примеры: подбрасывания монеты, выстрелы с одинаковой меткостью, проверка деталей при одинаковой доле брака.</p>'],
-  en:['Bernoulli scheme','binomial scheme','<p>A sequence of trials where: 1) each trial has two outcomes, “success” A and “failure” Ā; 2) trials are independent; 3) the success probability is the same, <span class="m">P(A) = p</span>, <span class="m">q = 1 − p</span>.</p><p>Examples: coin tosses, shots with equal accuracy, checking parts with a constant defect rate.</p>']},
- {id:'bernoulli',ru:['Формула Бернулли','Pₙ(k)','<p>Вероятность ровно k успехов в n испытаниях: <span class="m">Pₙ(k) = Cₙᵏ pᵏ qⁿ⁻ᵏ</span>. Множитель <span class="m">Cₙᵏ</span> считает, сколькими способами можно выбрать, в каких именно испытаниях будут успехи.</p><p>Для «хотя бы одного» удобнее перейти к противоположному событию: <span class="m">Pₙ(k ⩾ 1) = 1 − qⁿ</span>. Пример 9: монета 5 раз, ровно три орла — <span class="m">C₅³/2⁵ = 5/16</span>.</p>'],
-  en:['Bernoulli formula','Pₙ(k)','<p>The probability of exactly k successes in n trials: <span class="m">Pₙ(k) = Cₙᵏ pᵏ qⁿ⁻ᵏ</span>. The factor <span class="m">Cₙᵏ</span> counts the ways to choose which trials are successes.</p><p>For “at least once”, switch to the complement: <span class="m">Pₙ(k ⩾ 1) = 1 − qⁿ</span>. Example 9: a coin 5 times, exactly three heads — <span class="m">C₅³/2⁵ = 5/16</span>.</p>']},
- {id:'kstar',ru:['Наивероятнейшее число','k*','<p>Число успехов k*, вероятность которого больше, чем у любого другого. Оно лежит между <span class="m">np − q ⩽ k* ⩽ np + p</span>. Отрезок имеет длину 1, поэтому в нём одно целое число или два (когда np − q целое).</p><p>На графике это самый высокий столбик.</p>'],
-  en:['Most probable number','k*','<p>The number of successes k* with the highest probability. It lies in <span class="m">np − q ⩽ k* ⩽ np + p</span>. The interval has length 1, so it holds one integer or two (when np − q is an integer).</p><p>On the chart it is the tallest bar.</p>']},
- {id:'poisson',ru:['Формула Пуассона','редкие события','<p>При большом n и малом p: <span class="m">Pₙ(k) ≈ λᵏe^(−λ)/k!</span>, где <span class="m">λ = np</span>. В задачнике её применяют при <span class="m">λ ⩽ 10</span>.</p><p>Типичные задачи — опечатки в тексте, брак в большой партии, звонки на станцию: событий в среднем немного, а испытаний очень много.</p>'],
-  en:['Poisson formula','rare events','<p>For large n and small p: <span class="m">Pₙ(k) ≈ λᵏe^(−λ)/k!</span>, where <span class="m">λ = np</span>. The book uses it when <span class="m">λ ⩽ 10</span>.</p><p>Typical problems: typos in a text, defects in a large batch, calls to an exchange — few events on average, very many trials.</p>']},
- {id:'mlLocal',ru:['Локальная теорема Муавра–Лапласа','одно значение k','<p>При <span class="m">npq &gt; 10</span>: <span class="m">Pₙ(k) ≈ φ(x)/√(npq)</span>, <span class="m">x = (k − np)/√(npq)</span>. Биномиальные столбики при больших n ложатся на колокол нормальной плотности.</p><p>Пример 10: 600 бросков кости, ровно 205 раз выпало кратное трём: <span class="m">x = 0,43</span>, <span class="m">P ≈ 0,3637/11,5 ≈ 0,03</span>.</p>'],
-  en:['Local de Moivre–Laplace theorem','a single k','<p>For <span class="m">npq &gt; 10</span>: <span class="m">Pₙ(k) ≈ φ(x)/√(npq)</span>, <span class="m">x = (k − np)/√(npq)</span>. For large n the binomial bars lie on the normal bell.</p><p>Example 10: 600 die rolls, exactly 205 multiples of three: <span class="m">x = 0.43</span>, <span class="m">P ≈ 0.3637/11.5 ≈ 0.03</span>.</p>']},
- {id:'mlInt',ru:['Интегральная теорема Муавра–Лапласа','от k₁ до k₂','<p>При <span class="m">npq &gt; 10</span>: <span class="m">Pₙ(k₁ ⩽ k ⩽ k₂) ≈ Φ(x₂) − Φ(x₁)</span>, <span class="m">xᵢ = (kᵢ − np)/√(npq)</span>. Сумму многих столбиков заменяем площадью под колоколом.</p><p>«Не более k» — это промежуток от 0 до k, «не менее k» — от k до n.</p>'],
-  en:['Integral de Moivre–Laplace theorem','from k₁ to k₂','<p>For <span class="m">npq &gt; 10</span>: <span class="m">Pₙ(k₁ ⩽ k ⩽ k₂) ≈ Φ(x₂) − Φ(x₁)</span>, <span class="m">xᵢ = (kᵢ − np)/√(npq)</span>. The sum of many bars is replaced by the area under the bell.</p><p>“At most k” is the range from 0 to k, “at least k” from k to n.</p>']},
- {id:'phi',ru:['Функция Гаусса φ(x)','плотность N(0; 1)','<p><span class="m">φ(x) = e^(−x²/2)/√(2π)</span> — плотность стандартного нормального распределения. Чётная: <span class="m">φ(−x) = φ(x)</span>, максимум <span class="m">φ(0) ≈ 0,3989</span>. Её значения даны в таблице 1 приложения.</p>'],
-  en:['Gauss function φ(x)','density of N(0; 1)','<p><span class="m">φ(x) = e^(−x²/2)/√(2π)</span> is the standard normal density. It is even: <span class="m">φ(−x) = φ(x)</span>, maximum <span class="m">φ(0) ≈ 0.3989</span>. Its values are in Table 1 of the appendix.</p>']},
- {id:'Phi',ru:['Функция Лапласа Φ(x)','как в задачнике ВАВТ','<p>В задачнике <span class="m">Φ(x) = ∫ φ(t)dt</span> от −∞ до x — это <b>вся функция распределения</b> стандартной нормальной величины, значения от 0 до 1, <span class="m">Φ(0) = 0,5</span>, <span class="m">Φ(−x) = 1 − Φ(x)</span>.</p><p>Внимание: в других учебниках «функцией Лапласа» часто называют <span class="m">Φ₀(x)</span> — интеграл от 0 до x со значениями до 0,5. Они связаны так: <span class="m">Φ(x) = 0,5 + Φ₀(x)</span>. Приложение считает по варианту задачника.</p>'],
-  en:['Laplace function Φ(x)','as in the VAVT book','<p>In the book <span class="m">Φ(x) = ∫ φ(t)dt</span> from −∞ to x is the <b>whole distribution function</b> of the standard normal, with values from 0 to 1, <span class="m">Φ(0) = 0.5</span>, <span class="m">Φ(−x) = 1 − Φ(x)</span>.</p><p>Note: other books often call <span class="m">Φ₀(x)</span>, the integral from 0 to x with values up to 0.5, the “Laplace function”. They are related by <span class="m">Φ(x) = 0.5 + Φ₀(x)</span>. The app follows the book.</p>']},
- {id:'rv',ru:['Случайная величина','дискретная и непрерывная','<p>Число, которое принимает то или иное значение в зависимости от исхода опыта. <b>Дискретная</b> принимает отдельные значения (число успехов, очки на кости), <b>непрерывная</b> — любые значения из промежутка (время ожидания, рост).</p>'],
-  en:['Random variable','discrete and continuous','<p>A number whose value depends on the outcome of an experiment. A <b>discrete</b> one takes separate values (number of successes, points on a die), a <b>continuous</b> one any value in an interval (waiting time, height).</p>']},
- {id:'series',ru:['Ряд распределения','закон распределения ДСВ','<p>Таблица: значения <span class="m">x₁ &lt; x₂ &lt; …</span> и их вероятности <span class="m">p₁, p₂, …</span>. Обязательно <span class="m">Σpᵢ = 1</span> — так находят неизвестную вероятность (задача 6.33).</p><p>Многоугольник распределения — ломаная через точки <span class="m">(xᵢ; pᵢ)</span>.</p>'],
-  en:['Distribution table','law of a discrete RV','<p>A table: values <span class="m">x₁ &lt; x₂ &lt; …</span> and their probabilities <span class="m">p₁, p₂, …</span>. Always <span class="m">Σpᵢ = 1</span> — that is how an unknown probability is found (problem 6.33).</p><p>The distribution polygon is the broken line through the points <span class="m">(xᵢ; pᵢ)</span>.</p>']},
- {id:'cdf',ru:['Функция распределения','F(x) = P(X < x)','<p>Вероятность того, что величина окажется левее x. Не убывает, от 0 до 1. У дискретной величины F(x) ступенчатая: в каждой точке xᵢ подскакивает на <span class="m">pᵢ</span>, и значение в самой точке берётся слева (строгое неравенство).</p><p><span class="m">P(a ⩽ X &lt; b) = F(b) − F(a)</span>.</p>'],
-  en:['Distribution function','F(x) = P(X < x)','<p>The probability that the variable is to the left of x. Non-decreasing, from 0 to 1. For a discrete variable F(x) is a step function: at each xᵢ it jumps by <span class="m">pᵢ</span>, and the value at the point is taken from the left (strict inequality).</p><p><span class="m">P(a ⩽ X &lt; b) = F(b) − F(a)</span>.</p>']},
- {id:'expect',ru:['Математическое ожидание','M(X), среднее','<p>Для дискретной величины <span class="m">M(X) = Σ xᵢpᵢ</span>, для непрерывной <span class="m">M(X) = ∫ x f(x)dx</span>. Это «центр тяжести» распределения: если повесить грузы pᵢ в точках xᵢ, равновесие будет в M(X).</p><p>Свойства: <span class="m">M(C) = C</span>, <span class="m">M(CX) = C·M(X)</span>, <span class="m">M(X + Y) = M(X) + M(Y)</span>, для независимых <span class="m">M(XY) = M(X)M(Y)</span>.</p>'],
-  en:['Expectation','M(X), mean','<p>For a discrete variable <span class="m">M(X) = Σ xᵢpᵢ</span>, for a continuous one <span class="m">M(X) = ∫ x f(x)dx</span>. It is the “centre of mass”: hang weights pᵢ at points xᵢ, and the balance point is M(X).</p><p>Properties: <span class="m">M(C) = C</span>, <span class="m">M(CX) = C·M(X)</span>, <span class="m">M(X + Y) = M(X) + M(Y)</span>, for independent <span class="m">M(XY) = M(X)M(Y)</span>.</p>']},
- {id:'variance',ru:['Дисперсия и σ','D(X), σ(X)','<p>Средний квадрат отклонения от среднего: <span class="m">D(X) = M(X − M(X))² = M(X²) − M²(X)</span>; второй вариант — «упрощённая формула», им и считают. <span class="m">σ(X) = √D(X)</span> — в тех же единицах, что и X.</p><p>Свойства: <span class="m">D(C) = 0</span>, <span class="m">D(CX) = C²D(X)</span>, для независимых <span class="m">D(X ± Y) = D(X) + D(Y)</span>. Пример 12: <span class="m">D(X − 2Y + 10) = D(X) + 4D(Y) = 17</span>.</p>'],
-  en:['Variance and σ','D(X), σ(X)','<p>The mean squared deviation from the mean: <span class="m">D(X) = M(X − M(X))² = M(X²) − M²(X)</span>; the second form is the “shortcut formula” used in practice. <span class="m">σ(X) = √D(X)</span>, in the same units as X.</p><p>Properties: <span class="m">D(C) = 0</span>, <span class="m">D(CX) = C²D(X)</span>, for independent <span class="m">D(X ± Y) = D(X) + D(Y)</span>. Example 12: <span class="m">D(X − 2Y + 10) = D(X) + 4D(Y) = 17</span>.</p>']},
- {id:'binomial',ru:['Биномиальное распределение','число успехов','<p>Число успехов в схеме Бернулли: <span class="m">P(X = k) = Cₙᵏpᵏqⁿ⁻ᵏ</span>, <span class="m">M(X) = np</span>, <span class="m">D(X) = npq</span>. Задачи 6.1–6.4, 6.8.</p>'],
-  en:['Binomial distribution','number of successes','<p>The number of successes in a Bernoulli scheme: <span class="m">P(X = k) = Cₙᵏpᵏqⁿ⁻ᵏ</span>, <span class="m">M(X) = np</span>, <span class="m">D(X) = npq</span>. Problems 6.1–6.4, 6.8.</p>']},
- {id:'hyper',ru:['Гипергеометрическое распределение','урновая схема','<p>Из N предметов, среди которых M «отмеченных», берут n без возвращения. Число отмеченных среди взятых: <span class="m">P(X = k) = C_Mᵏ·C_(N−M)ⁿ⁻ᵏ / C_Nⁿ</span>.</p><p>Задачи 6.6, 6.13, 6.20: детали, шары, билеты.</p>'],
-  en:['Hypergeometric distribution','urn scheme','<p>From N items, M of them “marked”, draw n without replacement. The number of marked among those drawn: <span class="m">P(X = k) = C_Mᵏ·C_(N−M)ⁿ⁻ᵏ / C_Nⁿ</span>.</p><p>Problems 6.6, 6.13, 6.20: parts, balls, tickets.</p>']},
- {id:'geom',ru:['До первого успеха','геометрическое, с ограничением','<p>Стреляют до первого попадания, но зарядов всего n: <span class="m">P(X = k) = q^(k−1)p</span> для k &lt; n, а <span class="m">P(X = n) = q^(n−1)</span> — последний выстрел делается в любом случае. Задачи 6.23, 6.25.</p>'],
-  en:['Until the first success','geometric, truncated','<p>Shoot until the first hit, but with only n charges: <span class="m">P(X = k) = q^(k−1)p</span> for k &lt; n, and <span class="m">P(X = n) = q^(n−1)</span> — the last shot happens anyway. Problems 6.23, 6.25.</p>']},
- {id:'joint',ru:['Совместный закон распределения','двумерная ДСВ','<p>Таблица <span class="m">pᵢⱼ = P(X = xᵢ, Y = yⱼ)</span>. Сумма всех клеток равна 1. Из неё получают всё остальное: частные законы, условные распределения, распределение любой функции Z = g(X, Y) (пример 13).</p>'],
-  en:['Joint distribution','bivariate discrete RV','<p>A table <span class="m">pᵢⱼ = P(X = xᵢ, Y = yⱼ)</span>. All cells add up to 1. Everything else comes from it: marginal laws, conditional laws, the law of any function Z = g(X, Y) (example 13).</p>']},
- {id:'marginal',ru:['Частные законы','маргинальные распределения','<p>Закон X — суммы по строкам: <span class="m">P(X = xᵢ) = Σⱼ pᵢⱼ</span>; закон Y — суммы по столбцам. На сцене они нарисованы справа и снизу таблицы.</p>'],
-  en:['Marginal laws','marginal distributions','<p>The law of X is the row sums: <span class="m">P(X = xᵢ) = Σⱼ pᵢⱼ</span>; the law of Y is the column sums. On the scene they are drawn to the right of and below the table.</p>']},
- {id:'indep',ru:['Независимость случайных величин','pᵢⱼ = pᵢ·pⱼ','<p>X и Y независимы, если для всех клеток <span class="m">P(X = xᵢ, Y = yⱼ) = P(X = xᵢ)·P(Y = yⱼ)</span>. Достаточно одной клетки, где равенство нарушено, чтобы величины были зависимыми.</p><p>Из независимости следует <span class="m">cov = 0</span>, но не наоборот.</p>'],
-  en:['Independence of random variables','pᵢⱼ = pᵢ·pⱼ','<p>X and Y are independent if for every cell <span class="m">P(X = xᵢ, Y = yⱼ) = P(X = xᵢ)·P(Y = yⱼ)</span>. One violating cell is enough for dependence.</p><p>Independence implies <span class="m">cov = 0</span>, but not the other way round.</p>']},
- {id:'conditional',ru:['Условное распределение','P(Y = yⱼ | X = xᵢ)','<p>Берём строку таблицы при X = xᵢ и делим на её сумму: <span class="m">P(Y = yⱼ | X = xᵢ) = pᵢⱼ / P(X = xᵢ)</span>. Условное математическое ожидание <span class="m">M(Y | X = xᵢ) = Σ yⱼ P(yⱼ | xᵢ)</span>. Пример 14: <span class="m">M(Y | X = 1) = 0</span>.</p>'],
-  en:['Conditional distribution','P(Y = yⱼ | X = xᵢ)','<p>Take the row X = xᵢ and divide by its sum: <span class="m">P(Y = yⱼ | X = xᵢ) = pᵢⱼ / P(X = xᵢ)</span>. Conditional expectation <span class="m">M(Y | X = xᵢ) = Σ yⱼ P(yⱼ | xᵢ)</span>. Example 14: <span class="m">M(Y | X = 1) = 0</span>.</p>']},
- {id:'cov',ru:['Ковариация и корреляция','cov(X, Y), r(X, Y)','<p><span class="m">cov(X, Y) = M(XY) − M(X)M(Y)</span> — показывает, вместе ли растут величины. <span class="m">r = cov/(σₓσᵧ)</span> — то же, но без единиц измерения, <span class="m">−1 ⩽ r ⩽ 1</span>; |r| = 1 — линейная зависимость.</p><p>Дисперсия суммы: <span class="m">D(aX + bY) = a²D(X) + b²D(Y) + 2ab·cov(X, Y)</span> (задача 7.12).</p>'],
-  en:['Covariance and correlation','cov(X, Y), r(X, Y)','<p><span class="m">cov(X, Y) = M(XY) − M(X)M(Y)</span> shows whether the variables grow together. <span class="m">r = cov/(σₓσᵧ)</span> is the same without units, <span class="m">−1 ⩽ r ⩽ 1</span>; |r| = 1 means a linear relationship.</p><p>Variance of a sum: <span class="m">D(aX + bY) = a²D(X) + b²D(Y) + 2ab·cov(X, Y)</span> (problem 7.12).</p>']},
- {id:'density',ru:['Плотность распределения','f(x)','<p>Для непрерывной величины вероятность попасть в точку равна нулю, поэтому говорят о плотности: <span class="m">P(α &lt; X &lt; β) = ∫ f(x)dx</span> от α до β — площадь под графиком. Плотность неотрицательна и <span class="m">∫ f(x)dx = 1</span> по всей прямой — отсюда находят константу C (пример 15).</p><p><span class="m">f(x) = F′(x)</span>, <span class="m">F(x) = ∫ f(t)dt</span> от −∞ до x.</p>'],
-  en:['Probability density','f(x)','<p>For a continuous variable the probability of a single point is zero, so we use a density: <span class="m">P(α &lt; X &lt; β) = ∫ f(x)dx</span> from α to β, the area under the graph. A density is non-negative and <span class="m">∫ f(x)dx = 1</span> over the whole line; that is how the constant C is found (example 15).</p><p><span class="m">f(x) = F′(x)</span>, <span class="m">F(x) = ∫ f(t)dt</span> from −∞ to x.</p>']},
- {id:'uniform',ru:['Равномерное распределение','на [a; b]','<p><span class="m">f(x) = 1/(b − a)</span> на отрезке и 0 вне его; <span class="m">F(x) = (x − a)/(b − a)</span>; <span class="m">M = (a + b)/2</span>, <span class="m">D = (b − a)²/12</span>. Время ожидания автобуса, идущего с постоянным интервалом (задача 8.8).</p>'],
-  en:['Uniform distribution','on [a; b]','<p><span class="m">f(x) = 1/(b − a)</span> on the interval and 0 outside; <span class="m">F(x) = (x − a)/(b − a)</span>; <span class="m">M = (a + b)/2</span>, <span class="m">D = (b − a)²/12</span>. Waiting time for a bus running at fixed intervals (problem 8.8).</p>']},
- {id:'expon',ru:['Показательное распределение','с параметром λ','<p><span class="m">f(x) = λe^(−λx)</span> при x ⩾ 0, <span class="m">F(x) = 1 − e^(−λx)</span>, <span class="m">M = σ = 1/λ</span>, <span class="m">D = 1/λ²</span>. Время безотказной работы, время ремонта (задачи 8.11–8.14).</p>'],
-  en:['Exponential distribution','with rate λ','<p><span class="m">f(x) = λe^(−λx)</span> for x ⩾ 0, <span class="m">F(x) = 1 − e^(−λx)</span>, <span class="m">M = σ = 1/λ</span>, <span class="m">D = 1/λ²</span>. Time to failure, repair time (problems 8.11–8.14).</p>']},
- {id:'modemed',ru:['Мода, медиана, квантиль','x_mod, x_med, x_p','<p><b>Мода</b> — точка максимума плотности (у дискретной — самое вероятное значение). <b>Медиана</b> делит площадь пополам: <span class="m">F(x_med) = 0,5</span>. <b>Квантиль уровня p</b> — такое <span class="m">x_p</span>, что <span class="m">F(x_p) = p</span>; медиана — квантиль уровня 0,5.</p>'],
-  en:['Mode, median, quantile','x_mod, x_med, x_p','<p>The <b>mode</b> is the maximum point of the density (for a discrete variable, the most probable value). The <b>median</b> splits the area in half: <span class="m">F(x_med) = 0.5</span>. The <b>quantile of level p</b> is <span class="m">x_p</span> with <span class="m">F(x_p) = p</span>; the median is the 0.5 quantile.</p>']},
- {id:'normal',ru:['Нормальное распределение','N(m; σ²)','<p>Плотность-колокол <span class="m">f(x) = e^(−(x−m)²/(2σ²))/(σ√(2π))</span>; <span class="m">M = m</span>, <span class="m">D = σ²</span>. Обратите внимание: в записи N(m; σ²) второй параметр — дисперсия. В примере 17 <span class="m">N(2; 9)</span> означает σ = 3.</p><p><span class="m">F(x) = Φ((x − m)/σ)</span>, <span class="m">P(a ⩽ X ⩽ b) = Φ((b − m)/σ) − Φ((a − m)/σ)</span>.</p>'],
-  en:['Normal distribution','N(m; σ²)','<p>The bell density <span class="m">f(x) = e^(−(x−m)²/(2σ²))/(σ√(2π))</span>; <span class="m">M = m</span>, <span class="m">D = σ²</span>. Note: in N(m; σ²) the second parameter is the variance. In example 17, <span class="m">N(2; 9)</span> means σ = 3.</p><p><span class="m">F(x) = Φ((x − m)/σ)</span>, <span class="m">P(a ⩽ X ⩽ b) = Φ((b − m)/σ) − Φ((a − m)/σ)</span>.</p>']},
- {id:'three',ru:['Правило трёх сигм','m ± 3σ','<p><span class="m">P(|X − m| &lt; σ) ≈ 0,6827</span>, <span class="m">P(|X − m| &lt; 2σ) ≈ 0,9545</span>, <span class="m">P(|X − m| &lt; 3σ) ≈ 0,9973</span>. Практически все значения нормальной величины лежат в промежутке <span class="m">(m − 3σ; m + 3σ)</span>. В общем виде <span class="m">P(|X − m| &lt; δ) = 2Φ(δ/σ) − 1</span>.</p>'],
-  en:['Three-sigma rule','m ± 3σ','<p><span class="m">P(|X − m| &lt; σ) ≈ 0.6827</span>, <span class="m">P(|X − m| &lt; 2σ) ≈ 0.9545</span>, <span class="m">P(|X − m| &lt; 3σ) ≈ 0.9973</span>. Practically all values of a normal variable lie in <span class="m">(m − 3σ; m + 3σ)</span>. In general <span class="m">P(|X − m| &lt; δ) = 2Φ(δ/σ) − 1</span>.</p>']},
- {id:'zq',ru:['Квантили нормального распределения','z_p, обратные задачи','<p><span class="m">z_p</span> — квантиль стандартного нормального: <span class="m">Φ(z_p) = p</span> (таблица 3 приложения), <span class="m">z₀,₀₅ = −1,64</span>, <span class="m">z₀,₉₇₅ = 1,96</span>. Для N(m; σ²): <span class="m">x_p = m + σz_p</span>.</p><p>Обратные задачи 9.16–9.24: по известной вероятности находят z_p, а из него — неизвестное m или σ. Пример 18: из двух квантилей получается система для m и σ.</p>'],
-  en:['Normal quantiles','z_p, inverse problems','<p><span class="m">z_p</span> is the standard normal quantile: <span class="m">Φ(z_p) = p</span> (Table 3 of the appendix), <span class="m">z₀.₀₅ = −1.64</span>, <span class="m">z₀.₉₇₅ = 1.96</span>. For N(m; σ²): <span class="m">x_p = m + σz_p</span>.</p><p>Inverse problems 9.16–9.24: from a known probability find z_p, then the unknown m or σ. Example 18: two quantiles give a system for m and σ.</p>']}
-];
-const FORMAL={
- Phi:{ru:'<p><b>Связь вариантов.</b> <span class="m">Φ(x) = 1/√(2π)·∫₋∞ˣ e^(−t²/2)dt</span>, <span class="m">Φ₀(x) = 1/√(2π)·∫₀ˣ e^(−t²/2)dt</span>, <span class="m">Φ(x) = 0,5 + Φ₀(x)</span>.</p><p>Тогда <span class="m">P(a ⩽ X ⩽ b) = Φ(β) − Φ(α) = Φ₀(β) − Φ₀(α)</span> — для разности не важно, какую функцию взять, а для одиночного значения важно.</p>',
-  en:'<p><b>The two versions.</b> <span class="m">Φ(x) = 1/√(2π)·∫₋∞ˣ e^(−t²/2)dt</span>, <span class="m">Φ₀(x) = 1/√(2π)·∫₀ˣ e^(−t²/2)dt</span>, <span class="m">Φ(x) = 0.5 + Φ₀(x)</span>.</p><p>So <span class="m">P(a ⩽ X ⩽ b) = Φ(β) − Φ(α) = Φ₀(β) − Φ₀(α)</span>: for a difference it doesn’t matter which is used, for a single value it does.</p>'},
- variance:{ru:'<p><b>Вывод упрощённой формулы.</b> <span class="m">D(X) = M(X − m)² = M(X² − 2mX + m²) = M(X²) − 2m·M(X) + m² = M(X²) − m²</span>, где <span class="m">m = M(X)</span>.</p><p>Пример 11: <span class="m">M(X) = 0</span>, <span class="m">M(X²) = 0,2</span>, <span class="m">D = 0,2</span>.</p>',
-  en:'<p><b>Deriving the shortcut.</b> <span class="m">D(X) = M(X − m)² = M(X² − 2mX + m²) = M(X²) − 2m·M(X) + m² = M(X²) − m²</span>, where <span class="m">m = M(X)</span>.</p><p>Example 11: <span class="m">M(X) = 0</span>, <span class="m">M(X²) = 0.2</span>, <span class="m">D = 0.2</span>.</p>'},
- density:{ru:'<p><b>Пример 15.</b> <span class="m">f(x) = Cx²</span> на [0; 1]: <span class="m">∫₀¹ Cx²dx = C/3 = 1</span>, C = 3. <span class="m">M(X) = ∫₀¹ 3x³dx = 3/4</span>, <span class="m">D(X) = ∫₀¹ 3x⁴dx − 9/16 = 3/5 − 9/16 = 3/80</span>.</p>',
-  en:'<p><b>Example 15.</b> <span class="m">f(x) = Cx²</span> on [0; 1]: <span class="m">∫₀¹ Cx²dx = C/3 = 1</span>, C = 3. <span class="m">M(X) = ∫₀¹ 3x³dx = 3/4</span>, <span class="m">D(X) = ∫₀¹ 3x⁴dx − 9/16 = 3/5 − 9/16 = 3/80</span>.</p>'}
-};
-const REL={scheme:['bernoulli','binomial'],bernoulli:['kstar','poisson','mlLocal'],kstar:['bernoulli'],poisson:['bernoulli','mlLocal'],mlLocal:['mlInt','phi'],mlInt:['Phi','mlLocal'],phi:['Phi','normal'],Phi:['phi','normal','zq'],
- rv:['series','density'],series:['cdf','expect'],cdf:['series','density'],expect:['variance'],variance:['expect','cov'],binomial:['scheme','hyper'],hyper:['binomial'],geom:['series'],
- joint:['marginal','conditional'],marginal:['joint','indep'],indep:['cov','marginal'],conditional:['joint'],cov:['variance','indep'],
- density:['cdf','modemed','uniform'],uniform:['expon','density'],expon:['uniform'],modemed:['zq','density'],normal:['Phi','three','zq'],three:['normal'],zq:['Phi','modemed']};
-const CHAP=[{ru:'5. Повторные испытания',en:'5. Repeated trials',ids:['scheme','bernoulli','kstar','poisson','mlLocal','mlInt','phi','Phi']},
- {ru:'6. Дискретные случайные величины',en:'6. Discrete random variables',ids:['rv','series','cdf','expect','variance','binomial','hyper','geom']},
- {ru:'7. Двумерные случайные величины',en:'7. Bivariate random variables',ids:['joint','marginal','indep','conditional','cov']},
- {ru:'8. Непрерывные случайные величины',en:'8. Continuous random variables',ids:['density','uniform','expon','modemed']},
- {ru:'9. Нормальное распределение',en:'9. Normal distribution',ids:['normal','three','zq']}];
-const DEMOS={scheme:{p:'b9'},bernoulli:{p:'b9'},kstar:{p:'b537'},poisson:{p:'b65'},mlLocal:{p:'b10a'},mlInt:{p:'b10b'},phi:{p:'b10a'},Phi:{p:'n17'},
- rv:{p:'d11'},series:{p:'d633'},cdf:{p:'d11'},expect:{p:'d11'},variance:{p:'d11'},binomial:{p:'d64'},hyper:{p:'d66'},geom:{p:'d625'},
- joint:{p:'j13'},marginal:{p:'j13'},indep:{p:'j13'},conditional:{p:'j14'},cov:{p:'j13'},
- density:{p:'c15'},uniform:{p:'c16'},expon:{p:'c811'},modemed:{p:'c817'},normal:{p:'n91'},three:{p:'n3s'},zq:{p:'n17q'}};
-const ILL={
- bernoulli:{k:'bars',v:[1,5,10,10,5,1].map(c=>c/32),sel:[3]},
- poisson:{k:'bars',v:[0,1,2,3,4,5,6,7].map(k=>Math.exp(-2)*Math.pow(2,k)/[1,1,2,6,24,120,720,5040][k]),curve:true},
- mlInt:{k:'bell',a:-.6,b:1.3},phi:{k:'bell'},Phi:{k:'bell',a:-9,b:.8,F:true},density:{k:'dens',f:x=>3*x*x,x0:0,x1:1,a:.5,b:1},
- uniform:{k:'dens',f:()=>.25,x0:2,x1:6,a:2,b:5,ext:[1,7]},expon:{k:'dens',f:x=>2*Math.exp(-2*x),x0:0,x1:3,a:.4,b:1},
- normal:{k:'bell',a:-1,b:1},three:{k:'bell',a:-3,b:3,sig:true},series:{k:'bars',v:[.1,.8,.1],poly:true},cdf:{k:'steps',v:[.1,.8,.1]},
- joint:{k:'grid',P:[[.1,.2,.2],[.2,.1,.2]]},cov:{k:'scatter'},modemed:{k:'dens',f:x=>.5*(x-2),x0:2,x1:4,a:2,b:3.41}};
-TERMS.push(
- {id:'perm',ru:['Перестановки','Pₙ = n!','<p>Сколькими способами можно упорядочить n разных предметов: на первое место n вариантов, на второе n − 1, … Итого <span class="m">Pₙ = n! = 1·2·…·n</span>. Пример 1: 5 книг на полке — <span class="m">5! = 120</span>.</p>'],
-  en:['Permutations','Pₙ = n!','<p>The number of ways to order n different items: n options for the first place, n − 1 for the second, … In total <span class="m">Pₙ = n! = 1·2·…·n</span>. Example 1: 5 books on a shelf — <span class="m">5! = 120</span>.</p>']},
- {id:'arr',ru:['Размещения','Aₙᵏ, порядок важен','<p>Упорядоченный выбор k предметов из n: <span class="m">Aₙᵏ = n!/(n − k)! = n(n − 1)…(n − k + 1)</span>. Пример 2: трёх студентов на 10 мест — <span class="m">10·9·8 = 720</span>.</p><p>С повторениями (каждый раз любой из n): <span class="m">nᵏ</span>.</p>'],
-  en:['Arrangements','Aₙᵏ, order matters','<p>An ordered choice of k items from n: <span class="m">Aₙᵏ = n!/(n − k)! = n(n − 1)…(n − k + 1)</span>. Example 2: three students on 10 seats — <span class="m">10·9·8 = 720</span>.</p><p>With repetition (any of n each time): <span class="m">nᵏ</span>.</p>']},
- {id:'combs',ru:['Сочетания','Cₙᵏ, порядок не важен','<p>Неупорядоченный выбор k предметов из n: <span class="m">Cₙᵏ = n!/(k!(n − k)!)</span>. Это размещения, делённые на k!: каждый набор при упорядочивании даёт k! размещений. Свойства: <span class="m">Cₙ⁰ = Cₙⁿ = 1</span>, <span class="m">Cₙᵏ = Cₙⁿ⁻ᵏ</span>, <span class="m">Cₙ² = n(n − 1)/2</span>.</p><p>С повторениями: <span class="m">C̄ₙᵏ = Cₙ₊ₖ₋₁ᵏ</span> (задача 1.17б).</p>'],
-  en:['Combinations','Cₙᵏ, order doesn’t matter','<p>An unordered choice of k items from n: <span class="m">Cₙᵏ = n!/(k!(n − k)!)</span>. They are arrangements divided by k!: ordering a set gives k! arrangements. Properties: <span class="m">Cₙ⁰ = Cₙⁿ = 1</span>, <span class="m">Cₙᵏ = Cₙⁿ⁻ᵏ</span>, <span class="m">Cₙ² = n(n − 1)/2</span>.</p><p>With repetition: <span class="m">C̄ₙᵏ = Cₙ₊ₖ₋₁ᵏ</span> (problem 1.17b).</p>']},
- {id:'mult',ru:['Правило умножения','комбинаторный принцип','<p>Если k действий выполняются одно за другим, первое — n₁ способами, второе — n₂, …, то всех вариантов <span class="m">N = n₁·n₂·…·nₖ</span>. На нём основаны все формулы комбинаторики. Перестановки с повторениями: <span class="m">n!/(n₁!·n₂!·…)</span> — 1.16б: 10 фруктов в ряд, <span class="m">10!/(5!3!2!) = 2520</span>.</p>'],
-  en:['Multiplication rule','counting principle','<p>If k actions are done in turn, the first in n₁ ways, the second in n₂, …, there are <span class="m">N = n₁·n₂·…·nₖ</span> options. All combinatorics formulas rest on it. Permutations with repetition: <span class="m">n!/(n₁!·n₂!·…)</span> — 1.16b: 10 fruits in a row, <span class="m">10!/(5!3!2!) = 2520</span>.</p>']},
- {id:'classic',ru:['Классическое определение вероятности','P(A) = m/n','<p>Если все n исходов опыта равновозможны и m из них благоприятствуют событию A, то <span class="m">P(A) = m/n</span>. Свойства: <span class="m">0 ⩽ P(A) ⩽ 1</span>, <span class="m">P(Ω) = 1</span>, для несовместных <span class="m">P(A + B) = P(A) + P(B)</span>.</p><p>Пример 4: две бубновые из 36 — <span class="m">C₉²/C₃₆² = 36/630 = 2/35</span>.</p>'],
-  en:['Classical definition of probability','P(A) = m/n','<p>If all n outcomes are equally likely and m of them favor event A, then <span class="m">P(A) = m/n</span>. Properties: <span class="m">0 ⩽ P(A) ⩽ 1</span>, <span class="m">P(Ω) = 1</span>, for disjoint events <span class="m">P(A + B) = P(A) + P(B)</span>.</p><p>Example 4: two diamonds of 36 — <span class="m">C₉²/C₃₆² = 36/630 = 2/35</span>.</p>']},
- {id:'urn',ru:['Урновая схема','выбор без возвращения','<p>В урне шары нескольких цветов, берут n без возвращения. Вероятность получить ровно kᵢ шаров каждого цвета: <span class="m">P = C_{a₁}^{k₁}·C_{a₂}^{k₂}·… / C_N^n</span>. К этой схеме сводятся карты, лотерейные билеты, детали, экзаменационные вопросы.</p>'],
-  en:['Urn scheme','drawing without replacement','<p>An urn holds balls of several colors; n are drawn without replacement. The probability of exactly kᵢ balls of each color: <span class="m">P = C_{a₁}^{k₁}·C_{a₂}^{k₂}·… / C_N^n</span>. Cards, lottery tickets, parts and exam questions all reduce to it.</p>']},
- {id:'addth',ru:['Теорема сложения','P(A + B)','<p>Для любых событий <span class="m">P(A + B) = P(A) + P(B) − P(AB)</span>: при сложении площадей двух кругов общая часть посчитана дважды. Для несовместных <span class="m">P(AB) = 0</span>. Пример 5: кратно 2 или 3 — <span class="m">3/6 + 2/6 − 1/6 = 2/3</span>.</p>'],
-  en:['Addition theorem','P(A + B)','<p>For any events <span class="m">P(A + B) = P(A) + P(B) − P(AB)</span>: adding the areas of two circles counts the overlap twice. For disjoint events <span class="m">P(AB) = 0</span>. Example 5: a multiple of 2 or 3 — <span class="m">3/6 + 2/6 − 1/6 = 2/3</span>.</p>']},
- {id:'multh',ru:['Теорема умножения и условная вероятность','P(AB), P(A | B)','<p>Условная вероятность <span class="m">P(A | B) = P(AB)/P(B)</span> — вероятность A, если известно, что B произошло. Теорема умножения: <span class="m">P(AB) = P(A)·P(B | A) = P(B)·P(A | B)</span>. Пример 6: <span class="m">9/36·8/35 = 2/35</span>.</p><p>События независимы, если <span class="m">P(AB) = P(A)·P(B)</span>.</p>'],
-  en:['Multiplication theorem and conditional probability','P(AB), P(A | B)','<p>The conditional probability <span class="m">P(A | B) = P(AB)/P(B)</span> is the probability of A once B is known to have happened. Multiplication theorem: <span class="m">P(AB) = P(A)·P(B | A) = P(B)·P(A | B)</span>. Example 6: <span class="m">9/36·8/35 = 2/35</span>.</p><p>Events are independent if <span class="m">P(AB) = P(A)·P(B)</span>.</p>']},
- {id:'atleast',ru:['Хотя бы одно событие','через противоположное','<p>Для независимых событий с вероятностями pᵢ вероятность того, что произойдёт хотя бы одно: <span class="m">1 − q₁q₂…qₙ</span>, где <span class="m">qᵢ = 1 − pᵢ</span>. Ровно одно: <span class="m">p₁q₂q₃ + q₁p₂q₃ + q₁q₂p₃</span>. Задача 3.20: 0,188 и 0,976.</p><p>Удобный инструмент — производящая функция <span class="m">(q₁ + p₁z)(q₂ + p₂z)…</span>: коэффициент при zᵏ — вероятность ровно k событий.</p>'],
-  en:['At least one event','via the complement','<p>For independent events with probabilities pᵢ, the probability that at least one happens is <span class="m">1 − q₁q₂…qₙ</span>, where <span class="m">qᵢ = 1 − pᵢ</span>. Exactly one: <span class="m">p₁q₂q₃ + q₁p₂q₃ + q₁q₂p₃</span>. Problem 3.20: 0.188 and 0.976.</p><p>A handy tool is the generating function <span class="m">(q₁ + p₁z)(q₂ + p₂z)…</span>: the coefficient of zᵏ is the probability of exactly k events.</p>']},
- {id:'total',ru:['Формула полной вероятности','гипотезы H₁, …, Hₙ','<p>Если гипотезы H₁, …, Hₙ несовместны и образуют полную группу (<span class="m">ΣP(Hᵢ) = 1</span>), то <span class="m">P(A) = Σ P(Hᵢ)·P(A | Hᵢ)</span>. Пример 7: <span class="m">3/5·1/2 + 2/5·1/4 = 2/5</span>.</p><p>На сцене это площадь закрашенной части квадрата: ширины полос — P(Hᵢ), высоты — P(A | Hᵢ).</p>'],
-  en:['Total probability formula','hypotheses H₁, …, Hₙ','<p>If hypotheses H₁, …, Hₙ are disjoint and form a complete group (<span class="m">ΣP(Hᵢ) = 1</span>), then <span class="m">P(A) = Σ P(Hᵢ)·P(A | Hᵢ)</span>. Example 7: <span class="m">3/5·1/2 + 2/5·1/4 = 2/5</span>.</p><p>On the scene it is the filled area of the square: strip widths are P(Hᵢ), heights P(A | Hᵢ).</p>']},
- {id:'bayes',ru:['Формула Байеса','переоценка гипотез','<p>После того как A произошло: <span class="m">P(Hᵢ | A) = P(Hᵢ)·P(A | Hᵢ)/P(A)</span> — доля закрашенной площади, приходящаяся на гипотезу Hᵢ. Пример 8: <span class="m">9/22</span>.</p><p>Задача 4.38 про тест на болезнь: при P(болезни) = 0,01 и ошибке теста 0,01 положительный результат даёт лишь <span class="m">0,5</span> — здоровых намного больше, и их ложные срабатывания сравнимы с истинными.</p>'],
-  en:['Bayes formula','updating hypotheses','<p>Once A has happened: <span class="m">P(Hᵢ | A) = P(Hᵢ)·P(A | Hᵢ)/P(A)</span>, the share of the filled area belonging to Hᵢ. Example 8: <span class="m">9/22</span>.</p><p>Problem 4.38, a disease test: with P(disease) = 0.01 and test error 0.01, a positive result gives only <span class="m">0.5</span> — there are far more healthy people, and their false positives rival the true ones.</p>']});
-CHAP.unshift({ru:'1. Комбинаторика',en:'1. Combinatorics',ids:['perm','arr','combs','mult']},{ru:'2. Классическая вероятность',en:'2. Classical probability',ids:['classic','urn']},{ru:'3. Сложение и умножение',en:'3. Addition and multiplication',ids:['addth','multh','atleast']},{ru:'4. Полная вероятность и Байес',en:'4. Total probability and Bayes',ids:['total','bayes']});
-Object.assign(DEMOS,{perm:{p:'c1'},arr:{p:'c2'},combs:{p:'c113'},mult:{p:'c116'},classic:{p:'k4'},urn:{p:'k216'},addth:{p:'o5'},multh:{p:'o6'},atleast:{p:'o320b'},total:{p:'h7'},bayes:{p:'h438'}});
-Object.assign(REL,{perm:['arr','mult'],arr:['perm','combs'],combs:['arr','classic'],mult:['perm'],classic:['urn','combs'],urn:['hyper','classic'],addth:['multh'],multh:['addth','atleast','indep'],atleast:['multh','bernoulli'],total:['bayes'],bayes:['total']});
-Object.assign(ILL,{combs:{k:'bars',v:[1,4,6,4,1].map(c=>c/16),sel:[2]},total:{k:'grid',P:[[.3,.1],[.2,.4]]},addth:{k:'scatter'}});
+
+
+
+
+
+
+
+
+
+
+
 
 const KEY='prob-viz-v1';
 
@@ -513,7 +242,7 @@ const PAL={
   paper:{bg:'#fbfaf7',bgGrid:'#e3e1da',axis:'#23262b',bar:'#2b6cb0',sel:'#c98a00',curve:'#c0398b',area:'#3f9a3a',aux:'#e67e22',mark:'#8e44ad',F:'#d1453b'},
   neon:{bg:'#07020f',bgGrid:'#1f1533',axis:'#ffffff',bar:'#4dd2ff',sel:'#fff35c',curve:'#ff9ecf',area:'#39ff88',aux:'#ffa53d',mark:'#a98bff',F:'#ff4d6d'},
   nord:{bg:'#2e3440',bgGrid:'#3b4252',axis:'#eceff4',bar:'#88c0d0',sel:'#ebcb8b',curve:'#e5a0c0',area:'#a3be8c',aux:'#d08770',mark:'#b48ead',F:'#bf616a'}};
-const T=()=>TX[lang()]||TX.ru;
+
 const PANELS=['topic','presets','solve','values','show','export'];
 const DEF={palette:'classic',colors:{...PAL.classic},dock:'auto',width:380,bottomH:46,ui:'auto',font:100,speed:1,lw:1,order:PANELS.slice(),collapsed:{export:true},read:{},float:{x:12,y:12},
   show:{bgGrid:true,coords:true,labels:true,approx:true,sigma:true,Fplot:true,hints:true},topic:'bern',inp:null,preset:null};
@@ -521,51 +250,20 @@ const DEF={palette:'classic',colors:{...PAL.classic},dock:'auto',width:380,botto
 function load(){let r=null;try{r=JSON.parse(localStorage.getItem(KEY)||'null')}catch(e){}const p=clone(DEF);if(!r||typeof r!=='object')return p;
   Object.assign(p,r);p.colors={...DEF.colors,...(r.colors||{})};p.show={...DEF.show,...(r.show||{})};const ord=Array.isArray(r.order)?r.order.filter(x=>PANELS.includes(x)):[];PANELS.forEach(x=>{if(!ord.includes(x))ord.push(x)});p.order=ord;p.collapsed=r.collapsed||{};p.float=r.float||{x:12,y:12};
   /* защита от повреждённых/старых настроек: числа — в пределах ползунков, иначе по умолчанию */const RNG={width:[240,560],bottomH:[25,75],font:[80,130],speed:[.25,3],lw:[.5,2.5]};for(const k in RNG){const v=p[k],[a,b]=RNG[k];p[k]=typeof v==='number'&&isFinite(v)?Math.min(b,Math.max(a,v)):DEF[k]}if(!p.float||typeof p.float!=='object'||!isFinite(p.float.x)||!isFinite(p.float.y))p.float={x:12,y:12};if(!p.collapsed||typeof p.collapsed!=='object'||Array.isArray(p.collapsed))p.collapsed={};return p}
-let P=load();langFrom(()=>P.lang);if(!P.lang)P.lang=(navigator.language||'').toLowerCase().startsWith('ru')?'ru':'en';let saveT=0;
+let P=load();langFrom(()=>P.lang);notationFrom(()=>P.nota);if(!P.lang)P.lang=(navigator.language||'').toLowerCase().startsWith('ru')?'ru':'en';let saveT=0;
 function save(){clearTimeout(saveT);saveT=setTimeout(()=>{try{localStorage.setItem(KEY,JSON.stringify(P))}catch(e){}},250)}
 /* ---------- числа ---------- */
 
 
-function fQ(v,d=4){const f=toFrac(v,10000,1e-12);if(f&&f[1]>1&&f[1]<=10000&&Math.abs(f[0])<1e6)return`${f[0]<0?'−':''}${Math.abs(f[0])}/${f[1]} ≈ ${fN(v,d)}`;return fN(v,d)}
-const fT=(v,d=4)=>fN(v,d).replace(/<\/?sup>/g,'');
+
+
 /* ---------- примеры ---------- */
-const PRE={
- bern:[['b9',{n:'5',p:'1/2',ev:'eq',k1:'3',k2:'',meth:'auto'},'Пример 9: монета 5 раз, ровно 3 орла','Example 9: 5 tosses, exactly 3 heads'],['b9b',{n:'5',p:'1/2',ev:'one',k1:'1',k2:'',meth:'auto'},'Пример 9: хотя бы один орёл','Example 9: at least one head'],
-  ['b51',{n:'10',p:'0,5',ev:'eq',k1:'3',k2:'',meth:'auto'},'5.1: 10 бросков, ровно 3 герба','5.1: 10 tosses, exactly 3 heads'],['b10a',{n:'600',p:'1/3',ev:'eq',k1:'205',k2:'',meth:'auto'},'Пример 10: 600 бросков, ровно 205','Example 10: 600 rolls, exactly 205'],
-  ['b10b',{n:'600',p:'1/3',ev:'rng',k1:'195',k2:'215',meth:'auto'},'Пример 10: от 195 до 215','Example 10: from 195 to 215'],['b540',{n:'500',p:'0,8',ev:'rng',k1:'410',k2:'430',meth:'auto'},'5.40: от 410 до 430 годных','5.40: from 410 to 430 good'],
-  ['b542',{n:'125',p:'1/6',ev:'le',k1:'25',k2:'',meth:'auto'},'5.42: шестёрка не более 25 раз','5.42: a six at most 25 times'],['b65',{n:'1000',p:'0,001',ev:'le',k1:'2',k2:'',meth:'auto'},'6.5: не более 2 опечаток на странице','6.5: at most 2 typos on a page'],
-  ['b537',{n:'25',p:'0,5',ev:'mode',k1:'',k2:'',meth:'auto'},'5.37: наивероятнейшее число гербов','5.37: most probable number of heads']],
- dsv:[['d11',{mode:'tab',tab:'X: -1 0 1\np: 0,1 0,8 0,1',za:'1',zb:'0'},'Пример 11: M и D','Example 11: M and D'],['d633',{mode:'tab',tab:'X: -2 -1 2 3 4\np: 0,2 0,4 0,15 ? 0,15',za:'1',zb:'0'},'6.33: найти p₄, M, D, σ','6.33: find p₄, M, D, σ'],
-  ['d64',{mode:'bin',n:'6',p:'0,7',za:'1',zb:'0'},'6.4: 6 выстрелов, p = 0,7','6.4: 6 shots, p = 0.7'],['d66',{mode:'hyp',N:'6',M:'4',nn:'3',za:'1',zb:'0'},'6.6: 3 детали из 6, стандартных 4','6.6: 3 parts of 6, 4 standard'],
-  ['d625',{mode:'geo',p:'0,7',nmax:'5',za:'1',zb:'0'},'6.25: охотник, 5 зарядов','6.25: hunter with 5 charges'],['d12',{mode:'tab',tab:'X: 1 2 3\np: 0,2 0,5 0,3',za:'-2',zb:'10'},'Z = −2X + 10','Z = −2X + 10'],['d12b',{mode:'prop',mx:'2',dx:'1',my:'1',dy:'4',rl:'ind',rv:'',a1:'1',b1:'-2',c1:'10'},'Пример 12: Z = X − 2Y + 10','Example 12: Z = X − 2Y + 10'],['d634',{mode:'prop',mx:'2',dx:'3',my:'-1',dy:'5',rl:'ind',rv:'',a1:'2',b1:'-3',c1:'1'},'6.34: Z = 2X − 3Y + 1','6.34: Z = 2X − 3Y + 1'],['d712',{mode:'prop',mx:'0',dx:'1',my:'0',dy:'4',rl:'r',rv:'0,8',a1:'5',b1:'3',c1:'0'},'7.12: D(5X + 3Y), r = 0,8','7.12: D(5X + 3Y), r = 0.8']],
- dvu:[['j13',{jm:'tab',zt:'lin',zc:'0',tab:'X\\Y  -1  0  1\n0   0,1  0,2  0,2\n1   0,2  0,1  0,2',cond:'yx',cv:'1',zaj:'1',zbj:'-1'},'Пример 13: закон X − Y','Example 13: law of X − Y'],['j14',{jm:'tab',zt:'lin',zc:'0',tab:'X\\Y  -1  0  1\n0   0,1  0,2  0,2\n1   0,2  0,1  0,2',cond:'yx',cv:'1',zaj:'1',zbj:'1'},'Пример 14: M(Y | X = 1)','Example 14: M(Y | X = 1)'],
-  ['j639',{jm:'ind',tx:'X: -1 2 3\np: 0,3 0,5 0,2',ty:'Y: 1 3\np: 0,4 0,6',cond:'yx',cv:'',zt:'lin',zaj:'1',zbj:'-2',zc:'0'},'6.39: Z = X − 2Y','6.39: Z = X − 2Y'],['j640',{jm:'ind',tx:'X: 0 2\np: 0,3 0,7',ty:'Y: -4 1 2\np: 0,2 0,3 0,5',cond:'yx',cv:'',zt:'prod',zaj:'1',zbj:'1',zc:'1'},'6.40: Z = XY + 1','6.40: Z = XY + 1'],
-  ['j76',{jm:'tab',zt:'lin',zc:'0',tab:'X\\Y  1  2\n1  1/4  1/4\n2  1/4  1/4',cond:'xy',cv:'2',zaj:'1',zbj:'1'},'Независимые величины','Independent variables']],
- nsv:[['c15',{mode:'f',fx:'x^2',a:'0',b:'1',C:true,al:'0,5',be:'1',ql:'0,5'},'Пример 15: f = Cx² на [0; 1]','Example 15: f = Cx² on [0; 1]'],['c16',{mode:'uni',a:'2',b:'6',al:'2',be:'5',ql:'0,5'},'Пример 16: равномерное на [2; 6]','Example 16: uniform on [2; 6]'],
-  ['c811',{mode:'exp',lam:'5',al:'0,4',be:'1',ql:'0,5'},'8.11: показательное, P(0,4 < X < 1)','8.11: exponential, P(0.4 < X < 1)'],['c817',{mode:'F',Fx:'0,25(x-2)^2',a:'2',b:'4',al:'2,5',be:'4,5',ql:'0,6'},'8.17: F(x) = 0,25(x − 2)²','8.17: F(x) = 0.25(x − 2)²'],
-  ['c819',{mode:'f',fx:'sin x',a:'0',b:'pi',C:true,al:'0',be:'pi/2',ql:'0,5'},'8.19: f = C·sin x на [0; π]','8.19: f = C·sin x on [0; π]']],
- norm:[['n17',{m:'2',sg:'3',q:'lt',x1:'5',x2:'',del:'',pv:''},'Пример 17: N(2; 9), P(X < 5)','Example 17: N(2; 9), P(X < 5)'],['n17q',{m:'2',sg:'3',q:'qu',x1:'',x2:'',del:'',pv:'0,05'},'Пример 17: квантиль x₀,₀₅','Example 17: quantile x₀.₀₅'],
-  ['n91',{m:'15',sg:'0,2',q:'rng',x1:'14,9',x2:'15,3',del:'',pv:''},'9.1в: цена от 14,9 до 15,3','9.1c: price from 14.9 to 15.3'],['n91a',{m:'15',sg:'0,2',q:'lt',x1:'15,3',x2:'',del:'',pv:''},'9.1а: не выше 15,3','9.1a: at most 15.3'],
-  ['n3s',{m:'15',sg:'0,2',q:'dev',x1:'',x2:'',del:'0,6',pv:''},'9.1г: правило трёх сигм','9.1d: three-sigma rule'],['n916',{m:'',sg:'3',q:'fmg',x1:'1',x2:'',del:'',pv:'0,63'},'9.16: N(m; 9), P(X > 1) = 0,63 → m','9.16: N(m; 9), P(X > 1) = 0.63 → m'],
-  ['n920',{m:'2',sg:'',q:'fsg',x1:'3',x2:'',del:'',pv:'0,16'},'9.20: N(2; σ²), P(X > 3) = 0,16 → σ','9.20: N(2; σ²), P(X > 3) = 0.16 → σ']]};
-const TOPICS=['comb','clas','ops','bayes','bern','dsv','dvu','nsv','norm'];
-Object.assign(PRE,{
- comb:[['c1',{kind:'perm',cn:'5',ck:'',list:''},'Пример 1: 5 книг на полке','Example 1: 5 books on a shelf'],['c2',{kind:'arr',cn:'10',ck:'3',list:''},'Пример 2: 3 студента на 10 мест','Example 2: 3 students, 10 seats'],['c14',{kind:'perm',cn:'7',ck:'',list:''},'1.4: «Выходи по одному!», 7 человек','1.4: “One at a time!”, 7 people'],['c113',{kind:'comb',cn:'5',ck:'3',list:''},'1.13б: 3 стула из 5','1.13b: 3 chairs of 5'],['c13',{kind:'arrRep',cn:'5',ck:'4',list:''},'1.3а: 4 письма, 5 курьеров','1.3a: 4 letters, 5 couriers'],['c116',{kind:'permRep',cn:'',ck:'',list:'5 3 2'},'1.16б: 5 яблок, 3 груши, 2 апельсина в ряд','1.16b: 5 apples, 3 pears, 2 oranges in a row'],['c19',{kind:'prod',cn:'',ck:'',list:'28 15 6'},'1.9: C₈²·C₆²·C₄²','1.9: C₈²·C₆²·C₄²']],
- clas:[['k3',{cmode:'urn',counts:'4 8',draw:'1',cev:'exact',targets:'0 1',kk:'',fav:'',tot:'',nd:'',dev:'eq',dsum:''},'Пример 3: красный шар из 12','Example 3: a red ball of 12'],['k4',{cmode:'urn',counts:'9 27',draw:'2',cev:'exact',targets:'2 0',kk:'',fav:'',tot:'',nd:'',dev:'eq',dsum:''},'Пример 4: две бубновые карты','Example 4: two diamonds'],['k216',{cmode:'urn',counts:'4 5',draw:'3',cev:'exact',targets:'3 0',kk:'',fav:'',tot:'',nd:'',dev:'eq',dsum:''},'2.16а: все 3 шара чёрные','2.16a: all 3 balls black'],['k216b',{cmode:'urn',counts:'5 4',draw:'3',cev:'ge',targets:'',kk:'2',fav:'',tot:'',nd:'',dev:'eq',dsum:''},'2.16б: белых больше, чем чёрных','2.16b: more white than black'],['k27',{cmode:'dice',counts:'',draw:'',cev:'exact',targets:'',kk:'',fav:'',tot:'',nd:'3',dev:'eq',dsum:'5'},'2.7: три кости, сумма 5','2.7: three dice, sum 5'],['k21',{cmode:'mn',counts:'',draw:'',cev:'exact',targets:'',kk:'',fav:'8',tot:'12',nd:'',dev:'eq',dsum:''},'m из n: 8 из 12','m of n: 8 of 12']],
- ops:[['o5',{omode:'two',ps:'',oev:'one1',ok:'',pa:'1/2',pb:'1/3',rel:'ab',pab:'1/6'},'Пример 5: кратно 2 или 3','Example 5: multiple of 2 or 3'],['o6',{omode:'two',ps:'',oev:'one1',ok:'',pa:'9/36',pb:'9/36',rel:'bga',pab:'8/35'},'Пример 6: две бубновые подряд','Example 6: two diamonds in a row'],['o320a',{omode:'indep',ps:'0,6 0,7 0,8',oev:'exact',ok:'1',pa:'',pb:'',rel:'ind',pab:''},'3.20: попал только один стрелок','3.20: exactly one hit'],['o320b',{omode:'indep',ps:'0,6 0,7 0,8',oev:'one1',ok:'',pa:'',pb:'',rel:'ind',pab:''},'3.20: хотя бы один попал','3.20: at least one hit'],['o335',{omode:'indep',ps:'0,8 0,9 0,7',oev:'only',ok:'2',pa:'',pb:'',rel:'ind',pab:''},'3.35: попал только 2-й','3.35: only the 2nd hit'],['o335c',{omode:'indep',ps:'0,8 0,9 0,7',oev:'all',ok:'',pa:'',pb:'',rel:'ind',pab:''},'3.35: все попали','3.35: all hit']],
- bayes:[['h7',{hyp:'3/5 1/2\n2/5 1/4',bev:'A',tgt:'1'},'Пример 7: шар выпал из коробки','Example 7: a ball fell out'],['h8',{hyp:'3/10 3/4\n6/10 2/4\n1/10 1/4',bev:'A',tgt:'1'},'Пример 8: Байес, 2 белых переложили','Example 8: Bayes, 2 white moved'],['h41',{hyp:'40% 0,9\n20% 0,2\n? 0,6',bev:'A',tgt:'1'},'4.1: отличники и неуспевающие','4.1: top students and failing'],['h438',{hyp:'0,01 0,99\n0,99 0,01',bev:'A',tgt:'1'},'4.38: тест на болезнь','4.38: a disease test']]});
+
+
+
 /* ---------- формы ---------- */
-const FORMS={
- bern:[['n','num'],['p','num'],['ev','sel',['eq','rng','ge','le','one','mode']],['k1','num',i=>['eq','rng','ge','le'].includes(i.ev)],['k2','num',i=>i.ev==='rng'],['meth','sel',['auto','bern','pois','lap'],i=>i.ev!=='mode']],
- dsv:[['mode','sel',['tab','bin','hyp','geo','prop']],['mx','num',i=>i.mode==='prop'],['dx','num',i=>i.mode==='prop'],['my','num',i=>i.mode==='prop'],['dy','num',i=>i.mode==='prop'],['rl','sel',['ind','r','cov'],i=>i.mode==='prop'],['rv','num',i=>i.mode==='prop'&&i.rl!=='ind'],['a1','num',i=>i.mode==='prop'],['b1','num',i=>i.mode==='prop'],['c1','num',i=>i.mode==='prop'],['tab','txt',i=>i.mode==='tab'],['n','num',i=>i.mode==='bin'],['p','num',i=>i.mode==='bin'||i.mode==='geo'],['N','num',i=>i.mode==='hyp'],['M','num',i=>i.mode==='hyp'],['nn','num',i=>i.mode==='hyp'],['nmax','num',i=>i.mode==='geo'],['za','num',i=>i.mode!=='prop'],['zb','num',i=>i.mode!=='prop']],
- dvu:[['jm','sel',['tab','ind']],['tab','txt',i=>i.jm!=='ind'],['tx','txt',i=>i.jm==='ind'],['ty','txt',i=>i.jm==='ind'],['cond','sel',['yx','xy']],['cv','num'],['zt','sel',['lin','prod']],['zaj','num',i=>i.zt!=='prod'],['zbj','num',i=>i.zt!=='prod'],['zc','num']],
- nsv:[['mode','sel',['uni','exp','f','F']],['fx','str',i=>i.mode==='f'],['C','chk',i=>i.mode==='f'],['Fx','str',i=>i.mode==='F'],['a','num',i=>i.mode!=='exp'],['b','num',i=>i.mode!=='exp'],['lam','num',i=>i.mode==='exp'],['al','num'],['be','num'],['ql','num']],
- norm:[['m','num',i=>!['fm','fmg'].includes(i.q)],['sg','num',i=>!['fs','fsg'].includes(i.q)],['q','sel',['rng','lt','gt','dev','qu','fm','fmg','fs','fsg']],['x1','num',i=>['rng','lt','gt','fm','fmg','fs','fsg'].includes(i.q)],['x2','num',i=>i.q==='rng'],['del','num',i=>i.q==='dev'],['pv','num',i=>['qu','fm','fmg','fs','fsg'].includes(i.q)]]};
-Object.assign(FORMS,{
- comb:[['kind','sel',['perm','arr','comb','arrRep','combRep','permRep','prod']],['cn','num',i=>!['permRep','prod'].includes(i.kind)],['ck','num',i=>['arr','comb','arrRep','combRep'].includes(i.kind)],['list','str',i=>['permRep','prod'].includes(i.kind)]],
- clas:[['cmode','sel',['urn','mn','dice']],['counts','str',i=>i.cmode==='urn'],['draw','num',i=>i.cmode==='urn'],['cev','sel',['exact','ge','le'],i=>i.cmode==='urn'],['targets','str',i=>i.cmode==='urn'&&i.cev==='exact'],['kk','num',i=>i.cmode==='urn'&&i.cev!=='exact'],['fav','num',i=>i.cmode==='mn'],['tot','num',i=>i.cmode==='mn'],['nd','num',i=>i.cmode==='dice'],['dev','sel',['eq','ge','le'],i=>i.cmode==='dice'],['dsum','num',i=>i.cmode==='dice']],
- ops:[['omode','sel',['indep','two']],['ps','str',i=>i.omode==='indep'],['oev','sel',['all','none','one1','exact','ge','le','only'],i=>i.omode==='indep'],['ok','num',i=>i.omode==='indep'&&['exact','ge','le','only'].includes(i.oev)],['pa','num',i=>i.omode==='two'],['pb','num',i=>i.omode==='two'],['rel','sel',['ind','ab','agb','bga'],i=>i.omode==='two'],['pab','num',i=>i.omode==='two'&&i.rel!=='ind']],
- bayes:[['hyp','txt'],['bev','sel',['A','notA']]]});
+
+
 const OPTL=(k,o)=>{const L=T();const m={...L.opt,ev:L.ev,meth:L.mt,mode:S.topic==='dsv'?L.dm:L.nm,cond:L.cd,q:{...L.nq,fmg:L.nq.fm.replace('X <','X >'),fsg:L.nq.fs.replace('X <','X >')}}[k];return m?m[o]:o};
 const S={topic:P.topic||'comb',inp:{},res:null,err:null,preset:P.preset||null,stamp:false,anyAnim:false};
 TOPICS.forEach(t=>{S.inp[t]=clone(PRE[t][0][1])});if(P.inp)for(const t of TOPICS)if(P.inp[t])S.inp[t]={...S.inp[t],...P.inp[t]};
@@ -586,91 +284,20 @@ document.querySelectorAll('#topicSeg button').forEach(b=>b.onclick=()=>setTopic(
 function setTopic(t){if(!TOPICS.includes(t))return;S.topic=t;P.topic=t;S.preset=null;save();renderForm();recompute()}
 function loadPreset(id){for(const t of TOPICS){const p=PRE[t].find(z=>z[0]===id);if(p){S.topic=t;P.topic=t;S.inp[t]={...S.inp[t],...clone(p[1])};S.preset=id;renderForm();recompute();return}}}
 /* ---------- вычисления ---------- */
-const E=(msg,x)=>{throw{msg,x}};
-const nI=s=>numIn(s);
-function compBern(I){const n=nI(I.n),p=nI(I.p);if(!Number.isInteger(n)||n<1||n>100000)E('n');if(!(p>=0&&p<=1))E('p01');const q=1-p,np=n*p,npq=n*p*q,sq=Math.sqrt(npq);
-  let k1=0,k2=n;const ev=I.ev;if(['eq','rng','ge','le'].includes(ev)){k1=nI(I.k1);if(!Number.isInteger(k1)||k1<0||k1>n)E('k')}
-  if(ev==='eq')k2=k1;else if(ev==='rng'){k2=nI(I.k2);if(!Number.isInteger(k2)||k2<0||k2>n)E('k');if(k2<k1)[k1,k2]=[k2,k1]}else if(ev==='ge')k2=n;else if(ev==='le'){k2=k1;k1=0}else if(ev==='one'){k1=1;k2=n}
-  const exact=(()=>{if(ev==='one')return 1-Math.pow(q,n);let s=0;if(k2-k1>5000){/*широкий диапазон*/}for(let k=k1;k<=k2;k++)s+=binom(n,p,k);return s})();
-  let meth=I.meth||'auto';const auto=meth==='auto';if(auto)meth=npq>10?'lap':(n>30&&np<=10?'pois':'bern');if(ev==='one'&&meth!=='bern'&&auto)meth=npq>10?'lap':n>30?'pois':'bern';
-  let approx=null,detail={};if(ev!=='mode'){
-    if(meth==='bern')approx=exact;
-    else if(meth==='pois'){const l=np;if(ev==='one')approx=1-Math.exp(-l);else{let s=0;for(let k=k1;k<=Math.min(k2,k1+5000);k++)s+=poiss(l,k);approx=s}detail={l}}
-    else{if(ev==='eq'){const x=(k1-np)/sq;detail={x,xr:r2(x),ph:phiG(r2(x))};approx=phiG(r2(x))/sq;detail.exactL=phiG(x)/sq}
-      else{const a=ev==='one'?1:k1,b=k2;const x1=(a-np)/sq,x2=(b-np)/sq;detail={x1,x2,x1r:r2(x1),x2r:r2(x2),F1:PhiN(r2(x1)),F2:PhiN(r2(x2))};approx=detail.F2-detail.F1;detail.exactL=PhiN(x2)-PhiN(x1)}}}
-  const lo=np-q,hi=np+p,ks=[];for(let k=Math.ceil(lo-1e-12);k<=Math.floor(hi+1e-12);k++)if(k>=0&&k<=n)ks.push(k);
-  return{n,p,q,np,npq,sq,k1,k2,ev,exact,approx,meth,auto,detail,kstar:ks,lo,hi}}
-function compDsv(I){if(I.mode==='prop'){const mx=nI(I.mx),dx=nI(I.dx),my=nI(I.my),dy=nI(I.dy),a=nI(I.a1===''?'0':I.a1),b=nI(I.b1===''?'0':I.b1),c=nI(I.c1===''?'0':I.c1);if(dx<0||dy<0)E('sig');
-    let cov=0;if(I.rl==='r'){const r=nI(I.rv);if(Math.abs(r)>1)E('p01');cov=r*Math.sqrt(dx*dy)}else if(I.rl==='cov')cov=nI(I.rv);
-    const MZ=a*mx+b*my+c,DZ=a*a*dx+b*b*dy+2*a*b*cov;return{mode:'prop',mx,dx,my,dy,a,b,c,cov,rl:I.rl,rv:I.rv,MZ,DZ,sZ:Math.sqrt(Math.max(0,DZ))}}
-  let x,p,gen=null,unk=null,sum;
-  if(I.mode==='tab'){const r=parseSeries(I.tab||'');x=r.x;p=r.p;unk=r.unk;sum=r.sum;if(unk)sum=1}
-  else if(I.mode==='bin'){const n=nI(I.n),pp=nI(I.p);if(!Number.isInteger(n)||n<1||n>200)E('n');if(!(pp>=0&&pp<=1))E('p01');({x,p}=genBinom(n,pp));gen={n,p:pp}}
-  else if(I.mode==='hyp'){const N=nI(I.N),M=nI(I.M),n=nI(I.nn);if(![N,M,n].every(Number.isInteger)||N<1)E('int');if(M>N||n>N)E('kn');({x,p}=genHyper(N,M,n));gen={N,M,n}}
-  else{const pp=nI(I.p),nm=nI(I.nmax);if(!(pp>0&&pp<=1))E('p01');if(!Number.isInteger(nm)||nm<1||nm>200)E('n');({x,p}=genGeom(pp,nm));gen={p:pp,nmax:nm}}
-  sum=p.reduce((a,b)=>a+b,0);if(Math.abs(sum-1)>1e-9)E('sum',fT(sum,6));const st=seriesStats(x,p);const a=nI(I.za===''?'1':I.za),b=nI(I.zb===''?'0':I.zb);
-  return{x,p,unk,sum,st,a,b,MZ:a*st.M+b,DZ:a*a*st.D,gen,mode:I.mode}}
-function compDvu(I){let J;if(I.jm==='ind'){const X=parseSeries(I.tx||''),Y=parseSeries(I.ty||'');if(Math.abs(X.sum-1)>1e-9)E('sum',fT(X.sum,6));if(Math.abs(Y.sum-1)>1e-9)E('sum',fT(Y.sum,6));J={x:X.x,y:Y.x,P:X.p.map(p=>Y.p.map(q=>p*q)),sum:1,ind:true}}else J=parseJoint(I.tab||'');
-  if(Math.abs(J.sum-1)>1e-9)E('sum',fT(J.sum,6));const st=jointStats(J);const a=nI(I.zaj===''||I.zaj==null?'1':I.zaj),b=nI(I.zbj===''||I.zbj==null?'1':I.zbj),zc=nI(I.zc===''||I.zc==null?'0':I.zc),zt=I.zt||'lin';
-  const Z=distOf(J,zt==='prod'?(x,y)=>x*y+zc:(x,y)=>a*x+b*y+zc),zs=seriesStats(Z.x,Z.p);const cv=I.cv===''?null:nI(I.cv);let cond=null;
-  if(cv!==null){if(I.cond==='yx'){const i=J.x.findIndex(v=>Math.abs(v-cv)<1e-9);if(i>=0){const pr=st.px[i];cond={given:'X',val:cv,idx:i,pr,vals:J.y,ps:J.P[i].map(v=>v/pr)}}}
-    else{const j=J.y.findIndex(v=>Math.abs(v-cv)<1e-9);if(j>=0){const pr=st.py[j];cond={given:'Y',val:cv,idx:j,pr,vals:J.x,ps:J.P.map(r=>r[j]/pr)}}}
-    if(cond)cond.M=cond.vals.reduce((s,v,k)=>s+v*cond.ps[k],0)}
-  let dep=null;if(!st.indep){outer:for(let i=0;i<J.x.length;i++)for(let j=0;j<J.y.length;j++)if(Math.abs(J.P[i][j]-st.px[i]*st.py[j])>1e-9){dep={i,j};break outer}}
-  return{J,st,a,b,zc,zt,Z,zs,cond,dep,DZchk:a*a*st.sx.D+b*b*st.sy.D+2*a*b*st.cov}}
-function quadN(f,a,b){return quadF(f,a,b).v}
-function compNsv(I){let lamV=null,FaV=null;let a,b,f,F,Fexpr=null,fexpr=null,C=1,I0=null,lo,hi,kind=I.mode;
-  if(kind==='uni'){a=nI(I.a);b=nI(I.b);if(!(a<b))E('ab');f=x=>x>=a&&x<=b?1/(b-a):0;F=x=>x<=a?0:x>=b?1:(x-a)/(b-a);lo=a;hi=b}
-  else if(kind==='exp'){const l=nI(I.lam);if(!(l>0))E('lam');a=0;b=Infinity;f=x=>x<0?0:l*Math.exp(-l*x);F=x=>x<0?0:1-Math.exp(-l*x);lo=0;hi=-Math.log(1e-4)/l;lamV=l}
-  else if(kind==='f'){a=nI(I.a);b=nI(I.b);if(!(a<b))E('ab');let g;try{g=parseFx(I.fx||'')}catch(e){E('f')}const gc=compile(g);
-    {const q=quadF(gc,a,b);I0=q.v;if(!q.ok||!isFinite(I0)||Math.abs(I0)>1e9)E('diverg')}if(I.C){if(!(I0>0))E('norm1');C=1/I0}else if(Math.abs(I0-1)>1e-6)E('norm1');fexpr=g;
-    for(let i=0;i<=200;i++){const x=a+(b-a)*i/200,v=gc(x);if(isFinite(v)&&v*C<-1e-9)E('neg')}
-    f=x=>x<a||x>b?0:C*gc(x);let sol=null;try{sol=solve(g,a,b)}catch(e){}
-    if(sol&&sol.F){const Fg=compile(sol.F),Fa=Fg(a);Fexpr=sol.F;F=x=>x<=a?0:x>=b?1:C*(Fg(x)-Fa);FaV=Fa}else{F=x=>x<=a?0:x>=b?1:C*quadN(gc,a,x);FaV=null}lo=a;hi=b}
-  else{a=nI(I.a);b=nI(I.b);if(!(a<b))E('ab');let g;try{g=parseFx(I.Fx||'')}catch(e){E('f')}const Fg=compile(g);Fexpr=g;
-    if(Math.abs(Fg(a))>1e-6||Math.abs(Fg(b)-1)>1e-6)E('Fbad');for(let i=0;i<200;i++){const x1=a+(b-a)*i/200,x2=a+(b-a)*(i+1)/200;if(Fg(x2)<Fg(x1)-1e-9)E('Fbad')}
-    F=x=>x<=a?0:x>=b?1:Fg(x);try{fexpr=tidy(D(g))}catch(e){fexpr=null}const fd=fexpr?compile(fexpr):(x=>(Fg(x+1e-6)-Fg(x-1e-6))/2e-6);f=x=>x<a||x>b?0:fd(x);lo=a;hi=b}
-  const M=kind==='exp'?1/lamV:quadN(x=>x*f(x),lo,hi),M2=kind==='exp'?2/(lamV*lamV):quadN(x=>x*x*f(x),lo,hi),Dv=Math.max(0,M2-M*M);
-  const inv=pp=>{if(kind==='exp')return-Math.log(1-pp)/lamV;let l0=lo,h0=hi;for(let i=0;i<100;i++){const m=(l0+h0)/2;if(F(m)<pp)l0=m;else h0=m}return(l0+h0)/2};
-  const al=I.al===''?null:nI(I.al),be=I.be===''?null:nI(I.be);const Pab=al!==null&&be!==null?F(Math.max(al,be))-F(Math.min(al,be)):null;
-  const ql=I.ql===''?null:nI(I.ql);let mode=null;{let best=-1,bx=null;const N=400;for(let i=0;i<=N;i++){const x=lo+(hi-lo)*i/N,v=f(x);if(v>best+1e-12){best=v;bx=x}}mode=bx}
-  return{kind,a,b,f,F,C,I0,fexpr,Fexpr,lo,hi,M,M2,D:Dv,s:Math.sqrt(Dv),med:inv(.5),qv:ql!==null&&ql>0&&ql<1?inv(ql):null,ql,al,be,Pab,mode,lam:lamV,Fa:FaV}}
-function compNorm(I){const q=I.q;let m=I.m===''||I.m==null?null:nI(I.m),s=I.sg===''||I.sg==null?null:nI(I.sg);const R={q};
-  if(['fm','fmg'].includes(q)){if(!(s>0))E('sig');const x1=nI(I.x1),pv=nI(I.pv);if(!(pv>0&&pv<1))E('p01');const pl=q==='fm'?pv:1-pv,z=PhiInv(pl);m=x1-s*z;Object.assign(R,{x1,pv,pl,z,find:'m'})}
-  else if(['fs','fsg'].includes(q)){if(m===null)E('num');const x1=nI(I.x1),pv=nI(I.pv);if(!(pv>0&&pv<1))E('p01');const pl=q==='fs'?pv:1-pv,z=PhiInv(pl);s=(x1-m)/z;if(!(s>0))E('sig');Object.assign(R,{x1,pv,pl,z,find:'s'})}
-  else{if(!(s>0))E('sig');if(m===null)E('num')}
-  R.m=m;R.s=s;const z=x=>(x-m)/s;
-  if(q==='rng'){let x1=nI(I.x1),x2=nI(I.x2);if(x2<x1)[x1,x2]=[x2,x1];R.x1=x1;R.x2=x2;R.z1=z(x1);R.z2=z(x2);R.P=PhiN(r2(R.z2))-PhiN(r2(R.z1));R.Pe=PhiN(R.z2)-PhiN(R.z1);R.lo=x1;R.hi=x2}
-  else if(q==='lt'){R.x1=nI(I.x1);R.z1=z(R.x1);R.P=PhiN(r2(R.z1));R.Pe=PhiN(R.z1);R.lo=-Infinity;R.hi=R.x1}
-  else if(q==='gt'){R.x1=nI(I.x1);R.z1=z(R.x1);R.P=1-PhiN(r2(R.z1));R.Pe=1-PhiN(R.z1);R.lo=R.x1;R.hi=Infinity}
-  else if(q==='dev'){R.del=nI(I.del);R.z1=R.del/s;R.P=2*PhiN(r2(R.z1))-1;R.Pe=2*PhiN(R.z1)-1;R.lo=m-R.del;R.hi=m+R.del}
-  else if(q==='qu'){R.pv=nI(I.pv);if(!(R.pv>0&&R.pv<1))E('p01');R.z=PhiInv(R.pv);R.xq=m+s*R.z;R.lo=-Infinity;R.hi=R.xq}
-  else{R.lo=q.endsWith('g')?R.x1:-Infinity;R.hi=q.endsWith('g')?Infinity:R.x1}
-  return R}
-const toInt=s=>{const v=nI(s);if(!Number.isInteger(v)||v<0)E('int');return v};const ints=s=>rowNums(s||'').map(toInt);
-function compComb(I){const k=I.kind;let val,n,kk,list;if(['permRep','prod'].includes(k)){list=ints(I.list);if(!list.length)E('int')}else{n=toInt(I.cn);if(n>500)E('big')}
-  if(['arr','comb','arrRep','combRep'].includes(k)){kk=toInt(I.ck);if(kk>500)E('big');if((k==='arr'||k==='comb')&&kk>n)E('kn')}
-  if(k==='perm')val=bf(n);else if(k==='arr')val=bA(n,kk);else if(k==='comb')val=bC(n,kk);else if(k==='arrRep')val=bPow(n,kk);else if(k==='combRep')val=bC(n+kk-1,kk);
-  else if(k==='permRep'){n=list.reduce((a,b)=>a+b,0);if(n>500)E('big');val=bf(n);list.forEach(c=>{val/=bf(c)})}else{val=list.reduce((a,b)=>a*BigInt(b),1n)}
-  return{kind:k,n,k:kk,list,val}}
-function compClas(I){const m=I.cmode;if(m==='mn'){const a=toInt(I.fav),b=toInt(I.tot);if(b<1||a>b)E('kn');return{m,fav:a,tot:b,P:a/b,num:BigInt(a),den:BigInt(b)}}
-  if(m==='dice'){const s=toInt(I.nd);if(s<1||s>8)E('big');const d=diceDist(s),v=toInt(I.dsum);let cnt=0;d.forEach((c,sum)=>{if(I.dev==='eq'?sum===v:I.dev==='ge'?sum>=v:sum<=v)cnt+=c});const tot=Math.pow(6,s);return{m,s,v,dev:I.dev,d,cnt,tot,P:cnt/tot,num:BigInt(cnt),den:BigInt(tot)}}
-  const a=ints(I.counts);if(a.length<1)E('int');const N=a.reduce((x,y)=>x+y,0),n=toInt(I.draw);if(n>N||n<1)E('kn');const den=bC(N,n);let num=0n,terms=[];
-  if(I.cev==='exact'){const t=ints(I.targets);if(t.length!==a.length)E('len');if(t.reduce((x,y)=>x+y,0)!==n)E('tsum');num=1n;t.forEach((k,i)=>{num*=bC(a[i],k)});terms=[t]}
-  else{const k0=toInt(I.kk),a1=a[0],rest=N-a1;for(let k=0;k<=Math.min(n,a1);k++){if(I.cev==='ge'?k<k0:k>k0)continue;if(n-k>rest)continue;num+=bC(a1,k)*bC(rest,n-k);terms.push([k,n-k])}}
-  return{m,a,N,n,cev:I.cev,num,den,terms,P:Number(num)/Number(den),kk:I.kk}}
-function compOps(I){if(I.omode==='two'){const pa=nI(I.pa),pb=nI(I.pb);if(!(pa>=0&&pa<=1&&pb>=0&&pb<=1))E('p01');let pab;const rel=I.rel;
-    if(rel==='ind')pab=pa*pb;else{const v=nI(I.pab);if(!(v>=0&&v<=1))E('p01');pab=rel==='ab'?v:rel==='agb'?v*pb:v*pa}
-    if(pab>Math.min(pa,pb)+1e-12||pab<pa+pb-1-1e-12)E('pab');const sum=pa+pb-pab;return{mode:'two',pa,pb,pab,rel,given:rel==='ind'?null:nI(I.pab),sum,agb:pb>0?pab/pb:NaN,bga:pa>0?pab/pa:NaN,onlyA:pa-pab,onlyB:pb-pab,none:1-sum,one:sum-pab,indep:Math.abs(pab-pa*pb)<1e-9}}
-  const ps=rowNums(I.ps||'').map(nI);if(!ps.length||ps.length>12)E('int');if(ps.some(p=>!(p>=0&&p<=1)))E('p01');const c=polyEvents(ps),n=ps.length,ev=I.oev;let k=null,P;
-  if(['exact','ge','le','only'].includes(ev)){k=toInt(I.ok);if(ev==='only'?(k<1||k>n):k>n)E('kn')}
-  if(ev==='all')P=c[n];else if(ev==='none')P=c[0];else if(ev==='one1')P=1-c[0];else if(ev==='exact')P=c[k];else if(ev==='ge')P=c.slice(k).reduce((a,b)=>a+b,0);else if(ev==='le')P=c.slice(0,k+1).reduce((a,b)=>a+b,0);
-  else P=ps.reduce((a,p,i)=>a*(i===k-1?p:1-p),1);return{mode:'indep',ps,c,n,ev,k,P}}
-function compBayes(I){const lines=(I.hyp||'').split('\n').map(l=>l.trim()).filter(Boolean);if(lines.length<2)E('rows');let unk=-1;const pr=[],lk=[];
-  lines.forEach((l,i)=>{const c=rowNums(l);if(c.length<2)E('len');if(c[0]==='?'){if(unk>=0)E('unk2');unk=i;pr.push(NaN)}else pr.push(nI(c[0]));lk.push(nI(c[1]))});
-  if(unk>=0)pr[unk]=1-pr.reduce((a,v,i)=>i===unk?a:a+v,0);if(pr.some(v=>!(v>=-1e-12&&v<=1+1e-12))||lk.some(v=>!(v>=0&&v<=1)))E('p01');const s=pr.reduce((a,b)=>a+b,0);if(Math.abs(s-1)>1e-9)E('sum',fT(s,6));
-  const L=I.bev==='notA'?lk.map(v=>1-v):lk,joint=pr.map((p,i)=>p*L[i]),PA=joint.reduce((a,b)=>a+b,0);if(!(PA>0))E('pa0');return{pr,lk,L,joint,PA,post:joint.map(v=>v/PA),bev:I.bev,unk}}
-const COMP={comb:compComb,clas:compClas,ops:compOps,bayes:compBayes,bern:compBern,dsv:compDsv,dvu:compDvu,nsv:compNsv,norm:compNorm};
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 function recompute(){const t=S.topic,I=S.inp[t];S.err=null;S.res=null;try{S.res=COMP[t](I)}catch(e){S.err=e;if(e instanceof Error){console.error(e);S.err={msg:'bug'}}else if(!e||!e.msg)S.err={msg:'num'};}
   P.inp=S.inp;P.preset=S.preset;save();renderAll()}
 /* ---------- панели ---------- */
@@ -695,75 +322,22 @@ function applyOrder(){P.order.forEach(id=>{const el=side.querySelector(`.panel[d
   side.querySelectorAll('.panel').forEach(p=>p.classList.toggle('collapsed',!!P.collapsed[p.dataset.id]))}
 function showPanel(id){P.collapsed[id]=false;applyOrder();save();const el=side.querySelector(`.panel[data-id="${id}"]`);if(el)setTimeout(()=>el.scrollIntoView({block:'nearest',behavior:'smooth'}),50)}
 /* ---------- решение ---------- */
-const SUB='₀₁₂₃₄₅₆₇₈₉',sb=s=>String(s).replace(/\d/g,d=>SUB[d]);
+
 const ol=a=>`<ol class="stp">${a.filter(Boolean).map(s=>`<li>${s}</li>`).join('')}</ol>`;
-const mtab=(rows)=>`<div class="tw"><table class="tab">${rows.map((r,i)=>`<tr>${r.map((c,j)=>j===0?`<th>${c}</th>`:`<td>${c}</td>`).join('')}</tr>`).join('')}</table></div>`;
-function evT(R){const n=sb(R.n);if(R.ev==='eq')return`P${n}(${R.k1})`;if(R.ev==='one')return`P${n}(k ⩾ 1)`;if(R.ev==='mode')return'k*';return`P${n}(${R.k1} ⩽ k ⩽ ${R.k2})`}
-function solveBern(R){const L=T(),st=[];st.push(L.s_bern(fQ(R.p),fQ(R.q)));st.push(L.s_par(R.n,fN(R.np),fN(R.npq)));
-  if(R.ev==='mode'){st.push(L.s_mode(fN(R.lo),fN(R.hi)));st.push(L.s_mode2(R.kstar.join(lang()==='ru'?' и ':' and ')));return{st,ans:`k* = ${R.kstar.join(lang()==='ru'?' или ':' or ')}`}}
-  st.push(R.auto?(R.meth==='bern'?L.s_mB:R.meth==='pois'?L.s_mP(fN(R.np)):L.s_mL(fN(R.npq))):L.s_mU);
-  const ap=R.meth!=='bern';let main='';
-  if(R.meth==='bern'){st.push(L.s_fB);
-    if(R.ev==='one'){st.push(`${L.s_compl} P${sb(R.n)}(k ⩾ 1) = 1 − P${sb(R.n)}(0) = 1 − q<sup>${R.n}</sup> = 1 − ${fN(R.q)}<sup>${R.n}</sup> = ${fQ(R.exact,5)}`)}
-    else if(R.k1===R.k2){const k=R.k1;st.push(`P${sb(R.n)}(${k}) = C${sb(R.n)}<sup>${k}</sup>·${fN(R.p)}<sup>${k}</sup>·${fN(R.q)}<sup>${R.n-k}</sup> = ${R.n<=60?Cnk(R.n,k)+'·'+fN(Math.pow(R.p,k),6)+'·'+fN(Math.pow(R.q,R.n-k),6)+' = ':''}${fQ(R.exact,5)}`)}
-    else{const terms=R.k2-R.k1+1;st.push(`${L.s_sum} ${evT(R)} = ${terms<=7?Array.from({length:terms},(_,i)=>fN(binom(R.n,R.p,R.k1+i),5)).join(' + ')+' = ':`Σ (k = ${R.k1}…${R.k2}) = `}${fQ(R.exact,5)}`)}
-    main=`${evT(R)} = ${fQ(R.exact,5)}`}
-  else if(R.meth==='pois'){const l=R.np;st.push(`${L.s_fP} λ = np = ${fN(l)}.`);
-    if(R.ev==='one')st.push(`${L.s_compl} P ≈ 1 − e<sup>−λ</sup> = 1 − e<sup>−${fN(l)}</sup> = ${fN(R.approx,5)}`);
-    else{const terms=R.k2-R.k1+1;st.push(`${evT(R)} ≈ ${terms<=6?Array.from({length:terms},(_,i)=>`${fN(l)}<sup>${R.k1+i}</sup>e<sup>−${fN(l)}</sup>/${R.k1+i}!`).join(' + ')+' = ':''}${fN(R.approx,5)}`)}
-    main=`${evT(R)} ≈ ${fN(R.approx,4)}`}
-  else{const d=R.detail;if(R.ev==='eq'){st.push(L.s_fL);st.push(`√(npq) = ${fN(R.sq,3)}; x = (${R.k1} − ${fN(R.np)})/${fN(R.sq,3)} = ${fN(d.x,3)} ≈ ${fN(d.xr,2)}; φ(${fN(d.xr,2)}) = ${fN(d.ph,4)}; ${evT(R)} ≈ ${fN(d.ph,4)}/${fN(R.sq,3)} = ${fN(R.approx,4)}`)}
-    else{st.push(CL()?L.c_fI:L.s_fI);const a=R.ev==='one'?1:R.k1;st.push(`√(npq) = ${fN(R.sq,3)}; x₁ = (${a} − ${fN(R.np)})/${fN(R.sq,3)} ≈ ${fN(d.x1r,2)}; x₂ = (${R.k2} − ${fN(R.np)})/${fN(R.sq,3)} ≈ ${fN(d.x2r,2)}`);
-      st.push(`${evT(R)} ≈ ${PhiS(d.x2r)} − ${PhiS(d.x1r)} = ${fN(PhiV(d.x2r),4)} − ${nP(PhiV(d.x1r))} = ${fN(R.approx,4)}`)}
-    st.push(L.s_tab);main=`${evT(R)} ≈ ${fN(R.approx,4)}`}
-  if(ap)st.push(L.s_exact(fQ(R.exact,5)));return{st,ans:main,sub:ap?`${L.ex}: ${fQ(R.exact,5)}`:''}}
-function serTab(x,p,nm='X'){return mtab([[nm,...x.map(v=>fN(v,4))],['p',...p.map(v=>fQ(v,4).replace(/ ≈ .*/,''))]])}
-function sumRow(x,p,f){return x.length<=8?x.map((v,i)=>`${fN(f(v),3)}·${fN(p[i],4)}`).join(' + ')+' = ':''}
-function zLin(a,b,c){const t=(v,n,first)=>v===0?'':`${first?(v<0?'−':''):(v<0?' − ':' + ')}${Math.abs(v)===1&&n?'':fN(Math.abs(v))}${n}`;let s=t(a,'X',true);s+=t(b,'Y',!s);if(c)s+=t(c,'',!s);return s||'0'}
-function solveDsv(R){const L=T();if(R.mode==='prop'){const st=[],z=zLin(R.a,R.b,R.c);st.push(L.p_M(z)+` = ${fN(R.a)}·${fN(R.mx)} ${R.b<0?'−':'+'} ${fN(Math.abs(R.b))}·${R.my<0?'('+fN(R.my)+')':fN(R.my)} ${R.c<0?'−':'+'} ${fN(Math.abs(R.c))} = ${fQ(R.MZ)}`);
-    if(R.rl==='r')st.push(`${L.p_cov} cov = r·σₓσᵧ = ${fN(nI(R.rv))}·√${fN(R.dx)}·√${fN(R.dy)} = ${fQ(R.cov)}`);else if(R.rl==='ind')st.push(L.p_ind);
-    st.push(L.p_D(z)+` = ${fN(R.a*R.a)}·${fN(R.dx)} + ${fN(R.b*R.b)}·${fN(R.dy)}${R.cov?` ${2*R.a*R.b*R.cov<0?'−':'+'} ${fN(Math.abs(2*R.a*R.b))}·${fN(Math.abs(R.cov),4)}`:''} = ${fQ(R.DZ)}`);
-    st.push(`σ(Z) = √D(Z) = ${fN(R.sZ,4)}`);return{st,ans:`M(Z) = ${fQ(R.MZ)}, D(Z) = ${fQ(R.DZ)}`}}
-  const st=[],s=R.st;if(R.gen)st.push(L.s_gen[R.mode]);if(R.unk)st.push(L.s_unk(fN(R.unk.x),fN(R.unk.p,4)));
-  st.push(serTab(R.x,R.p));st.push(L.s_sumP(fN(R.sum,6)));
-  st.push(`${L.s_M} ${sumRow(R.x,R.p,v=>v)}${fQ(s.M)}`);st.push(`${L.s_M2} ${sumRow(R.x,R.p,v=>v*v)}${fQ(s.M2)}`);
-  st.push(`${L.s_D} ${fN(s.M2,4)} − ${s.M<0?'('+fN(s.M,4)+')':fN(s.M,4)}² = ${fQ(s.D)}`);st.push(`${L.s_s} √${fN(s.D,4)} = ${fN(s.s,4)}`);st.push(L.s_mod(s.modes.map(v=>fN(v)).join(', ')));
-  if(R.x.length<=10){let acc=0;const lines=[`0, x ⩽ ${fN(R.x[0])}`];R.x.forEach((v,i)=>{acc+=R.p[i];lines.push(i<R.x.length-1?`${fN(acc,4)}, ${fN(v)} < x ⩽ ${fN(R.x[i+1])}`:`1, x > ${fN(v)}`)});st.push(`${L.s_F}<div class="mx2">F(x) = { ${lines.join('<br>')} }</div>`)}
-  if(!(R.a===1&&R.b===0))st.push(`${L.s_Z(fN(R.a),(R.b<0?'− ':'+ ')+fN(Math.abs(R.b)))} M(Z) = ${fN(R.a)}·${fN(s.M,4)} ${R.b<0?'−':'+'} ${fN(Math.abs(R.b))} = ${fQ(R.MZ)}; D(Z) = ${fN(R.a*R.a)}·${fN(s.D,4)} = ${fQ(R.DZ)}`);
-  return{st,ans:`M(X) = ${fQ(s.M)}, D(X) = ${fQ(s.D)}, σ(X) = ${fN(s.s,4)}`}}
-function solveDvu(R){const L=T(),st=[],J=R.J,s=R.st;const rows=[['X\\Y',...J.y.map(v=>fN(v)),'pₓ'],...J.x.map((v,i)=>[fN(v),...J.P[i].map(q=>fN(q,4)),`<b>${fN(s.px[i],4)}</b>`]),['pᵧ',...s.py.map(q=>`<b>${fN(q,4)}</b>`),'1']];
-  if(J.ind)st.push(L.j_ind);st.push(`${J.ind?'':L.s_marg}${mtab(rows)}`);st.push(`M(X) = ${fQ(s.sx.M)}, D(X) = ${fQ(s.sx.D)}; M(Y) = ${fQ(s.sy.M)}, D(Y) = ${fQ(s.sy.D)}`);
-  st.push(`${L.s_Mxy} ${fQ(s.Mxy)}`);st.push(`${L.s_cov} ${fN(s.Mxy,4)} − ${fN(s.sx.M,4)}·${fN(s.sy.M,4)} = ${fQ(s.cov)}`);if(isFinite(s.r))st.push(`${L.s_r} ${fN(s.cov,4)}/(${fN(s.sx.s,4)}·${fN(s.sy.s,4)}) = ${fN(s.r,4)}`);
-  st.push(s.indep?L.s_ind:L.s_dep(fN(J.x[R.dep.i]),fN(J.y[R.dep.j]),fN(J.P[R.dep.i][R.dep.j],4),fN(s.px[R.dep.i]*s.py[R.dep.j],4)));
-  if(R.cond){const c=R.cond,w=c.given==='X'?'Y':'X';st.push(`${L.s_cond(w,`${c.given} = ${fN(c.val)}`,fN(c.pr,4))}${serTab(c.vals,c.ps,w)}${L.s_condM} M(${w} | ${c.given} = ${fN(c.val)}) = ${fQ(c.M)}`)}
-  const zs_=R.zt==='prod'?`XY${R.zc?(R.zc<0?' − ':' + ')+fN(Math.abs(R.zc)):''}`:zLin(R.a,R.b,R.zc);st.push(`${L.s_Zj} Z = ${zs_}:${serTab(R.Z.x,R.Z.p,'Z')}M(Z) = ${fQ(R.zs.M)}, D(Z) = ${fQ(R.zs.D)}`);
-  if(R.zt!=='prod')st.push(`${L.s_ZjD} ${fN(R.a*R.a)}·${fN(s.sx.D,4)} + ${fN(R.b*R.b)}·${fN(s.sy.D,4)} ${2*R.a*R.b*s.cov<0?'−':'+'} ${fN(Math.abs(2*R.a*R.b),4)}·${fN(Math.abs(s.cov),4)} = ${fN(R.DZchk,4)}`);
-  return{st,ans:J.ind?`M(Z) = ${fQ(R.zs.M)}, D(Z) = ${fQ(R.zs.D)}`:`cov = ${fQ(s.cov)}, r = ${fN(s.r,4)}${R.cond?`; M(${R.cond.given==='X'?'Y':'X'} | ${R.cond.given} = ${fN(R.cond.val)}) = ${fQ(R.cond.M)}`:''}`}}
-function exH(e){PRINT.v='x';return hp(e,0)}
-function solveNsv(R){const L=T(),st=[];
-  if(R.kind==='uni')st.push(L.s_uni(fN(R.a),fN(R.b))+` F(x) = (x − ${fN(R.a)})/${fN(R.b-R.a)} на [${fN(R.a)}; ${fN(R.b)}].`);
-  else if(R.kind==='exp')st.push(L.s_exp(fN(R.lam)));
-  else if(R.kind==='f'){if(R.C!==1||S.inp.nsv.C)st.push(L.s_C(fQ(R.I0),fQ(R.C)));else st.push(L.s_norm);st.push(`f(x) = ${R.C!==1?fQ(R.C).replace(/ ≈ .*/,'')+'·':''}(${exH(R.fexpr)}) на [${fN(R.a)}; ${fN(R.b)}], 0 вне отрезка.`.replace('на [',lang()==='ru'?'на [':'on [').replace(', 0 вне отрезка',lang()==='ru'?', 0 вне отрезка':', 0 outside'));
-    if(R.Fexpr)st.push(`${L.s_Ff} F(x) = ${R.C!==1?fQ(R.C).replace(/ ≈ .*/,'')+'·':''}(${exH(R.Fexpr)}${R.Fa&&Math.abs(R.Fa)>1e-12?(R.Fa>0?' − '+fN(R.Fa,4):' + '+fN(-R.Fa,4)):''}) ${lang()==='ru'?'при':'for'} ${fN(R.a)} ⩽ x ⩽ ${fN(R.b)}.`)}
-  else{st.push(`F(x) = ${exH(R.Fexpr)} ${lang()==='ru'?'при':'for'} ${fN(R.a)} ⩽ x ⩽ ${fN(R.b)}; 0 ${lang()==='ru'?'левее, 1 правее':'to the left, 1 to the right'}.`);if(R.fexpr)st.push(`${L.s_fF} f(x) = ${exH(R.fexpr)}`)}
-  st.push(`${L.s_Mi} ${fQ(R.M)}`);st.push(`${L.s_Di} ${fQ(R.M2)} − ${fN(R.M,4)}² = ${fQ(R.D)}; σ = ${fN(R.s,4)}`);
-  if(R.Pab!==null){const a=Math.min(R.al,R.be),b=Math.max(R.al,R.be);st.push(`${L.s_P} F(${fN(b)}) − F(${fN(a)}) = ${fN(R.F(b),4)} − ${fN(R.F(a),4)} = ${fQ(R.Pab)}`)}
-  st.push(`${L.s_modN} x_mod ≈ ${fN(R.mode,3)}`);st.push(`${L.s_med} x_med ≈ ${fN(R.med,4)}`);if(R.qv!==null)st.push(`${L.s_qu(fN(R.ql))} x<sub>${fN(R.ql)}</sub> ≈ ${fN(R.qv,4)}`);
-  return{st,ans:`M(X) = ${fQ(R.M)}, D(X) = ${fQ(R.D)}${R.Pab!==null?`; P = ${fQ(R.Pab)}`:''}`}}
-function solveNorm(R){const L=T(),st=[],C=CL();const m=R.m,s=R.s,zt=(x)=>`(${fN(x)} − ${fN(m)})/${fN(s)} = ${fN((x-m)/s,3)}`,z2=v=>r2(v);
-  if(R.find==='m'||R.find==='s'){const pl=R.pl;st.push(R.q.endsWith('g')?`P(X > ${fN(R.x1)}) = ${fN(R.pv)} ⇒ P(X < ${fN(R.x1)}) = 1 − ${fN(R.pv)} = ${fN(pl,4)}.`:`P(X < ${fN(R.x1)}) = ${fN(pl,4)}.`);
-    if(C)st.push(L.c_inv(fN(pl,4),fN(pl-.5,4)));
-    st.push(`${R.find==='m'?(C?L.c_Nfm:L.s_Nfm):(C?L.c_Nfs:L.s_Nfs)} z = ${fN(R.z,4)};`+(R.find==='m'?` m = ${fN(R.x1)} − ${fN(s)}·(${fN(R.z,4)}) = ${fN(m,4)}`:` σ = (${fN(R.x1)} − ${fN(m)})/(${fN(R.z,4)}) = ${fN(s,4)}`));
-    return{st,ans:R.find==='m'?`m ≈ ${fN(m,3)}`:`σ ≈ ${fN(s,3)}`}}
-  st.push(C?L.c_Nst(fN(m),fN(s)):L.s_Nst(fN(m),fN(s)));
-  if(R.q==='rng'){st.push(`${C?L.c_Nrng:L.s_Nrng} ${PhiS(z2(R.z2))} − ${PhiS(z2(R.z1))} = ${fN(PhiV(z2(R.z2)),4)} − ${nP(PhiV(z2(R.z1)))} = ${fN(R.P,4)}`);st.push(`x₂: ${zt(R.x2)}; x₁: ${zt(R.x1)}`)}
-  else if(R.q==='lt')st.push(C?`${L.c_Nlt} 0,5 + ${PhiS(z2(R.z1))} = 0,5 + ${fN(PhiV(z2(R.z1)),4)} = ${fN(R.P,4)}`.replace(/0,5/g,dc('0.5')):`${L.s_Nlt} Φ(${zt(R.x1)}) ≈ Φ(${fN(z2(R.z1),2)}) = ${fN(R.P,4)}`);
-  else if(R.q==='gt')st.push(C?`${L.c_Ngt} 0.5 − ${PhiS(z2(R.z1))} = 0.5 − ${fN(PhiV(z2(R.z1)),4)} = ${fN(R.P,4)}`.replace(/0\.5/g,dc('0.5')):`${L.s_Ngt} 1 − Φ(${fN(z2(R.z1),2)}) = 1 − ${fN(PhiN(z2(R.z1)),4)} = ${fN(R.P,4)}`);
-  else if(R.q==='dev'){st.push(C?`${L.c_Ndev} 2${PhiS(z2(R.z1))} = 2·${fN(PhiV(z2(R.z1)),4)} = ${fN(R.P,4)}`:`${L.s_Ndev} 2Φ(${fN(R.del)}/${fN(s)}) − 1 = 2Φ(${fN(z2(R.z1),2)}) − 1 = ${fN(R.P,4)}`);st.push(L.s_3s)}
-  else if(R.q==='qu'){st.push(C?`${L.c_Nqu(fN(R.pv),fN(R.pv-.5,4))} z = ${fN(R.z,4)}; x<sub>${fN(R.pv)}</sub> = ${fN(m)} + ${fN(s)}·(${fN(R.z,4)}) = ${fN(R.xq,4)}`:`${L.s_Nqu} z<sub>${fN(R.pv)}</sub> = ${fN(R.z,4)}; x<sub>${fN(R.pv)}</sub> = ${fN(m)} + ${fN(s)}·(${fN(R.z,4)}) = ${fN(R.xq,4)}`);return{st,ans:`x<sub>${fN(R.pv)}</sub> ≈ ${fN(R.xq,3)}`}}
-  if(Math.abs(R.P-R.Pe)>5e-5)st.push(`${L.s_tab} ${L.ex}: ${fN(R.Pe,5)}.`);return{st,ans:`P ≈ ${fN(R.P,4)}`}}
+
+
+
+
+
+
+
+
+
+
+
+
 function renderSolve(){const box=$('#solve'),L=T();if(S.err){const f=L.err[S.err.msg];box.innerHTML=`<p class="note err">${typeof f==='function'?f(S.err.x):(f||L.err.num)}</p>`;return}
-  const r=({comb:solveComb,clas:solveClas,ops:solveOps,bayes:solveBayes,bern:solveBern,dsv:solveDsv,dvu:solveDvu,nsv:solveNsv,norm:solveNorm})[S.topic](S.res);S.ans=r.ans;
+  const r=SOLVE[S.topic](S.res,S.inp[S.topic]);S.ans=r.ans;
   box.innerHTML=`<p class="idea">${L.tt[S.topic]}</p>${ol(r.st)}<div class="ans"><div class="k">${L.ans}</div><div class="big">${r.ans}</div>${r.sub?`<p class="note" style="margin:.2rem 0 0">${r.sub}</p>`:''}</div>`}
 function prop(k,v,s){return`<div class="prop"><span class="k">${k}</span><span class="v">${v}</span>${s?`<span class="s">${s}</span>`:''}</div>`}
 function renderValues(){const box=$('#props'),V=T().v;if(S.err||!S.res){box.innerHTML='';return}const R=S.res;let h='';
@@ -859,52 +433,18 @@ $('#capOpen').onclick=()=>{P.show.hints=true;syncToggles();renderCaption();save(
 document.addEventListener('click',e=>{const q=e.target.closest('[data-term]');if(q){e.preventDefault();e.stopPropagation();openTerm(q.dataset.term);return}const p=e.target.closest('[data-pre]');if(p)loadPreset(p.dataset.pre)});
 function fitView(){req()}function play(){}
 /* ---------- обозначения Φ / Φ₀ ---------- */
-const CL=()=>P.nota==='classic';
-const nP=v=>v<0?'('+fN(v,4)+')':fN(v,4);const PhiS=z=>CL()?`Φ₀(${fN(z,2)})`:`Φ(${fN(z,2)})`;const PhiV=z=>CL()?PhiN(z)-.5:PhiN(z);
+
+
 /* ---------- дроби BigInt ---------- */
-function fracB(num,den){const g=gcdB(num,den)||1n,a=num/g,b=den/g;const v=Number(num)/Number(den);return b===1n?bStr(a):`${bStr(a)}/${bStr(b)} ≈ ${fN(v,4)}`}
+
 /* ---------- 1. комбинаторика ---------- */
-function solveComb(R){const L=T(),st=[],k=R.kind,n=R.n,kk=R.k;let f='';
-  if(k==='perm'){st.push(L.c_perm);f=`P${sb(n)} = ${n}! = ${n<=12?Array.from({length:n},(_,i)=>i+1).join('·')+' = ':''}${bStr(R.val)}`}
-  else if(k==='arr'){st.push(L.c_arr);f=`A${sb(n)}<sup>${kk}</sup> = ${n}!/(${n}−${kk})! = ${kk<=10?Array.from({length:kk},(_,i)=>n-i).join('·')+' = ':''}${bStr(R.val)}`}
-  else if(k==='comb'){st.push(L.c_comb);f=`C${sb(n)}<sup>${kk}</sup> = ${n}!/(${kk}!·${n-kk}!) = ${Math.min(kk,n-kk)<=8?`(${Array.from({length:Math.min(kk,n-kk)},(_,i)=>n-i).join('·')})/${Math.min(kk,n-kk)}! = `:''}${bStr(R.val)}`}
-  else if(k==='arrRep'){st.push(L.c_arrR);f=`Ā${sb(n)}<sup>${kk}</sup> = n<sup>k</sup> = ${n}<sup>${kk}</sup> = ${bStr(R.val)}`}
-  else if(k==='combRep'){st.push(L.c_combR);f=`C̄${sb(n)}<sup>${kk}</sup> = C${sb(n+kk-1)}<sup>${kk}</sup> = ${bStr(R.val)}`}
-  else if(k==='permRep'){st.push(L.c_permR);f=`P(${R.list.join(', ')}) = ${R.n}!/(${R.list.map(c=>c+'!').join('·')}) = ${bStr(R.val)}`}
-  else{st.push(L.c_prod);f=`N = ${R.list.join('·')} = ${bStr(R.val)}`}
-  st.push(f);return{st,ans:f.split(' = ').slice(-1)[0].replace(/^/,'N = ')}}
+
 /* ---------- 2. классическая ---------- */
-function solveClas(R){const L=T(),st=[];st.push(L.k_def);
-  if(R.m==='mn'){st.push(`P(A) = m/n = ${R.fav}/${R.tot} = ${fracB(R.num,R.den)}`);return{st,ans:`P(A) = ${fracB(R.num,R.den)}`}}
-  if(R.m==='dice'){st.push(L.k_dice(R.s,bStr(BigInt(R.tot))));st.push(`m = ${R.cnt}; P = ${R.cnt}/${R.tot} = ${fracB(R.num,R.den)}`);return{st,ans:`P = ${fracB(R.num,R.den)}`}}
-  st.push(L.k_urn(R.N,R.n,`C${sb(R.N)}<sup>${R.n}</sup> = ${bStr(R.den)}`));
-  const term=t=>t.map((k,i)=>`C${sb(i===0?R.a[0]:R.cev==='exact'?R.a[i]:R.N-R.a[0])}<sup>${k}</sup>`).join('·');
-  if(R.cev==='exact')st.push(`${L.k_fav} m = ${term(R.terms[0])} = ${bStr(R.num)}`);else st.push(`${L.k_sum} m = ${R.terms.map(term).join(' + ')} = ${bStr(R.num)}`);
-  st.push(`P = m/n = ${bStr(R.num)}/${bStr(R.den)} = ${fracB(R.num,R.den)}`);return{st,ans:`P = ${fracB(R.num,R.den)}`}}
+
 /* ---------- 3. сложение и умножение ---------- */
-function solveOps(R){const L=T(),st=[];
-  if(R.mode==='two'){const q=v=>fQ(v,4);if(R.rel==='ind')st.push(`${L.o_ind} P(AB) = P(A)·P(B) = ${q(R.pa)}·${q(R.pb)} = ${q(R.pab)}`);else if(R.rel==='agb')st.push(`${L.o_mul} P(AB) = P(B)·P(A | B) = ${q(R.pb)}·${q(R.given)} = ${q(R.pab)}`);else if(R.rel==='bga')st.push(`${L.o_mul} P(AB) = P(A)·P(B | A) = ${q(R.pa)}·${q(R.given)} = ${q(R.pab)}`);
-    st.push(`${L.o_add} P(A + B) = P(A) + P(B) − P(AB) = ${q(R.pa)} + ${q(R.pb)} − ${q(R.pab)} = ${q(R.sum)}`);
-    st.push(`${L.o_cond} P(A | B) = P(AB)/P(B) = ${q(R.agb)}; P(B | A) = ${q(R.bga)}`);st.push(`${L.o_rest} P(AB̄) = ${q(R.onlyA)}, P(ĀB) = ${q(R.onlyB)}, P(ĀB̄) = 1 − P(A + B) = ${q(R.none)}; ${L.o_one} ${q(R.one)}`);
-    st.push(R.indep?L.o_isInd:L.o_notInd);return{st,ans:`P(A + B) = ${q(R.sum)}, P(AB) = ${q(R.pab)}`}}
-  const n=R.n,ps=R.ps,qs=ps.map(p=>1-p);st.push(L.o_list(ps.map((p,i)=>`p${sb(i+1)} = ${fN(p,4)}`).join(', '),qs.map((q,i)=>`q${sb(i+1)} = ${fN(q,4)}`).join(', ')));
-  const pr=a=>a.map(v=>fN(v,4)).join('·');
-  if(R.ev==='all')st.push(`${L.o_all} P = ${ps.map((_,i)=>'p'+sb(i+1)).join('·')} = ${pr(ps)} = ${fN(R.P,5)}`);
-  else if(R.ev==='none')st.push(`${L.o_none} P = ${qs.map((_,i)=>'q'+sb(i+1)).join('·')} = ${pr(qs)} = ${fN(R.P,5)}`);
-  else if(R.ev==='one1')st.push(`${L.o_one1} P = 1 − ${qs.map((_,i)=>'q'+sb(i+1)).join('·')} = 1 − ${pr(qs)} = ${fN(R.P,5)}`);
-  else if(R.ev==='only')st.push(`${L.o_only(R.k)} P = ${ps.map((p,i)=>i===R.k-1?'p'+sb(i+1):'q'+sb(i+1)).join('·')} = ${pr(ps.map((p,i)=>i===R.k-1?p:1-p))} = ${fN(R.P,5)}`);
-  else{if(R.ev==='exact'&&n<=4){const combos=[];const rec=(i,ch)=>{if(i===n){if(ch.filter(Boolean).length===R.k)combos.push(ch.slice());return}ch.push(1);rec(i+1,ch);ch.pop();ch.push(0);rec(i+1,ch);ch.pop()};rec(0,[]);
-      st.push(`${L.o_exact(R.k)} P = ${combos.map(c=>c.map((b,i)=>(b?'p':'q')+sb(i+1)).join('')).join(' + ')} = ${fN(R.P,5)}`)}
-    st.push(`${L.o_gen} φ(z) = ${ps.map((p,i)=>`(q${sb(i+1)} + p${sb(i+1)}z)`).join('')} = ${R.c.map((v,i)=>`${fN(v,4)}${i?'z'+(i>1?'<sup>'+i+'</sup>':''):''}`).join(' + ')}`);
-    if(R.ev!=='exact'||n>4)st.push(`${R.ev==='exact'?L.o_coef(R.k):R.ev==='ge'?L.o_ge(R.k):L.o_le(R.k)} P = ${fN(R.P,5)}`)}
-  return{st,ans:`P = ${fN(R.P,5)}`}}
+
 /* ---------- 4. полная вероятность и Байес ---------- */
-function solveBayes(R){const L=T(),st=[],n=R.pr.length,A=R.bev==='notA'?'Ā':'A';if(R.unk>=0)st.push(L.h_unk(R.unk+1,fN(R.pr[R.unk],4)));
-  st.push(`${L.h_hyp} ${R.pr.map((p,i)=>`P(H${sb(i+1)}) = ${fQ(p,4)}`).join('; ')}; Σ = 1.`);
-  if(R.bev==='notA')st.push(`${L.h_not} ${R.L.map((v,i)=>`P(Ā | H${sb(i+1)}) = 1 − ${fN(R.lk[i],4)} = ${fN(v,4)}`).join('; ')}`);
-  st.push(`${L.h_total} P(${A}) = ${R.pr.map((p,i)=>`${fN(p,4)}·${fN(R.L[i],4)}`).join(' + ')} = ${fQ(R.PA,5)}`);
-  st.push(`${L.h_bayes(A)}${R.post.map((v,i)=>`<span class="sub">P(H${sb(i+1)} | ${A}) = ${fN(R.joint[i],5)}/${fN(R.PA,5)} = ${fQ(v,4)}</span>`).join('')}`);
-  return{st,ans:`P(${A}) = ${fQ(R.PA,5)}; P(H₁ | ${A}) = ${fQ(R.post[0],4)}`}}
+
 function valsNew(R,t){const V=T().v;if(t==='comb')return prop('N',bStr(R.val))+prop(T().v.dig,String(R.val.toString().length));if(t==='clas')return prop('m',bStr(R.num))+prop('n',bStr(R.den))+prop('P',fN(R.P,5));
   if(t==='ops')return R.mode==='two'?prop('P(A + B)',fQ(R.sum))+prop('P(AB)',fQ(R.pab))+prop('P(A | B)',fQ(R.agb))+prop('P(B | A)',fQ(R.bga))+prop(V.ind,R.indep?V.yes:V.no):R.c.map((v,k)=>prop(`P(${T().v.ex} ${k})`,fN(v,5))).join('');
   return prop('P(A)',fQ(R.PA,5))+R.post.map((v,i)=>prop(`P(H${sb(i+1)} | ${R.bev==='notA'?'Ā':'A'})`,fQ(v,4),`${T().v.prior}: ${fN(R.pr[i],4)}`)).join('')}

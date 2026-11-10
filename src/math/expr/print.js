@@ -1,5 +1,5 @@
 import { Nn, isN, mul, pow, toFrac } from './core.js';
-import { fmt } from '../../shared/format.js';
+import {fmt} from '../../shared/format.js';
 import { lang } from '../../shared/i18n.js';
 export const PRINT={v:'x'};
 export const FNAME={ru:{sin:'sin',cos:'cos',tan:'tg',cot:'ctg',ln:'ln',asin:'arcsin',acos:'arccos',atan:'arctg',sinh:'sh',cosh:'ch',tanh:'th'},
