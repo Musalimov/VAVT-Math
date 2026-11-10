@@ -1,3 +1,4 @@
+import { createExport } from '../../shared/export.js';
 import { createPanels } from '../../shared/panels.js';
 import { closeDrawers, initDrawers, openDrawer } from '../../shared/drawers.js';
 import { createGlossary } from '../../shared/glossary.js';
@@ -1552,100 +1553,11 @@ import { lang, langFrom } from '../../shared/i18n.js';
   initDrawers();
 
   /* ---------- экспорт ---------- */
-  let DL = null,
-    fmtMode = 'tex';
-  const LOCAL = !window.claude;
-  const canSave = () => !!(DL || LOCAL);
-  (async () => {
-    try {
-      if (window.claude && typeof window.claude.use === 'function') DL = await window.claude.use('downloads');
-    } catch (e) {
-      DL = null;
-    }
-    S.dlTried = true;
-    updExport();
-  })();
-  
-  function updExport() {
-    const L = T();
-    $('#xPng').disabled = !canSave();
-    $('#xNote').textContent = !canSave() && S.dlTried ? L.xNoDl : '';
-  }
-  function flash(msg, ms = 3500) {
-    $('#xNote').textContent = msg;
-    clearTimeout(flash.t);
-    if (ms) flash.t = setTimeout(updExport, ms);
-  }
-  async function saveFile(name, data) {
-    const L = T();
-    if (!DL) {
-      if (LOCAL) {
-        const u = URL.createObjectURL(data),
-          a = document.createElement('a');
-        a.href = u;
-        a.download = name;
-        document.body.appendChild(a);
-        a.click();
-        a.remove();
-        setTimeout(() => URL.revokeObjectURL(u), 5000);
-        flash(L.xSaved);
-      }
-      return;
-    }
-    try {
-      await DL.save({ filename: name, data });
-      flash(L.xSaved);
-    } catch (e) {
-      const c = e && e.code;
-      if (c === 'declined') {
-        updExport();
-        return;
-      }
-      if (
-        c === 'unavailable' ||
-        c === 'not_granted' ||
-        c === 'capability_disabled' ||
-        c === 'capability_removed'
-      ) {
-        DL = null;
-        S.dlTried = true;
-        updExport();
-        return;
-      }
-      flash(c === 'rate_limited' ? L.xBusy : L.xFail);
-    }
-  }
-  function exportPng() {
-    if (!canSave()) return;
-    S.stamp = $('#xStamp').checked;
-    renderNow();
-    cv.toBlob((b) => {
-      S.stamp = false;
-      req();
-      if (b) saveFile('macroeconomics.png', b);
-    }, 'image/png');
-  }
-  
-  async function copyTex() {
-    const ta = $('#xTex'),
-      L = T();
-    let ok = false;
-    try {
-      await navigator.clipboard.writeText(ta.value);
-      ok = true;
-    } catch (e) {}
-    if (!ok) {
-      ta.focus();
-      ta.select();
-      try {
-        ok = document.execCommand('copy');
-      } catch (e) {}
-    }
-    flash(ok ? L.xCopied : L.xSelect);
-  }
-  $('#xPng').onclick = exportPng;
-  
-  $('#xCopy').onclick = copyTex;
+  const ex = createExport({ name: 'macroeconomics', T, state: S, cv, renderNow, req });
+  const { canSave, updExport, flash, exportPng } = ex;
+  ex.init();
+  let fmtMode = 'tex';
+
   document.querySelectorAll('#xFmt button').forEach(
     (b) =>
       (b.onclick = () => {
