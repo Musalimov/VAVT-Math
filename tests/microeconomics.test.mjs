@@ -53,4 +53,3 @@ for (const c of golden.cases) {
     }
   });
 }
-
