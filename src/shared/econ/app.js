@@ -15,7 +15,7 @@ import { langFrom } from '../i18n.js';
  * AP — то, что у тренажёра своё (ключ хранилища, настройки по умолчанию,
  * разделы, решатели, рисование). Доступ ленивый (геттеры), поэтому H можно
  * описать до того, как определены функции тренажёра. (Имя AP, а не H: H — высота холста.)
- * Возвращает E — живой доступ к состоянию и функциям каркаса; E.start()
+ * Возвращает ECON — живой доступ к состоянию и функциям каркаса; ECON.start()
  * запускает тренажёр (один раз, после того как тренажёр всё определил).
  * Хуки: CHAP, COMP, DEF, DEMOS, FORMAL, FORMS, GROUPS, ILL, KEY, KEYS, PANELS, PRE, REL, S, T, TERMS, TOG, TOPICS, capKey, loadPreset, relTogs, renderAll, renderNow, renderTex.
  * @param {any} AP
@@ -494,6 +494,9 @@ export function createEconApp(AP) {
     },
     get txt() {
       return txt;
+    },
+    get seg() {
+      return seg;
     },
     start,
   };
