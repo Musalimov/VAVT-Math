@@ -1,3 +1,10 @@
+import { SOLVE, cS0, fQ, fVq, rS } from './solvers/steps.js';
+import { COMP, nI } from './solvers/compute.js';
+import { FORMS, GROUPS, PRE, TOPICS } from './content/topics.js';
+import { CHAP, DEMOS, FORMAL, ILL, REL, TERMS } from './content/glossary.js';
+import { T, TX, TX2 } from './content/tx.js';
+import { esc, unesc } from '../../shared/esc.js';
+import { STRATS, auction, backward, bargain, bayesGame, bimatrix, braess, coalitions, convexG, coreLP, cournot, dominance, evoAnalysis, galeShapley, hull, oligo, parseMat, parsePrefs, parseTree, pc, power, prenucleolus, replicator, shapley, subsets, tournament, zeroSum } from './solvers/games.js';
 import { closeDrawers } from '../../shared/drawers.js';
 import { openDrawer } from '../../shared/drawers.js';
 import { toast } from '../../shared/toast.js';
@@ -48,397 +55,81 @@ import { Q, Q1, Z0, toFrac } from '../../math/fractions.js';
 /* ---------- приведение к симметричной форме (как на семинаре) ---------- */
 
 /* ---------- теория игр: математика ---------- */
-function lpSolve(c,sense,cons,signs){const n=c.length;const P={vars:c.map((_,i)=>'v'+(i+1)),sense,c:c.map(Q.of),c0:Z0,cons:cons.map(k=>({a:k.a.map(Q.of),op:k.op,b:Q.of(k.b)})),sign:signs||c.map(()=>'free'),int:c.map(()=>false),bin:c.map(()=>false),anySign:true};
-  const r=simplex(P);return{status:r.status,value:r.value?r.value.v:null,x:r.x?r.x.map(q=>q.v):null}}
-function parseMat(txt){const rows=txt.trim().split('\n').map(l=>l.trim()).filter(Boolean).map(l=>l.replace(/[−–]/g,'-').split(/[\s;|\t]+/).filter(Boolean).map(s=>{const v=numG(s);return v}));
-  if(!rows.length||rows.some(r=>r.length!==rows[0].length))throw{msg:'len'};return rows}
+
+
 
 /* биматричная игра */
-function bimatrix(A,B){const m=A.length,n=A[0].length,br1=[],br2=[];for(let j=0;j<n;j++){const mx=Math.max(...A.map(r=>r[j]));br1.push(A.map(r=>Math.abs(r[j]-mx)<1e-12))}
-  for(let i=0;i<m;i++){const mx=Math.max(...B[i]);br2.push(B[i].map(v=>Math.abs(v-mx)<1e-12))}const pure=[];for(let i=0;i<m;i++)for(let j=0;j<n;j++)if(br1[j][i]&&br2[i][j])pure.push([i,j]);
-  let mixed=null;if(m===2&&n===2){const dA=A[0][0]-A[0][1]-A[1][0]+A[1][1],dB=B[0][0]-B[0][1]-B[1][0]+B[1][1];
-    if(Math.abs(dA)>1e-12&&Math.abs(dB)>1e-12){const q=(A[1][1]-A[0][1])/dA,p=(B[1][1]-B[1][0])/dB;if(p>1e-12&&p<1-1e-12&&q>1e-12&&q<1-1e-12){const u1=q*A[0][0]+(1-q)*A[0][1],u2=p*B[0][0]+(1-p)*B[1][0];mixed={p,q,u1,u2,dA,dB}}}}
-  return{m,n,br1,br2,pure,mixed,mixN:m===2&&n===2?[]:mixedNE(A,B)}}
+
 /* смешанные равновесия игры m×n перебором носителей одинакового размера k ≥ 2 (для невырожденных игр находит все).
    Носитель I×J: y на J уравнивает строки I для игрока 1, x на I уравнивает столбцы J для игрока 2, вне носителя выгоднее не станет. */
-function linSolve(M,b){const n=b.length,a=M.map((r,i)=>[...r,b[i]]);for(let c=0;c<n;c++){let p=c;for(let r=c+1;r<n;r++)if(Math.abs(a[r][c])>Math.abs(a[p][c]))p=r;
-    if(Math.abs(a[p][c])<1e-12)return null;[a[c],a[p]]=[a[p],a[c]];for(let r=0;r<n;r++){if(r===c)continue;const f=a[r][c]/a[c][c];for(let k=c;k<=n;k++)a[r][k]-=f*a[c][k]}}
-  return a.map((r,i)=>r[n]/r[i])}
-function subsets(n,k){const out=[],cur=[];const go=s=>{if(cur.length===k){out.push(cur.slice());return}for(let i=s;i<n;i++){cur.push(i);go(i+1);cur.pop()}};go(0);return out}
-function mixedNE(A,B){const m=A.length,n=A[0].length,eps=1e-9,out=[];
-  for(let k=2;k<=Math.min(m,n);k++)for(const I of subsets(m,k))for(const J of subsets(n,k)){
-    // y: Σ_j A[i][j]·y_j − u = 0 (i ∈ I), Σ y_j = 1
-    const My=I.map(i=>[...J.map(j=>A[i][j]),-1]);My.push([...J.map(()=>1),0]);const sy=linSolve(My,[...I.map(()=>0),1]);if(!sy)continue;
-    const Mx=J.map(j=>[...I.map(i=>B[i][j]),-1]);Mx.push([...I.map(()=>1),0]);const sx=linSolve(Mx,[...J.map(()=>0),1]);if(!sx)continue;
-    const yv=sy.slice(0,k),u1=sy[k],xv=sx.slice(0,k),u2=sx[k];if(yv.some(v=>v<=eps)||xv.some(v=>v<=eps))continue;
-    const x=Array(m).fill(0),y=Array(n).fill(0);I.forEach((i,t)=>x[i]=xv[t]);J.forEach((j,t)=>y[j]=yv[t]);
-    let ok=true;for(let i=0;i<m&&ok;i++){const r=A[i].reduce((s,a,j)=>s+a*y[j],0);if(r>u1+1e-7)ok=false}
-    for(let j=0;j<n&&ok;j++){let c=0;for(let i=0;i<m;i++)c+=B[i][j]*x[i];if(c>u2+1e-7)ok=false}
-    if(ok&&!out.some(e=>e.x.every((v,i)=>Math.abs(v-x[i])<1e-7)&&e.y.every((v,j)=>Math.abs(v-y[j])<1e-7)))out.push({x,y,u1,u2})}
-  return out}
-function dominance(A,B){let R=A.map((_,i)=>i),C=A[0].map((_,j)=>j);const steps=[];let ch=true;
-  while(ch){ch=false;for(const i of R){for(const k of R){if(k===i)continue;if(C.every(j=>A[k][j]>A[i][j])){steps.push({p:1,out:i,by:k});R=R.filter(x=>x!==i);ch=true;break}}if(ch)break}if(ch)continue;
-    for(const j of C){for(const k of C){if(k===j)continue;if(R.every(i=>B[i][k]>B[i][j])){steps.push({p:2,out:j,by:k});C=C.filter(x=>x!==j);ch=true;break}}if(ch)break}}
-  return{steps,R,C}}
+
+
+
+
 /* антагонистическая */
-function zeroSum(A){const m=A.length,n=A[0].length;const rmin=A.map(r=>Math.min(...r)),cmax=A[0].map((_,j)=>Math.max(...A.map(r=>r[j])));const lo=Math.max(...rmin),hi=Math.min(...cmax);
-  const saddle=[];for(let i=0;i<m;i++)for(let j=0;j<n;j++)if(A[i][j]===rmin[i]&&A[i][j]===cmax[j])saddle.push([i,j]);
-  // смешанные: max v, Σp a_ij >= v, Σp = 1, p >= 0
-  const c1=[...new Array(m).fill(0),1];const cons1=A[0].map((_,j)=>({a:[...A.map(r=>r[j]),-1],op:'>=',b:0}));cons1.push({a:[...new Array(m).fill(1),0],op:'=',b:1});
-  const r1=lpSolve(c1,'max',cons1,[...new Array(m).fill('ge'),'free']);
-  const c2=[...new Array(n).fill(0),1];const cons2=A.map(r=>({a:[...r,-1],op:'<=',b:0}));cons2.push({a:[...new Array(n).fill(1),0],op:'=',b:1});
-  const r2=lpSolve(c2,'min',cons2,[...new Array(n).fill('ge'),'free']);
-  return{rmin,cmax,lo,hi,saddle,p:r1.x?r1.x.slice(0,m):null,q:r2.x?r2.x.slice(0,n):null,v:r1.value}}
+
 /* Курно */
-function cournot(M,cs){const N=cs.length;let act=cs.map((_,i)=>i),q;for(let it=0;it<N+1;it++){const k=act.length,S=act.reduce((s,i)=>s+cs[i],0),Q=(k*M-S)/(k+1);q=cs.map((c,i)=>act.includes(i)?M-c-Q:0);const neg=act.filter(i=>q[i]<=1e-12);if(!neg.length)break;act=act.filter(i=>!neg.includes(i))}
-  const Q=q.reduce((a,b)=>a+b,0),P=Math.max(0,M-Q);return{N,q,Q,P,pi:q.map((x,i)=>x*(P-cs[i])),act}}
+
 /* задача торга */
-function hull(pts){pts=pts.slice().sort((a,b)=>a[0]-b[0]||a[1]-b[1]);const cr=(o,a,b)=>(a[0]-o[0])*(b[1]-o[1])-(a[1]-o[1])*(b[0]-o[0]);const lo=[],up=[];
-  for(const p of pts){while(lo.length>=2&&cr(lo[lo.length-2],lo[lo.length-1],p)<=1e-12)lo.pop();lo.push(p)}for(const p of pts.slice().reverse()){while(up.length>=2&&cr(up[up.length-2],up[up.length-1],p)<=1e-12)up.pop();up.push(p)}
-  up.pop();lo.pop();return lo.concat(up)}
-function pareto(H){// вершины на северо-восточной границе
-  return H.filter(p=>!H.some(q=>q[0]>=p[0]-1e-12&&q[1]>=p[1]-1e-12&&(q[0]>p[0]+1e-12||q[1]>p[1]+1e-12))).sort((a,b)=>a[0]-b[0])}
-function bargain(pts,d){const H=hull(pts),F=pareto(H);if(!F.length)throw{msg:'hull'};
-  const inside=p=>{for(let i=0;i<H.length;i++){const a=H[i],b=H[(i+1)%H.length];if((b[0]-a[0])*(p[1]-a[1])-(b[1]-a[1])*(p[0]-a[0])<-1e-9)return false}return true};
-  if(!inside(d))throw{msg:'dout'};
-  let best=null;const segs=F.length===1?[[F[0],F[0]]]:F.slice(0,-1).map((p,i)=>[p,F[i+1]]);
-  for(const[a,b]of segs){// x = a + t(b-a), maximize (x1-d1)(x2-d2), t in [0,1]
-    const u=[a[0]-d[0],a[1]-d[1]],w=[b[0]-a[0],b[1]-a[1]];const A2=w[0]*w[1],B1=u[0]*w[1]+u[1]*w[0];const cand=[0,1];if(Math.abs(A2)>1e-14)cand.push(-B1/(2*A2));
-    for(const t of cand){if(t<-1e-12||t>1+1e-12)continue;const x=[a[0]+t*w[0],a[1]+t*w[1]];if(x[0]<d[0]-1e-12||x[1]<d[1]-1e-12)continue;const v=(x[0]-d[0])*(x[1]-d[1]);if(!best||v>best.v+1e-12)best={x,v}}}
-  // идеальная точка: max x_i при x_j >= d_j
-  const maxAlong=(i)=>{let mx=-Infinity;for(let k=0;k<H.length;k++){const a=H[k],b=H[(k+1)%H.length];for(const t of[0,1]){const p=t?b:a;if(p[1-i]>=d[1-i]-1e-12)mx=Math.max(mx,p[i])}const dd=b[1-i]-a[1-i];if(Math.abs(dd)>1e-14){const t=(d[1-i]-a[1-i])/dd;if(t>=0&&t<=1)mx=Math.max(mx,a[i]+t*(b[i]-a[i]))}}return mx};
-  const ideal=[maxAlong(0),maxAlong(1)];const dir=[ideal[0]-d[0],ideal[1]-d[1]];let ks=null;
-  for(const[a,b]of segs){const w=[b[0]-a[0],b[1]-a[1]];const det=dir[0]*(-w[1])-dir[1]*(-w[0]);if(Math.abs(det)<1e-14){continue}const rx=a[0]-d[0],ry=a[1]-d[1];const s=(rx*(-w[1])-ry*(-w[0]))/det,t=(dir[0]*ry-dir[1]*rx)/det;if(t>=-1e-9&&t<=1+1e-9&&s>=0){ks={x:[d[0]+s*dir[0],d[1]+s*dir[1]],s};break}}
-  if(!ks&&F.length===1)ks={x:F[0]};return{H,F,nash:best,ideal,ks}}
+
+
+
 /* кооперативные игры */
-function coalitions(n){const L=[];for(let m=1;m<(1<<n);m++)L.push(m);return L.sort((a,b)=>pc(a)-pc(b)||a-b)}
-const pc=m=>m.toString(2).split('').filter(c=>c==='1').length;
-function perms(n){const r=[];const rec=(a,u)=>{if(a.length===n){r.push(a.slice());return}for(let i=0;i<n;i++)if(!u[i]){u[i]=1;a.push(i);rec(a,u);a.pop();u[i]=0}};rec([],[]);return r}
-function shapley(n,v){const ps=perms(n),phi=new Array(n).fill(0),tab=[];for(const p of ps){let m=0;const row=[];for(const i of p){const nm=m|(1<<i);row.push([i,v[nm]-v[m]]);phi[i]+=v[nm]-v[m];m=nm}tab.push({p,row})}return{phi:phi.map(x=>x/ps.length),tab}}
-function coreLP(n,v){const N=(1<<n)-1,cons=[];for(const K of coalitions(n)){if(K===N)continue;cons.push({a:[...Array(n)].map((_,i)=>(K>>i)&1),op:'>=',b:v[K]})}cons.push({a:new Array(n).fill(1),op:'=',b:v[N]});
-  const r=lpSolve(new Array(n).fill(0),'max',cons,new Array(n).fill('free'));return{nonempty:r.status==='optimal',x:r.x}}
-function convexG(n,v){const viol=[];for(let S=1;S<(1<<n);S++)for(let T=S+1;T<(1<<n);T++){if(v[S|T]+v[S&T]<v[S]+v[T]-1e-9)viol.push([S,T])}return viol}
-function prenucleolus(n,v){const N=(1<<n)-1,Ks=coalitions(n).filter(K=>K!==N);let free=Ks.slice();const fixed=[];const steps=[];const vec=K=>[...Array(n)].map((_,i)=>(K>>i)&1);
-  for(let it=0;it<20&&free.length;it++){// min t: v(K) - x(K) <= t (free), = e (fixed), x(N)=v(N)
-    const cons=[];free.forEach(K=>cons.push({a:[...vec(K).map(a=>-a),-1],op:'<=',b:-v[K]}));fixed.forEach(([K,e])=>cons.push({a:[...vec(K),0],op:'=',b:v[K]-e}));cons.push({a:[...new Array(n).fill(1),0],op:'=',b:v[N]});
-    const r=lpSolve([...new Array(n).fill(0),1],'min',cons,new Array(n+1).fill('free'));if(r.status!=='optimal')return{fail:true,steps};const t=r.value;const tight=[];
-    for(const K of free){const c2=cons.map(c=>({...c}));c2.push({a:[...new Array(n).fill(0),1],op:'=',b:t});const r2=lpSolve([...vec(K),0],'min',c2,new Array(n+1).fill('free'));// min x(K) => max excess
-      const r3=lpSolve([...vec(K),0],'max',c2,new Array(n+1).fill('free'));if(r3.status==='optimal'&&Math.abs((v[K]-r3.value)-t)<1e-9)tight.push(K)}
-    if(!tight.length)break;tight.forEach(K=>fixed.push([K,t]));free=free.filter(K=>!tight.includes(K));steps.push({t,tight,x:r.x.slice(0,n)});
-    // ранг
-    const rows=[new Array(n).fill(1),...fixed.map(([K])=>vec(K))];if(rank(rows)>=n){const b=[v[N],...fixed.map(([K,e])=>v[K]-e)];return{x:solveLS(rows,b),steps}}}
-  return{x:steps.length?steps[steps.length-1].x:null,steps}}
-function rank(M){M=M.map(r=>r.slice());let rk=0;const n=M[0].length;for(let c=0;c<n&&rk<M.length;c++){let p=-1;for(let i=rk;i<M.length;i++)if(Math.abs(M[i][c])>1e-9){p=i;break}if(p<0)continue;[M[rk],M[p]]=[M[p],M[rk]];for(let i=0;i<M.length;i++)if(i!==rk){const f=M[i][c]/M[rk][c];for(let j=c;j<n;j++)M[i][j]-=f*M[rk][j]}rk++}return rk}
-function solveLS(A,b){const n=A[0].length;const M=A.map((r,i)=>[...r,b[i]]);let row=0;const piv=[];for(let c=0;c<n;c++){let p=-1;for(let i=row;i<M.length;i++)if(Math.abs(M[i][c])>1e-9){p=i;break}if(p<0)continue;[M[row],M[p]]=[M[p],M[row]];const pv=M[row][c];M[row]=M[row].map(x=>x/pv);for(let i=0;i<M.length;i++)if(i!==row){const f=M[i][c];M[i]=M[i].map((x,j)=>x-f*M[row][j])}piv.push(c);row++}const x=new Array(n).fill(0);piv.forEach((c,i)=>{x[c]=M[i][n]});return x}
+
+
+
+
+
+
+
+
+
 /* аукционы: оценки ~ U[0, ω] */
-function auction(n,w){return{fp:v=>(n-1)/n*v,sp:v=>v,ap:v=>(n-1)/n*Math.pow(v,n)/Math.pow(w,n-1),rev:w*(n-1)/(n+1)}}
+
 /* ---------- выражения от двух переменных x, y ---------- */
 
 /* ---------- непрерывная игра ---------- */
-function contGame(H1,H2,a1,b1,a2,b2){const N=240,fine=1200;const xs=[...Array(N+1)].map((_,k)=>a1+(b1-a1)*k/N),ys=[...Array(N+1)].map((_,k)=>a2+(b2-a2)*k/N);
-  const argmax=(f,a,b)=>{let bv=-Infinity,bx=[];for(let k=0;k<=fine;k++){const t=a+(b-a)*k/fine,v=f(t);if(!isFinite(v))continue;if(!bx.length||v>bv+1e-9*Math.max(1,Math.abs(bv))){bv=v;bx=[t]}else if(Math.abs(v-bv)<=1e-9*Math.max(1,Math.abs(bv)))bx.push(t)}
-    const stp=(b-a)/fine;if(bx.length>=1&&bx.length<=3&&bx[bx.length-1]-bx[0]<=2.5*stp){let l=Math.max(a,bx[0]-stp),r=Math.min(b,bx[bx.length-1]+stp);for(let it=0;it<60;it++){const m1=l+(r-l)/3,m2=r-(r-l)/3;if(f(m1)<f(m2))l=m1;else r=m2}const xr=(l+r)/2,vr=f(xr);if(vr>=bv){bx=[xr];bv=vr}}return{x:bx,v:bv}};
-  const br1=ys.map(y=>argmax(x=>H1(x,y),a1,b1)),br2=xs.map(x=>argmax(y=>H2(x,y),a2,b2));
-  // равновесия: итерации наилучших ответов из разных стартов + сеточная проверка
-  let eq=[];const add=p=>{if(!eq.some(q=>Math.hypot(q[0]-p[0],q[1]-p[1])<1e-4*(1+Math.abs(b1-a1))))eq.push(p)};
-  const isNE=(x,y)=>{const r1=argmax(t=>H1(t,y),a1,b1),r2=argmax(t=>H2(x,t),a2,b2);const t1=1e-7*Math.max(1,Math.abs(r1.v)),t2=1e-7*Math.max(1,Math.abs(r2.v));return H1(x,y)>=r1.v-t1&&H2(x,y)>=r2.v-t2};
-  for(const sx of[a1,b1,(a1+b1)/2,a1+(b1-a1)*.25])for(const sy of[a2,b2,(a2+b2)/2,a2+(b2-a2)*.75]){let x=sx,y=sy;for(let it=0;it<200;it++){const nx=argmax(t=>H1(t,y),a1,b1).x[0],ny=argmax(t=>H2(nx,t),a2,b2).x[0];const d=Math.hypot(nx-x,ny-y);x=nx;y=ny;if(d<1e-10)break}if(isNE(x,y))add([x,y])}
-  const grid=[];const G=60;for(let i=0;i<=G;i++)for(let j=0;j<=G;j++){const x=a1+(b1-a1)*i/G,y=a2+(b2-a2)*j/G;if(isNE(x,y))grid.push([x,y])}
-  grid.forEach(add);const gain=([x,y])=>Math.max(argmax(t=>H1(t,y),a1,b1).v-H1(x,y),argmax(t=>H2(x,t),a2,b2).v-H2(x,y));const many=grid.length>6;
-  const polish=([x,y])=>{for(let it=0;it<400;it++){const nx=argmax(t=>H1(t,y),a1,b1).x[0],ny=argmax(t=>H2(nx,t),a2,b2).x[0];if(Math.abs(nx-x)+Math.abs(ny-y)<1e-13){x=nx;y=ny;break}x=nx;y=ny}return isNE(x,y)?[x,y]:null};
-  let out=eq;if(!many){out=[];eq=eq.map(p=>polish(p)||p);const tol=.01*Math.max(b1-a1,b2-a2);eq.map(p=>[p,gain(p)]).sort((u,v)=>u[1]-v[1]).forEach(([p])=>{if(!out.some(q=>Math.hypot(q[0]-p[0],q[1]-p[1])<tol))out.push(p)});out=out.map(p=>p.map(v=>{const r=Math.round(v*1e4)/1e4;return Math.abs(r-v)<2e-4?r:v}))}
-  let line=null;if(many&&grid.length>=3){const pts=grid.filter(p=>!grid.every(q=>q===p));const[p0]=grid;const far=grid.reduce((b,q)=>Math.hypot(q[0]-p0[0],q[1]-p0[1])>Math.hypot(b[0]-p0[0],b[1]-p0[1])?q:b,p0);const dx=far[0]-p0[0],dy=far[1]-p0[1],L=Math.hypot(dx,dy)||1;
-    const on=grid.filter(q=>Math.abs((q[0]-p0[0])*dy-(q[1]-p0[1])*dx)/L<1e-6*(1+L));const off=grid.filter(q=>!on.includes(q));line={a:p0,b:far,n:on.length,off}}
-  return{xs,ys,br1,br2,eq:out,grid,many,line}}
+
 /* ---------- олигополия ---------- */
-function oligo(model,M,c1,c2){const mono=(M-c1)/2,out={model,M,c1,c2};
-  if(model==='stack'){const f2=q1=>Math.max(0,(M-c2-q1)/2),prof=q1=>{const q2=f2(q1);return q1*(Math.max(0,M-q1-q2)-c1)};const lim=Math.max(0,M-c2);
-    const cand=[0,lim,Math.min(lim,Math.max(0,(M-2*c1+c2)/2)),Math.max(lim,(M-c1)/2)];let q1=cand[0];for(const q of cand)if(prof(q)>prof(q1)+1e-12)q1=q;
-    const q2=f2(q1),P=Math.max(0,M-q1-q2);Object.assign(out,{q:[q1,q2],P,pi:[q1*(P-c1),q2*(P-c2)],deter:q2<=1e-12&&Math.abs(q1-lim)<1e-12&&(M-c1)/2<lim})}
-  else if(model==='bert'){let p,q;if(Math.abs(c1-c2)<1e-12){p=[c1,c2];const Q=Math.max(0,M-c1);q=[Q/2,Q/2]}else if(c1<c2){const pm=(M+c1)/2;const p1=Math.min(c2,pm);p=[p1,c2];q=[Math.max(0,M-p1),0]}else{const pm=(M+c2)/2;const p2=Math.min(c1,pm);p=[c1,p2];q=[0,Math.max(0,M-p2)]}
-    Object.assign(out,{p,q,P:Math.min(...p),pi:[q[0]*(p[0]-c1),q[1]*(p[1]-c2)]})}
-  else{const r=cournot(M,[c1,c2]);Object.assign(out,{q:r.q,P:r.P,pi:r.pi})}
-  // сравнение при одинаковых издержках c1
-  const c=c1,cmp={mono:{Q:(M-c)/2,P:(M+c)/2},cour:{Q:2*(M-c)/3,P:(M+2*c)/3},stack:{Q:3*(M-c)/4,P:(M+3*c)/4},comp:{Q:M-c,P:c}};for(const k in cmp){const o=cmp[k];o.PS=o.Q*(o.P-c);o.CS=o.Q*o.Q/2;o.DWL=(M-c-o.Q)*(o.P-c)/2}out.cmp=cmp;return out}
+
 /* ---------- Хотеллинг ---------- */
-function hotelPrice(a,b,t,c){// фирмы в точках a и 1-b, линейные транспортные издержки t
-  const D1=(p1,p2)=>{const xh=(p2-p1+t*(1-b+a))/(2*t);return Math.max(0,Math.min(1,xh))};const pi1=(p1,p2)=>(p1-c)*D1(p1,p2),pi2=(p1,p2)=>(p2-c)*(1-D1(p1,p2));
-  const br=(f,o,first)=>{let l=c,r=c+4*t+1;for(let it=0;it<100;it++){const m1=l+(r-l)/3,m2=r-(r-l)/3;const v1=first?f(m1,o):f(o,m1),v2=first?f(m2,o):f(o,m2);if(v1<v2)l=m1;else r=m2}return(l+r)/2};
-  let p1=c+t,p2=c+t;for(let it=0;it<300;it++){const n1=br(pi1,p2,true),n2=br(pi2,n1,false);if(Math.abs(n1-p1)+Math.abs(n2-p2)<1e-12){p1=n1;p2=n2;break}p1=n1;p2=n2}
-  const f1=c+t*(1+(a-b)/3),f2=c+t*(1+(b-a)/3);return{p:[p1,p2],formula:[f1,f2],x:D1(p1,p2),pi:[pi1(p1,p2),pi2(p1,p2)]}}
-function hotelLoc(){return{eq:[.5,.5]}}
+
+
 /* ---------- дерево ---------- */
-function parseTree(txt){const nodes={},order=[];for(const l0 of txt.split('\n')){const l=l0.trim();if(!l)continue;const m=/^([^:]+):\s*(\d+)\s*(.*)$/.exec(l);if(!m)throw{msg:'tree'};const id=m[1].trim(),pl=+m[2];
-    const acts=m[3].split('|').map(s=>s.trim()).filter(Boolean).map(s=>{const mm=/^(.*?)\s*->\s*(.+)$/.exec(s);if(!mm)throw{msg:'tree'};const to=mm[2].trim();const pay=/^\((.*)\)$/.exec(to);
-      return{a:mm[1].trim(),to:pay?null:to,pay:pay?pay[1].split(/[;,]/).map(v=>numG(v)):null}});if(!acts.length)throw{msg:'tree'};nodes[id]={id,pl,acts};order.push(id)}
-  if(!order.length)throw{msg:'tree'};for(const id of order)for(const a of nodes[id].acts)if(a.to&&!nodes[a.to])throw{msg:'treeRef',x:a.to};return{nodes,root:order[0],order}}
-function backward(T){const val={},choice={},ties={},log=[];let np=0;const vis=new Set();
-  const rec=id=>{if(vis.has(id))throw{msg:'treeCyc'};vis.add(id);const n=T.nodes[id];const opts=n.acts.map(a=>a.pay?a.pay:rec(a.to));np=Math.max(np,...opts.map(o=>o.length));const k=n.pl-1;let best=0;
-    opts.forEach((o,i)=>{if(o[k]>opts[best][k]+1e-12)best=i});ties[id]=opts.filter(o=>Math.abs(o[k]-opts[best][k])<1e-12).length>1;choice[id]=best;val[id]=opts[best];log.push({id,pl:n.pl,opts,best});vis.delete(id);return opts[best]};
-  const v=rec(T.root);const path=[];let cur=T.root;while(cur){const n=T.nodes[cur],a=n.acts[choice[cur]];path.push([cur,choice[cur]]);cur=a.to}return{v,choice,val,log,path,ties,np}}
+
+
 /* ---------- повторяющаяся дилемма ---------- */
-const STRATS=['ALLC','ALLD','TFT','STFT','GRIM','WSLS','RAND'];
-function playRep(s1,s2,n,pay,seed){let h1=[],h2=[];let r=seed;const rnd=()=>{r=(r*1103515245+12345)%2147483648;return r/2147483648};
-  const mv=(s,my,op)=>{const t=my.length;switch(s){case'ALLC':return 1;case'ALLD':return 0;case'TFT':return t?op[t-1]:1;case'STFT':return t?op[t-1]:0;case'GRIM':return op.includes(0)?0:1;case'WSLS':return t?(my[t-1]===op[t-1]?1:0):1;default:return rnd()<.5?1:0}};
-  let u1=0,u2=0;const P=(a,b)=>a&&b?[pay.R,pay.R]:a&&!b?[pay.S,pay.T]:!a&&b?[pay.T,pay.S]:[pay.P,pay.P];for(let t=0;t<n;t++){const a=mv(s1,h1,h2),b=mv(s2,h2,h1);h1.push(a);h2.push(b);const[x,y]=P(a,b);u1+=x;u2+=y}return{u1,u2,h1,h2}}
-function tournament(n,pay){const M=STRATS.map(()=>STRATS.map(()=>0));STRATS.forEach((a,i)=>STRATS.forEach((b,j)=>{M[i][j]=playRep(a,b,n,pay,7+i*31+j).u1}));const tot=M.map(r=>r.reduce((x,y)=>x+y,0));return{M,tot}}
+
+
+
 /* ---------- байесовская игра ---------- */
-function bayesGame(mu,A1,B1,A2,B2){const rows=[0,1],cols=[[0,0],[0,1],[1,0],[1,1]];const A=rows.map(i=>cols.map(([a,b])=>mu*A1[i][a]+(1-mu)*A2[i][b])),B=rows.map(i=>cols.map(([a,b])=>mu*B1[i][a]+(1-mu)*B2[i][b]));
-  return{A,B,cols,bm:bimatrix(A,B),dom:dominance(A,B)}}
+
 /* ---------- эволюционная ---------- */
-function evoAnalysis(a){const[a11,a12]=a[0],[a21,a22]=a[1];const ess=[];if(a11>a21+1e-12||(Math.abs(a11-a21)<1e-12&&a12>a22+1e-12))ess.push('1');if(a22>a12+1e-12||(Math.abs(a22-a12)<1e-12&&a21>a11+1e-12))ess.push('2');
-  const den=a12-a22+a21-a11;let xs=null,mixedESS=false;if(Math.abs(den)>1e-12){const x=(a12-a22)/den;if(x>1e-12&&x<1-1e-12){xs=x;mixedESS=a21>a11&&a12>a22}}
-  const g=x=>x*(1-x)*((x*a11+(1-x)*a12)-(x*a21+(1-x)*a22));return{ess,xs,mixedESS,g}}
-function replicator(g,x0,Tm,dt=.01){const out=[[0,x0]];let x=x0;for(let t=dt;t<=Tm+1e-9;t+=dt){const k1=g(x),k2=g(x+dt*k1/2),k3=g(x+dt*k2/2),k4=g(x+dt*k3);x+=dt*(k1+2*k2+2*k3+k4)/6;x=Math.max(0,Math.min(1,x));out.push([t,x])}return out}
+
+
 /* ---------- голосование ---------- */
-function power(q,w){const n=w.length,tot=w.reduce((a,b)=>a+b,0),fact=[1];for(let i=1;i<=n;i++)fact[i]=fact[i-1]*i;const ss=new Array(n).fill(0),bz=new Array(n).fill(0);const win=[];
-  for(let m=0;m<(1<<n);m++){let s=0,k=0;for(let i=0;i<n;i++)if((m>>i)&1){s+=w[i];k++}const W=s>=q-1e-12;if(W)win.push(m);if(W)continue;for(let i=0;i<n;i++)if(!((m>>i)&1)&&s+w[i]>=q-1e-12){ss[i]+=fact[k]*fact[n-k-1]/fact[n];bz[i]++}}
-  const bt=bz.reduce((a,b)=>a+b,0);const minimal=win.filter(m=>{for(let i=0;i<n;i++)if((m>>i)&1){let s=0;for(let j=0;j<n;j++)if(j!==i&&(m>>j)&1)s+=w[j];if(s>=q-1e-12)return false}return true});
-  const veto=w.map((_,i)=>win.every(m=>(m>>i)&1)),dummy=bz.map(b=>b===0);return{ss,bz,bzN:bz.map(b=>bt?b/bt:0),bzRaw:bz.map(b=>b/Math.pow(2,n-1)),win:win.length,minimal,veto,dummy,tot}}
+
 /* ---------- Гейл–Шепли ---------- */
-function galeShapley(propPref,recPref){const P=Object.keys(propPref),Rk=Object.keys(recPref);const next={},hold={},log=[];P.forEach(p=>{next[p]=0});let free=P.slice(),round=0;
-  while(free.length&&round<200){round++;const props=[];const nf=[];for(const p of free){const list=propPref[p];if(next[p]>=list.length)continue;const r=list[next[p]++];props.push([p,r])}
-    const ev=[];for(const[p,r]of props){const rank=x=>{const i=(recPref[r]||[]).indexOf(x);return i<0?1e9:i};const cur=hold[r];if(rank(p)>=1e9){ev.push([p,r,'rej']);nf.push(p);continue}
-      if(cur===undefined){hold[r]=p;ev.push([p,r,'acc'])}else if(rank(p)<rank(cur)){hold[r]=p;ev.push([p,r,'acc',cur]);nf.push(cur)}else{ev.push([p,r,'rej']);nf.push(p)}}
-    log.push({round,ev});free=nf.filter(p=>next[p]<propPref[p].length)}
-  const match={};for(const r in hold)match[hold[r]]=r;
-  const block=[];for(const p of P)for(const r of Rk){if(match[p]===r)continue;const pr=propPref[p].indexOf(r);if(pr<0)continue;const pc=match[p]===undefined?1e9:propPref[p].indexOf(match[p]);const rr=(recPref[r]||[]).indexOf(p);if(rr<0)continue;const holder=hold[r];const rc=holder===undefined?1e9:recPref[r].indexOf(holder);if(pr<pc&&rr<rc)block.push([p,r])}
-  return{match,log,block,P,R:Rk}}
-function parsePrefs(txt){const o={};for(const l0 of txt.split('\n')){const l=l0.trim();if(!l)continue;const m=/^([^:]+):\s*(.*)$/.exec(l);if(!m)throw{msg:'pref'};o[m[1].trim()]=m[2].trim().split(/[\s,;>]+/).filter(Boolean)}if(!Object.keys(o).length)throw{msg:'pref'};return o}
+
+
 /* ---------- Браес ---------- */
-function braess(N,a,b,e,bridge){// маршруты: верх A-C-B, низ A-D-B, зигзаг A-C-D-B
-  const times=(x1,x2,x3)=>[(x1+x3)/a+b,b+(x2+x3)/a,(x1+x3)/a+e+(x2+x3)/a];const R=bridge?3:2;let best=null;
-  const subs=bridge?[[0],[1],[2],[0,1],[0,2],[1,2],[0,1,2]]:[[0],[1],[0,1]];
-  for(const sup of subs){// решаем: используемые маршруты имеют равное время, сумма = N
-    let x=null;const solve=()=>{// линейная система: переменные x_s (s в sup) и T
-      const k=sup.length,M=[],rhs=[];const coef=(r,j)=>{const[c1,c2,c3]=[[1/a,0,1/a],[0,1/a,1/a],[1/a,1/a,2/a]][r];return[c1,c2,c3][j]};const cst=[b,b,e];
-      for(const r of sup){const row=sup.map(j=>coef(r,j));row.push(-1);M.push(row);rhs.push(-cst[r])}M.push([...sup.map(()=>1),0]);rhs.push(N);const sol=solveLS(M,rhs);return sol};
-    const s=solve();if(!s)continue;const xv=[0,0,0];sup.forEach((j,i)=>{xv[j]=s[i]});if(xv.some(v=>v<-1e-9))continue;const t=times(...xv);const T=Math.min(...sup.map(j=>t[j]));if(sup.some(j=>Math.abs(t[j]-T)>1e-7))continue;
-    let okk=true;for(let j=0;j<R;j++)if(!sup.includes(j)&&t[j]<T-1e-9)okk=false;if(okk){best={x:xv.map(v=>Math.max(0,v)),t,T};break}}
-  // социальный оптимум
-  let opt=null;const G=200;for(let i=0;i<=G;i++)for(let j=0;j<=(bridge?G-i:0);j++){const x3=bridge?N*j/G:0,x1=N*i/G;const x2=N-x1-x3;if(x2<-1e-9)continue;const t=times(x1,x2,x3);const tot=x1*t[0]+x2*t[1]+x3*t[2];if(!opt||tot<opt.tot)opt={x:[x1,x2,x3],tot,avg:tot/N}}
-  return{eq:best,opt}}
 
-const TXG={
-ru:{title:'Теория игр',brand:'Теория игр <span class="sub">наглядно</span>',canvas:'Иллюстрация игры',p_topic:'Игра',p_presets:'Примеры',
- t_mat:'Матричные игры',t_cour:'Курно',t_barg:'Задача торга',t_coop:'Кооперативные',t_auct:'Аукционы',
- tt:{mat:'Равновесие Нэша в биматричных играх, доминирование, смешанные стратегии; антагонистические игры и седловая точка',cour:'Глава 6: олигополия Курно — функции наилучшего ответа и равновесие Нэша',barg:'Глава 7: задача торга (M, d), решения Нэша и Калаи–Смородинского',coop:'Глава 8: кооперативные игры — ядро, вектор Шепли, выпуклость, преднуклеолус',auct:'Глава 9: аукционы с независимыми частными ценностями, равновесные ставки, эквивалентность дохода'},
- typeHelp:'<p>Матрица — строки по строкам, числа через пробел: <code>3 0</code> и <code>5 1</code>. Дроби и отрицательные числа можно: <code>-1/2</code>.</p><p>Задача торга: вершины множества M — по точке на строку, <code>240 0</code>. Множество берётся как выпуклая оболочка этих точек.</p><p>Кооперативная игра: по строке на коалицию, «состав значение», например <code>12 36</code> — это v({1, 2}) = 36. Не указанные коалиции получают 0.</p>',
- f:{kind:'Тип игры',A:'Выигрыши игрока 1 (строки)',B:'Выигрыши игрока 2',M:'M (цена P = M − Q)',cs:'Издержки фирм cᵢ',pts:'Вершины множества M',d1:'d₁',d2:'d₂',coal:'v(K): коалиция и значение',n:'Число участников n',w:'ω — оценки ~ U[0; ω]',v:'Ваша оценка v'},
- opt:{kind:{bi:'биматричная',zs:'антагонистическая (A, −A)'}},
- err:{len:'В строках разное количество чисел.',bug:'Не удалось вычислить: внутренняя ошибка или слишком большие числа. Если ввод верный — сообщите, пожалуйста, в Issues на GitHub (раздел и ввод).',num:'Не получилось прочитать число.',hull:'Нужно хотя бы две точки.',dout:'Точка d должна лежать в множестве M.',coal:'Строки вида «12 36»: номера игроков от 1 до 4 и значение.',n:'n должно быть целым от 2 до 30.',w:'ω должно быть положительным.',big:'Слишком большая матрица (до 6×6).',lp:'Не удалось решить задачу линейной оптимизации.'},
- s_br1:'Наилучшие ответы игрока 1: в каждом столбце подчёркнут максимум его выигрыша.',s_br2:'Наилучшие ответы игрока 2: в каждой строке подчёркнут максимум его выигрыша.',
- s_ne:ks=>`Равновесие Нэша — клетка, где оба выигрыша подчёркнуты (каждый отвечает наилучшим образом на стратегию другого): ${ks}.`,s_noNe:'Клеток, где подчёркнуты оба выигрыша, нет: равновесия в чистых стратегиях нет.',
- s_dom:(p,o,b)=>`Стратегия ${o} игрока ${p} строго доминируется стратегией ${b}: при любом ответе соперника она хуже. Вычёркиваем её.`,s_domNo:'Строго доминируемых стратегий нет.',s_domRes:r=>`После вычёркивания осталось: ${r}.`,
- s_mix:(q,p)=>`Смешанное равновесие: игрок 1 выбирает первую строку с вероятностью p, игрок 2 — первый столбец с вероятностью q, и каждый делает соперника безразличным. Из равенства ожидаемых выигрышей игрока 1: q = ${q}; игрока 2: p = ${p}.`,
- s_mixU:(a,b)=>`Ожидаемые выигрыши в смешанном равновесии: ${a} и ${b}.`,s_mixNo:'Внутреннего смешанного равновесия нет.',s_mixSup:'Смешанные равновесия ищем перебором носителей: для каждой пары подмножеств стратегий одинакового размера уравниваем выигрыши соперника и проверяем, что вне носителя выгоднее не становится.',s_mixNe:(x,y,a,b)=>`Смешанное равновесие: игрок 1 — x* = ${x}, игрок 2 — y* = ${y}; ожидаемые выигрыши ${a} и ${b}.`,s_mixNNo:'Смешанных равновесий с носителем из двух и более стратегий нет — равновесия только чистые.',s_mixDeg:'Перебор носителей не нашёл равновесия: игра вырожденная (есть равные выигрыши). По теореме Нэша равновесие существует — попробуйте исключить доминируемые стратегии или слегка изменить равные выигрыши.',
- s_zsMin:'Минимумы по строкам — гарантированный выигрыш игрока 1:',s_zsMax:'Максимумы по столбцам — гарантированный проигрыш игрока 2:',s_zsLo:(a,b)=>`Нижняя цена игры α = max min = ${a}, верхняя β = min max = ${b}.`,
- s_saddle:(c,v)=>`α = β, значит, есть седловая точка ${c}: цена игры v = ${v}, оптимальны чистые стратегии.`,s_noSaddle:'α < β: седловой точки нет, решение в смешанных стратегиях.',
- s_lp:'Цена игры и оптимальные смешанные стратегии — решение пары двойственных задач ЛП: max v при Σpᵢaᵢⱼ ⩾ v для всех j, Σpᵢ = 1.',s_zsRes:(p,q,v)=>`p* = ${p}, q* = ${q}, цена игры v = ${v}.`,s_graph:'Для игры 2×n на графике — графический метод: прямые выигрыша против каждого столбца, нижняя огибающая и её максимум.',
- s_c1:'Прибыль фирмы i: Hᵢ = qᵢ(M − Q) − cᵢqᵢ. Условие первого порядка ∂Hᵢ/∂qᵢ = 0 даёт функцию наилучшего ответа:',s_c2:'qᵢ = (M − cᵢ − Σⱼ≠ᵢ qⱼ)/2, то есть qᵢ + Q = M − cᵢ.',
- s_c3:(N,Q)=>`Складываем по всем ${N} фирмам: Q(N + 1) = NM − Σcᵢ, откуда Q = ${Q}.`,s_c4:'Объёмы фирм qᵢ = M − cᵢ − Q:',s_cOut:i=>`У фирмы ${i} объём получился бы неположительным — ей выгоднее не производить; пересчитываем без неё.`,
- s_cSym:(f)=>`При одинаковых издержках qᵢ = (M − c)/(N + 1) = ${f} — формула из примера 13.`,s_cP:(P)=>`Цена P = M − Q = ${P}.`,
- s_b1:'Множество M — выпуклая оболочка заданных точек, d — точка несогласия.',s_bPar:p=>`Парето-граница (северо-восточный край M): ${p}.`,
- s_bN:(x,v)=>`Решение Нэша — точка M, максимизирующая (x₁ − d₁)(x₂ − d₂): ${x}, произведение ${v}.`,s_bI:x=>`Идеальная точка — наибольший выигрыш каждого при выигрыше другого не ниже d: ${x}.`,
- s_bK:x=>`Решение Калаи–Смородинского — точка Парето-границы на отрезке от d к идеальной точке: (x₁ − d₁) : (x₂ − d₂) = (a₁ − d₁) : (a₂ − d₂); получаем ${x}.`,s_bSame:'Оба решения совпали.',
- s_v:'Характеристическая функция:',s_sh:'Вектор Шепли — средний вклад игрока по всем порядкам присоединения к коалиции:',s_shRes:x=>`φ = ${x}.`,
- s_core:'Ядро — дележи x с Σxᵢ = v(N) и x(K) ⩾ v(K) для каждой коалиции K.',s_coreY:'Ядро непусто (найдено решением задачи ЛП).',s_coreN:'Ядро пусто: система неравенств несовместна.',
- s_inCore:(n,y)=>`${n} ${y?'лежит':'не лежит'} в ядре.`,s_conv:'Проверка выпуклости: v(S ∪ T) + v(S ∩ T) ⩾ v(S) + v(T) для всех S, T.',s_convY:'Игра выпуклая — ядро непусто, и вектор Шепли лежит в нём (теорема 12).',s_convN:(s,t)=>`Игра не выпуклая: нарушено для S = ${s}, T = ${t}.`,
- s_pn:'Преднуклеолус — алгоритм Машлера–Пелега–Шепли: на каждом шаге минимизируем наибольший эксцесс e(K, x) = v(K) − x(K) и фиксируем коалиции, у которых он не может быть меньше.',s_pnStep:(k,t,K)=>`Шаг ${k}: минимальный наибольший эксцесс u = ${t}; фиксируем коалиции ${K}.`,s_pnRes:x=>`Преднуклеолус x = ${x}.`,s_pnIR:'Он индивидуально рационален (xᵢ ⩾ v({i})), поэтому совпадает с нуклеолусом.',
- s_a1:(n,w)=>`${n} участников, оценки независимы и равномерны на [0; ${w}], участники нейтральны к риску.`,s_aFP:f=>`Аукцион 1-й цены: равновесная ставка β(v) = (n − 1)/n · v. При v = ${f}.`,s_aSP:f=>`Аукцион 2-й цены: доминирующая стратегия β(v) = v (теорема 20). При v = ${f}.`,
- s_aAP:f=>`«Платят все»: β(v) = ∫₀ᵛ s·g(s)ds = (n − 1)/n · vⁿ/ωⁿ⁻¹. При v = ${f}.`,s_aRev:r=>`Принцип эквивалентности дохода (теорема Майерсона): ожидаемый доход аукциониста во всех трёх форматах одинаков: ω(n − 1)/(n + 1) = ${r}.`,
- v:{ne:'Равновесия в чистых',mix:'Смешанное равновесие',val:'Цена игры',alpha:'α (нижняя)',beta:'β (верхняя)',Q:'Q',P:'P',pi:'Прибыль',sh:'Вектор Шепли',pn:'Преднуклеолус',core:'Ядро',conv:'Выпуклая',yes:'да',no:'нет',nonempty:'непусто',empty:'пусто',nash:'Решение Нэша',ks:'Калаи–Смородинский',ideal:'Идеальная точка',rev:'Ожидаемый доход',fp:'Ставка, 1-я цена',sp:'Ставка, 2-я цена',ap:'Ставка, «платят все»'},
- tog:{bgGrid:'Сетка',coords:'Числа на осях',labels:'Подписи значений',br:'Наилучшие ответы',sh:'Вектор Шепли',pn:'Преднуклеолус',hints:'Подсказки на сцене'},
- cap:{err:'Исправьте данные в блоке «Игра».',mat:'Подчёркнуты наилучшие ответы: синим — игрока 1, оранжевым — игрока 2. Жёлтая рамка — равновесие Нэша. Для 2×2 справа — графики наилучших ответов.',zs:'Справа — минимумы строк и максимумы столбцов; для 2×n ниже — графический метод: нижняя огибающая и её максимум — цена игры.',
-  cour:'Линии — функции наилучшего ответа фирм, их пересечение — равновесие Нэша (Курно).',barg:'M — множество выигрышей, d — точка несогласия. Решение Нэша лежит на гиперболе (x₁ − d₁)(x₂ − d₂) = max, решение Калаи–Смородинского — на отрезке от d к идеальной точке.',
-  coop:'Треугольник — дележи с Σxᵢ = v(N) и xᵢ ⩾ v({i}); закрашено ядро. Точки — вектор Шепли и преднуклеолус.',coopN:'Для n ≠ 3 ядро не рисуется: показаны вектор Шепли и преднуклеолус по игрокам.',auct:'Равновесные ставки в зависимости от оценки v для трёх форматов аукциона.'},
- colors:{bg:'Фон сцены',bgGrid:'Сетка',axis:'Оси и текст',p1:'Игрок 1',p2:'Игрок 2',eq:'Равновесие',area:'Множество, ядро',curve:'Кривые',mark:'Отметки',bad:'Вычеркнутое'},
- k_topic:'первые девять типов игр',k_prev:'предыдущий / следующий пример'},
-en:{title:'Game theory',brand:'Game theory <span class="sub">visually</span>',canvas:'Game illustration',p_topic:'Game',p_presets:'Examples',
- t_mat:'Matrix games',t_cour:'Cournot',t_barg:'Bargaining',t_coop:'Cooperative',t_auct:'Auctions',
- tt:{mat:'Nash equilibrium in bimatrix games, dominance, mixed strategies; zero-sum games and saddle points',cour:'Chapter 6: Cournot oligopoly — best responses and Nash equilibrium',barg:'Chapter 7: bargaining problem (M, d), Nash and Kalai–Smorodinsky solutions',coop:'Chapter 8: cooperative games — core, Shapley value, convexity, prenucleolus',auct:'Chapter 9: private-value auctions, equilibrium bids, revenue equivalence'},
- typeHelp:'<p>A matrix is entered row by row, numbers separated by spaces: <code>3 0</code> and <code>5 1</code>. Fractions and negatives are fine: <code>-1/2</code>.</p><p>Bargaining: vertices of M, one point per line, <code>240 0</code>. M is the convex hull of these points.</p><p>Cooperative game: one line per coalition, “members value”, e.g. <code>12 36</code> means v({1, 2}) = 36. Missing coalitions get 0.</p>',
- f:{kind:'Game type',A:'Payoffs of player 1 (rows)',B:'Payoffs of player 2',M:'M (price P = M − Q)',cs:'Firm costs cᵢ',pts:'Vertices of M',d1:'d₁',d2:'d₂',coal:'v(K): coalition and value',n:'Number of bidders n',w:'ω — values ~ U[0; ω]',v:'Your value v'},
- opt:{kind:{bi:'bimatrix',zs:'zero-sum (A, −A)'}},
- err:{len:'The rows have different numbers of entries.',bug:'Couldn’t compute: an internal error or numbers too large. If the input is right, please report it in GitHub Issues (section and input).',num:'Couldn’t read a number.',hull:'At least two points are needed.',dout:'Point d must lie in M.',coal:'Lines like “12 36”: player numbers 1 to 4 and a value.',n:'n must be an integer from 2 to 30.',w:'ω must be positive.',big:'The matrix is too large (up to 6×6).',lp:'The linear program couldn’t be solved.'},
- s_br1:'Best responses of player 1: in each column his maximum payoff is underlined.',s_br2:'Best responses of player 2: in each row her maximum payoff is underlined.',
- s_ne:ks=>`A Nash equilibrium is a cell where both payoffs are underlined (each best-responds to the other): ${ks}.`,s_noNe:'No cell has both payoffs underlined: there is no pure-strategy equilibrium.',
- s_dom:(p,o,b)=>`Strategy ${o} of player ${p} is strictly dominated by ${b}: it is worse against any reply. Delete it.`,s_domNo:'There are no strictly dominated strategies.',s_domRes:r=>`After deletion: ${r}.`,
- s_mix:(q,p)=>`Mixed equilibrium: player 1 plays the first row with probability p, player 2 the first column with probability q, and each makes the other indifferent. From player 1’s indifference: q = ${q}; from player 2’s: p = ${p}.`,
- s_mixU:(a,b)=>`Expected payoffs in the mixed equilibrium: ${a} and ${b}.`,s_mixNo:'There is no interior mixed equilibrium.',s_mixSup:'Mixed equilibria are found by support enumeration: for each pair of equal-size strategy subsets we equalize the opponent’s payoffs and check that no strategy outside the support does better.',s_mixNe:(x,y,a,b)=>`Mixed equilibrium: player 1 — x* = ${x}, player 2 — y* = ${y}; expected payoffs ${a} and ${b}.`,s_mixNNo:'No mixed equilibria with a support of two or more strategies — only pure ones.',s_mixDeg:'Support enumeration found no equilibrium: the game is degenerate (tied payoffs). By Nash’s theorem an equilibrium exists — try removing dominated strategies or slightly perturbing the ties.',
- s_zsMin:'Row minima are player 1’s guaranteed payoffs:',s_zsMax:'Column maxima are player 2’s guaranteed losses:',s_zsLo:(a,b)=>`Lower value α = max min = ${a}, upper value β = min max = ${b}.`,
- s_saddle:(c,v)=>`α = β, so there is a saddle point ${c}: the value is v = ${v}, pure strategies are optimal.`,s_noSaddle:'α < β: no saddle point, the solution is in mixed strategies.',
- s_lp:'The value and optimal mixed strategies solve a pair of dual LPs: max v subject to Σpᵢaᵢⱼ ⩾ v for all j, Σpᵢ = 1.',s_zsRes:(p,q,v)=>`p* = ${p}, q* = ${q}, value v = ${v}.`,s_graph:'For a 2×n game the chart shows the graphical method: payoff lines against each column, their lower envelope and its maximum.',
- s_c1:'Profit of firm i: Hᵢ = qᵢ(M − Q) − cᵢqᵢ. The first-order condition ∂Hᵢ/∂qᵢ = 0 gives the best response:',s_c2:'qᵢ = (M − cᵢ − Σⱼ≠ᵢ qⱼ)/2, i.e. qᵢ + Q = M − cᵢ.',
- s_c3:(N,Q)=>`Summing over all ${N} firms: Q(N + 1) = NM − Σcᵢ, so Q = ${Q}.`,s_c4:'Firm outputs qᵢ = M − cᵢ − Q:',s_cOut:i=>`Firm ${i} would get a non-positive output, so it prefers not to produce; recompute without it.`,
- s_cSym:(f)=>`With equal costs qᵢ = (M − c)/(N + 1) = ${f}, the formula of example 13.`,s_cP:(P)=>`Price P = M − Q = ${P}.`,
- s_b1:'M is the convex hull of the given points, d is the disagreement point.',s_bPar:p=>`Pareto frontier (north-east edge of M): ${p}.`,
- s_bN:(x,v)=>`The Nash solution maximizes (x₁ − d₁)(x₂ − d₂) over M: ${x}, product ${v}.`,s_bI:x=>`The ideal point is each player’s best payoff with the other at least at d: ${x}.`,
- s_bK:x=>`The Kalai–Smorodinsky solution is the Pareto point on the segment from d to the ideal point: (x₁ − d₁) : (x₂ − d₂) = (a₁ − d₁) : (a₂ − d₂); it is ${x}.`,s_bSame:'Both solutions coincide.',
- s_v:'Characteristic function:',s_sh:'The Shapley value is each player’s average contribution over all joining orders:',s_shRes:x=>`φ = ${x}.`,
- s_core:'The core is the set of allocations x with Σxᵢ = v(N) and x(K) ⩾ v(K) for every coalition K.',s_coreY:'The core is non-empty (found by solving an LP).',s_coreN:'The core is empty: the inequalities are inconsistent.',
- s_inCore:(n,y)=>`${n} ${y?'lies':'does not lie'} in the core.`,s_conv:'Convexity check: v(S ∪ T) + v(S ∩ T) ⩾ v(S) + v(T) for all S, T.',s_convY:'The game is convex: the core is non-empty and contains the Shapley value (Theorem 12).',s_convN:(s,t)=>`Not convex: violated for S = ${s}, T = ${t}.`,
- s_pn:'Prenucleolus by the Maschler–Peleg–Shapley algorithm: at each step minimize the largest excess e(K, x) = v(K) − x(K) and fix the coalitions whose excess can’t be lower.',s_pnStep:(k,t,K)=>`Step ${k}: minimal largest excess u = ${t}; fix coalitions ${K}.`,s_pnRes:x=>`Prenucleolus x = ${x}.`,s_pnIR:'It is individually rational (xᵢ ⩾ v({i})), so it coincides with the nucleolus.',
- s_a1:(n,w)=>`${n} bidders, values independent and uniform on [0; ${w}], risk-neutral.`,s_aFP:f=>`First-price auction: equilibrium bid β(v) = (n − 1)/n · v. At v: ${f}.`,s_aSP:f=>`Second-price auction: dominant strategy β(v) = v (Theorem 20). At v: ${f}.`,
- s_aAP:f=>`All-pay: β(v) = ∫₀ᵛ s·g(s)ds = (n − 1)/n · vⁿ/ωⁿ⁻¹. At v: ${f}.`,s_aRev:r=>`Revenue equivalence (Myerson): the seller’s expected revenue is the same in all three formats: ω(n − 1)/(n + 1) = ${r}.`,
- v:{ne:'Pure equilibria',mix:'Mixed equilibrium',val:'Game value',alpha:'α (lower)',beta:'β (upper)',Q:'Q',P:'P',pi:'Profit',sh:'Shapley value',pn:'Prenucleolus',core:'Core',conv:'Convex',yes:'yes',no:'no',nonempty:'non-empty',empty:'empty',nash:'Nash solution',ks:'Kalai–Smorodinsky',ideal:'Ideal point',rev:'Expected revenue',fp:'Bid, first price',sp:'Bid, second price',ap:'Bid, all-pay'},
- tog:{bgGrid:'Grid',coords:'Axis numbers',labels:'Value labels',br:'Best responses',sh:'Shapley value',pn:'Prenucleolus',hints:'Hints on the scene'},
- cap:{err:'Fix the data in the Game block.',mat:'Best responses are underlined: blue for player 1, orange for player 2. A yellow frame marks a Nash equilibrium. For 2×2, best-response graphs on the right.',zs:'Row minima and column maxima on the right; for 2×n, the graphical method below: the lower envelope and its maximum give the value.',
-  cour:'The lines are the firms’ best responses; their intersection is the Nash (Cournot) equilibrium.',barg:'M is the payoff set, d the disagreement point. The Nash solution lies on the hyperbola (x₁ − d₁)(x₂ − d₂) = max, the Kalai–Smorodinsky one on the segment from d to the ideal point.',
-  coop:'The triangle is the allocations with Σxᵢ = v(N) and xᵢ ⩾ v({i}); the core is shaded. Dots: Shapley value and prenucleolus.',coopN:'For n ≠ 3 the core isn’t drawn: the Shapley value and prenucleolus are shown by player.',auct:'Equilibrium bids as a function of the value v for three auction formats.'},
- colors:{bg:'Scene background',bgGrid:'Grid',axis:'Axes and text',p1:'Player 1',p2:'Player 2',eq:'Equilibrium',area:'Set, core',curve:'Curves',mark:'Marks',bad:'Deleted'},
- k_topic:'first nine game types',k_prev:'previous / next example'}};
-const TX={ru:{...TXB.ru,...TXG.ru},en:{...TXB.en,...TXG.en}};
-const TX2={
-ru:{grp:{stat:'Статические игры',mkt:'Олигополия и рынки',dyn:'Динамические игры',coopg:'Кооперация и торг',mech:'Механизмы и сети'},
- t_cont:'Непрерывные',t_bayes:'Байесовские',t_cour:'Курно, Бертран, Штакельберг',t_hotel:'Хотеллинг',t_tree:'Развёрнутая форма',t_rep:'Повторяющиеся',t_evo:'Эволюционные',t_vote:'Голосование',t_match:'Паросочетания',t_braess:'Парадокс Браеса',
- tt:{cont:'Игры с непрерывными стратегиями: функции наилучшего ответа и равновесия (пример 12)',bayes:'Игры с неполной информацией: типы игрока, преобразование Харшаньи, байесовское равновесие',cour:'Олигополия: Курно (объёмы), Штакельберг (лидер и последователь), Бертран (цены), сравнение с монополией и конкуренцией',
-  hotel:'Модель Хотеллинга: выбор места на отрезке и ценовая конкуренция с транспортными издержками',tree:'Игры в развёрнутой форме: дерево, обратная индукция, совершенное по подыграм равновесие',rep:'Повторяющаяся дилемма заключённого: турнир стратегий, условие кооперации',
-  evo:'Эволюционные игры: эволюционно устойчивые стратегии и динамика репликатора',vote:'Взвешенное голосование: индексы Шепли–Шубика и Банцафа, вето и болваны',match:'Устойчивые паросочетания: алгоритм Гейла–Шепли',braess:'Игры перегрузки: равновесие Вардропа и парадокс Браеса'},
- f:{om:'Модель',H1:'Выигрыш игрока 1: H₁(x, y)',H2:'Выигрыш игрока 2: H₂(x, y)',a1:'x от',b1:'x до',a2:'y от',b2:'y до',mu:'μ — вероятность типа 1',A1:'Тип 1: выигрыши игрока 1',B1:'Тип 1: выигрыши игрока 2',A2:'Тип 2: выигрыши игрока 1',B2:'Тип 2: выигрыши игрока 2',
-  hm:'Вариант',ha:'a — фирма 1 от левого края',hb:'b — фирма 2 от правого края',ht:'t — транспортные издержки',hc:'c — издержки',tr:'Дерево: «вершина: игрок | действие -> вершина | действие -> (выигрыши)»',
-  R:'R — оба молчат',Tt:'T — соблазн',Ss:'S — обманутый',Pp:'P — оба предают',rn:'Число раундов',dl:'δ — дисконт',em:'Игра',V:'V — ценность ресурса',C:'C — цена драки',EA:'Матрица выигрышей (строка против столбца)',x0:'Начальные доли стратегии 1',
-  q:'Квота q',wts:'Веса участников',side:'Кто делает предложения',mp:'Предпочтения 1-й стороны',mr:'Предпочтения 2-й стороны',brg:'Перемычка C → D',bN:'N — число водителей',ba:'a: время на загруженных дорогах = x/a',bb:'b — время на свободных дорогах',be:'Время на перемычке'},
- opt:{om:{cour:'Курно',stack:'Штакельберг',bert:'Бертран',cmp:'сравнение моделей'},hm:{loc:'выбор места',price:'цены при заданных местах'},em:{hd:'ястреб и голубь',mat:'своя матрица 2×2'},side:{p:'первая сторона',r:'вторая сторона'},brg:{no:'нет',yes:'есть'}},
- err:{cM:'Издержки должны быть меньше M.',expr:'Не получилось разобрать формулу. Переменные x и y, функции sin, cos, exp, ln, sqrt, min(a; b), max(a; b), сравнения вроде (x+y<=1).',ab:'Нужно «от» < «до».',mu:'μ должно быть от 0 до 1.',m22:'Нужны матрицы 2×2.',hot:'Нужно a, b ⩾ 0, a + b < 1, t > 0.',
-  tree:'Строки дерева вида «A: 1 | действие -> B | действие -> (1; 2)».',treeRef:'В дереве есть ссылка на несуществующую вершину.',treeCyc:'В дереве есть цикл.',pdo:'Для дилеммы нужно T > R > P > S.',rn:'Число раундов от 1 до 1000.',vc:'V и C должны быть положительными.',wts:'Нужно от 1 до 16 весов.',q:'Квота должна быть положительной.',pref:'Строки вида «A: X Y Z».'},
- s_ct1:'Наилучшие ответы: для каждого y ищем x, максимизирующий H₁(x, y), и для каждого x — y, максимизирующий H₂(x, y) (численно, на сетке с уточнением).',s_ct2:'Равновесие Нэша — точка пересечения кривых наилучших ответов: x ∈ f₁(y) и y ∈ f₂(x).',
- s_ctE:p=>`Найденные равновесия: ${p}.`,s_ctM:(n,a,b,o)=>`Равновесий бесконечно много: на сетке найдено ${n} точек${a?`, они лежат на отрезке от ${a} до ${b}`:''}${o?`, а также ${o}`:''}.`,s_ctN:'Равновесий в чистых стратегиях не найдено.',
- s_by1:mu=>`Игрок 2 бывает двух типов: тип 1 с вероятностью μ = ${mu}, тип 2 — с вероятностью 1 − μ. Игрок 1 своего соперника не знает.`,s_by2:'Преобразование Харшаньи: стратегия игрока 2 — пара действий (за тип 1, за тип 2), всего 4 столбца. Выигрыши — ожидаемые по типам:',
- s_by3:'Байесовское равновесие — равновесие Нэша этой игры 2×4: подчёркиваем наилучшие ответы.',s_byE:k=>`Байесовские равновесия: ${k}. Столбец «ij» означает: тип 1 выбирает столбец i, тип 2 — столбец j.`,s_byN:'Чистых байесовских равновесий нет.',
- s_hl1:'Покупатели равномерно распределены на [0; 1], цены одинаковы, каждый идёт к ближайшей фирме.',s_hl2:'Если фирмы стоят в разных точках, каждой выгодно сдвинуться ближе к сопернику — так она забирает больше покупателей.',s_hl3:'Единственное равновесие — обе фирмы в середине отрезка (0,5; 0,5): «принцип минимальной дифференциации».',
- s_hp1:(a,b)=>`Фирмы стоят в точках ${a} и ${b}. Безразличный покупатель x̂ находится из равенства p₁ + t|x̂ − a| = p₂ + t|1 − b − x̂|.`,s_hp2:'Каждая фирма максимизирует прибыль (pᵢ − c)·Dᵢ(p₁, p₂) по своей цене; равновесие ищем итерацией наилучших ответов.',
- s_hp3:(p1,p2)=>`Равновесные цены: p₁ = ${p1}, p₂ = ${p2}.`,s_hp4:(f1,f2)=>`Проверка по формуле pᵢ = c + t(1 ± (a − b)/3): ${f1} и ${f2}.`,s_hp5:(x,a,b)=>`Безразличный покупатель x̂ = ${x}; прибыли ${a} и ${b}.`,
- s_tr1:'Обратная индукция: начинаем с вершин, за которыми идут только исходы, и в каждой выбираем действие, лучшее для того, кто ходит.',s_trN:(id,p,a,v)=>`Вершина ${id} (ходит игрок ${p}): выбирает «${a}» → ${v}.`,s_trTie:'(есть равноценные варианты, выбран первый)',
- s_trR:(path,v)=>`Совершенное по подыграм равновесие: путь ${path}, выигрыши ${v}.`,s_trS:'Стратегия задаёт действие в каждой вершине, в том числе вне равновесного пути — этим совершенное равновесие отличается от просто равновесия Нэша.',
- s_rp1:(R,T,S,P)=>`Выигрыши за раунд: оба молчат R = ${R}, соблазн T = ${T}, обманутый S = ${S}, оба предают P = ${P}.`,s_rp2:n=>`Каждая стратегия играет ${n} раундов против каждой (и против своей копии), очки складываются.`,
- s_rp3:'Итог турнира:',s_rp4:(g,d,ok)=>`Кооперация с «мрачным триггером» устойчива в бесконечной игре при δ ⩾ (T − R)/(T − P) = ${g}. Сейчас δ = ${d} — ${ok?'кооперация устойчива':'кооперация неустойчива'}.`,s_rp5:'В конечной игре с известным числом раундов обратная индукция даёт «всегда предавать» — но в турнире выигрывают взаимные стратегии.',
- stn:{ALLC:'всегда молчать',ALLD:'всегда предавать',TFT:'око за око',STFT:'подозрительное око',GRIM:'мрачный триггер',WSLS:'Павлов (выиграл — повтори)',RAND:'случайная'},
- s_ev1:'Симметричная игра 2×2 в популяции: aᵢⱼ — выигрыш стратегии i против j.',s_ev2:'Стратегия i — ESS, если aᵢᵢ > aⱼᵢ, либо aᵢᵢ = aⱼᵢ и aᵢⱼ > aⱼⱼ: мутанты её не вытесняют.',s_evP:s=>`Чистые ESS: ${s}.`,s_evN:'Чистых ESS нет.',
- s_evM:(x,ok)=>`Внутренняя точка покоя x* = ${x}${ok?' — смешанная ESS (устойчива)':' — неустойчива'}.`,s_evR:'Динамика репликатора: ẋ = x(1 − x)(f₁ − f₂), доля стратегии растёт, если она приносит больше среднего.',s_evHD:(v,c)=>`Ястреб и голубь: a₁₁ = (V − C)/2, a₁₂ = V, a₂₁ = 0, a₂₂ = V/2${v<c?`; при V < C доля ястребов стремится к V/C = ${fN(v/c,4)}`:''}.`,
- s_vt1:(q,w)=>`Игра [${q}; ${w}]: коалиция выигрывает, если сумма весов ⩾ ${q}.`,s_vt2:(n,m)=>`Выигрывающих коалиций: ${n}, минимальных выигрывающих: ${m}.`,s_vt3:'Индекс Шепли–Шубика — доля порядков, в которых участник ключевой (его приход делает коалицию выигрывающей).',
- s_vt4:'Индекс Банцафа — доля «переломов»: коалиций, которые выигрывают с участником и проигрывают без него (нормированный).',s_vtV:v=>`Право вето: ${v}.`,s_vtD:d=>`Болваны (никогда не решают исход): ${d}.`,s_vtW:'Сила участника не пропорциональна его весу.',
- s_gs1:p=>`Алгоритм Гейла–Шепли: предлагает ${p}. Каждый свободный делает предложение лучшему из ещё не отказавших; получатель держит лучшее из предложений и отказывает остальным.`,s_gsR:(k,ev)=>`Раунд ${k}: ${ev}.`,s_gsRes:m=>`Итог: ${m}.`,
- s_gsSt:'Блокирующих пар нет — паросочетание устойчиво.',s_gsBl:b=>`Блокирующие пары: ${b}.`,s_gsOpt:'Результат оптимален для предлагающей стороны среди всех устойчивых паросочетаний.',acc:'держит',rej:'отказ',
- s_br1:(N,a,b)=>`${N} водителей едут из A в B. Загруженные дороги A→C и D→B занимают x/${a} минут (x — число машин), свободные C→B и A→D — ${b} минут.`,s_br2:'Равновесие Вардропа: на всех используемых маршрутах время одинаково и не больше, чем на неиспользуемых.',
- s_br3:(x,t)=>`Потоки: верх ${x[0]}, низ ${x[1]}, через перемычку ${x[2]}; время в пути ${t}.`,s_br4:(t0,t1)=>`Без перемычки время было ${t0}, с ней стало ${t1}: новая дорога ухудшила положение всех — это парадокс Браеса.`,s_br5:(a)=>`Социальный оптимум (минимум суммарного времени): в среднем ${a} минут.`,
- s_ol1:'Последователь (фирма 2) видит q₁ и отвечает по Курно: q₂ = (M − c₂ − q₁)/2.',s_ol2:'Лидер подставляет этот ответ в свою прибыль и максимизирует: q₁ = (M − 2c₁ + c₂)/2.',s_ol3:(q1,q2,P)=>`q₁ = ${q1}, q₂ = ${q2}, цена P = ${P}. Лидер производит больше и получает больше, чем в Курно.`,
- s_olD:q=>`Но если подставить q₁ из формулы, последователю уже невыгодно производить. Тогда лидер сравнивает это с выпуском ровно q₁ = M − c₂ = ${q}, при котором последователь не входит на рынок (сдерживание входа), и выбирает лучшее.`,
- s_ob1:'Бертран: фирмы назначают цены, покупатели идут к самой дешёвой (при равных ценах — поровну).',s_ob2:'Пока цена соперника выше издержек, выгодно чуть-чуть её сбить. Поэтому при равных издержках p₁ = p₂ = c и прибыль равна нулю — парадокс Бертрана.',s_ob3:(c)=>`Фирма с меньшими издержками ставит цену чуть ниже издержек соперника (≈ ${c}) и забирает весь рынок.`,
- s_oc:'Сравнение при одинаковых издержках c (Q — выпуск, P — цена, PS — прибыль, CS — излишек потребителей, DWL — потери):',mods:{mono:'Монополия',cour:'Курно (2 фирмы)',stack:'Штакельберг',comp:'Конкуренция / Бертран'},
- v2:{eqs:'Равновесия',type:'Байесовские равновесия',p:'Цены',x:'Безразличный покупатель',path:'Путь',pay:'Выигрыши',win:'Победитель турнира',grim:'δ для кооперации',ess:'ESS',xs:'x*',ss:'Шепли–Шубик',bz:'Банцаф',match:'Паросочетание',stable:'Устойчиво',T:'Время в пути',opt:'Оптимум',q:'Объёмы'},
- cap:{olig_stack:'Синяя линия — ответ последователя; лидер выбирает на ней точку с наибольшей прибылью. Для сравнения отмечено равновесие Курно.',olig_bert:'Цены фирм и их издержки: в равновесии цена опускается до издержек (более дорогого) соперника.',olig_cmp:'Выпуск, цена и излишки в четырёх моделях рынка.',
-  cont:'Синяя кривая — наилучшие ответы игрока 1, оранжевая — игрока 2; их пересечения — равновесия Нэша.',bayes:'Игра после преобразования Харшаньи: столбец «ij» — тип 1 играет i, тип 2 играет j.',hotel:'Отрезок покупателей: каждая часть закрашена цветом фирмы, к которой идут покупатели.',tree:'Дерево игры: подсвечены оптимальные действия, жирно — равновесный путь.',
-  rep:'Суммарные очки стратегий в круговом турнире.',evo:'Вверху — скорость изменения доли ẋ(x): стрелки показывают направление; внизу — траектории долей во времени.',vote:'Сравнение весов и реальной силы участников.',match:'Слева — предлагающая сторона, справа — получающая; линии — итоговые пары.',braess:'Сеть дорог: толщина — поток машин, подписи — время на участке.'}},
-en:{grp:{stat:'Static games',mkt:'Oligopoly and markets',dyn:'Dynamic games',coopg:'Cooperation and bargaining',mech:'Mechanisms and networks'},
- t_cont:'Continuous',t_bayes:'Bayesian',t_cour:'Cournot, Bertrand, Stackelberg',t_hotel:'Hotelling',t_tree:'Extensive form',t_rep:'Repeated',t_evo:'Evolutionary',t_vote:'Voting',t_match:'Matching',t_braess:'Braess paradox',
- tt:{cont:'Games with continuous strategies: best responses and equilibria (example 12)',bayes:'Games of incomplete information: types, the Harsanyi transformation, Bayesian equilibrium',cour:'Oligopoly: Cournot (quantities), Stackelberg (leader and follower), Bertrand (prices), vs monopoly and competition',
-  hotel:'Hotelling model: location on a line and price competition with transport costs',tree:'Extensive-form games: tree, backward induction, subgame-perfect equilibrium',rep:'Repeated prisoner’s dilemma: a strategy tournament and the cooperation condition',
-  evo:'Evolutionary games: evolutionarily stable strategies and replicator dynamics',vote:'Weighted voting: Shapley–Shubik and Banzhaf indices, vetoes and dummies',match:'Stable matchings: the Gale–Shapley algorithm',braess:'Congestion games: Wardrop equilibrium and the Braess paradox'},
- f:{om:'Model',H1:'Payoff of player 1: H₁(x, y)',H2:'Payoff of player 2: H₂(x, y)',a1:'x from',b1:'x to',a2:'y from',b2:'y to',mu:'μ — probability of type 1',A1:'Type 1: payoffs of player 1',B1:'Type 1: payoffs of player 2',A2:'Type 2: payoffs of player 1',B2:'Type 2: payoffs of player 2',
-  hm:'Variant',ha:'a — firm 1 from the left end',hb:'b — firm 2 from the right end',ht:'t — transport cost',hc:'c — cost',tr:'Tree: “node: player | action -> node | action -> (payoffs)”',
-  R:'R — both silent',Tt:'T — temptation',Ss:'S — sucker',Pp:'P — both defect',rn:'Rounds',dl:'δ — discount',em:'Game',V:'V — resource value',C:'C — cost of fighting',EA:'Payoff matrix (row vs column)',x0:'Initial shares of strategy 1',
-  q:'Quota q',wts:'Weights',side:'Who proposes',mp:'Preferences of side 1',mr:'Preferences of side 2',brg:'Link C → D',bN:'N — drivers',ba:'a: congested roads take x/a',bb:'b — time on free roads',be:'Time on the link'},
- opt:{om:{cour:'Cournot',stack:'Stackelberg',bert:'Bertrand',cmp:'compare models'},hm:{loc:'location choice',price:'prices at given locations'},em:{hd:'hawk–dove',mat:'own 2×2 matrix'},side:{p:'side 1',r:'side 2'},brg:{no:'no',yes:'yes'}},
- err:{cM:'Costs must be below M.',expr:'Couldn’t parse the formula. Variables x and y, functions sin, cos, exp, ln, sqrt, min(a; b), max(a; b), comparisons like (x+y<=1).',ab:'Need “from” < “to”.',mu:'μ must be between 0 and 1.',m22:'2×2 matrices are needed.',hot:'Need a, b ⩾ 0, a + b < 1, t > 0.',
-  tree:'Tree lines like “A: 1 | action -> B | action -> (1; 2)”.',treeRef:'The tree refers to a missing node.',treeCyc:'The tree has a cycle.',pdo:'A dilemma needs T > R > P > S.',rn:'Rounds from 1 to 1000.',vc:'V and C must be positive.',wts:'Need 1 to 16 weights.',q:'The quota must be positive.',pref:'Lines like “A: X Y Z”.'},
- s_ct1:'Best responses: for each y find x maximizing H₁(x, y), and for each x the y maximizing H₂(x, y) (numerically, on a grid with refinement).',s_ct2:'A Nash equilibrium is an intersection of the best-response curves: x ∈ f₁(y) and y ∈ f₂(x).',
- s_ctE:p=>`Equilibria found: ${p}.`,s_ctM:(n,a,b,o)=>`There are infinitely many equilibria: ${n} grid points${a?`, lying on the segment from ${a} to ${b}`:''}${o?`, and also ${o}`:''}.`,s_ctN:'No pure-strategy equilibria found.',
- s_by1:mu=>`Player 2 has two types: type 1 with probability μ = ${mu}, type 2 with 1 − μ. Player 1 doesn’t know which.`,s_by2:'Harsanyi transformation: player 2’s strategy is a pair of actions (for type 1, for type 2), 4 columns in total. Payoffs are expected over types:',
- s_by3:'A Bayesian equilibrium is a Nash equilibrium of this 2×4 game: underline best responses.',s_byE:k=>`Bayesian equilibria: ${k}. Column “ij” means type 1 plays column i, type 2 plays column j.`,s_byN:'There is no pure Bayesian equilibrium.',
- s_hl1:'Buyers are uniform on [0; 1], prices are equal, each goes to the nearest firm.',s_hl2:'If the firms stand apart, each gains by moving towards the rival: it captures more buyers.',s_hl3:'The unique equilibrium is both firms at the middle (0.5; 0.5): the “principle of minimum differentiation”.',
- s_hp1:(a,b)=>`Firms stand at ${a} and ${b}. The indifferent buyer x̂ solves p₁ + t|x̂ − a| = p₂ + t|1 − b − x̂|.`,s_hp2:'Each firm maximizes profit (pᵢ − c)·Dᵢ(p₁, p₂) over its price; the equilibrium is found by iterating best responses.',
- s_hp3:(p1,p2)=>`Equilibrium prices: p₁ = ${p1}, p₂ = ${p2}.`,s_hp4:(f1,f2)=>`Check with pᵢ = c + t(1 ± (a − b)/3): ${f1} and ${f2}.`,s_hp5:(x,a,b)=>`Indifferent buyer x̂ = ${x}; profits ${a} and ${b}.`,
- s_tr1:'Backward induction: start from nodes followed only by outcomes and at each pick the action best for the mover.',s_trN:(id,p,a,v)=>`Node ${id} (player ${p} moves): chooses “${a}” → ${v}.`,s_trTie:'(there are equally good options; the first is taken)',
- s_trR:(path,v)=>`Subgame-perfect equilibrium: path ${path}, payoffs ${v}.`,s_trS:'A strategy specifies an action at every node, including off the equilibrium path; that is what distinguishes subgame perfection from plain Nash equilibrium.',
- s_rp1:(R,T,S,P)=>`Per-round payoffs: both silent R = ${R}, temptation T = ${T}, sucker S = ${S}, both defect P = ${P}.`,s_rp2:n=>`Each strategy plays ${n} rounds against every strategy (and its own copy); points add up.`,
- s_rp3:'Tournament result:',s_rp4:(g,d,ok)=>`Cooperation with a grim trigger is stable in the infinite game when δ ⩾ (T − R)/(T − P) = ${g}. Now δ = ${d}: ${ok?'cooperation is stable':'cooperation is not stable'}.`,s_rp5:'With a known finite number of rounds backward induction gives “always defect”, yet reciprocal strategies win the tournament.',
- stn:{ALLC:'always cooperate',ALLD:'always defect',TFT:'tit for tat',STFT:'suspicious tit for tat',GRIM:'grim trigger',WSLS:'Pavlov (win–stay, lose–shift)',RAND:'random'},
- s_ev1:'A symmetric 2×2 game in a population: aᵢⱼ is the payoff of strategy i against j.',s_ev2:'Strategy i is an ESS if aᵢᵢ > aⱼᵢ, or aᵢᵢ = aⱼᵢ and aᵢⱼ > aⱼⱼ: mutants can’t invade it.',s_evP:s=>`Pure ESS: ${s}.`,s_evN:'There is no pure ESS.',
- s_evM:(x,ok)=>`Interior rest point x* = ${x}${ok?' — a mixed ESS (stable)':' — unstable'}.`,s_evR:'Replicator dynamics: ẋ = x(1 − x)(f₁ − f₂); a strategy’s share grows if it earns more than average.',s_evHD:(v,c)=>`Hawk–dove: a₁₁ = (V − C)/2, a₁₂ = V, a₂₁ = 0, a₂₂ = V/2${v<c?`; for V < C the hawk share tends to V/C = ${fN(v/c,4)}`:''}.`,
- s_vt1:(q,w)=>`Game [${q}; ${w}]: a coalition wins if its total weight is ⩾ ${q}.`,s_vt2:(n,m)=>`Winning coalitions: ${n}, minimal winning: ${m}.`,s_vt3:'The Shapley–Shubik index is the share of orderings in which a player is pivotal (their arrival makes the coalition win).',
- s_vt4:'The Banzhaf index is the share of swings: coalitions that win with the player and lose without (normalized).',s_vtV:v=>`Veto players: ${v}.`,s_vtD:d=>`Dummies (never decisive): ${d}.`,s_vtW:'A player’s power is not proportional to their weight.',
- s_gs1:p=>`Gale–Shapley: ${p} proposes. Each free agent proposes to the best option that hasn’t rejected them; a receiver holds the best offer and rejects the rest.`,s_gsR:(k,ev)=>`Round ${k}: ${ev}.`,s_gsRes:m=>`Result: ${m}.`,
- s_gsSt:'There are no blocking pairs: the matching is stable.',s_gsBl:b=>`Blocking pairs: ${b}.`,s_gsOpt:'The result is optimal for the proposing side among all stable matchings.',acc:'holds',rej:'rejected',
- s_br1:(N,a,b)=>`${N} drivers go from A to B. Congested roads A→C and D→B take x/${a} minutes (x cars), free roads C→B and A→D take ${b} minutes.`,s_br2:'Wardrop equilibrium: all used routes take equal time, no more than unused ones.',
- s_br3:(x,t)=>`Flows: top ${x[0]}, bottom ${x[1]}, via the link ${x[2]}; travel time ${t}.`,s_br4:(t0,t1)=>`Without the link the time was ${t0}, with it ${t1}: the new road made everyone worse off — the Braess paradox.`,s_br5:(a)=>`Social optimum (minimum total time): ${a} minutes on average.`,
- s_ol1:'The follower (firm 2) sees q₁ and responds as in Cournot: q₂ = (M − c₂ − q₁)/2.',s_ol2:'The leader plugs this response into its profit and maximizes: q₁ = (M − 2c₁ + c₂)/2.',s_ol3:(q1,q2,P)=>`q₁ = ${q1}, q₂ = ${q2}, price P = ${P}. The leader produces and earns more than in Cournot.`,
- s_olD:q=>`But with q₁ from the formula the follower no longer produces. The leader then compares this with producing exactly q₁ = M − c₂ = ${q}, which keeps the follower out (entry deterrence), and picks the better option.`,
- s_ob1:'Bertrand: firms set prices, buyers go to the cheapest (split equally on ties).',s_ob2:'While the rival’s price is above cost, it pays to undercut slightly. So with equal costs p₁ = p₂ = c and profits are zero — the Bertrand paradox.',s_ob3:(c)=>`The lower-cost firm prices just below the rival’s cost (≈ ${c}) and takes the whole market.`,
- s_oc:'Comparison with equal costs c (Q output, P price, PS profit, CS consumer surplus, DWL deadweight loss):',mods:{mono:'Monopoly',cour:'Cournot (2 firms)',stack:'Stackelberg',comp:'Competition / Bertrand'},
- v2:{eqs:'Equilibria',type:'Bayesian equilibria',p:'Prices',x:'Indifferent buyer',path:'Path',pay:'Payoffs',win:'Tournament winner',grim:'δ for cooperation',ess:'ESS',xs:'x*',ss:'Shapley–Shubik',bz:'Banzhaf',match:'Matching',stable:'Stable',T:'Travel time',opt:'Optimum',q:'Outputs'},
- cap:{olig_stack:'The blue line is the follower’s response; the leader picks the most profitable point on it. The Cournot equilibrium is marked for comparison.',olig_bert:'Firm prices and costs: in equilibrium the price falls to the (higher) rival’s cost.',olig_cmp:'Output, price and surpluses in four market models.',
-  cont:'The blue curve is player 1’s best responses, the orange one player 2’s; their intersections are Nash equilibria.',bayes:'The game after the Harsanyi transformation: column “ij” means type 1 plays i, type 2 plays j.',hotel:'The line of buyers: each part has the color of the firm they go to.',tree:'The game tree: optimal actions highlighted, the equilibrium path in bold.',
-  rep:'Total points of strategies in the round-robin tournament.',evo:'Top: the rate of change ẋ(x), arrows show the direction; bottom: share trajectories over time.',vote:'Weights versus actual power of the players.',match:'Proposers on the left, receivers on the right; lines are the final pairs.',braess:'The road network: width is the car flow, labels are the travel times.'}}};
-for(const l of['ru','en']){const a=TX[l],b=TX2[l];for(const k in b){if(typeof b[k]==='object'&&!Array.isArray(b[k])&&typeof a[k]==='object'&&a[k])a[k]={...a[k],...b[k]};else a[k]=b[k]}}
-const TERMS=[
- {id:'game',ru:['Игра в нормальной форме','игроки, стратегии, выигрыши','<p>Задаётся множеством игроков, множествами их стратегий Xᵢ и функциями выигрыша Hᵢ(x₁, …, x_N). Каждый выбирает стратегию одновременно и независимо, стремясь максимизировать свой выигрыш. Для двух игроков с конечным числом стратегий выигрыши записывают двумя матрицами — это <b>биматричная</b> игра.</p>'],
-  en:['Game in normal form','players, strategies, payoffs','<p>Given by a set of players, strategy sets Xᵢ and payoff functions Hᵢ(x₁, …, x_N). Everyone chooses simultaneously and independently, maximizing their own payoff. For two players with finitely many strategies the payoffs form two matrices — a <b>bimatrix</b> game.</p>']},
- {id:'br',ru:['Функция наилучшего ответа','fᵢ(x₋ᵢ)','<p>Стратегия, дающая игроку i наибольший выигрыш при фиксированных стратегиях остальных: <span class="m">fᵢ(x₋ᵢ) = argmax Hᵢ(xᵢ, x₋ᵢ)</span>. В матрице — максимум в столбце для игрока 1 и в строке для игрока 2. В непрерывных играх её находят, приравнивая производную к нулю (Курно).</p>'],
-  en:['Best response','fᵢ(x₋ᵢ)','<p>The strategy giving player i the highest payoff with the others fixed: <span class="m">fᵢ(x₋ᵢ) = argmax Hᵢ(xᵢ, x₋ᵢ)</span>. In a matrix: the maximum in a column for player 1 and in a row for player 2. In continuous games it is found by setting the derivative to zero (Cournot).</p>']},
- {id:'nash',ru:['Равновесие Нэша','определение 12','<p>Профиль стратегий, в котором каждая стратегия — наилучший ответ на остальные: никому не выгодно отклоняться в одиночку. Равновесий может быть несколько (пример 12 — распиливание бюджета) или ни одного в чистых стратегиях. Равновесие — лишь необходимое условие «разумного» исхода.</p><p>Дилемма заключённого: единственное равновесие (признаться, признаться) хуже для обоих, чем (молчать, молчать).</p>'],
-  en:['Nash equilibrium','Definition 12','<p>A strategy profile in which each strategy is a best response to the others: no one gains by deviating alone. There may be several equilibria (example 12, splitting a budget) or none in pure strategies. An equilibrium is only a necessary condition for a “reasonable” outcome.</p><p>Prisoner’s dilemma: the unique equilibrium (confess, confess) is worse for both than (silent, silent).</p>']},
- {id:'dom',ru:['Доминирование','вычёркивание стратегий','<p>Стратегия a строго доминирует b, если при любом ответе соперника даёт больше. Рациональный игрок доминируемую стратегию не выберет, её можно вычеркнуть и повторить процедуру. Равновесия Нэша при этом сохраняются.</p>'],
-  en:['Dominance','eliminating strategies','<p>Strategy a strictly dominates b if it gives more against every reply. A rational player won’t choose a dominated strategy, so it can be deleted and the procedure repeated. Nash equilibria survive the deletion.</p>']},
- {id:'mixed',ru:['Смешанные стратегии','вероятности выбора','<p>Игрок выбирает чистые стратегии случайно с вероятностями p₁, …, p_m. В смешанном равновесии каждый выбирает вероятности так, чтобы соперник был безразличен между своими стратегиями. В игре 2×2: <span class="m">q = (a₂₂ − a₁₂)/(a₁₁ − a₁₂ − a₂₁ + a₂₂)</span>. По теореме Нэша в конечной игре равновесие в смешанных стратегиях существует всегда.</p>'],
-  en:['Mixed strategies','choice probabilities','<p>A player picks pure strategies at random with probabilities p₁, …, p_m. In a mixed equilibrium each chooses probabilities that make the opponent indifferent. In a 2×2 game: <span class="m">q = (a₂₂ − a₁₂)/(a₁₁ − a₁₂ − a₂₁ + a₂₂)</span>. By Nash’s theorem, a finite game always has a mixed equilibrium.</p>']},
- {id:'zerosum',ru:['Антагонистическая игра','седловая точка, цена игры','<p>Выигрыш одного — проигрыш другого: матрица B = −A. Нижняя цена <span class="m">α = maxᵢ minⱼ aᵢⱼ</span> (гарантия игрока 1), верхняя <span class="m">β = minⱼ maxᵢ aᵢⱼ</span>. Если α = β — седловая точка, оптимальны чистые стратегии. Иначе цена v ∈ (α; β) достигается в смешанных стратегиях; её находят графически (2×n) или как задачу ЛП.</p>'],
-  en:['Zero-sum game','saddle point, value','<p>One player’s gain is the other’s loss: B = −A. Lower value <span class="m">α = maxᵢ minⱼ aᵢⱼ</span> (player 1’s guarantee), upper value <span class="m">β = minⱼ maxᵢ aᵢⱼ</span>. If α = β there is a saddle point and pure strategies are optimal. Otherwise the value v ∈ (α; β) is reached in mixed strategies, found graphically (2×n) or as an LP.</p>']},
- {id:'cournot',ru:['Модель Курно','пример 13','<p>N фирм выбирают объёмы qᵢ, цена <span class="m">P = M − Q</span>, издержки c на единицу. Прибыль <span class="m">Hᵢ = qᵢ(M − Q) − cqᵢ</span>, наилучший ответ <span class="m">qᵢ = (M − c − Σⱼ≠ᵢqⱼ)/2</span>. Равновесие: <span class="m">qᵢ = (M − c)/(N + 1)</span>. При N = 1 — монополия, при N → ∞ цена стремится к c — совершенная конкуренция.</p>'],
-  en:['Cournot model','example 13','<p>N firms choose outputs qᵢ, price <span class="m">P = M − Q</span>, unit cost c. Profit <span class="m">Hᵢ = qᵢ(M − Q) − cqᵢ</span>, best response <span class="m">qᵢ = (M − c − Σⱼ≠ᵢqⱼ)/2</span>. Equilibrium: <span class="m">qᵢ = (M − c)/(N + 1)</span>. N = 1 is monopoly; as N → ∞ the price tends to c, perfect competition.</p>']},
- {id:'bargain',ru:['Задача торга','пара (M, d), определение 14','<p>M ⊂ ℝ² — множество возможных выигрышей двух участников (выпуклое, замкнутое, ограниченное сверху), d ∈ M — что каждый получит, если не договорятся. Нужно выбрать справедливую точку M. Аксиоматический подход: перечислить желаемые свойства решения и найти единственное правило, которое им удовлетворяет.</p>'],
-  en:['Bargaining problem','pair (M, d), Definition 14','<p>M ⊂ ℝ² is the set of possible payoffs of two parties (convex, closed, bounded above), d ∈ M is what each gets without agreement. A fair point of M must be chosen. The axiomatic approach: list desired properties of a solution and find the unique rule satisfying them.</p>']},
- {id:'nashbarg',ru:['Решение Нэша','теорема 7','<p>Единственное решение, удовлетворяющее аксиомам Парето-оптимальности, симметрии, независимости от линейных преобразований и от посторонних альтернатив: <span class="m">argmax (x₁ − d₁)(x₂ − d₂)</span> по x ∈ M, x ⩾ d. Геометрически — точка касания границы M с гиперболой. Пример 14: дележ единицы, решение (0,5; 0,5).</p>'],
-  en:['Nash bargaining solution','Theorem 7','<p>The unique solution satisfying Pareto optimality, symmetry, invariance to linear transformations and independence of irrelevant alternatives: <span class="m">argmax (x₁ − d₁)(x₂ − d₂)</span> over x ∈ M, x ⩾ d. Geometrically, where the boundary of M touches a hyperbola. Example 14: splitting a unit, solution (0.5; 0.5).</p>']},
- {id:'ks',ru:['Решение Калаи–Смородинского','теорема 8','<p>Идеальная точка a — наибольший выигрыш каждого при условии, что другой получает не меньше d. Решение — Парето-оптимальная точка, для которой <span class="m">(x₁ − d₁) : (x₂ − d₂) = (a₁ − d₁) : (a₂ − d₂)</span>: оба получают одинаковую долю от своего максимально возможного выигрыша. Вместо независимости от посторонних альтернатив — аксиома монотонности. Пример 15 (носки): (90; 150).</p>'],
-  en:['Kalai–Smorodinsky solution','Theorem 8','<p>The ideal point a is each party’s best payoff given the other gets at least d. The solution is the Pareto point with <span class="m">(x₁ − d₁) : (x₂ − d₂) = (a₁ − d₁) : (a₂ − d₂)</span>: both get the same share of their best possible gain. Monotonicity replaces independence of irrelevant alternatives. Example 15 (socks): (90; 150).</p>']},
- {id:'coopgame',ru:['Кооперативная игра','с побочными платежами','<p>Задана характеристическая функция v(K) — сколько может заработать каждая коалиция K ⊂ N, v(∅) = 0. Выигрыш делится между участниками произвольно. Дележ — вектор x с <span class="m">Σxᵢ = v(N)</span>; импутация — дележ, где ещё и <span class="m">xᵢ ⩾ v({i})</span>.</p>'],
-  en:['Cooperative game','with side payments','<p>A characteristic function v(K) gives what each coalition K ⊂ N can earn, v(∅) = 0. Winnings can be split arbitrarily. An allocation is a vector x with <span class="m">Σxᵢ = v(N)</span>; an imputation additionally has <span class="m">xᵢ ⩾ v({i})</span>.</p>']},
- {id:'core',ru:['Ядро','определение 16','<p>Дележи, при которых ни одной коалиции невыгодно отделиться: <span class="m">x(K) ⩾ v(K)</span> для всех K. Это система линейных неравенств — допустимое множество, как в линейной оптимизации; оно может быть пустым. Для трёх игроков ядро рисуется внутри треугольника импутаций (пример 16 — оркестр).</p>'],
-  en:['Core','Definition 16','<p>Allocations under which no coalition wants to break away: <span class="m">x(K) ⩾ v(K)</span> for all K. It is a system of linear inequalities, a feasible set as in linear optimization, and may be empty. For three players the core is drawn inside the imputation triangle (example 16, the orchestra).</p>']},
- {id:'shapley',ru:['Вектор Шепли','определение 17, теорема 9','<p><span class="m">φᵢ</span> — средний вклад игрока i, если участники присоединяются к коалиции в случайном порядке: <span class="m">φᵢ = (1/n!) Σ (v(Kᵢ ∪ {i}) − v(Kᵢ))</span>. Единственный дележ, удовлетворяющий эффективности, симметрии, линейности и аксиоме болвана. Оркестр: φ = (14; 23; 35).</p>'],
-  en:['Shapley value','Definition 17, Theorem 9','<p><span class="m">φᵢ</span> is player i’s average contribution when players join the coalition in random order: <span class="m">φᵢ = (1/n!) Σ (v(Kᵢ ∪ {i}) − v(Kᵢ))</span>. The unique allocation satisfying efficiency, symmetry, linearity and the dummy axiom. Orchestra: φ = (14; 23; 35).</p>']},
- {id:'convex',ru:['Выпуклая игра','определение 18, теорема 12','<p>Игра выпуклая, если <span class="m">v(S ∪ T) + v(S ∩ T) ⩾ v(S) + v(T)</span> для всех коалиций: чем больше коалиция, тем больше вклад присоединяющегося. В выпуклой игре ядро непусто и содержит вектор Шепли. Оркестр не выпуклый (пример 20).</p>'],
-  en:['Convex game','Definition 18, Theorem 12','<p>A game is convex if <span class="m">v(S ∪ T) + v(S ∩ T) ⩾ v(S) + v(T)</span> for all coalitions: the bigger the coalition, the larger a newcomer’s contribution. In a convex game the core is non-empty and contains the Shapley value. The orchestra isn’t convex (example 20).</p>']},
- {id:'prenuc',ru:['Нуклеолус и преднуклеолус','определения 21–22, алгоритм МПШ','<p>Эксцесс <span class="m">e(K, x) = v(K) − x(K)</span> — «недовольство» коалиции. Преднуклеолус — дележ, лексикографически минимизирующий упорядоченный по убыванию вектор эксцессов; он единственен и, если ядро непусто, лежит в нём. Алгоритм Машлера–Пелега–Шепли решает последовательность задач ЛП. Пример 23: (2; 2; 4), пример 24: (1,5; 2; 0,5).</p>'],
-  en:['Nucleolus and prenucleolus','Definitions 21–22, MPS algorithm','<p>The excess <span class="m">e(K, x) = v(K) − x(K)</span> is a coalition’s “dissatisfaction”. The prenucleolus lexicographically minimizes the vector of excesses sorted decreasingly; it is unique and lies in the core when the core is non-empty. The Maschler–Peleg–Shapley algorithm solves a sequence of LPs. Example 23: (2; 2; 4), example 24: (1.5; 2; 0.5).</p>']},
- {id:'auction',ru:['Аукционы','форматы, частные ценности','<p>Повышающий (английский), понижающий (голландский), первой цены, второй цены (Викри), «платят все». В PV-аукционе ценность предмета для участника не зависит от оценок других. Аукцион эффективен, если предмет достаётся участнику с наибольшей оценкой.</p>'],
-  en:['Auctions','formats, private values','<p>English (ascending), Dutch (descending), first-price, second-price (Vickrey), all-pay. In a private-value auction the item’s worth to a bidder doesn’t depend on others’ values. An auction is efficient if the item goes to the highest-value bidder.</p>']},
- {id:'revenue',ru:['Эквивалентность дохода','теорема Майерсона','<p>В симметричных эффективных PV-аукционах с независимыми оценками и нулевым платежом участника с нулевой оценкой ожидаемый доход аукциониста одинаков. Для U[0; ω] он равен <span class="m">ω(n − 1)/(n + 1)</span>; пример 27 (n = 10, ω = 1): 9/11. Равновесные ставки: первой цены <span class="m">(n − 1)v/n</span>, второй цены <span class="m">v</span>, «платят все» <span class="m">(n − 1)vⁿ/(nωⁿ⁻¹)</span>.</p>'],
-  en:['Revenue equivalence','Myerson’s theorem','<p>In symmetric efficient private-value auctions with independent values and zero payment at zero value, the seller’s expected revenue is the same. For U[0; ω] it is <span class="m">ω(n − 1)/(n + 1)</span>; example 27 (n = 10, ω = 1): 9/11. Equilibrium bids: first price <span class="m">(n − 1)v/n</span>, second price <span class="m">v</span>, all-pay <span class="m">(n − 1)vⁿ/(nωⁿ⁻¹)</span>.</p>']}];
-const FORMAL={};
-const REL={game:['br','nash'],br:['nash','cournot'],nash:['dom','mixed'],dom:['nash'],mixed:['nash','zerosum'],zerosum:['mixed'],cournot:['br','nash'],bargain:['nashbarg','ks'],nashbarg:['ks'],ks:['nashbarg'],coopgame:['core','shapley'],core:['shapley','prenuc'],shapley:['core','convex'],convex:['core','shapley'],prenuc:['core'],auction:['revenue'],revenue:['auction']};
-const CHAP=[{ru:'6. Некооперативные игры',en:'6. Non-cooperative games',ids:['game','br','nash','dom','mixed','zerosum','cournot']},{ru:'7. Задача торга',en:'7. Bargaining',ids:['bargain','nashbarg','ks']},{ru:'8. Кооперативные игры',en:'8. Cooperative games',ids:['coopgame','core','shapley','convex','prenuc']},{ru:'9. Аукционы',en:'9. Auctions',ids:['auction','revenue']}];
-const DEMOS={game:{p:'pd'},br:{p:'bos'},nash:{p:'pd'},dom:{p:'dom3'},mixed:{p:'bos'},zerosum:{p:'zs23'},cournot:{p:'c13'},bargain:{p:'b15'},nashbarg:{p:'b14'},ks:{p:'basym'},coopgame:{p:'orch'},core:{p:'orch'},shapley:{p:'orch'},convex:{p:'convex'},prenuc:{p:'e24'},auction:{p:'a27'},revenue:{p:'a27'}};
-const ILL={};
 
-TERMS.push(
- {id:'contg',ru:['Непрерывные игры','стратегии из отрезка','<p>Стратегии — числа из отрезков, выигрыши — функции H₁(x, y), H₂(x, y). Наилучший ответ ищут, максимизируя выигрыш по своей переменной (часто — приравнивая производную к нулю). Равновесие — пересечение кривых наилучших ответов; их может быть бесконечно много, как в примере 12, где равновесия — весь отрезок x + y = 1 и точка (1; 1).</p>'],
-  en:['Continuous games','strategies from an interval','<p>Strategies are numbers from intervals, payoffs are functions H₁(x, y), H₂(x, y). A best response maximizes the payoff over one’s own variable (often by setting the derivative to zero). An equilibrium is an intersection of the best-response curves; there may be infinitely many, as in example 12 where the whole segment x + y = 1 and the point (1; 1) are equilibria.</p>']},
- {id:'stack',ru:['Модель Штакельберга','лидер и последователь','<p>Фирма 1 выбирает объём первой, фирма 2 видит его и отвечает по Курно: <span class="m">q₂ = (M − c₂ − q₁)/2</span>. Лидер учитывает этот ответ: <span class="m">q₁ = (M − 2c₁ + c₂)/2</span>. При c₁ = c₂ = c: <span class="m">q₁ = (M − c)/2</span>, <span class="m">q₂ = (M − c)/4</span>. Первый ход выгоден: лидер зарабатывает больше, чем в Курно.</p>'],
-  en:['Stackelberg model','leader and follower','<p>Firm 1 chooses output first; firm 2 sees it and responds as in Cournot: <span class="m">q₂ = (M − c₂ − q₁)/2</span>. The leader takes this into account: <span class="m">q₁ = (M − 2c₁ + c₂)/2</span>. With c₁ = c₂ = c: <span class="m">q₁ = (M − c)/2</span>, <span class="m">q₂ = (M − c)/4</span>. Moving first pays: the leader earns more than in Cournot.</p>']},
- {id:'bertrand',ru:['Модель Бертрана','ценовая конкуренция','<p>Фирмы с однородным товаром назначают цены; покупатели идут к дешёвой. Если цена соперника выше издержек, выгодно её чуть сбить, поэтому при равных издержках <span class="m">p₁ = p₂ = c</span>, и прибыли нулевые даже при двух фирмах — <b>парадокс Бертрана</b>. При разных издержках дешёвая фирма ставит цену чуть ниже издержек соперника.</p>'],
-  en:['Bertrand model','price competition','<p>Firms with a homogeneous good set prices; buyers go to the cheaper one. If the rival’s price is above cost, undercutting pays, so with equal costs <span class="m">p₁ = p₂ = c</span> and profits are zero even with two firms — the <b>Bertrand paradox</b>. With different costs the cheaper firm prices just below the rival’s cost.</p>']},
- {id:'hotelling',ru:['Модель Хотеллинга','пространственная конкуренция','<p>Покупатели распределены по отрезку [0; 1] и идут к ближайшей фирме. При фиксированных ценах обе фирмы встают в середину — <b>принцип минимальной дифференциации</b> (поэтому магазины и партии часто «сходятся к центру»). Если фирмы конкурируют ценами при транспортных издержках t, то цены <span class="m">pᵢ = c + t(1 ± (a − b)/3)</span>.</p>'],
-  en:['Hotelling model','spatial competition','<p>Buyers are spread over [0; 1] and go to the nearest firm. With fixed prices both firms locate in the middle — the <b>principle of minimum differentiation</b> (why shops and parties often “converge to the centre”). If firms compete in prices with transport cost t, prices are <span class="m">pᵢ = c + t(1 ± (a − b)/3)</span>.</p>']},
- {id:'extensive',ru:['Развёрнутая форма и обратная индукция','совершенное по подыграм равновесие','<p>Игра задаётся деревом: в вершинах ходят игроки, в листьях — выигрыши. Обратная индукция решает игру с конца: в каждой последней вершине выбирается лучшее действие, затем этот выбор подставляется выше. Результат — <b>совершенное по подыграм равновесие</b>: оно исключает невыполнимые угрозы. Во «входе на рынок» угроза «бороться» не заслуживает доверия — после входа выгоднее уступить.</p>'],
-  en:['Extensive form and backward induction','subgame-perfect equilibrium','<p>The game is a tree: players move at nodes, leaves hold payoffs. Backward induction solves it from the end: at each last node pick the best action, then plug that choice in above. The result is a <b>subgame-perfect equilibrium</b>, which rules out non-credible threats. In “market entry” the threat to fight isn’t credible: once entry happens, accommodating pays more.</p>']},
- {id:'repeated',ru:['Повторяющиеся игры','кооперация и турнир Аксельрода','<p>Дилемму заключённого играют много раз. В бесконечной игре кооперация поддерживается угрозой наказания: со стратегией «мрачный триггер» она устойчива при <span class="m">δ ⩾ (T − R)/(T − P)</span> (народная теорема). В турнирах Аксельрода выигрывала простая «око за око»: начинать с кооперации, затем повторять ход соперника.</p>'],
-  en:['Repeated games','cooperation and Axelrod’s tournament','<p>The prisoner’s dilemma is played many times. In the infinite game cooperation is sustained by the threat of punishment: with a grim trigger it is stable when <span class="m">δ ⩾ (T − R)/(T − P)</span> (the folk theorem). In Axelrod’s tournaments simple tit for tat won: cooperate first, then copy the opponent’s last move.</p>']},
- {id:'bayesian',ru:['Байесовские игры','неполная информация, Харшаньи','<p>Игрок не знает, какого «типа» соперник (сильный или слабый, хочет встречи или нет), но знает вероятности типов. Преобразование Харшаньи превращает это в обычную игру: стратегия соперника — план действий для каждого типа, выигрыши — ожидаемые. Байесовское равновесие — равновесие Нэша этой игры.</p>'],
-  en:['Bayesian games','incomplete information, Harsanyi','<p>A player doesn’t know the rival’s “type” (strong or weak, wants to meet or not) but knows the type probabilities. The Harsanyi transformation turns this into an ordinary game: the rival’s strategy is a plan for each type, payoffs are expected values. A Bayesian equilibrium is a Nash equilibrium of this game.</p>']},
- {id:'ess',ru:['Эволюционно устойчивая стратегия','ESS, динамика репликатора','<p>Стратегия, которую не может вытеснить малая доля мутантов: <span class="m">a(s, s) > a(m, s)</span> или при равенстве <span class="m">a(s, m) > a(m, m)</span>. Динамика репликатора <span class="m">ẋ = x(1 − x)(f₁ − f₂)</span>: доля стратегии растёт, если она приносит больше среднего. В «ястребе и голубе» при V < C устойчива смесь с долей ястребов V/C.</p>'],
-  en:['Evolutionarily stable strategy','ESS, replicator dynamics','<p>A strategy that a small share of mutants can’t displace: <span class="m">a(s, s) > a(m, s)</span>, or with equality <span class="m">a(s, m) > a(m, m)</span>. Replicator dynamics <span class="m">ẋ = x(1 − x)(f₁ − f₂)</span>: a strategy’s share grows if it earns more than average. In hawk–dove with V < C a mix with hawk share V/C is stable.</p>']},
- {id:'powerind',ru:['Индексы силы','Шепли–Шубик и Банцаф','<p>Взвешенное голосование [q; w₁, …, wₙ]: коалиция проходит, если сумма весов ⩾ q. Индекс Шепли–Шубика — вектор Шепли этой простой игры: доля порядков, где участник «ключевой». Индекс Банцафа — доля коалиций, где участник решает исход. Сила не пропорциональна весу: в [51; 50, 49, 1] у второго и третьего участников она одинакова.</p>'],
-  en:['Power indices','Shapley–Shubik and Banzhaf','<p>Weighted voting [q; w₁, …, wₙ]: a coalition passes if its total weight is ⩾ q. The Shapley–Shubik index is the Shapley value of this simple game: the share of orderings in which a player is pivotal. The Banzhaf index is the share of coalitions where the player decides the outcome. Power isn’t proportional to weight: in [51; 50, 49, 1] the second and third players are equally strong.</p>']},
- {id:'gs',ru:['Алгоритм Гейла–Шепли','устойчивые паросочетания','<p>Две стороны с предпочтениями (абитуриенты и вузы). Паросочетание устойчиво, если нет пары, которая предпочла бы друг друга своим партнёрам. Алгоритм отложенного принятия: свободные делают предложения по порядку предпочтений, получатели держат лучшее и отказывают остальным. Он всегда находит устойчивое паросочетание, наилучшее для предлагающей стороны. Нобелевская премия 2012 года (Рот, Шепли).</p>'],
-  en:['Gale–Shapley algorithm','stable matchings','<p>Two sides with preferences (applicants and universities). A matching is stable if no pair would rather be with each other than with their partners. Deferred acceptance: free agents propose in order of preference, receivers hold the best offer and reject the rest. It always finds a stable matching, the best one for the proposing side. Nobel Prize 2012 (Roth, Shapley).</p>']},
- {id:'braess',ru:['Парадокс Браеса','равновесие Вардропа','<p>В игре перегрузки каждый водитель выбирает самый быстрый маршрут; в равновесии Вардропа время на всех используемых маршрутах одинаково. Новая дорога может ухудшить положение всех: в классическом примере 4000 водителей ехали 65 минут, а после добавления бесплатной перемычки — 80. Равновесие не совпадает с социальным оптимумом.</p>'],
-  en:['Braess paradox','Wardrop equilibrium','<p>In a congestion game each driver takes the fastest route; in a Wardrop equilibrium all used routes take equal time. A new road can make everyone worse off: in the classic example 4000 drivers took 65 minutes, and after adding a free link — 80. The equilibrium differs from the social optimum.</p>']});
-CHAP.length=0;CHAP.push({ru:'Статические игры',en:'Static games',ids:['game','br','nash','dom','mixed','zerosum','contg','bayesian']},{ru:'Олигополия и рынки',en:'Oligopoly and markets',ids:['cournot','stack','bertrand','hotelling']},{ru:'Динамические игры',en:'Dynamic games',ids:['extensive','repeated','ess']},
- {ru:'Кооперация и торг',en:'Cooperation and bargaining',ids:['bargain','nashbarg','ks','coopgame','core','shapley','convex','prenuc','powerind','gs']},{ru:'Механизмы и сети',en:'Mechanisms and networks',ids:['auction','revenue','braess']});
-Object.assign(DEMOS,{contg:{p:'cbudget'},stack:{p:'stack'},bertrand:{p:'bert'},hotelling:{p:'hloc'},extensive:{p:'entry'},repeated:{p:'pd10'},bayesian:{p:'bmeet'},ess:{p:'hd'},powerind:{p:'v51'},gs:{p:'gs4'},braess:{p:'bryes'}});
-Object.assign(REL,{contg:['br','nash'],stack:['cournot','bertrand'],bertrand:['cournot','stack'],hotelling:['bertrand'],extensive:['nash'],repeated:['nash','ess'],bayesian:['nash','auction'],ess:['mixed','repeated'],powerind:['shapley'],gs:['core'],braess:['nash']});
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 let LNG='ru';
 const KEY='game-viz-v1';
 
@@ -447,7 +138,7 @@ const PAL={
   paper:{bg:'#fbfaf7',bgGrid:'#e3e1da',axis:'#23262b',p1:'#2b6cb0',p2:'#e67e22',eq:'#c98a00',area:'#3f9a3a',curve:'#c0398b',mark:'#8e44ad',bad:'#d1453b'},
   neon:{bg:'#07020f',bgGrid:'#1f1533',axis:'#ffffff',p1:'#4dd2ff',p2:'#ffa53d',eq:'#fff35c',area:'#39ff88',curve:'#ff9ecf',mark:'#a98bff',bad:'#ff4d6d'},
   nord:{bg:'#2e3440',bgGrid:'#3b4252',axis:'#eceff4',p1:'#88c0d0',p2:'#d08770',eq:'#ebcb8b',area:'#a3be8c',curve:'#e5a0c0',mark:'#b48ead',bad:'#bf616a'}};
-const T=()=>TX[lang()]||TX.ru;
+
 const PANELS=['topic','presets','solve','values','show','export'];
 const DEF={palette:'classic',colors:{...PAL.classic},dock:'auto',width:380,bottomH:46,ui:'auto',font:100,speed:1,lw:1,order:PANELS.slice(),collapsed:{export:true},read:{},float:{x:12,y:12},
   show:{bgGrid:true,coords:true,labels:true,br:true,sh:true,pn:true,hints:true},topic:'mat',inp:null,preset:null};
@@ -458,42 +149,21 @@ function load(){let r=null;try{r=JSON.parse(localStorage.getItem(KEY)||'null')}c
 let P=load();langFrom(()=>P.lang);if(!P.lang)P.lang=(navigator.language||'').toLowerCase().startsWith('ru')?'ru':'en';let saveT=0;
 function save(){clearTimeout(saveT);saveT=setTimeout(()=>{try{localStorage.setItem(KEY,JSON.stringify(P))}catch(e){}},250)}
 /* текст пользователя (имена вершин, ходов, участников) в HTML — только через esc; в текстовый экспорт — через unesc */
-const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-const unesc=s=>s.replace(/&lt;/g,'<').replace(/&gt;/g,'>').replace(/&quot;/g,'"').replace(/&#39;/g,"'").replace(/&amp;/g,'&');
+
+
 
 
 /* вектор вероятностей: простые дроби (1/3; 2/3), иначе десятичные */
-function fVq(a){return`(${a.map(v=>{const f=toFrac(v,1000,1e-9);return f&&f[1]>1?`${f[0]<0?'−':''}${Math.abs(f[0])}/${f[1]}`:fN(v,4)}).join('; ')})`}
-function fQ(v,d=4){const f=toFrac(v,1000,1e-9);if(f&&f[1]>1)return`${f[0]<0?'−':''}${Math.abs(f[0])}/${f[1]} ≈ ${fN(v,d)}`;return fN(v,d)}
+
+
 
 /* ---------- примеры ---------- */
-const PRE={
- mat:[['pd',{kind:'bi',A:'-1 -10\n0 -5',B:'-1 0\n-10 -5'},'Дилемма заключённого','Prisoner’s dilemma'],['bos',{kind:'bi',A:'2 0\n0 1',B:'1 0\n0 2'},'Семейный спор','Battle of the sexes'],['hawk',{kind:'bi',A:'-2 4\n0 2',B:'-2 0\n4 2'},'Ястреб и голубь','Hawk–dove'],
-  ['dom3',{kind:'bi',A:'3 1 0\n2 4 1\n1 2 5',B:'2 1 0\n3 1 2\n0 4 1'},'Доминирование 3×3','Dominance 3×3'],['pen',{kind:'zs',A:'1 -1\n-1 1',B:''},'Орлянка (нет седла)','Matching pennies'],['zs23',{kind:'zs',A:'3 1 4\n2 5 1',B:''},'2×3: графический метод','2×3: graphical method'],['sad',{kind:'zs',A:'4 2 3\n5 3 4\n1 0 2',B:''},'Седловая точка','Saddle point']],
- cour:[['c13',{M:'10',cs:'1 1'},'Пример 13: две фирмы, c = 1','Example 13: two firms, c = 1'],['c5',{M:'10',cs:'1 1 1 1 1'},'Пять фирм','Five firms'],['casym',{M:'10',cs:'1 4'},'Разные издержки','Different costs'],['cout',{M:'10',cs:'1 4 9'},'Фирма уходит с рынка','A firm exits']],
- barg:[['b14',{pts:'0 0\n1 0\n0 1',d1:'0',d2:'0'},'Пример 14: дележ единицы','Example 14: splitting a unit'],['b15',{pts:'0 0\n240 0\n0 240',d1:'60',d2:'120'},'Пример 15: носки','Example 15: socks'],['basym',{pts:'0 0\n4 0\n3 2\n0 3',d1:'0',d2:'0'},'Нэш ≠ Калаи–Смородинский','Nash ≠ Kalai–Smorodinsky']],
- coop:[['orch',{coal:'1 6\n2 18\n3 30\n12 36\n13 48\n23 54\n123 72'},'Оркестр (примеры 16, 17)','Orchestra (examples 16, 17)'],['e23',{coal:'1 1\n2 1\n3 3\n12 1\n13 4\n23 5\n123 8'},'Пример 23','Example 23'],['e24',{coal:'12 3\n23 1\n123 4'},'Пример 24','Example 24'],
-  ['boots',{coal:'13 600\n23 600\n14 0\n123 600\n134 600\n234 600\n124 0\n1234 600'},'Ботинки (n = 4)','Shoes (n = 4)'],['convex',{coal:'12 2\n13 2\n23 2\n123 6'},'Выпуклая игра','Convex game'],['empty',{coal:'12 1\n13 1\n23 1\n123 1'},'Пустое ядро','Empty core']],
- auct:[['a27',{n:'10',w:'1',v:'0,8'},'Пример 27: 10 участников','Example 27: 10 bidders'],['a2',{n:'2',w:'100',v:'60'},'Два участника, ω = 100','Two bidders, ω = 100'],['a5',{n:'5',w:'1',v:'0,5'},'Пять участников','Five bidders']]};
-Object.assign(PRE,{
- cont:[['ccour',{H1:'x(10-x-y)-x',H2:'y(10-x-y)-y',a1:'0',b1:'10',a2:'0',b2:'10'},'Курно в непрерывной форме','Cournot, continuous form'],['cbudget',{H1:'x*(x+y<=1)',H2:'y*(x+y<=1)',a1:'0',b1:'1',a2:'0',b2:'1'},'Пример 12: распиливание бюджета','Example 12: splitting a budget'],
-  ['clin',{H1:'-(x-y)^2',H2:'-(y-x/2-1)^2',a1:'0',b1:'4',a2:'0',b2:'4'},'Линейные наилучшие ответы','Linear best responses'],['ccoord',{H1:'x*y-x^2/2',H2:'x*y-y^2/2',a1:'0',b1:'1',a2:'0',b2:'1'},'Континуум равновесий','A continuum of equilibria']],
- bayes:[['bmeet',{mu:'0,5',A1:'2 0\n0 1',B1:'1 0\n0 2',A2:'2 0\n0 1',B2:'0 2\n1 0'},'Встреча: второй хочет или избегает','Meeting: the other wants or avoids'],['bentry',{mu:'0,3',A1:'2 -1\n0 0',B1:'1 3\n0 0',A2:'2 -1\n0 0',B2:'3 1\n0 0'},'Вход на рынок: тип конкурента','Entry: rival’s type'],['bmeet8',{mu:'0,8',A1:'2 0\n0 1',B1:'1 0\n0 2',A2:'2 0\n0 1',B2:'0 2\n1 0'},'Встреча, μ = 0,8','Meeting, μ = 0.8']],
- hotel:[['hloc',{hm:'loc',ha:'',hb:'',ht:'',hc:''},'Выбор места (цены равны)','Location choice (equal prices)'],['hends',{hm:'price',ha:'0',hb:'0',ht:'1',hc:'0'},'Цены на концах отрезка','Prices at the ends'],['hin',{hm:'price',ha:'0,1',hb:'0,3',ht:'2',hc:'1'},'Цены, фирмы внутри отрезка','Prices, firms inside']],
- tree:[['entry',{tr:'A: 1 | Войти -> B | Не входить -> (0; 4)\nB: 2 | Бороться -> (-1; -1) | Уступить -> (2; 2)'},'Вход на рынок','Market entry'],['cent',{tr:'A: 1 | Взять -> (1; 0) | Дальше -> B\nB: 2 | Взять -> (0; 2) | Дальше -> C\nC: 1 | Взять -> (3; 1) | Дальше -> D\nD: 2 | Взять -> (2; 4) | Дальше -> (3; 3)'},'Сороконожка','Centipede'],
-  ['ult',{tr:'A: 1 | Дать 1 -> B1 | Дать 2 -> B2 | Дать 3 -> B3\nB1: 2 | Принять -> (3; 1) | Отказ -> (0; 0)\nB2: 2 | Принять -> (2; 2) | Отказ -> (0; 0)\nB3: 2 | Принять -> (1; 3) | Отказ -> (0; 0)'},'Ультиматум: 4 монеты','Ultimatum: 4 coins'],['tr3',{tr:'A: 1 | Л -> B | П -> C\nB: 2 | л -> D | п -> (1; 2; 0)\nC: 3 | а -> (2; 0; 1) | б -> (0; 1; 3)\nD: 3 | а -> (3; 1; 1) | б -> (0; 3; 2)'},'Три игрока','Three players']],
- rep:[['pd10',{R:'3',Tt:'5',Ss:'0',Pp:'1',rn:'10',dl:'0,9'},'Дилемма, 10 раундов','Dilemma, 10 rounds'],['pd100',{R:'3',Tt:'5',Ss:'0',Pp:'1',rn:'100',dl:'0,9'},'Дилемма, 100 раундов','Dilemma, 100 rounds'],['pdh',{R:'3',Tt:'10',Ss:'0',Pp:'1',rn:'50',dl:'0,5'},'Сильный соблазн T = 10','Strong temptation T = 10']],
- evo:[['hd',{em:'hd',V:'2',C:'4',EA:'',x0:'0,05 0,3 0,7 0,95'},'Ястреб и голубь (V = 2, C = 4)','Hawk–dove (V = 2, C = 4)'],['pdevo',{em:'mat',V:'',C:'',EA:'3 0\n5 1',x0:'0,1 0,5 0,9 0,99'},'Дилемма заключённого','Prisoner’s dilemma'],['coordevo',{em:'mat',V:'',C:'',EA:'2 0\n0 1',x0:'0,1 0,3 0,4 0,8'},'Координация: две ESS','Coordination: two ESS']],
- vote:[['v3',{q:'50',wts:'49 49 2'},'[50; 49, 49, 2]: равная сила','[50; 49, 49, 2]: equal power'],['v51',{q:'51',wts:'50 49 1'},'[51; 50, 49, 1]','[51; 50, 49, 1]'],['board',{q:'4',wts:'3 2 1 1'},'Совет директоров [4; 3, 2, 1, 1]','Board [4; 3, 2, 1, 1]'],['unsc',{q:'39',wts:'7 7 7 7 7 1 1 1 1 1 1 1 1 1 1'},'Совбез ООН: 5 постоянных + 10','UN Security Council: 5 + 10']],
- match:[['gs3',{mp:'A: X Y Z\nB: Y X Z\nC: X Y Z',mr:'X: B A C\nY: A B C\nZ: A B C',side:'p'},'Три пары','Three pairs'],['gs3r',{mp:'A: X Y Z\nB: Y X Z\nC: X Y Z',mr:'X: B A C\nY: A B C\nZ: A B C',side:'r'},'Те же, предлагает другая сторона','Same, other side proposes'],['gs4',{mp:'Аня: МГУ ВАВТ ВШЭ МГИМО\nБорис: ВАВТ МГУ МГИМО ВШЭ\nВика: ВАВТ ВШЭ МГУ МГИМО\nГлеб: МГУ ВАВТ ВШЭ МГИМО',mr:'МГУ: Борис Аня Глеб Вика\nВАВТ: Аня Вика Борис Глеб\nВШЭ: Вика Глеб Аня Борис\nМГИМО: Глеб Борис Вика Аня',side:'p'},'Абитуриенты и вузы','Applicants and universities']],
- braess:[['brno',{bN:'4000',ba:'100',bb:'45',be:'0',brg:'no'},'Без перемычки','Without the link'],['bryes',{bN:'4000',ba:'100',bb:'45',be:'0',brg:'yes'},'С перемычкой: парадокс','With the link: the paradox'],['bre',{bN:'4000',ba:'100',bb:'45',be:'10',brg:'yes'},'Перемычка с временем 10','Link with time 10']]});
-PRE.cour.forEach(p=>{p[1].om='cour'});PRE.cour.push(['stack',{om:'stack',M:'10',cs:'1 1'},'Штакельберг: лидер ходит первым','Stackelberg: the leader moves first'],['bert',{om:'bert',M:'10',cs:'1 1'},'Бертран: парадокс P = c','Bertrand: the paradox P = c'],['bertA',{om:'bert',M:'10',cs:'1 3'},'Бертран: разные издержки','Bertrand: different costs'],['cmpall',{om:'cmp',M:'10',cs:'1'},'Сравнение моделей','Comparing models']);
-const GROUPS=[['stat',['mat','cont','bayes']],['mkt',['cour','hotel']],['dyn',['tree','rep','evo']],['coopg',['barg','coop','vote','match']],['mech',['auct','braess']]];
-const TOPICS=GROUPS.flatMap(g=>g[1]);
-const FORMS={mat:[['kind','sel',['bi','zs']],['A','txt'],['B','txt',i=>i.kind==='bi']],cour:[['om','sel',['cour','stack','bert','cmp']],['M','num'],['cs','str']],
- cont:[['H1','str'],['H2','str'],['a1','num'],['b1','num'],['a2','num'],['b2','num']],bayes:[['mu','num'],['A1','txt'],['B1','txt'],['A2','txt'],['B2','txt']],hotel:[['hm','sel',['loc','price']],['ha','num',i=>i.hm==='price'],['hb','num',i=>i.hm==='price'],['ht','num',i=>i.hm==='price'],['hc','num',i=>i.hm==='price']],
- tree:[['tr','txt']],rep:[['R','num'],['Tt','num'],['Ss','num'],['Pp','num'],['rn','num'],['dl','num']],evo:[['em','sel',['hd','mat']],['V','num',i=>i.em==='hd'],['C','num',i=>i.em==='hd'],['EA','txt',i=>i.em==='mat'],['x0','str']],
- vote:[['q','num'],['wts','str']],match:[['side','sel',['p','r']],['mp','txt'],['mr','txt']],braess:[['brg','sel',['no','yes']],['bN','num'],['ba','num'],['bb','num'],['be','num',i=>i.brg==='yes']],barg:[['pts','txt'],['d1','num'],['d2','num']],coop:[['coal','txt']],auct:[['n','num'],['w','num'],['v','num']]};
+
+
+
+
+
+
 const S={topic:TOPICS.includes(P.topic)?P.topic:'mat',inp:{},res:null,err:null,preset:P.preset||null,stamp:false,anyAnim:false};
 TOPICS.forEach(t=>{S.inp[t]=clone(PRE[t][0][1])});if(P.inp)for(const t of TOPICS)if(P.inp[t])S.inp[t]={...S.inp[t],...P.inp[t]};
 function renderForm(){const box=$('#form'),L=T(),t=S.topic,I=S.inp[t];box.innerHTML='';
@@ -508,31 +178,23 @@ let fT0=0;$('#form').addEventListener('input',e=>{const k=e.target.dataset.k;if(
 function setTopic(t){if(!TOPICS.includes(t))return;S.topic=t;P.topic=t;S.preset=null;save();renderForm();recompute()}
 function loadPreset(id){for(const t of TOPICS){const p=PRE[t].find(z=>z[0]===id);if(p){S.topic=t;P.topic=t;S.inp[t]={...S.inp[t],...clone(p[1])};S.preset=id;renderForm();recompute();return}}}
 /* ---------- вычисления ---------- */
-const E=(msg)=>{throw{msg}};const nI=s=>numG(s);
-function compMat(I){const A=parseMat(I.A||'');if(A.length>6||A[0].length>6)E('big');if(I.kind==='zs'){const B=A.map(r=>r.map(v=>-v));const z=zeroSum(A);return{kind:'zs',A,B,z,bm:bimatrix(A,B)}}
-  const B=parseMat(I.B||'');if(B.length!==A.length||B[0].length!==A[0].length)E('len');return{kind:'bi',A,B,bm:bimatrix(A,B),dom:dominance(A,B)}}
-function compCour(I){const M=nI(I.M);const cs=(I.cs||'').trim().split(/[\s;]+/).filter(Boolean).map(numG);if(!cs.length||cs.length>12)E('num');const om=I.om||'cour';
-  if(om==='cour'){const r=cournot(M,cs);return{om,M,cs,...r}}if(cs.some(c=>c>=M))E('cM');const c1=cs[0],c2=cs.length>1?cs[1]:cs[0];const o=oligo(om==='cmp'?'cour':om,M,c1,c2);return{om,M,cs,...o,N:2}}
-const nums=s=>(s||'').trim().split(/[\s;]+/).filter(Boolean).map(numG);
-function compCont(I){let H1,H2;try{H1=exprXY(I.H1||'');H2=exprXY(I.H2||'')}catch(e){E('expr')}const a1=nI(I.a1),b1=nI(I.b1),a2=nI(I.a2),b2=nI(I.b2);if(!(a1<b1&&a2<b2))E('ab');return{a1,b1,a2,b2,H1,H2,...contGame(H1,H2,a1,b1,a2,b2)}}
-function compBayes(I){const mu=nI(I.mu);if(!(mu>=0&&mu<=1))E('mu');const m=[I.A1,I.B1,I.A2,I.B2].map(t=>parseMat(t||''));if(m.some(x=>x.length!==2||x[0].length!==2))E('m22');const g=bayesGame(mu,...m);
-  return{kind:'bi',mu,M4:m,...g,cl:g.cols.map(([a,b])=>`${a+1}${b+1}`)}}
-function compHotel(I){if(I.hm!=='price')return{hm:'loc'};const a=nI(I.ha),b=nI(I.hb),t=nI(I.ht),c=nI(I.hc);if(!(a>=0&&b>=0&&a+b<1&&t>0))E('hot');return{hm:'price',a,b,t,c,...hotelPrice(a,b,t,c)}}
-function compTree(I){const T0=parseTree(I.tr||'');const r=backward(T0);return{T:T0,...r}}
-function compRep(I){const pay={R:nI(I.R),T:nI(I.Tt),S:nI(I.Ss),P:nI(I.Pp)};if(!(pay.T>pay.R&&pay.R>pay.P&&pay.P>pay.S))E('pdo');const n=nI(I.rn);if(!Number.isInteger(n)||n<1||n>1000)E('rn');const dl=nI(I.dl);const tr=tournament(n,pay);return{pay,n,dl,...tr,grim:(pay.T-pay.R)/(pay.T-pay.P)}}
-function compEvo(I){let A;if(I.em==='hd'){const V=nI(I.V),C=nI(I.C);if(!(V>0&&C>0))E('vc');A=[[(V-C)/2,V],[0,V/2]]}else{A=parseMat(I.EA||'');if(A.length!==2||A[0].length!==2)E('m22')}
-  const ev=evoAnalysis(A);const x0=nums(I.x0).filter(v=>v>=0&&v<=1);return{A,...ev,x0,traj:x0.map(x=>replicator(ev.g,x,30,.02))}}
-function compVote(I){const q=nI(I.q),w=nums(I.wts);if(!w.length||w.length>16)E('wts');if(!(q>0))E('q');return{q,w,...power(q,w)}}
-function compMatch(I){let a=parsePrefs(I.mp||''),b=parsePrefs(I.mr||'');const rev=I.side==='r';const r=rev?galeShapley(b,a):galeShapley(a,b);return{rev,pa:a,pb:b,...r}}
-function compBraess(I){const N=nI(I.bN),a=nI(I.ba),b=nI(I.bb),e=I.be===''||I.be==null?0:nI(I.be);if(!(N>0&&a>0&&b>=0))E('num');const yes=I.brg==='yes';const r=braess(N,a,b,e,yes),r0=braess(N,a,b,e,false);if(!r.eq)E('lp');return{N,a,b,e,yes,...r,base:r0.eq}}
-function compBarg(I){const pts=(I.pts||'').trim().split('\n').map(l=>l.trim()).filter(Boolean).map(l=>l.split(/[\s;]+/).map(numG));if(pts.length<2||pts.some(p=>p.length!==2))E('hull');const d=[nI(I.d1),nI(I.d2)];return{pts,d,...bargain(pts,d)}}
-function compCoop(I){const lines=(I.coal||'').trim().split('\n').map(l=>l.trim()).filter(Boolean);let n=2;const vals=[];
-  for(const l of lines){const m=/^\{?\s*([1-4][\s,]*)+\}?\s+/.exec(l);const p=l.split(/\s+/);if(p.length<2)E('coal');const val=numG(p[p.length-1]),K=p.slice(0,-1).join('').replace(/[{},]/g,'');if(!/^[1-4]+$/.test(K))E('coal');let mask=0;for(const ch of K){mask|=1<<(+ch-1);n=Math.max(n,+ch)}vals.push([mask,val])}
-  const v=new Array(1<<n).fill(0);vals.forEach(([m,x])=>{v[m]=x});const sh=shapley(n,v),core=coreLP(n,v),cv=convexG(n,v),pn=prenucleolus(n,v);
-  const N=(1<<n)-1;const inCore=x=>x&&coalitions(n).every(K=>K===N||[...Array(n)].reduce((s,_,i)=>s+((K>>i)&1?x[i]:0),0)>=v[K]-1e-9);
-  return{n,v,sh,core,cv,pn,shIn:inCore(sh.phi),pnIn:inCore(pn.x)}}
-function compAuct(I){const n=nI(I.n),w=nI(I.w),v=nI(I.v);if(!Number.isInteger(n)||n<2||n>30)E('n');if(!(w>0))E('w');const a=auction(n,w);return{n,w,v:Math.max(0,Math.min(w,v)),a}}
-const COMP={mat:compMat,cour:compCour,barg:compBarg,coop:compCoop,auct:compAuct,cont:compCont,bayes:compBayes,hotel:compHotel,tree:compTree,rep:compRep,evo:compEvo,vote:compVote,match:compMatch,braess:compBraess};
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 function recompute(){const t=S.topic,I=S.inp[t];S.err=null;S.res=null;try{S.res=COMP[t](I)}catch(e){if(e instanceof Error)console.error(e);S.err=e instanceof Error?{msg:'bug'}:e&&e.msg?e:{msg:'num'}}P.inp=S.inp;P.preset=S.preset;save();renderAll()}
 /* ---------- панели ---------- */
 function buildPanels(){
@@ -556,35 +218,16 @@ function applyOrder(){P.order.forEach(id=>{const el=side.querySelector(`.panel[d
   side.querySelectorAll('.panel').forEach(p=>p.classList.toggle('collapsed',!!P.collapsed[p.dataset.id]))}
 function showPanel(id){P.collapsed[id]=false;applyOrder();save();const el=side.querySelector(`.panel[data-id="${id}"]`);if(el)setTimeout(()=>el.scrollIntoView({block:'nearest',behavior:'smooth'}),50)}
 const ol=a=>`<ol class="stp">${a.filter(Boolean).map(s=>`<li>${s}</li>`).join('')}</ol>`;
-const kName=(K,n)=>'{'+[...Array(n)].map((_,i)=>(K>>i)&1?i+1:null).filter(Boolean).join(', ')+'}';
-const rS=i=>`${P.lang==='ru'?'стр.':'row'} ${i+1}`,cS0=j=>`${P.lang==='ru'?'столб.':'col'} ${j+1}`;let cS=cS0;
-function gmTab(R){const{A,B,bm}=R,zs=R.kind==='zs';const cS=j=>R.cl?`${P.lang==='ru'?'ст.':'col'} ${R.cl[j]}`:cS0(j);const ne=new Set(bm.pure.map(([i,j])=>i+','+j));let h='<div class="tw"><table class="gm"><tr><th></th>'+A[0].map((_,j)=>`<th>${cS(j)}</th>`).join('')+(zs?`<th>min</th>`:'')+'</tr>';
-  A.forEach((r,i)=>{h+=`<tr><th>${rS(i)}</th>`+r.map((a,j)=>{const c1=bm.br1[j][i]?'b1':'',c2=bm.br2[i][j]?'b2':'';return`<td class="${ne.has(i+','+j)?'ne':''}"><span class="${c1}">${fN(a,3)}</span>${zs?'':` ; <span class="${c2}">${fN(B[i][j],3)}</span>`}</td>`}).join('')+(zs?`<th>${fN(R.z.rmin[i],3)}</th>`:'')+'</tr>'});
-  if(zs)h+='<tr><th>max</th>'+R.z.cmax.map(v=>`<th>${fN(v,3)}</th>`).join('')+'<th></th></tr>';return h+'</table></div>'}
-function solveMat(R){cS=R.cl?(j=>`${P.lang==='ru'?'ст.':'col'} ${R.cl[j]}`):cS0;const L=T(),st=[gmTab(R)];const bm=R.bm;
-  if(R.kind==='zs'){const z=R.z;st.push(`${L.s_zsMin} ${z.rmin.map(v=>fN(v,3)).join(', ')}.`);st.push(`${L.s_zsMax} ${z.cmax.map(v=>fN(v,3)).join(', ')}.`);st.push(L.s_zsLo(fN(z.lo,3),fN(z.hi,3)));
-    if(z.saddle.length){const[i,j]=z.saddle[0];st.push(L.s_saddle(`(${rS(i)}, ${cS(j)})`,fN(z.lo,3)));return{st,ans:`v = ${fQ(z.lo)}`}}
-    st.push(L.s_noSaddle);st.push(L.s_lp);if(R.A.length===2||R.A[0].length===2)st.push(L.s_graph);st.push(L.s_zsRes(fV(z.p),fV(z.q),fQ(z.v)));return{st,ans:`v = ${fQ(z.v)}; p* = ${fV(z.p)}, q* = ${fV(z.q)}`}}
-  st.push(L.s_br1);st.push(L.s_br2);st.push(bm.pure.length?L.s_ne(bm.pure.map(([i,j])=>`(${rS(i)}, ${cS(j)})`).join(', ')):L.s_noNe);
-  const d=R.dom;if(d.steps.length){d.steps.forEach(s=>st.push(L.s_dom(s.p,s.p===1?rS(s.out):cS(s.out),s.p===1?rS(s.by):cS(s.by))));st.push(L.s_domRes(`${d.R.map(rS).join(', ')} × ${d.C.map(cS).join(', ')}`))}else st.push(L.s_domNo);
-  if(R.A.length===2&&R.A[0].length===2){if(bm.mixed){const m=bm.mixed;st.push(L.s_mix(fQ(m.q),fQ(m.p)));st.push(L.s_mixU(fQ(m.u1),fQ(m.u2)))}else st.push(L.s_mixNo)}
-  else{st.push(L.s_mixSup);if(bm.mixN.length)bm.mixN.forEach(e=>st.push(L.s_mixNe(fVq(e.x),fVq(e.y),fQ(e.u1),fQ(e.u2))));else st.push(bm.pure.length?L.s_mixNNo:L.s_mixDeg)}
-  const mixA=bm.mixN.map(e=>`x* = ${fVq(e.x)}, y* = ${fVq(e.y)}`).join('; ');
-  const ans=(bm.pure.length?bm.pure.map(([i,j])=>`(${i+1}, ${j+1})`).join(', '):'')+(bm.mixed?`; p = ${fN(bm.mixed.p,3)}, q = ${fN(bm.mixed.q,3)}`:'')+(mixA?(bm.pure.length?'; ':'')+mixA:'');return{st,ans:`NE: ${ans||'—'}`}}
-function solveCour(R){const L=T(),st=[L.s_c1,L.s_c2];const N=R.N;if(R.act.length<N)R.cs.forEach((c,i)=>{if(!R.act.includes(i))st.push(L.s_cOut(i+1))});
-  st.push(L.s_c3(R.act.length,fQ(R.Q)));st.push(`${L.s_c4} ${R.q.map((q,i)=>`q${i+1} = ${fQ(q)}`).join(', ')}`);if(R.cs.every(c=>c===R.cs[0]))st.push(L.s_cSym(fQ((R.M-R.cs[0])/(N+1))));st.push(L.s_cP(fQ(R.P)));
-  st.push(`${T().v.pi}: ${R.pi.map((p,i)=>`H${i+1} = ${fQ(p)}`).join(', ')}`);return{st,ans:`q* = ${fV(R.q)}, P = ${fN(R.P,4)}`}}
-function solveBarg(R){const L=T(),st=[L.s_b1];st.push(L.s_bPar(R.F.map(fV).join(' — ')));if(R.nash)st.push(L.s_bN(fV(R.nash.x),fQ(R.nash.v)));st.push(L.s_bI(fV(R.ideal)));if(R.ks)st.push(L.s_bK(fV(R.ks.x)));
-  if(R.nash&&R.ks&&Math.hypot(R.nash.x[0]-R.ks.x[0],R.nash.x[1]-R.ks.x[1])<1e-9)st.push(L.s_bSame);return{st,ans:`${T().v.nash}: ${R.nash?fV(R.nash.x):'—'}; ${T().v.ks}: ${R.ks?fV(R.ks.x):'—'}`}}
-function solveCoop(R){const L=T(),n=R.n,st=[];const Ks=coalitions(n);st.push(`${L.s_v} ${Ks.map(K=>`v(${kName(K,n)}) = ${fN(R.v[K],3)}`).join('; ')}.`);
-  const tab=R.sh.tab;st.push(`${L.s_sh}${n<=3?`<div class="tw"><table class="tab"><tr><th>${P.lang==='ru'?'Порядок':'Order'}</th>${[...Array(n)].map((_,i)=>`<th>${i+1}</th>`).join('')}</tr>${tab.map(r=>`<tr><td>${r.p.map(i=>i+1).join('→')}</td>${[...Array(n)].map((_,i)=>`<td>${fN(r.row.find(x=>x[0]===i)[1],3)}</td>`).join('')}</tr>`).join('')}</table></div>`:''}${L.s_shRes(fV(R.sh.phi))}`);
-  st.push(L.s_core);st.push(R.core.nonempty?L.s_coreY:L.s_coreN);if(R.core.nonempty){st.push(L.s_inCore(P.lang==='ru'?'Вектор Шепли':'The Shapley value',R.shIn))}
-  st.push(L.s_conv+' '+(R.cv.length?L.s_convN(kName(R.cv[0][0],n),kName(R.cv[0][1],n)):L.s_convY));
-  st.push(L.s_pn);R.pn.steps.forEach((s,k)=>st.push(L.s_pnStep(k+1,fQ(s.t),s.tight.map(K=>kName(K,n)).join(', '))));if(R.pn.x){st.push(L.s_pnRes(fV(R.pn.x)));if(R.pn.x.every((x,i)=>x>=R.v[1<<i]-1e-9))st.push(L.s_pnIR)}
-  return{st,ans:`φ = ${fV(R.sh.phi)}; ${P.lang==='ru'?'преднуклеолус':'prenucleolus'} ${R.pn.x?fV(R.pn.x):'—'}`}}
-function solveAuct(R){const L=T(),a=R.a,st=[L.s_a1(R.n,fN(R.w))];st.push(L.s_aFP(`β = ${fN(a.fp(R.v),4)}`));st.push(L.s_aSP(`β = ${fN(a.sp(R.v),4)}`));st.push(L.s_aAP(`β = ${fN(a.ap(R.v),4)}`));st.push(L.s_aRev(fQ(a.rev)));return{st,ans:`${T().v.rev}: ${fQ(a.rev)}`}}
-const SOLVE={mat:solveMat,cour:solveCourX,barg:solveBarg,coop:solveCoop,auct:solveAuct,cont:solveCont,bayes:solveBayesG,hotel:solveHotel,tree:solveTree,rep:solveRep,evo:solveEvo,vote:solveVote,match:solveMatch,braess:solveBraess};
-function renderSolve(){const box=$('#solve'),L=T();if(S.err){box.innerHTML=`<p class="note err">${L.err[S.err.msg]||L.err.num}</p>`;S.ans='';return}const r=SOLVE[S.topic](S.res);S.ans=r.ans;
+
+
+
+
+
+
+
+
+
+function renderSolve(){const box=$('#solve'),L=T();if(S.err){box.innerHTML=`<p class="note err">${L.err[S.err.msg]||L.err.num}</p>`;S.ans='';return}const r=SOLVE[S.topic](S.res, S.inp[S.topic]);S.ans=r.ans;
   box.innerHTML=`<p class="idea">${L.tt[S.topic]}</p>${ol(r.st)}<div class="ans"><div class="k">${L.ans}</div><div class="big">${r.ans}</div></div>`}
 function prop(k,v){return`<div class="prop"><span class="k">${k}</span><span class="v">${v}</span></div>`}
 function renderValues(){const box=$('#props'),V=T().v;if(S.err||!S.res){box.innerHTML='';return}const R=S.res,t=S.topic;let h='';
@@ -620,7 +263,7 @@ function dotP(fr,p,col,r=6,lab){const X=fr.X(p[0]),Y=fr.Y(p[1]);ctx.fillStyle=co
 const pT=()=>Math.min(100,H*.17),pB=()=>Math.min(70,H*.12);
 function renderNow(){ctx.setTransform(DPR,0,0,DPR,0,0);ctx.fillStyle=P.colors.bg;ctx.fillRect(0,0,W,H);if(!S.res||S.err||!W)return;({mat:drawMat,cour:drawCourX,barg:drawBarg,coop:drawCoop,auct:drawAuct,cont:drawCont,bayes:drawMat,hotel:drawHotel,tree:drawTree,rep:drawRep,evo:drawEvo,vote:drawVote,match:drawMatch,braess:drawBraess})[S.topic](S.res);
   if(S.stamp){const t=unesc((S.ans||'').replace(/<[^>]+>/g,''));ctx.font='600 15px "Source Serif 4", Georgia, serif';const w=ctx.measureText(t).width+20;ctx.fillStyle=P.colors.bg;ctx.globalAlpha=.85;ctx.fillRect(W-w-12,H-38,w,28);ctx.globalAlpha=1;ctx.fillStyle=P.colors.axis;ctx.textAlign='left';ctx.textBaseline='middle';ctx.fillText(t,W-w-2,H-24)}}
-function drawMat(R){cS=R.cl?(j=>`${P.lang==='ru'?'ст.':'col'} ${R.cl[j]}`):cS0;const c=P.colors,A=R.A,B=R.B,m=A.length,n=A[0].length,zs=R.kind==='zs',bm=R.bm;const sq=(!zs&&m===2&&n===2)||(zs&&(m===2||n===2));
+function drawMat(R){const cS=R.cl?(j=>`${P.lang==='ru'?'ст.':'col'} ${R.cl[j]}`):cS0;const c=P.colors,A=R.A,B=R.B,m=A.length,n=A[0].length,zs=R.kind==='zs',bm=R.bm;const sq=(!zs&&m===2&&n===2)||(zs&&(m===2||n===2));
   const areaW=sq?W*.5:W-80,cw=Math.min(120,(areaW-60)/(n+(zs?1:0))),ch=Math.min(70,(H-pT()-pB()-40)/(m+(zs?1:0))),x0=40+(areaW-cw*n)/2,y0=pT()+30;const ne=new Set(bm.pure.map(([i,j])=>i+','+j)),del=R.dom?{r:new Set(R.dom.steps.filter(s=>s.p===1).map(s=>s.out)),c:new Set(R.dom.steps.filter(s=>s.p===2).map(s=>s.out))}:{r:new Set(),c:new Set()};
   for(let j=0;j<n;j++)txt(cS(j),x0+cw*j+cw/2,y0-14,c.p2,12);for(let i=0;i<m;i++)txt(rS(i),x0-24,y0+ch*i+ch/2,c.p1,12);
   for(let i=0;i<m;i++)for(let j=0;j<n;j++){const X=x0+cw*j,Y=y0+ch*i,dl=del.r.has(i)||del.c.has(j);ctx.fillStyle=c.bgGrid;ctx.globalAlpha=dl?.35:.9;ctx.fillRect(X+3,Y+3,cw-6,ch-6);ctx.globalAlpha=1;
@@ -669,11 +312,7 @@ $('#capOpen').onclick=()=>{P.show.hints=true;syncToggles();renderCaption();save(
 document.addEventListener('click',e=>{const q=e.target.closest('[data-term]');if(q){e.preventDefault();e.stopPropagation();openTerm(q.dataset.term);return}const p=e.target.closest('[data-pre]');if(p)loadPreset(p.dataset.pre)});
 function fitView(){req()}function play(){}
 /* ---------- олигополия: Курно / Штакельберг / Бертран / сравнение ---------- */
-function solveCourX(R){if(R.om==='cour')return solveCour(R);const L=T(),st=[];
-  if(R.om==='stack'){st.push(L.s_c1);st.push(L.s_ol1);st.push(L.s_ol2);if(R.deter)st.push(L.s_olD(fQ(R.M-R.c2)));st.push(L.s_ol3(fQ(R.q[0]),fQ(R.q[1]),fQ(R.P)));st.push(`${L.v.pi}: H₁ = ${fQ(R.pi[0])}, H₂ = ${fQ(R.pi[1])}`);return{st,ans:`q* = ${fV(R.q)}, P = ${fN(R.P,4)}`}}
-  if(R.om==='bert'){st.push(L.s_ob1);st.push(L.s_ob2);if(Math.abs(R.c1-R.c2)>1e-12)st.push(L.s_ob3(fN(Math.max(R.c1,R.c2),4)));st.push(`p = ${fV(R.p)}, q = ${fV(R.q)}, ${L.v.pi}: ${fV(R.pi)}`);return{st,ans:`p* = ${fV(R.p)}`}}
-  st.push(L.s_oc);const m=R.cmp;st.push(`<div class="tw"><table class="tab"><tr><th></th><th>Q</th><th>P</th><th>PS</th><th>CS</th><th>DWL</th></tr>${Object.keys(m).map(k=>`<tr><td style="text-align:left">${L.mods[k]}</td>${['Q','P','PS','CS','DWL'].map(f=>`<td>${fN(m[k][f],3)}</td>`).join('')}</tr>`).join('')}</table></div>`);
-  return{st,ans:`Q: ${fN(m.mono.Q,2)} < ${fN(m.cour.Q,2)} < ${fN(m.stack.Q,2)} < ${fN(m.comp.Q,2)}`}}
+
 function drawCourX(R){if(R.om==='cour')return drawCour(R);const c=P.colors,r={x:60,y:pT(),w:W-110,h:H-pT()-pB()};
   if(R.om==='stack'){const M=R.M,[c1,c2]=[R.c1,R.c2],mx=Math.max(M-c1,M-c2)*1.05;const fr=frame(r,0,mx,0,mx,true,'q₂ ↑  q₁ →');seg(fr,[0,(M-c2)/2],[M-c2,0],c.p2,2.6);seg(fr,[(M-c1)/2,0],[0,M-c1],c.p1,1.4,[5,4]);
     const cq=cournot(M,[c1,c2]).q;dotP(fr,cq,c.mark,5,P.show.labels?(P.lang==='ru'?'Курно':'Cournot'):'');dotP(fr,R.q,c.eq,7,P.show.labels?`S ${fV(R.q)}`:'S');return}
@@ -683,25 +322,21 @@ function drawCourX(R){if(R.om==='cour')return drawCour(R);const c=P.colors,r={x:
   ks.forEach((k,i)=>{const X=fr.X(i);[[m[k].Q,c.p1,-1],[m[k].P,c.p2,1]].forEach(([v,col,s])=>{ctx.fillStyle=col;ctx.globalAlpha=.75;ctx.fillRect(X+(s<0?-bw:0),fr.Y(v),bw,fr.Y(0)-fr.Y(v));ctx.globalAlpha=1;if(P.show.labels)txt(dc(fmt(v,2)),X+s*bw/2,fr.Y(v)-10,col,12)});txt(T().mods[k],X,fr.Y(0)+16,c.axis,11)})}
 let VALS2_olig=(R,V)=>R.om==='cmp'?Object.keys(R.cmp).map(k=>prop(T().mods[k],`Q = ${fN(R.cmp[k].Q,3)}, P = ${fN(R.cmp[k].P,3)}`)).join(''):prop(T().v2.q,fV(R.q))+prop(V.P,fQ(R.P))+prop(V.pi,fV(R.pi))+(R.p?prop(T().v2.p,fV(R.p)):'');
 /* ---------- непрерывные ---------- */
-function solveCont(R){const L=T(),st=[L.s_ct1,L.s_ct2];if(R.many){const ln=R.line;const offTxt=ln&&ln.off.length?ln.off.map(fV).join(', '):'';st.push(L.s_ctM(R.grid.length,ln&&ln.n>=3?fV(ln.a):'',ln&&ln.n>=3?fV(ln.b):'',offTxt));return{st,ans:`NE: ${ln&&ln.n>=3?`[${fV(ln.a)} — ${fV(ln.b)}]${offTxt?', '+offTxt:''}`:R.grid.length}`}}
-  if(!R.eq.length){st.push(L.s_ctN);return{st,ans:'—'}}st.push(L.s_ctE(R.eq.map(fV).join(', ')));st.push(R.eq.map(p=>`H₁ = ${fN(R.H1(p[0],p[1]),4)}, H₂ = ${fN(R.H2(p[0],p[1]),4)}`).join('; '));return{st,ans:`NE: ${R.eq.map(fV).join(', ')}`}}
+
 function drawCont(R){const c=P.colors,r={x:60,y:pT(),w:W-110,h:H-pT()-pB()};const fr=frame(r,R.a1,R.b1,R.a2,R.b2,true,'y ↑  x →');
   if(P.show.br){ctx.fillStyle=c.p1;R.ys.forEach((y,k)=>R.br1[k].x.slice(0,30).forEach(x=>{ctx.globalAlpha=.85;ctx.fillRect(fr.X(x)-1.5,fr.Y(y)-1.5,3,3)}));ctx.fillStyle=c.p2;R.xs.forEach((x,k)=>R.br2[k].x.slice(0,30).forEach(y=>{ctx.fillRect(fr.X(x)-1.5,fr.Y(y)-1.5,3,3)}));ctx.globalAlpha=1}
   if(R.many)R.grid.forEach(p=>dotP(fr,p,c.eq,3.5));else R.eq.forEach(p=>dotP(fr,p,c.eq,7,fV(p)))}
 /* ---------- байесовские ---------- */
-function solveBayesG(R){const L=T();cS=j=>`${P.lang==='ru'?'ст.':'col'} ${R.cl[j]}`;const st=[L.s_by1(fN(R.mu,3)),L.s_by2,gmTab(R),L.s_by3];
-  st.push(R.bm.pure.length?L.s_byE(R.bm.pure.map(([i,j])=>`(${rS(i)}, ${R.cl[j]})`).join(', ')):L.s_byN);return{st,ans:R.bm.pure.length?R.bm.pure.map(([i,j])=>`(${i+1}; ${R.cl[j]})`).join(', '):'—'}}
+
 /* ---------- Хотеллинг ---------- */
-function solveHotel(R){const L=T();if(R.hm==='loc')return{st:[L.s_hl1,L.s_hl2,L.s_hl3],ans:`(${fN(.5)}; ${fN(.5)})`};
-  const st=[L.s_hp1(fN(R.a,3),fN(1-R.b,3)),L.s_hp2,L.s_hp3(fN(R.p[0],4),fN(R.p[1],4)),L.s_hp4(fN(R.formula[0],4),fN(R.formula[1],4)),L.s_hp5(fN(R.x,4),fN(R.pi[0],4),fN(R.pi[1],4))];return{st,ans:`p* = (${fN(R.p[0],3)}; ${fN(R.p[1],3)})`}}
+
 function drawHotel(R){const c=P.colors,x0=70,x1=W-70,y=Math.min(H*.5,H-160),X=t=>x0+(x1-x0)*t;ctx.lineWidth=10;
   const loc=R.hm==='loc',a=loc?.5:R.a,b=loc?.5:1-R.b,xh=loc?.5:R.x;ctx.strokeStyle=c.p1;ctx.globalAlpha=.6;ctx.beginPath();ctx.moveTo(X(0),y);ctx.lineTo(X(xh),y);ctx.stroke();ctx.strokeStyle=c.p2;ctx.beginPath();ctx.moveTo(X(xh),y);ctx.lineTo(X(1),y);ctx.stroke();ctx.globalAlpha=1;
   txt('0',X(0),y+24,c.axis,13);txt('1',X(1),y+24,c.axis,13);const firm=(t,col,l)=>{ctx.fillStyle=col;ctx.beginPath();ctx.moveTo(X(t),y-14);ctx.lineTo(X(t)-11,y-36);ctx.lineTo(X(t)+11,y-36);ctx.closePath();ctx.fill();txt(l,X(t),y-50,col,15)};
   if(loc){firm(.5,c.eq,P.lang==='ru'?'обе фирмы':'both firms');if(P.show.labels){[.2,.8].forEach(t=>{ctx.strokeStyle=c.mark;ctx.setLineDash([4,4]);ctx.beginPath();ctx.moveTo(X(t),y-70);ctx.lineTo(X(.5),y-70);ctx.stroke();ctx.setLineDash([])});txt(P.lang==='ru'?'→ сдвиг к центру ←':'→ move to the centre ←',X(.5),y-86,c.mark,13)}return}
   firm(a,c.p1,`p₁ = ${dc(fmt(R.p[0],3))}`);firm(b,c.p2,`p₂ = ${dc(fmt(R.p[1],3))}`);ctx.strokeStyle=c.eq;ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(X(xh),y-20);ctx.lineTo(X(xh),y+20);ctx.stroke();if(P.show.labels)txt(`x̂ = ${dc(fmt(xh,3))}`,X(xh),y+44,c.eq,14)}
 /* ---------- дерево ---------- */
-function solveTree(R){const L=T(),st=[L.s_tr1];R.log.forEach(l=>{const n=R.T.nodes[l.id];st.push(L.s_trN(esc(l.id),l.pl,esc(n.acts[l.best].a),fV(l.opts[l.best]))+(R.ties[l.id]?' '+L.s_trTie:''))});
-  const path=R.path.map(([id,k])=>`${esc(id)}: ${esc(R.T.nodes[id].acts[k].a)}`).join(' → ');st.push(L.s_trR(path,fV(R.v)));st.push(L.s_trS);return{st,ans:`${fV(R.v)}; ${path}`}}
+
 function drawTree(R){const c=P.colors,Tr=R.T,lay={},depth={};let leafX=0;const items=[];
   const place=(id,d)=>{const n=Tr.nodes[id];const xs=[];n.acts.forEach((a,k)=>{if(a.to)xs.push(place(a.to,d+1));else{const lx=leafX++;items.push({leaf:true,x:lx,d:d+1,pay:a.pay,par:id,k});xs.push(lx)}});const x=(xs[0]+xs[xs.length-1])/2;lay[id]={x,d,kids:xs};depth[id]=d;return x};
   place(Tr.root,0);const maxD=Math.max(...Object.values(lay).map(o=>o.d),...items.map(i=>i.d)),nL=Math.max(1,leafX-1),top=pT()+20,bot=H-pB()-40,X=x=>70+(W-140)*(nL?x/nL:.5),Y=d=>top+(bot-top)*(maxD?d/maxD:0);
@@ -712,39 +347,28 @@ function drawTree(R){const c=P.colors,Tr=R.T,lay={},depth={};let leafX=0;const i
   for(const id in lay){const o=lay[id],col=[c.p1,c.p2,c.mark][(Tr.nodes[id].pl-1)%3];ctx.fillStyle=col;ctx.beginPath();ctx.arc(X(o.x),Y(o.d),13,0,7);ctx.fill();txt(String(Tr.nodes[id].pl),X(o.x),Y(o.d),c.bg,13);txt(id,X(o.x)-18,Y(o.d)-14,c.axis,11,'right')}
   items.forEach(it=>txt(`(${it.pay.map(v=>dc(fmt(v,2))).join('; ')})`,X(it.x),Y(it.d)+18,R.path.some(([id,k])=>id===it.par&&k===it.k)&&!Tr.nodes[it.par].acts[it.k].to?c.eq:c.axis,13))}
 /* ---------- повторяющиеся ---------- */
-function solveRep(R){const L=T(),st=[L.s_rp1(fN(R.pay.R),fN(R.pay.T),fN(R.pay.S),fN(R.pay.P)),L.s_rp2(R.n)];const ord=STRATS.map((s,i)=>[s,R.tot[i]]).sort((a,b)=>b[1]-a[1]);
-  st.push(`${L.s_rp3}<div class="tw"><table class="tab"><tr><th></th><th>${P.lang==='ru'?'Стратегия':'Strategy'}</th><th>${P.lang==='ru'?'Очки':'Points'}</th></tr>${ord.map(([s,v],i)=>`<tr><td>${i+1}</td><td style="text-align:left">${L.stn[s]}</td><td>${fN(v,0)}</td></tr>`).join('')}</table></div>`);
-  st.push(L.s_rp4(fQ(R.grim),fN(R.dl,3),R.dl>=R.grim-1e-12));st.push(L.s_rp5);return{st,ans:`${L.v2.win}: ${L.stn[ord[0][0]]}; δ ⩾ ${fQ(R.grim)}`}}
+
 function drawRep(R){const c=P.colors,r={x:60,y:pT(),w:W-110,h:H-pT()-pB()-30};const mx=Math.max(...R.tot);const fr=frame(r,-.6,STRATS.length-.4,0,mx*1.15,false,P.lang==='ru'?'очки в турнире':'tournament points',true);const bw=(fr.X(1)-fr.X(0))*.6,best=Math.max(...R.tot);
   STRATS.forEach((s,i)=>{const X=fr.X(i),Y=fr.Y(R.tot[i]);ctx.fillStyle=R.tot[i]===best?c.eq:c.p1;ctx.globalAlpha=.8;ctx.fillRect(X-bw/2,Y,bw,fr.Y(0)-Y);ctx.globalAlpha=1;if(P.show.labels)txt(String(R.tot[i]),X,Y-10,c.axis,12);txt(s,X,fr.Y(0)+16,c.axis,11)})}
 /* ---------- эволюционные ---------- */
-function solveEvo(R){const L=T(),A=R.A,st=[];if(S.inp.evo.em==='hd')st.push(L.s_evHD(nI(S.inp.evo.V),nI(S.inp.evo.C)));st.push(`${L.s_ev1} a₁₁ = ${fN(A[0][0],3)}, a₁₂ = ${fN(A[0][1],3)}, a₂₁ = ${fN(A[1][0],3)}, a₂₂ = ${fN(A[1][1],3)}.`);st.push(L.s_ev2);
-  st.push(R.ess.length?L.s_evP(R.ess.map(s=>P.lang==='ru'?`стратегия ${s}`:`strategy ${s}`).join(', ')):L.s_evN);if(R.xs!==null)st.push(L.s_evM(fQ(R.xs),R.mixedESS));st.push(L.s_evR);
-  const fin=R.traj.map((t,i)=>`${fN(R.x0[i],2)} → ${fN(t[t.length-1][1],3)}`).join('; ');if(fin)st.push((P.lang==='ru'?'Траектории за t = 30: ':'Trajectories by t = 30: ')+fin);
-  return{st,ans:`ESS: ${[...R.ess.map(s=>s==='1'?'x = 1':'x = 0'),R.mixedESS?`x* = ${fN(R.xs,3)}`:''].filter(Boolean).join(', ')||'—'}`}}
+
 function drawEvo(R){const c=P.colors,h=(H-pT()-pB()-40)/2,r1={x:60,y:pT(),w:W-110,h:h*.9},r2={x:60,y:pT()+h+30,w:W-110,h:h*.9};let gm=0;for(let i=0;i<=200;i++)gm=Math.max(gm,Math.abs(R.g(i/200)));gm=gm||1;
   const f1=frame(r1,0,1,-gm*1.2,gm*1.2,false,'ẋ(x)');ctx.strokeStyle=c.curve;ctx.lineWidth=2.4*P.lw;ctx.beginPath();for(let i=0;i<=200;i++){const x=i/200;i?ctx.lineTo(f1.X(x),f1.Y(R.g(x))):ctx.moveTo(f1.X(x),f1.Y(R.g(x)))}ctx.stroke();
   for(let i=1;i<10;i++){const x=i/10,v=R.g(x);if(Math.abs(v)<1e-9)continue;const X=f1.X(x),Y=f1.Y(0),d=v>0?1:-1;ctx.fillStyle=c.mark;ctx.beginPath();ctx.moveTo(X+d*8,Y);ctx.lineTo(X-d*6,Y-6);ctx.lineTo(X-d*6,Y+6);ctx.closePath();ctx.fill()}
   const rest=[0,1];if(R.xs!==null)rest.push(R.xs);rest.forEach(x=>{const st=(x===1&&R.ess.includes('1'))||(x===0&&R.ess.includes('2'))||(x===R.xs&&R.mixedESS);dotP(f1,[x,0],st?c.eq:c.bad,6,P.show.labels?(st?'ESS':''):'')});
   const f2=frame(r2,0,30,0,1,false,'x(t)');R.traj.forEach((tr,i)=>{ctx.strokeStyle=[c.p1,c.p2,c.area,c.mark][i%4];ctx.lineWidth=2;ctx.beginPath();tr.forEach(([t,x],k)=>k?ctx.lineTo(f2.X(t),f2.Y(x)):ctx.moveTo(f2.X(t),f2.Y(x)));ctx.stroke()})}
 /* ---------- голосование ---------- */
-function solveVote(R){const L=T(),n=R.w.length,st=[L.s_vt1(fN(R.q),R.w.map(v=>fN(v)).join(', ')),L.s_vt2(R.win,R.minimal.length),L.s_vt3,L.s_vt4];
-  st.push(`<div class="tw"><table class="tab"><tr><th>#</th><th>${P.lang==='ru'?'Вес':'Weight'}</th><th>${P.lang==='ru'?'Доля веса':'Weight share'}</th><th>SS</th><th>Bz</th></tr>${R.w.map((w,i)=>`<tr><td>${i+1}</td><td>${fN(w)}</td><td>${fN(w/R.tot,4)}</td><td>${fQ(R.ss[i])}</td><td>${fQ(R.bzN[i])}</td></tr>`).join('')}</table></div>`);
-  const v=R.veto.map((x,i)=>x?i+1:null).filter(Boolean),d=R.dummy.map((x,i)=>x?i+1:null).filter(Boolean);st.push(L.s_vtV(v.length?v.join(', '):'—'));st.push(L.s_vtD(d.length?d.join(', '):'—'));st.push(L.s_vtW);
-  return{st,ans:`SS = ${fV(R.ss)}`}}
+
 function drawVote(R){const c=P.colors,n=R.w.length,r={x:60,y:pT(),w:W-110,h:H-pT()-pB()-20},mx=Math.max(...R.w.map(w=>w/R.tot),...R.ss,...R.bzN);const fr=frame(r,.4,n+.6,0,mx*1.2,false,P.lang==='ru'?'доля веса · Шепли–Шубик · Банцаф':'weight share · Shapley–Shubik · Banzhaf',true);const bw=(fr.X(1)-fr.X(0))*.26;
   R.w.forEach((w,i)=>{const X=fr.X(i+1);[[w/R.tot,c.axis,-1],[R.ss[i],c.p1,0],[R.bzN[i],c.p2,1]].forEach(([v,col,o])=>{ctx.fillStyle=col;ctx.globalAlpha=o===-1?.3:.8;ctx.fillRect(X+o*bw-bw/2,fr.Y(v),bw,fr.Y(0)-fr.Y(v));ctx.globalAlpha=1});if(P.show.labels&&n<=8)txt(dc(fmt(R.ss[i],3)),X,fr.Y(R.ss[i])-10,c.p1,11);txt(String(i+1),X,fr.Y(0)+14,c.axis,12)})}
 /* ---------- паросочетания ---------- */
-function solveMatch(R){const L=T(),st=[L.s_gs1(R.rev?(P.lang==='ru'?'вторая сторона':'side 2'):(P.lang==='ru'?'первая сторона':'side 1'))];
-  R.log.forEach(l=>st.push(L.s_gsR(l.round,l.ev.map(([p,r,k,out])=>`${esc(p)} → ${esc(r)}: ${k==='acc'?L.acc+(out?` (${esc(out)} ${P.lang==='ru'?'освобождается':'is freed'})`:''):L.rej}`).join('; '))));
-  const m=Object.entries(R.match).map(([p,r])=>`${esc(p)} — ${esc(r)}`).join(', ');st.push(L.s_gsRes(m));st.push(R.block.length?L.s_gsBl(R.block.map(([p,r])=>`${esc(p)}–${esc(r)}`).join(', ')):L.s_gsSt);st.push(L.s_gsOpt);return{st,ans:m}}
+
 function drawMatch(R){const c=P.colors,Ps=R.P,Rs=R.R,top=pT()+20,bot=H-pB()-30,xl=W*.28,xr=W*.72,y=(i,n)=>top+(bot-top)*(n>1?i/(n-1):.5);
   Object.entries(R.match).forEach(([p,r])=>{const i=Ps.indexOf(p),j=Rs.indexOf(r);ctx.strokeStyle=c.eq;ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(xl,y(i,Ps.length));ctx.lineTo(xr,y(j,Rs.length));ctx.stroke()});
   Ps.forEach((p,i)=>{ctx.fillStyle=c.p1;ctx.beginPath();ctx.arc(xl,y(i,Ps.length),10,0,7);ctx.fill();txt(p,xl-18,y(i,Ps.length),c.p1,14,'right');if(P.show.labels){const pr=(R.rev?R.pb:R.pa)[p]||[];txt(pr.join(' > '),xl-18,y(i,Ps.length)+16,c.axis,10,'right')}});
   Rs.forEach((r,i)=>{ctx.fillStyle=c.p2;ctx.beginPath();ctx.arc(xr,y(i,Rs.length),10,0,7);ctx.fill();txt(r,xr+18,y(i,Rs.length),c.p2,14,'left');if(P.show.labels){const pr=(R.rev?R.pa:R.pb)[r]||[];txt(pr.join(' > '),xr+18,y(i,Rs.length)+16,c.axis,10,'left')}})}
 /* ---------- Браес ---------- */
-function solveBraess(R){const L=T(),e=R.eq,st=[L.s_br1(R.N,fN(R.a),fN(R.b)),L.s_br2,L.s_br3(e.x.map(v=>fN(v,1)),fN(e.T,3))];if(R.yes&&R.base)st.push(R.base.T<e.T-1e-9?L.s_br4(fN(R.base.T,3),fN(e.T,3)):(P.lang==='ru'?`Без перемычки было ${fN(R.base.T,3)}: парадокса здесь нет.`:`Without the link it was ${fN(R.base.T,3)}: no paradox here.`));
-  st.push(L.s_br5(fN(R.opt.avg,2)));return{st,ans:`T = ${fN(e.T,3)}`}}
+
 function drawBraess(R){const c=P.colors,cx=W/2,cy=(pT()+H-pB())/2,dx=Math.min(W*.33,260),dy=Math.min((H-pT()-pB())*.36,170);const A=[cx-dx,cy],B=[cx+dx,cy],C=[cx,cy-dy],D=[cx,cy+dy];const x=R.eq.x,N=R.N;
   const ed=(p,q,f,lab)=>{ctx.strokeStyle=f>1e-9?c.p1:c.axis;ctx.globalAlpha=f>1e-9?.9:.3;ctx.lineWidth=2+10*f/N;ctx.beginPath();ctx.moveTo(...p);ctx.lineTo(...q);ctx.stroke();ctx.globalAlpha=1;if(P.show.labels)txt(lab,(p[0]+q[0])/2,(p[1]+q[1])/2-12,c.axis,12)};
   const fAC=x[0]+x[2],fDB=x[1]+x[2];ed(A,C,fAC,`${dc(fmt(fAC,0))}: ${dc(fmt(fAC/R.a,1))}`);ed(C,B,x[0],`${dc(fmt(x[0],0))}: ${dc(fmt(R.b,1))}`);ed(A,D,x[1],`${dc(fmt(x[1],0))}: ${dc(fmt(R.b,1))}`);ed(D,B,fDB,`${dc(fmt(fDB,0))}: ${dc(fmt(fDB/R.a,1))}`);

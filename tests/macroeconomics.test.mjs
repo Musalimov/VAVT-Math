@@ -48,7 +48,7 @@ for (const c of golden.cases) {
     close(norm(res), c.res, 'результат');
     for (const l of ['ru', 'en']) {
       lang = l;
-      const s = SOLVE[c.topic](res);
+      const s = SOLVE[c.topic](res, c.inp);
       assert.deepEqual(norm({ ans: s.ans, st: s.st, rows: s.rows }), c[l], `решение (${l})`);
     }
   });
