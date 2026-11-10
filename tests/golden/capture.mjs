@@ -54,6 +54,9 @@ const cases = await pg.evaluate(() => {
     for (const t of TOPICS) for (const p of PRE[t] || []) {
       const inp = { ...S.inp[t], ...JSON.parse(JSON.stringify(p[1])) };
       const c = { topic: t, id: p[0], inp };
+      // как в интерфейсе: пример становится текущим вводом раздела (некоторые SOLVE читают его)
+      const keep = S.inp[t];
+      S.inp[t] = inp;
       try {
         const res = COMP[t](inp);
         c.res = norm(res);
@@ -64,6 +67,7 @@ const cases = await pg.evaluate(() => {
         }
         P.lang = 'ru';
       } catch (e) { c.err = e && e.msg ? e.msg : String(e); }
+      S.inp[t] = keep;
       out.push(c);
     }
     return out;

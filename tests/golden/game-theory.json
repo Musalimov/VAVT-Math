@@ -68633,7 +68633,6 @@
    "ru": {
     "ans": "ESS: x = 0",
     "st": [
-     "Ястреб и голубь: a₁₁ = (V − C)/2, a₁₂ = V, a₂₁ = 0, a₂₂ = V/2; при V < C доля ястребов стремится к V/C = 0,5.",
      "Симметричная игра 2×2 в популяции: aᵢⱼ — выигрыш стратегии i против j. a₁₁ = 3, a₁₂ = 0, a₂₁ = 5, a₂₂ = 1.",
      "Стратегия i — ESS, если aᵢᵢ > aⱼᵢ, либо aᵢᵢ = aⱼᵢ и aᵢⱼ > aⱼⱼ: мутанты её не вытесняют.",
      "Чистые ESS: стратегия 2.",
@@ -68644,7 +68643,6 @@
    "en": {
     "ans": "ESS: x = 0",
     "st": [
-     "Hawk–dove: a₁₁ = (V − C)/2, a₁₂ = V, a₂₁ = 0, a₂₂ = V/2; for V < C the hawk share tends to V/C = 0.5.",
      "A symmetric 2×2 game in a population: aᵢⱼ is the payoff of strategy i against j. a₁₁ = 3, a₁₂ = 0, a₂₁ = 5, a₂₂ = 1.",
      "Strategy i is an ESS if aᵢᵢ > aⱼᵢ, or aᵢᵢ = aⱼᵢ and aᵢⱼ > aⱼⱼ: mutants can’t invade it.",
      "Pure ESS: strategy 2.",
@@ -92716,7 +92714,6 @@
    "ru": {
     "ans": "ESS: x = 1, x = 0",
     "st": [
-     "Ястреб и голубь: a₁₁ = (V − C)/2, a₁₂ = V, a₂₁ = 0, a₂₂ = V/2; при V < C доля ястребов стремится к V/C = 0,5.",
      "Симметричная игра 2×2 в популяции: aᵢⱼ — выигрыш стратегии i против j. a₁₁ = 2, a₁₂ = 0, a₂₁ = 0, a₂₂ = 1.",
      "Стратегия i — ESS, если aᵢᵢ > aⱼᵢ, либо aᵢᵢ = aⱼᵢ и aᵢⱼ > aⱼⱼ: мутанты её не вытесняют.",
      "Чистые ESS: стратегия 1, стратегия 2.",
@@ -92728,7 +92725,6 @@
    "en": {
     "ans": "ESS: x = 1, x = 0",
     "st": [
-     "Hawk–dove: a₁₁ = (V − C)/2, a₁₂ = V, a₂₁ = 0, a₂₂ = V/2; for V < C the hawk share tends to V/C = 0.5.",
      "A symmetric 2×2 game in a population: aᵢⱼ is the payoff of strategy i against j. a₁₁ = 2, a₁₂ = 0, a₂₁ = 0, a₂₂ = 1.",
      "Strategy i is an ESS if aᵢᵢ > aⱼᵢ, or aᵢᵢ = aⱼᵢ and aᵢⱼ > aⱼⱼ: mutants can’t invade it.",
      "Pure ESS: strategy 1, strategy 2.",
