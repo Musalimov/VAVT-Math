@@ -11,9 +11,12 @@ import { $ } from './dom.js';
  *
  * state.stamp — рисовать ли подпись на снимке (холст читает его при перерисовке),
  * state.dlTried — проверка возможности сохранять завершена.
- * @param {{ name: string, T: () => any, state: any, cv: HTMLCanvasElement, renderNow: () => void, req: () => void }} o
+ * Видео (по желанию): video = { ready: () => boolean, play: () => void } — запись холста
+ * с анимацией тренажёра (state.anim, state.t), кнопка #xVid. Без video кнопки видео нет.
+ * @param {{ name: string, T: () => any, state: any, cv: HTMLCanvasElement, renderNow: () => void, req: () => void,
+ *   video?: { ready: () => boolean, play: () => void } | null }} o
  */
-export function createExport({ name, T, state, cv, renderNow, req }) {
+export function createExport({ name, T, state, cv, renderNow, req, video = null }) {
   /** @type {any} */
   let DL = null;
 
@@ -23,8 +26,85 @@ export function createExport({ name, T, state, cv, renderNow, req }) {
 
   function updExport() {
     const L = T();
-    $('#xPng').disabled = !canSave();
-    $('#xNote').textContent = !canSave() && state.dlTried ? L.xNoDl : '';
+    if (!video) {
+      $('#xPng').disabled = !canSave();
+      $('#xNote').textContent = !canSave() && state.dlTried ? L.xNoDl : '';
+      return;
+    }
+    $('#xPng').disabled = !canSave() || state.rec;
+    $('#xVid').disabled = !canSave() || !vidMime() || state.rec;
+    $('#xNote').textContent = state.rec
+      ? L.xRec
+      : !canSave()
+        ? state.dlTried
+          ? L.xNoDl
+          : ''
+        : !vidMime()
+          ? L.xNoVid
+          : '';
+  }
+
+  function vidMime() {
+    if (!window.MediaRecorder || !cv.captureStream) return null;
+    for (const m of ['video/webm; codecs=vp9', 'video/webm; codecs=vp8', 'video/webm', 'video/mp4'])
+      if (MediaRecorder.isTypeSupported && MediaRecorder.isTypeSupported(m)) return m;
+    return null;
+  }
+
+  async function exportVideo() {
+    const m = vidMime();
+    if (!video || !canSave() || !m || state.rec || state.err || !video.ready()) return;
+    state.rec = true;
+    state.stamp = /** @type {HTMLInputElement} */ ($('#xStamp')).checked;
+    updExport();
+    const keep = (/** @type {number} */ ms) =>
+      new Promise((r) => {
+        const t0 = performance.now();
+        const f = () => {
+          renderNow();
+          if (performance.now() - t0 < ms) requestAnimationFrame(f);
+          else r(undefined);
+        };
+        f();
+      });
+    /** @type {Blob[]} */
+    const chunks = [];
+    let rec;
+    try {
+      const stream = /** @type {any} */ (cv).captureStream(60);
+      rec = new MediaRecorder(stream, { mimeType: m, videoBitsPerSecond: 8e6 });
+      rec.ondataavailable = (e) => {
+        if (e.data && e.data.size) chunks.push(e.data);
+      };
+      const stopped = new Promise((r) => {
+        rec.onstop = r;
+      });
+      state.t = 0;
+      state.anim = null;
+      rec.start(100);
+      await keep(500);
+      video.play();
+      await new Promise((r) => {
+        const f = () => (state.anim ? requestAnimationFrame(f) : r(undefined));
+        f();
+      });
+      await keep(900);
+      rec.stop();
+      await stopped;
+    } catch (err) {
+      state.rec = false;
+      state.stamp = false;
+      req();
+      flash(T().xFail);
+      return;
+    }
+    state.rec = false;
+    state.stamp = false;
+    req();
+    updExport();
+    const blob = new Blob(chunks, { type: m });
+    if (blob.size) saveFile(`${name}.${m.startsWith('video/mp4') ? 'mp4' : 'webm'}`, blob);
+    else flash(T().xFail);
   }
 
   function flash(msg, ms = 3500) {
@@ -74,7 +154,7 @@ export function createExport({ name, T, state, cv, renderNow, req }) {
   }
 
   function exportPng() {
-    if (!canSave()) return;
+    if (!canSave() || (video && state.rec)) return;
     state.stamp = $('#xStamp').checked;
     renderNow();
     cv.toBlob((b) => {
@@ -103,6 +183,7 @@ export function createExport({ name, T, state, cv, renderNow, req }) {
   }
 
   function init() {
+    if (video) $('#xVid').onclick = () => exportVideo();
     (async () => {
       try {
         if (window.claude && typeof window.claude.use === 'function')
@@ -117,5 +198,5 @@ export function createExport({ name, T, state, cv, renderNow, req }) {
     $('#xCopy').onclick = copyTex;
   }
 
-  return { canSave, updExport, flash, saveFile, exportPng, copyTex, init };
+  return { canSave, updExport, flash, saveFile, exportPng, exportVideo, vidMime, copyTex, init };
 }

@@ -16,6 +16,7 @@ import { fmt } from './format.js';
  *   settings.buildSettings();   // обработчики элементов шторки
  *   settings.applyPrefs();      // применить настройки к странице
  *
+ * hooks.onReset(np) — по желанию: что тренажёр сбрасывает у себя после «Сбросить всё».
  * hooks — то, что у каждого тренажёра своё (перевод интерфейса, порядок блоков,
  * переключатели слоёв, перерисовка).
  * @param {{ prefs: () => any, setPrefs: (p: any) => void, save: () => void, T: () => any,
@@ -76,6 +77,7 @@ export function createSettings({ prefs, setPrefs, save, T, defaults, panels, pal
       np.read = old.read || {};
       np.last = old.last;
       setPrefs(np);
+      if (hooks.onReset) hooks.onReset(np);
       hooks.syncToggles();
       applyPrefs();
       hooks.renderAll();
