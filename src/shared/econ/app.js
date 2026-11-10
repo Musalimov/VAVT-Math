@@ -17,10 +17,22 @@ import { langFrom } from '../i18n.js';
  * описать до того, как определены функции тренажёра. (Имя AP, а не H: H — высота холста.)
  * Возвращает ECON — живой доступ к состоянию и функциям каркаса; ECON.start()
  * запускает тренажёр (один раз, после того как тренажёр всё определил).
+ * Переопределяемые (своя версия у тренажёра — через AP): renderForm, recompute, prop, renderPresets, renderCaption, syncTogVis, frame, buildToggles, illSvg, applyLang.
  * Хуки: CHAP, COMP, DEF, DEMOS, FORMAL, FORMS, GROUPS, ILL, KEY, KEYS, PANELS, PRE, REL, S, T, TERMS, TOG, TOPICS, capKey, loadPreset, relTogs, renderAll, renderNow, renderTex.
  * @param {any} AP
  */
 export function createEconApp(AP) {
+  // Функции, которые тренажёр может заменить своими (ТВ): AP.<имя> || вариант каркаса.
+  const renderForm = AP.renderForm || renderForm0;
+  const recompute = AP.recompute || recompute0;
+  const prop = AP.prop || prop0;
+  const renderPresets = AP.renderPresets || renderPresets0;
+  const renderCaption = AP.renderCaption || renderCaption0;
+  const syncTogVis = AP.syncTogVis || syncTogVis0;
+  const frame = AP.frame || frame0;
+  const buildToggles = AP.buildToggles || buildToggles0;
+  const illSvg = AP.illSvg || illSvg0;
+  const applyLang = AP.applyLang || applyLang0;
   let LNG = 'ru';
   const LOADED = loadPrefs({ key: AP.KEY, defaults: AP.DEF, panels: AP.PANELS });
   let P = LOADED.prefs;
@@ -30,7 +42,7 @@ export function createEconApp(AP) {
   function save() {
     (save.f ||= makeSaver({ key: AP.KEY, get: () => P, onFail: () => toast(AP.T().prefsNoSave, 4000) }))();
   }
-  function renderForm() {
+  function renderForm0() {
     const box = $('#form'),
       L = AP.T(),
       t = AP.S.topic,
@@ -84,7 +96,7 @@ export function createEconApp(AP) {
     renderForm();
     recompute();
   }
-  function recompute() {
+  function recompute0() {
     const t = AP.S.topic,
       I = AP.S.inp[t];
     AP.S.err = null;
@@ -105,10 +117,10 @@ export function createEconApp(AP) {
       .filter(Boolean)
       .map((s) => `<li>${s}</li>`)
       .join('')}</ol>`;
-  function prop(k, v) {
+  function prop0(k, v) {
     return `<div class="prop"><span class="k">${k}</span><span class="v">${v}</span></div>`;
   }
-  function renderPresets() {
+  function renderPresets0() {
     const box = $('#pre');
     box.innerHTML = '';
     AP.PRE[AP.S.topic].forEach(([id, , ru, en]) => {
@@ -128,7 +140,7 @@ export function createEconApp(AP) {
     }
     ov.innerHTML = `<span>${AP.S.ans || ''}</span><span class="tt">${L['t_' + AP.S.topic]}</span>`;
   }
-  function renderCaption() {
+  function renderCaption0() {
     const cap = $('#cap');
     $('#capOpen').hidden = !!P.show.hints;
     if (!P.show.hints) {
@@ -138,7 +150,7 @@ export function createEconApp(AP) {
     cap.hidden = false;
     $('#capT').textContent = AP.S.err ? AP.T().cap.err : AP.T().cap[AP.capKey()];
   }
-  function syncTogVis() {
+  function syncTogVis0() {
     const r = AP.relTogs();
     document.querySelectorAll('#tog label').forEach((l) => {
       l.style.display = r.includes(l.querySelector('input').dataset.k) ? '' : 'none';
@@ -186,7 +198,7 @@ export function createEconApp(AP) {
     ctx.fillStyle = col;
     ctx.fillText(s, x, y);
   }
-  function frame(r, x0, x1, y0, y1, eq, ttl, noX) {
+  function frame0(r, x0, x1, y0, y1, eq, ttl, noX) {
     const c = P.colors;
     let sx = r.w / (x1 - x0),
       sy = r.h / (y1 - y0);
@@ -270,7 +282,7 @@ export function createEconApp(AP) {
   }
   const pT = () => Math.min(100, H * 0.17),
     pB = () => Math.min(70, H * 0.12);
-  function buildToggles() {
+  function buildToggles0() {
     const box = $('#tog');
     box.innerHTML = '';
     AP.TOG.forEach((k) => {
@@ -345,7 +357,7 @@ export function createEconApp(AP) {
         AP.renderTex();
       })
   );
-  function illSvg() {
+  function illSvg0() {
     return '';
   }
   function runDemo(id) {
@@ -379,7 +391,7 @@ export function createEconApp(AP) {
   });
   const { buildSettings, buildPal, syncSettings, applyDock, applyPrefs } = settings;
   settings.init();
-  function applyLang() {
+  function applyLang0() {
     const L = AP.T();
     LNG = P.lang;
     document.documentElement.lang = P.lang;
@@ -497,6 +509,30 @@ export function createEconApp(AP) {
     },
     get seg() {
       return seg;
+    },
+    get buildPal() {
+      return buildPal;
+    },
+    get niceStep() {
+      return niceStep;
+    },
+    get renderKeys() {
+      return renderKeys;
+    },
+    get rerenderGloss() {
+      return rerenderGloss;
+    },
+    get save() {
+      return save;
+    },
+    get syncSettings() {
+      return syncSettings;
+    },
+    get syncToggles() {
+      return syncToggles;
+    },
+    get updExport() {
+      return updExport;
     },
     start,
   };

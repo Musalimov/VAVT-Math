@@ -1,3 +1,4 @@
+import { createEconApp } from '../../shared/econ/app.js';
 import { createGlossary } from '../../shared/glossary.js';
 import { initDrawers } from '../../shared/drawers.js';
 import { createKeys, onShortcut } from '../../shared/keys.js';
@@ -221,16 +222,10 @@ import { lang, langFrom } from '../../shared/i18n.js';
     preset: null,
   };
 
-  const LOADED = loadPrefs({ key: KEY, defaults: DEF, panels: PANELS });
-  let P = LOADED.prefs;
-  if (LOADED.status === 'corrupt') setTimeout(() => toast(T().prefsReset, 5000));
-  langFrom(() => P.lang);
-  notationFrom(() => P.nota);
-  if (!P.lang) P.lang = (navigator.language || '').toLowerCase().startsWith('ru') ? 'ru' : 'en';
+  notationFrom(() => ECON.P.nota);
+
   // настройки: схема 2, миграция со схемы 1, -bak, предупреждение при переполнении (src/shared/prefs.js)
-  function save() {
-    (save.f ||= makeSaver({ key: KEY, get: () => P, onFail: () => toast(T().prefsNoSave, 4000) }))();
-  }
+
   /* ---------- числа ---------- */
 
   /* ---------- примеры ---------- */
@@ -249,18 +244,117 @@ import { lang, langFrom } from '../../shared/i18n.js';
     }[k];
     return m ? m[o] : o;
   };
+  const ECON = createEconApp({
+    appName: 'probability',
+    get CHAP() {
+      return CHAP;
+    },
+    get COMP() {
+      return COMP;
+    },
+    get DEF() {
+      return DEF;
+    },
+    get DEMOS() {
+      return DEMOS;
+    },
+    get FORMAL() {
+      return FORMAL;
+    },
+    get FORMS() {
+      return FORMS;
+    },
+    get ILL() {
+      return ILL;
+    },
+    get KEY() {
+      return KEY;
+    },
+    get KEYS() {
+      return KEYS;
+    },
+    get PAL() {
+      return PAL;
+    },
+    get PANELS() {
+      return PANELS;
+    },
+    get PRE() {
+      return PRE;
+    },
+    get REL() {
+      return REL;
+    },
+    get S() {
+      return S;
+    },
+    get T() {
+      return T;
+    },
+    get TERMS() {
+      return TERMS;
+    },
+    get TOG() {
+      return TOG;
+    },
+    get TOPICS() {
+      return TOPICS;
+    },
+    get applyLang() {
+      return applyLang;
+    },
+    get buildToggles() {
+      return buildToggles;
+    },
+    get frame() {
+      return frame;
+    },
+    get illSvg() {
+      return illSvg;
+    },
+    get loadPreset() {
+      return loadPreset;
+    },
+    get prop() {
+      return prop;
+    },
+    get recompute() {
+      return recompute;
+    },
+    get relTogs() {
+      return relTogs;
+    },
+    get renderAll() {
+      return renderAll;
+    },
+    get renderCaption() {
+      return renderCaption;
+    },
+    get renderForm() {
+      return renderForm;
+    },
+    get renderNow() {
+      return renderNow;
+    },
+    get renderPresets() {
+      return renderPresets;
+    },
+    get renderTex() {
+      return renderTex;
+    },
+    get syncTogVis() {
+      return syncTogVis;
+    },
+  });
   const S = {
-    topic: P.topic || 'comb',
+    topic: ECON.P.topic || 'comb',
     inp: {},
     res: null,
     err: null,
-    preset: P.preset || null,
+    preset: ECON.P.preset || null,
     stamp: false,
   };
-  TOPICS.forEach((t) => {
-    S.inp[t] = clone(PRE[t][0][1]);
-  });
-  if (P.inp) for (const t of TOPICS) if (P.inp[t]) S.inp[t] = { ...S.inp[t], ...P.inp[t] };
+
   function renderForm() {
     const box = $('#form'),
       L = T(),
@@ -319,13 +413,13 @@ import { lang, langFrom } from '../../shared/i18n.js';
     $('#notaRow').style.display = ['bern', 'norm'].includes(t) ? '' : 'none';
     document
       .querySelectorAll('#notaSeg button')
-      .forEach((b) => b.classList.toggle('on', b.dataset.v === (P.nota || 'vavt')));
+      .forEach((b) => b.classList.toggle('on', b.dataset.v === (ECON.P.nota || 'vavt')));
   }
   document.querySelectorAll('#notaSeg button').forEach(
     (b) =>
       (b.onclick = () => {
-        P.nota = b.dataset.v;
-        save();
+        ECON.P.nota = b.dataset.v;
+        ECON.save();
         renderForm();
         recompute();
       })
@@ -344,22 +438,16 @@ import { lang, langFrom } from '../../shared/i18n.js';
     clearTimeout(fT0);
     fT0 = setTimeout(recompute, 250);
   });
-  document.querySelectorAll('#topicSeg button').forEach((b) => (b.onclick = () => setTopic(b.dataset.t)));
-  function setTopic(t) {
-    if (!TOPICS.includes(t)) return;
-    S.topic = t;
-    P.topic = t;
-    S.preset = null;
-    save();
-    renderForm();
-    recompute();
-  }
+  document
+    .querySelectorAll('#topicSeg button')
+    .forEach((b) => (b.onclick = () => ECON.setTopic(b.dataset.t)));
+
   function loadPreset(id) {
     for (const t of TOPICS) {
       const p = PRE[t].find((z) => z[0] === id);
       if (p) {
         S.topic = t;
-        P.topic = t;
+        ECON.P.topic = t;
         S.inp[t] = { ...S.inp[t], ...clone(p[1]) };
         S.preset = id;
         renderForm();
@@ -384,20 +472,14 @@ import { lang, langFrom } from '../../shared/i18n.js';
         S.err = { msg: 'bug' };
       } else if (!e || !e.msg) S.err = { msg: 'num' };
     }
-    P.inp = S.inp;
-    P.preset = S.preset;
-    save();
+    ECON.P.inp = S.inp;
+    ECON.P.preset = S.preset;
+    ECON.save();
     renderAll();
   }
   /* ---------- панели ---------- */
 
   /* ---------- решение ---------- */
-
-  const ol = (a) =>
-    `<ol class="stp">${a
-      .filter(Boolean)
-      .map((s) => `<li>${s}</li>`)
-      .join('')}</ol>`;
 
   function renderSolve() {
     const box = $('#solve'),
@@ -409,7 +491,7 @@ import { lang, langFrom } from '../../shared/i18n.js';
     }
     const r = SOLVE[S.topic](S.res, S.inp[S.topic]);
     S.ans = r.ans;
-    box.innerHTML = `<p class="idea">${L.tt[S.topic]}</p>${ol(r.st)}<div class="ans"><div class="k">${L.ans}</div><div class="big">${r.ans}</div>${r.sub ? `<p class="note" style="margin:.2rem 0 0">${r.sub}</p>` : ''}</div>`;
+    box.innerHTML = `<p class="idea">${L.tt[S.topic]}</p>${ECON.ol(r.st)}<div class="ans"><div class="k">${L.ans}</div><div class="big">${r.ans}</div>${r.sub ? `<p class="note" style="margin:.2rem 0 0">${r.sub}</p>` : ''}</div>`;
   }
   function prop(k, v, s) {
     return `<div class="prop"><span class="k">${k}</span><span class="v">${v}</span>${s ? `<span class="s">${s}</span>` : ''}</div>`;
@@ -485,19 +567,11 @@ import { lang, langFrom } from '../../shared/i18n.js';
       box.appendChild(b);
     });
   }
-  function renderOverlay() {
-    const ov = $('#ov'),
-      L = T();
-    if (S.err || !S.res) {
-      ov.innerHTML = `<span class="tt">${L.cap.err}</span>`;
-      return;
-    }
-    ov.innerHTML = `<span>${S.ans || ''}</span><span class="tt">${L['t_' + S.topic]}</span>`;
-  }
+
   function renderCaption() {
     const cap = $('#cap');
-    $('#capOpen').hidden = !!P.show.hints;
-    if (!P.show.hints) {
+    $('#capOpen').hidden = !!ECON.P.show.hints;
+    if (!ECON.P.show.hints) {
       cap.hidden = true;
       return;
     }
@@ -513,7 +587,7 @@ import { lang, langFrom } from '../../shared/i18n.js';
     renderSolve();
     renderValues();
     renderPresets();
-    renderOverlay();
+    ECON.renderOverlay();
     renderCaption();
     renderTex();
     const fe = $('#fErr');
@@ -522,115 +596,74 @@ import { lang, langFrom } from '../../shared/i18n.js';
       const f = T().err[S.err.msg];
       fe.textContent = typeof f === 'function' ? f(S.err.x) : f || T().err.num;
     }
-    req();
+    ECON.req();
   }
 
   /* ---------- сцена ---------- */
-  const cv = $('#cv'),
-    ctx = cv.getContext('2d'),
-    stage = $('#stage'),
-    main = $('#main'),
-    side = $('#side');
-  const { buildPanels, applyOrder, showPanel } = createPanels({ side, prefs: () => P, save });
-  let W = 0,
-    H = 0,
-    DPR = 1,
-    raf = 0;
-  new ResizeObserver(() => {
-    const r = stage.getBoundingClientRect();
-    W = r.width;
-    H = r.height;
-    DPR = Math.min(2, window.devicePixelRatio || 1);
-    cv.width = Math.max(1, Math.round(W * DPR));
-    cv.height = Math.max(1, Math.round(H * DPR));
-    req();
-  }).observe(stage);
-  function req() {
-    if (!raf)
-      raf = requestAnimationFrame(() => {
-        raf = 0;
-        renderNow();
-      });
-  }
-  function niceStep(raw) {
-    const p = Math.pow(10, Math.floor(Math.log10(raw))),
-      m = raw / p;
-    return (m < 1.5 ? 1 : m < 3.5 ? 2 : m < 7.5 ? 5 : 10) * p;
-  }
-  function txt(s, x, y, col, sz = 12, al = 'center', bl = 'middle', it = false) {
-    ctx.font = `${it ? 'italic ' : ''}600 ${sz}px "Source Serif 4", Georgia, serif`;
-    ctx.textAlign = al;
-    ctx.textBaseline = bl;
-    ctx.lineWidth = 3;
-    ctx.strokeStyle = P.colors.bg;
-    ctx.lineJoin = 'round';
-    ctx.strokeText(s, x, y);
-    ctx.fillStyle = col;
-    ctx.fillText(s, x, y);
-  }
+
   function frame(r, x0, x1, y0, y1, opt = {}) {
-    const c = P.colors,
+    const c = ECON.P.colors,
       X = (x) => r.x + ((x - x0) / (x1 - x0)) * r.w,
       Y = (y) => r.y + r.h - ((y - y0) / (y1 - y0)) * r.h;
-    const sx = opt.xs || niceStep((x1 - x0) / Math.max(2, r.w / 80)),
-      sy = niceStep((y1 - y0) / Math.max(2, r.h / 50));
-    if (P.show.bgGrid) {
-      ctx.strokeStyle = c.bgGrid;
-      ctx.lineWidth = 1;
-      ctx.beginPath();
+    const sx = opt.xs || ECON.niceStep((x1 - x0) / Math.max(2, r.w / 80)),
+      sy = ECON.niceStep((y1 - y0) / Math.max(2, r.h / 50));
+    if (ECON.P.show.bgGrid) {
+      ECON.ctx.strokeStyle = c.bgGrid;
+      ECON.ctx.lineWidth = 1;
+      ECON.ctx.beginPath();
       for (let x = Math.ceil(x0 / sx) * sx; x <= x1 + 1e-9; x += sx) {
         const px = Math.round(X(x)) + 0.5;
-        ctx.moveTo(px, r.y);
-        ctx.lineTo(px, r.y + r.h);
+        ECON.ctx.moveTo(px, r.y);
+        ECON.ctx.lineTo(px, r.y + r.h);
       }
       for (let y = Math.ceil(y0 / sy) * sy; y <= y1 + 1e-9; y += sy) {
         const py = Math.round(Y(y)) + 0.5;
-        ctx.moveTo(r.x, py);
-        ctx.lineTo(r.x + r.w, py);
+        ECON.ctx.moveTo(r.x, py);
+        ECON.ctx.lineTo(r.x + r.w, py);
       }
-      ctx.stroke();
+      ECON.ctx.stroke();
     }
-    ctx.strokeStyle = c.axis;
-    ctx.globalAlpha = 0.6;
-    ctx.lineWidth = 1.2;
-    ctx.beginPath();
-    ctx.moveTo(r.x, Y(Math.max(y0, 0)));
-    ctx.lineTo(r.x + r.w, Y(Math.max(y0, 0)));
+    ECON.ctx.strokeStyle = c.axis;
+    ECON.ctx.globalAlpha = 0.6;
+    ECON.ctx.lineWidth = 1.2;
+    ECON.ctx.beginPath();
+    ECON.ctx.moveTo(r.x, Y(Math.max(y0, 0)));
+    ECON.ctx.lineTo(r.x + r.w, Y(Math.max(y0, 0)));
     if (x0 <= 0 && x1 >= 0 && !opt.noYA) {
-      ctx.moveTo(X(0), r.y);
-      ctx.lineTo(X(0), r.y + r.h);
+      ECON.ctx.moveTo(X(0), r.y);
+      ECON.ctx.lineTo(X(0), r.y + r.h);
     }
-    ctx.stroke();
-    ctx.globalAlpha = 1;
-    if (P.show.coords) {
-      ctx.fillStyle = c.axis;
-      ctx.globalAlpha = 0.7;
-      ctx.font = '500 11px Manrope, system-ui, sans-serif';
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'top';
+    ECON.ctx.stroke();
+    ECON.ctx.globalAlpha = 1;
+    if (ECON.P.show.coords) {
+      ECON.ctx.fillStyle = c.axis;
+      ECON.ctx.globalAlpha = 0.7;
+      ECON.ctx.font = '500 11px Manrope, system-ui, sans-serif';
+      ECON.ctx.textAlign = 'center';
+      ECON.ctx.textBaseline = 'top';
       const dx = Math.max(0, -Math.floor(Math.log10(sx)));
       if (!opt.noX)
         for (let x = Math.ceil(x0 / sx) * sx; x <= x1 + 1e-9; x += sx)
-          ctx.fillText(dc(fmt(x, dx)), X(x), Y(Math.max(y0, 0)) + 4);
-      ctx.textAlign = 'right';
-      ctx.textBaseline = 'middle';
+          ECON.ctx.fillText(dc(fmt(x, dx)), X(x), Y(Math.max(y0, 0)) + 4);
+      ECON.ctx.textAlign = 'right';
+      ECON.ctx.textBaseline = 'middle';
       const dy = Math.max(0, -Math.floor(Math.log10(sy)));
       for (let y = Math.ceil(y0 / sy) * sy; y <= y1 + 1e-9; y += sy) {
         if (Math.abs(y) < sy / 2) continue;
-        ctx.fillText(dc(fmt(y, dy)), r.x - 4, Y(y));
+        ECON.ctx.fillText(dc(fmt(y, dy)), r.x - 4, Y(y));
       }
-      ctx.globalAlpha = 1;
+      ECON.ctx.globalAlpha = 1;
     }
-    if (opt.title) txt(opt.title, r.x + 6, r.y + 8, c.axis, 13, 'left', 'middle', true);
+    if (opt.title) ECON.txt(opt.title, r.x + 6, r.y + 8, c.axis, 13, 'left', 'middle', true);
     return { X, Y, r, x0, x1 };
   }
   function plotFn(fr, f, col, w, dash, a, b) {
     const lo = a === undefined ? fr.x0 : a,
       hi = b === undefined ? fr.x1 : b;
-    ctx.strokeStyle = col;
-    ctx.lineWidth = w;
-    ctx.setLineDash(dash || []);
-    ctx.beginPath();
+    ECON.ctx.strokeStyle = col;
+    ECON.ctx.lineWidth = w;
+    ECON.ctx.setLineDash(dash || []);
+    ECON.ctx.beginPath();
     let pen = false;
     const N = Math.max(60, Math.round((fr.r.w * (hi - lo)) / (fr.x1 - fr.x0) / 1.5));
     for (let i = 0; i <= N; i++) {
@@ -643,67 +676,67 @@ import { lang, langFrom } from '../../shared/i18n.js';
       const X = fr.X(x),
         Y = Math.max(fr.r.y - 20, Math.min(fr.r.y + fr.r.h + 20, fr.Y(y)));
       if (!pen) {
-        ctx.moveTo(X, Y);
+        ECON.ctx.moveTo(X, Y);
         pen = true;
-      } else ctx.lineTo(X, Y);
+      } else ECON.ctx.lineTo(X, Y);
     }
-    ctx.stroke();
-    ctx.setLineDash([]);
+    ECON.ctx.stroke();
+    ECON.ctx.setLineDash([]);
   }
   function fillFn(fr, f, a, b, col, al = 0.38) {
     a = Math.max(a, fr.x0);
     b = Math.min(b, fr.x1);
     if (!(b > a)) return;
     const N = Math.max(30, Math.round((fr.r.w * (b - a)) / (fr.x1 - fr.x0)));
-    ctx.beginPath();
-    ctx.moveTo(fr.X(a), fr.Y(0));
+    ECON.ctx.beginPath();
+    ECON.ctx.moveTo(fr.X(a), fr.Y(0));
     for (let i = 0; i <= N; i++) {
       const x = a + ((b - a) * i) / N,
         y = f(x);
-      ctx.lineTo(fr.X(x), fr.Y(isFinite(y) ? y : 0));
+      ECON.ctx.lineTo(fr.X(x), fr.Y(isFinite(y) ? y : 0));
     }
-    ctx.lineTo(fr.X(b), fr.Y(0));
-    ctx.closePath();
-    ctx.globalAlpha = al;
-    ctx.fillStyle = col;
-    ctx.fill();
-    ctx.globalAlpha = 1;
+    ECON.ctx.lineTo(fr.X(b), fr.Y(0));
+    ECON.ctx.closePath();
+    ECON.ctx.globalAlpha = al;
+    ECON.ctx.fillStyle = col;
+    ECON.ctx.fill();
+    ECON.ctx.globalAlpha = 1;
   }
   function vline(fr, x, col, lab, dash = [5, 4]) {
     if (x < fr.x0 || x > fr.x1) return;
     const X = fr.X(x);
-    ctx.strokeStyle = col;
-    ctx.lineWidth = 1.5;
-    ctx.setLineDash(dash);
-    ctx.beginPath();
-    ctx.moveTo(X, fr.r.y);
-    ctx.lineTo(X, fr.r.y + fr.r.h);
-    ctx.stroke();
-    ctx.setLineDash([]);
-    if (lab) txt(lab, X, fr.r.y + 10, col, 13);
+    ECON.ctx.strokeStyle = col;
+    ECON.ctx.lineWidth = 1.5;
+    ECON.ctx.setLineDash(dash);
+    ECON.ctx.beginPath();
+    ECON.ctx.moveTo(X, fr.r.y);
+    ECON.ctx.lineTo(X, fr.r.y + fr.r.h);
+    ECON.ctx.stroke();
+    ECON.ctx.setLineDash([]);
+    if (lab) ECON.txt(lab, X, fr.r.y + 10, col, 13);
   }
   function layout(two) {
-    const pT = Math.min(96, H * 0.17),
-      pB = Math.min(70, H * 0.12),
+    const pT = Math.min(96, ECON.H * 0.17),
+      pB = Math.min(70, ECON.H * 0.12),
       pl = 46,
       pr = 24,
-      h = H - pT - pB;
-    if (!two) return [{ x: pl, y: pT, w: W - pl - pr, h }];
+      h = ECON.H - pT - pB;
+    if (!two) return [{ x: pl, y: pT, w: ECON.W - pl - pr, h }];
     const g = 26,
       h1 = h * 0.62,
       h2 = h - h1 - g;
     return [
-      { x: pl, y: pT, w: W - pl - pr, h: h1 },
-      { x: pl, y: pT + h1 + g, w: W - pl - pr, h: h2 },
+      { x: pl, y: pT, w: ECON.W - pl - pr, h: h1 },
+      { x: pl, y: pT + h1 + g, w: ECON.W - pl - pr, h: h2 },
     ];
   }
   function renderNow() {
-    ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
-    const c = P.colors;
-    ctx.fillStyle = c.bg;
-    ctx.fillRect(0, 0, W, H);
+    ECON.ctx.setTransform(ECON.DPR, 0, 0, ECON.DPR, 0, 0);
+    const c = ECON.P.colors;
+    ECON.ctx.fillStyle = c.bg;
+    ECON.ctx.fillRect(0, 0, ECON.W, ECON.H);
     S.lay = null;
-    if (!S.res || S.err || !W) return;
+    if (!S.res || S.err || !ECON.W) return;
     ({
       comb: drawComb,
       clas: drawClas,
@@ -717,20 +750,20 @@ import { lang, langFrom } from '../../shared/i18n.js';
     })[S.topic](S.res);
     if (S.stamp) {
       const t = (S.ans || '').replace(/<[^>]+>/g, '');
-      ctx.font = '600 15px "Source Serif 4", Georgia, serif';
-      const w = ctx.measureText(t).width + 20;
-      ctx.fillStyle = c.bg;
-      ctx.globalAlpha = 0.85;
-      ctx.fillRect(W - w - 12, H - 38, w, 28);
-      ctx.globalAlpha = 1;
-      ctx.fillStyle = c.axis;
-      ctx.textAlign = 'left';
-      ctx.textBaseline = 'middle';
-      ctx.fillText(t, W - w - 2, H - 24);
+      ECON.ctx.font = '600 15px "Source Serif 4", Georgia, serif';
+      const w = ECON.ctx.measureText(t).width + 20;
+      ECON.ctx.fillStyle = c.bg;
+      ECON.ctx.globalAlpha = 0.85;
+      ECON.ctx.fillRect(ECON.W - w - 12, ECON.H - 38, w, 28);
+      ECON.ctx.globalAlpha = 1;
+      ECON.ctx.fillStyle = c.axis;
+      ECON.ctx.textAlign = 'left';
+      ECON.ctx.textBaseline = 'middle';
+      ECON.ctx.fillText(t, ECON.W - w - 2, ECON.H - 24);
     }
   }
   function drawBern(R) {
-    const c = P.colors;
+    const c = ECON.P.colors;
     let k0 = 0,
       k1 = R.n;
     if (R.n > 40) {
@@ -753,7 +786,7 @@ import { lang, langFrom } from '../../shared/i18n.js';
     const fr = frame(r, k0 - 0.6, k1 + 0.6, 0, ym * 1.18, {
       noYA: true,
       title: `P${sb(R.n)}(k)`,
-      xs: Math.max(1, niceStep((k1 - k0) / Math.max(2, r.w / 60))),
+      xs: Math.max(1, ECON.niceStep((k1 - k0) / Math.max(2, r.w / 60))),
     });
     const bw = Math.max(1, fr.X(1) - fr.X(0)) * 0.72,
       inEv = (k) => (R.ev === 'mode' ? R.kstar.includes(k) : k >= (R.ev === 'one' ? 1 : R.k1) && k <= R.k2);
@@ -762,23 +795,23 @@ import { lang, langFrom } from '../../shared/i18n.js';
         x = fr.X(k),
         y = fr.Y(v),
         sel = inEv(k);
-      ctx.fillStyle = sel ? c.sel : c.bar;
-      ctx.globalAlpha = sel ? 0.9 : 0.55;
-      ctx.fillRect(x - bw / 2, y, bw, fr.Y(0) - y);
-      ctx.globalAlpha = 1;
-      if (P.show.labels && k1 - k0 <= 16 && v > ym * 0.02)
-        txt(dc(fmt(v, 3)), x, y - 9, sel ? c.sel : c.axis, 11);
+      ECON.ctx.fillStyle = sel ? c.sel : c.bar;
+      ECON.ctx.globalAlpha = sel ? 0.9 : 0.55;
+      ECON.ctx.fillRect(x - bw / 2, y, bw, fr.Y(0) - y);
+      ECON.ctx.globalAlpha = 1;
+      if (ECON.P.show.labels && k1 - k0 <= 16 && v > ym * 0.02)
+        ECON.txt(dc(fmt(v, 3)), x, y - 9, sel ? c.sel : c.axis, 11);
     }
-    if (P.show.approx && R.n >= 8) {
+    if (ECON.P.show.approx && R.n >= 8) {
       if (R.np <= 10 && R.p < 0.3) {
-        ctx.fillStyle = c.curve;
+        ECON.ctx.fillStyle = c.curve;
         for (let k = k0; k <= k1; k++) {
           const v = poiss(R.np, k);
-          ctx.beginPath();
-          ctx.arc(fr.X(k), fr.Y(v), 3.2, 0, 7);
-          ctx.fill();
+          ECON.ctx.beginPath();
+          ECON.ctx.arc(fr.X(k), fr.Y(v), 3.2, 0, 7);
+          ECON.ctx.fill();
         }
-        txt(
+        ECON.txt(
           'Пуассон'.replace('Пуассон', lang() === 'ru' ? 'Пуассон' : 'Poisson'),
           r.x + r.w - 6,
           r.y + 10,
@@ -787,8 +820,8 @@ import { lang, langFrom } from '../../shared/i18n.js';
           'right'
         );
       } else if (R.sq > 0) {
-        plotFn(fr, (x) => phiG((x - R.np) / R.sq) / R.sq, c.curve, 2.2 * P.lw, [7, 5]);
-        txt(
+        plotFn(fr, (x) => phiG((x - R.np) / R.sq) / R.sq, c.curve, 2.2 * ECON.P.lw, [7, 5]);
+        ECON.txt(
           lang() === 'ru' ? 'Муавр–Лаплас' : 'de Moivre–Laplace',
           r.x + r.w - 6,
           r.y + 10,
@@ -798,40 +831,40 @@ import { lang, langFrom } from '../../shared/i18n.js';
         );
       }
     }
-    if (P.show.sigma) vline(fr, R.np, c.mark, 'np');
+    if (ECON.P.show.sigma) vline(fr, R.np, c.mark, 'np');
   }
   function stepsF(fr, x, p, col) {
     let acc = 0;
-    ctx.strokeStyle = col;
-    ctx.lineWidth = 2.2 * P.lw;
+    ECON.ctx.strokeStyle = col;
+    ECON.ctx.lineWidth = 2.2 * ECON.P.lw;
     const xs = [fr.x0, ...x, fr.x1];
     for (let i = 0; i < xs.length - 1; i++) {
       const y = fr.Y(acc);
-      ctx.beginPath();
-      ctx.moveTo(fr.X(xs[i]), y);
-      ctx.lineTo(fr.X(xs[i + 1]), y);
-      ctx.stroke();
+      ECON.ctx.beginPath();
+      ECON.ctx.moveTo(fr.X(xs[i]), y);
+      ECON.ctx.lineTo(fr.X(xs[i + 1]), y);
+      ECON.ctx.stroke();
       if (i > 0) {
-        ctx.fillStyle = col;
-        ctx.beginPath();
-        ctx.arc(fr.X(xs[i]), y, 3.5, 0, 7);
-        ctx.fill();
+        ECON.ctx.fillStyle = col;
+        ECON.ctx.beginPath();
+        ECON.ctx.arc(fr.X(xs[i]), y, 3.5, 0, 7);
+        ECON.ctx.fill();
       }
       if (i < x.length) {
-        ctx.strokeStyle = col;
-        ctx.fillStyle = P.colors.bg;
-        ctx.beginPath();
-        ctx.arc(fr.X(xs[i + 1]), y, 3.5, 0, 7);
-        ctx.fill();
-        ctx.stroke();
+        ECON.ctx.strokeStyle = col;
+        ECON.ctx.fillStyle = ECON.P.colors.bg;
+        ECON.ctx.beginPath();
+        ECON.ctx.arc(fr.X(xs[i + 1]), y, 3.5, 0, 7);
+        ECON.ctx.fill();
+        ECON.ctx.stroke();
         acc += p[i];
       }
     }
   }
   function drawDsv(R) {
     if (R.mode === 'prop') return drawProp(R);
-    const c = P.colors,
-      two = P.show.Fplot,
+    const c = ECON.P.colors,
+      two = ECON.P.show.Fplot,
       [r1, r2] = layout(two);
     const x0 = R.x[0],
       x1 = R.x[R.x.length - 1],
@@ -839,37 +872,38 @@ import { lang, langFrom } from '../../shared/i18n.js';
       ym = Math.max(...R.p);
     const fr = frame(r1, x0 - pad, x1 + pad, 0, ym * 1.2, { title: 'P(X = xᵢ)' });
     const bw = Math.min(18, Math.max(3, ((fr.X(x1) - fr.X(x0)) / Math.max(1, R.x.length)) * 0.3));
-    if (P.show.sigma) {
+    if (ECON.P.show.sigma) {
       const s = R.st;
       const a = fr.X(s.M - s.s),
         b = fr.X(s.M + s.s);
-      ctx.fillStyle = c.mark;
-      ctx.globalAlpha = 0.12;
-      ctx.fillRect(a, r1.y, b - a, r1.h);
-      ctx.globalAlpha = 1;
+      ECON.ctx.fillStyle = c.mark;
+      ECON.ctx.globalAlpha = 0.12;
+      ECON.ctx.fillRect(a, r1.y, b - a, r1.h);
+      ECON.ctx.globalAlpha = 1;
       vline(fr, s.M, c.mark, 'M(X)');
     }
-    ctx.strokeStyle = c.bar;
-    ctx.lineWidth = 2 * P.lw;
-    ctx.beginPath();
+    ECON.ctx.strokeStyle = c.bar;
+    ECON.ctx.lineWidth = 2 * ECON.P.lw;
+    ECON.ctx.beginPath();
     R.x.forEach((x, i) => {
       const X = fr.X(x),
         Y = fr.Y(R.p[i]);
-      i ? ctx.lineTo(X, Y) : ctx.moveTo(X, Y);
+      i ? ECON.ctx.lineTo(X, Y) : ECON.ctx.moveTo(X, Y);
     });
-    ctx.stroke();
+    ECON.ctx.stroke();
     R.x.forEach((x, i) => {
       const X = fr.X(x),
         Y = fr.Y(R.p[i]),
         md = R.st.modes.includes(x);
-      ctx.fillStyle = md ? c.sel : c.bar;
-      ctx.globalAlpha = 0.45;
-      ctx.fillRect(X - bw / 2, Y, bw, fr.Y(0) - Y);
-      ctx.globalAlpha = 1;
-      ctx.beginPath();
-      ctx.arc(X, Y, 4, 0, 7);
-      ctx.fill();
-      if (P.show.labels && R.x.length <= 14) txt(dc(fmt(R.p[i], 3)), X, Y - 11, md ? c.sel : c.axis, 11);
+      ECON.ctx.fillStyle = md ? c.sel : c.bar;
+      ECON.ctx.globalAlpha = 0.45;
+      ECON.ctx.fillRect(X - bw / 2, Y, bw, fr.Y(0) - Y);
+      ECON.ctx.globalAlpha = 1;
+      ECON.ctx.beginPath();
+      ECON.ctx.arc(X, Y, 4, 0, 7);
+      ECON.ctx.fill();
+      if (ECON.P.show.labels && R.x.length <= 14)
+        ECON.txt(dc(fmt(R.p[i], 3)), X, Y - 11, md ? c.sel : c.axis, 11);
     });
     if (two) {
       const f2 = frame(r2, x0 - pad, x1 + pad, 0, 1.08, { title: 'F(x)' });
@@ -877,98 +911,98 @@ import { lang, langFrom } from '../../shared/i18n.js';
     }
   }
   function drawProp(R) {
-    const c = P.colors,
-      cx = W / 2,
-      y = Math.min(150, H * 0.25);
-    txt(`Z = ${zLin(R.a, R.b, R.c)}`, cx, y, c.axis, 24, 'center', 'middle', true);
+    const c = ECON.P.colors,
+      cx = ECON.W / 2,
+      y = Math.min(150, ECON.H * 0.25);
+    ECON.txt(`Z = ${zLin(R.a, R.b, R.c)}`, cx, y, c.axis, 24, 'center', 'middle', true);
     const lines = [
       [`M(Z) = a·M(X) + b·M(Y) + c = ${fT(R.MZ)}`, c.mark],
       [`D(Z) = a²D(X) + b²D(Y) + 2ab·cov = ${fT(R.DZ)}`, c.F],
       [`σ(Z) = ${fT(R.sZ)}`, c.bar],
     ];
-    lines.forEach(([s, col], i) => txt(s, cx, y + 56 + i * 40, col, 18));
-    if (P.show.sigma && R.sZ > 0) {
-      const r = { x: 70, y: y + 200, w: W - 140, h: 60 };
+    lines.forEach(([s, col], i) => ECON.txt(s, cx, y + 56 + i * 40, col, 18));
+    if (ECON.P.show.sigma && R.sZ > 0) {
+      const r = { x: 70, y: y + 200, w: ECON.W - 140, h: 60 };
       const fr = frame(r, R.MZ - 3.2 * R.sZ, R.MZ + 3.2 * R.sZ, 0, 1, { noYA: true });
       [
         [2, 0.1],
         [1, 0.22],
       ].forEach(([k, al]) => {
-        ctx.fillStyle = c.mark;
-        ctx.globalAlpha = al;
-        ctx.fillRect(fr.X(R.MZ - k * R.sZ), r.y, fr.X(R.MZ + k * R.sZ) - fr.X(R.MZ - k * R.sZ), r.h);
-        ctx.globalAlpha = 1;
+        ECON.ctx.fillStyle = c.mark;
+        ECON.ctx.globalAlpha = al;
+        ECON.ctx.fillRect(fr.X(R.MZ - k * R.sZ), r.y, fr.X(R.MZ + k * R.sZ) - fr.X(R.MZ - k * R.sZ), r.h);
+        ECON.ctx.globalAlpha = 1;
       });
       vline(fr, R.MZ, c.mark, 'M(Z)');
-      txt('M ± σ', fr.X(R.MZ + R.sZ * 0.5), r.y + r.h - 12, c.mark, 12);
-      txt('M ± 2σ', fr.X(R.MZ + R.sZ * 1.5), r.y + r.h - 12, c.mark, 12);
+      ECON.txt('M ± σ', fr.X(R.MZ + R.sZ * 0.5), r.y + r.h - 12, c.mark, 12);
+      ECON.txt('M ± 2σ', fr.X(R.MZ + R.sZ * 1.5), r.y + r.h - 12, c.mark, 12);
     }
   }
   function drawDvu(R) {
-    const c = P.colors,
+    const c = ECON.P.colors,
       J = R.J,
       s = R.st,
       nr = J.x.length,
       nc = J.y.length;
-    const pT = Math.min(100, H * 0.17),
-      pB = Math.min(70, H * 0.12),
-      cw = Math.min(90, (W - 120) / (nc + 1.6)),
-      ch = Math.min(64, (H - pT - pB - 40) / (nr + 1.6)),
-      x0 = (W - cw * (nc + 1.3)) / 2 + 30,
+    const pT = Math.min(100, ECON.H * 0.17),
+      pB = Math.min(70, ECON.H * 0.12),
+      cw = Math.min(90, (ECON.W - 120) / (nc + 1.6)),
+      ch = Math.min(64, (ECON.H - pT - pB - 40) / (nr + 1.6)),
+      x0 = (ECON.W - cw * (nc + 1.3)) / 2 + 30,
       y0 = pT + 26;
     const pm = Math.max(...J.P.flat(), 1e-9);
-    ctx.font = '600 14px "Source Serif 4", Georgia, serif';
-    txt('X \\ Y', x0 - 34, y0 - 16, c.axis, 13);
-    J.y.forEach((y, j) => txt(dc(fmt(y, 3)), x0 + cw * j + cw / 2, y0 - 16, c.aux, 14));
-    J.x.forEach((x, i) => txt(dc(fmt(x, 3)), x0 - 26, y0 + ch * i + ch / 2, c.bar, 14));
+    ECON.ctx.font = '600 14px "Source Serif 4", Georgia, serif';
+    ECON.txt('X \\ Y', x0 - 34, y0 - 16, c.axis, 13);
+    J.y.forEach((y, j) => ECON.txt(dc(fmt(y, 3)), x0 + cw * j + cw / 2, y0 - 16, c.aux, 14));
+    J.x.forEach((x, i) => ECON.txt(dc(fmt(x, 3)), x0 - 26, y0 + ch * i + ch / 2, c.bar, 14));
     for (let i = 0; i < nr; i++)
       for (let j = 0; j < nc; j++) {
         const v = J.P[i][j],
           X = x0 + cw * j,
           Y = y0 + ch * i;
-        ctx.fillStyle = c.area;
-        ctx.globalAlpha = 0.12 + (0.6 * v) / pm;
-        ctx.fillRect(X + 2, Y + 2, cw - 4, ch - 4);
-        ctx.globalAlpha = 1;
-        if (P.show.labels) txt(dc(fmt(v, 4)), X + cw / 2, Y + ch / 2, c.axis, 14);
+        ECON.ctx.fillStyle = c.area;
+        ECON.ctx.globalAlpha = 0.12 + (0.6 * v) / pm;
+        ECON.ctx.fillRect(X + 2, Y + 2, cw - 4, ch - 4);
+        ECON.ctx.globalAlpha = 1;
+        if (ECON.P.show.labels) ECON.txt(dc(fmt(v, 4)), X + cw / 2, Y + ch / 2, c.axis, 14);
       }
     if (R.cond) {
-      ctx.strokeStyle = c.sel;
-      ctx.lineWidth = 3;
+      ECON.ctx.strokeStyle = c.sel;
+      ECON.ctx.lineWidth = 3;
       if (R.cond.given === 'X') {
         const Y = y0 + ch * R.cond.idx;
-        ctx.strokeRect(x0, Y, cw * nc, ch);
+        ECON.ctx.strokeRect(x0, Y, cw * nc, ch);
       } else {
         const X = x0 + cw * R.cond.idx;
-        ctx.strokeRect(X, y0, cw, ch * nr);
+        ECON.ctx.strokeRect(X, y0, cw, ch * nr);
       }
     }
     const mx = x0 + cw * nc + 14,
       bwMax = cw * 0.9;
     s.px.forEach((v, i) => {
       const Y = y0 + ch * i;
-      ctx.fillStyle = c.bar;
-      ctx.globalAlpha = 0.6;
-      ctx.fillRect(mx, Y + ch * 0.25, bwMax * v, ch * 0.5);
-      ctx.globalAlpha = 1;
-      if (P.show.labels) txt(dc(fmt(v, 4)), mx + bwMax * v + 4, Y + ch / 2, c.bar, 12, 'left');
+      ECON.ctx.fillStyle = c.bar;
+      ECON.ctx.globalAlpha = 0.6;
+      ECON.ctx.fillRect(mx, Y + ch * 0.25, bwMax * v, ch * 0.5);
+      ECON.ctx.globalAlpha = 1;
+      if (ECON.P.show.labels) ECON.txt(dc(fmt(v, 4)), mx + bwMax * v + 4, Y + ch / 2, c.bar, 12, 'left');
     });
-    txt('pₓ', mx + 10, y0 - 16, c.bar, 13);
+    ECON.txt('pₓ', mx + 10, y0 - 16, c.bar, 13);
     const my = y0 + ch * nr + 12,
       bh = ch * 0.9;
     s.py.forEach((v, j) => {
       const X = x0 + cw * j;
-      ctx.fillStyle = c.aux;
-      ctx.globalAlpha = 0.6;
-      ctx.fillRect(X + cw * 0.25, my, cw * 0.5, bh * v);
-      ctx.globalAlpha = 1;
-      if (P.show.labels) txt(dc(fmt(v, 4)), X + cw / 2, my + bh * v + 10, c.aux, 12);
+      ECON.ctx.fillStyle = c.aux;
+      ECON.ctx.globalAlpha = 0.6;
+      ECON.ctx.fillRect(X + cw * 0.25, my, cw * 0.5, bh * v);
+      ECON.ctx.globalAlpha = 1;
+      if (ECON.P.show.labels) ECON.txt(dc(fmt(v, 4)), X + cw / 2, my + bh * v + 10, c.aux, 12);
     });
-    txt('pᵧ', x0 - 26, my + 12, c.aux, 13);
+    ECON.txt('pᵧ', x0 - 26, my + 12, c.aux, 13);
   }
   function drawNsv(R) {
-    const c = P.colors,
-      two = P.show.Fplot,
+    const c = ECON.P.colors,
+      two = ECON.P.show.Fplot,
       [r1, r2] = layout(two);
     let lo = R.lo,
       hi = R.hi;
@@ -982,13 +1016,13 @@ import { lang, langFrom } from '../../shared/i18n.js';
     const fr = frame(r1, lo - pad, hi + pad, 0, ym * 1.2 || 1, { title: 'f(x)' });
     S.lay = { fr, kind: 'nsv' };
     if (R.Pab !== null) fillFn(fr, R.f, Math.min(R.al, R.be), Math.max(R.al, R.be), c.area);
-    plotFn(fr, R.f, c.bar, 2.6 * P.lw);
-    if (P.show.sigma) {
+    plotFn(fr, R.f, c.bar, 2.6 * ECON.P.lw);
+    if (ECON.P.show.sigma) {
       vline(fr, R.M, c.mark, 'M');
-      ctx.fillStyle = c.mark;
-      ctx.globalAlpha = 0.1;
-      ctx.fillRect(fr.X(R.M - R.s), r1.y, fr.X(R.M + R.s) - fr.X(R.M - R.s), r1.h);
-      ctx.globalAlpha = 1;
+      ECON.ctx.fillStyle = c.mark;
+      ECON.ctx.globalAlpha = 0.1;
+      ECON.ctx.fillRect(fr.X(R.M - R.s), r1.y, fr.X(R.M + R.s) - fr.X(R.M - R.s), r1.h);
+      ECON.ctx.globalAlpha = 1;
     }
     if (R.Pab !== null) {
       vline(fr, R.al, c.sel, 'α', []);
@@ -996,12 +1030,12 @@ import { lang, langFrom } from '../../shared/i18n.js';
     }
     if (two) {
       const f2 = frame(r2, lo - pad, hi + pad, 0, 1.08, { title: 'F(x)' });
-      plotFn(f2, R.F, c.F, 2.4 * P.lw);
+      plotFn(f2, R.F, c.F, 2.4 * ECON.P.lw);
       vline(f2, R.med, c.mark, 'x_med');
     }
   }
   function drawNorm(R) {
-    const c = P.colors,
+    const c = ECON.P.colors,
       [r] = layout(false),
       m = R.m,
       s = R.s;
@@ -1010,29 +1044,29 @@ import { lang, langFrom } from '../../shared/i18n.js';
     });
     S.lay = { fr, kind: 'norm' };
     const f = (x) => phiG((x - m) / s) / s;
-    if (P.show.sigma)
+    if (ECON.P.show.sigma)
       for (const k of [1, 2, 3]) {
         for (const sg of [-1, 1]) {
           const x = m + sg * k * s,
             X = fr.X(x);
-          ctx.strokeStyle = c.mark;
-          ctx.globalAlpha = 0.5;
-          ctx.setLineDash([3, 4]);
-          ctx.beginPath();
-          ctx.moveTo(X, fr.Y(f(x)));
-          ctx.lineTo(X, fr.Y(0));
-          ctx.stroke();
-          ctx.setLineDash([]);
-          ctx.globalAlpha = 1;
-          txt(`${sg < 0 ? '−' : '+'}${k}σ`, X, fr.Y(0) - 10, c.mark, 11);
+          ECON.ctx.strokeStyle = c.mark;
+          ECON.ctx.globalAlpha = 0.5;
+          ECON.ctx.setLineDash([3, 4]);
+          ECON.ctx.beginPath();
+          ECON.ctx.moveTo(X, fr.Y(f(x)));
+          ECON.ctx.lineTo(X, fr.Y(0));
+          ECON.ctx.stroke();
+          ECON.ctx.setLineDash([]);
+          ECON.ctx.globalAlpha = 1;
+          ECON.txt(`${sg < 0 ? '−' : '+'}${k}σ`, X, fr.Y(0) - 10, c.mark, 11);
         }
       }
     fillFn(fr, f, R.lo === -Infinity ? m - 4 * s : R.lo, R.hi === Infinity ? m + 4 * s : R.hi, c.area);
-    plotFn(fr, f, c.bar, 2.6 * P.lw);
+    plotFn(fr, f, c.bar, 2.6 * ECON.P.lw);
     vline(fr, m, c.mark, 'm');
     for (const x of [R.lo, R.hi])
-      if (isFinite(x)) vline(fr, x, c.sel, P.show.labels ? dc(fmt(x, 3)) : '', []);
-    if (P.show.labels && R.P != null) {
+      if (isFinite(x)) vline(fr, x, c.sel, ECON.P.show.labels ? dc(fmt(x, 3)) : '', []);
+    if (ECON.P.show.labels && R.P != null) {
       const mid = Math.max(
         m - 4 * s,
         Math.min(
@@ -1040,13 +1074,13 @@ import { lang, langFrom } from '../../shared/i18n.js';
           isFinite(R.lo) && isFinite(R.hi) ? (R.lo + R.hi) / 2 : isFinite(R.lo) ? R.lo + s : R.hi - s
         )
       );
-      txt(`P ≈ ${dc(fmt(R.P, 4))}`, fr.X(mid), fr.Y(f(mid) * 0.45), c.axis, 15);
+      ECON.txt(`P ≈ ${dc(fmt(R.P, 4))}`, fr.X(mid), fr.Y(f(mid) * 0.45), c.axis, 15);
     }
   }
   /* перетаскивание границ */
   let drag = null;
   const pos = (e) => {
-    const r = cv.getBoundingClientRect();
+    const r = ECON.cv.getBoundingClientRect();
     return { x: e.clientX - r.left, y: e.clientY - r.top };
   };
   function handles() {
@@ -1068,30 +1102,30 @@ import { lang, langFrom } from '../../shared/i18n.js';
     }
     return [];
   }
-  cv.addEventListener('pointerdown', (e) => {
+  ECON.cv.addEventListener('pointerdown', (e) => {
     const p = pos(e),
       L = S.lay;
     if (!L) return;
     for (const [k, v] of handles()) {
       if (Math.abs(L.fr.X(v) - p.x) < 12) {
         drag = k;
-        cv.setPointerCapture(e.pointerId);
-        cv.style.cursor = 'ew-resize';
+        ECON.cv.setPointerCapture(e.pointerId);
+        ECON.cv.style.cursor = 'ew-resize';
         return;
       }
     }
   });
-  cv.addEventListener('pointermove', (e) => {
+  ECON.cv.addEventListener('pointermove', (e) => {
     const p = pos(e),
       L = S.lay;
     if (!drag) {
-      cv.style.cursor =
+      ECON.cv.style.cursor =
         L && handles().some(([, v]) => Math.abs(L.fr.X(v) - p.x) < 12) ? 'ew-resize' : 'default';
       return;
     }
     const fr = L.fr;
     let x = fr.x0 + ((p.x - fr.r.x) / fr.r.w) * (fr.x1 - fr.x0);
-    const st = niceStep((fr.x1 - fr.x0) / 40);
+    const st = ECON.niceStep((fr.x1 - fr.x0) / 40);
     x = Math.round(x / st) * st;
     x = +x.toFixed(6);
     S.inp[S.topic][drag] = dc(String(x));
@@ -1102,10 +1136,10 @@ import { lang, langFrom } from '../../shared/i18n.js';
   });
   const endD = () => {
     drag = null;
-    cv.style.cursor = 'default';
+    ECON.cv.style.cursor = 'default';
   };
-  cv.addEventListener('pointerup', endD);
-  cv.addEventListener('pointercancel', endD);
+  ECON.cv.addEventListener('pointerup', endD);
+  ECON.cv.addEventListener('pointercancel', endD);
   /* ---------- переключатели ---------- */
   const TOG = ['bgGrid', 'coords', 'labels', 'approx', 'sigma', 'Fplot', 'hints'];
   function buildToggles() {
@@ -1116,20 +1150,15 @@ import { lang, langFrom } from '../../shared/i18n.js';
       l.className = 'chk';
       l.innerHTML = `<input type="checkbox" data-k="${k}"> <span>${T().tog[k]}</span>`;
       l.querySelector('input').onchange = (e) => {
-        P.show[k] = e.target.checked;
-        save();
+        ECON.P.show[k] = e.target.checked;
+        ECON.save();
         renderCaption();
-        req();
+        ECON.req();
       };
       box.appendChild(l);
     });
   }
-  function syncToggles() {
-    document.querySelectorAll('#tog input').forEach((i) => {
-      i.checked = !!P.show[i.dataset.k];
-    });
-    syncTogVis();
-  }
+
   function relTogs() {
     const t = S.topic,
       I = S.inp[t] || {};
@@ -1154,33 +1183,7 @@ import { lang, langFrom } from '../../shared/i18n.js';
       l.style.display = r.includes(k) ? '' : 'none';
     });
   }
-  $('#capOpen').onclick = () => {
-    P.show.hints = true;
-    syncToggles();
-    renderCaption();
-    save();
-  };
-  $('#capX').onclick = () => {
-    P.show.hints = false;
-    syncToggles();
-    renderCaption();
-    save();
-  };
-  document.addEventListener('click', (e) => {
-    const q = e.target.closest('[data-term]');
-    if (q) {
-      e.preventDefault();
-      e.stopPropagation();
-      openTerm(q.dataset.term);
-      return;
-    }
-    const p = e.target.closest('[data-pre]');
-    if (p) loadPreset(p.dataset.pre);
-  });
-  function fitView() {
-    req();
-  }
-  function play() {}
+
   /* ---------- обозначения Φ / Φ₀ ---------- */
 
   /* ---------- дроби BigInt ---------- */
@@ -1220,26 +1223,26 @@ import { lang, langFrom } from '../../shared/i18n.js';
   }
   /* ---------- сцены ---------- */
   const COLS = () => [
-    P.colors.bar,
-    P.colors.aux,
-    P.colors.area,
-    P.colors.curve,
-    P.colors.mark,
-    P.colors.sel,
-    P.colors.F,
+    ECON.P.colors.bar,
+    ECON.P.colors.aux,
+    ECON.P.colors.area,
+    ECON.P.colors.curve,
+    ECON.P.colors.mark,
+    ECON.P.colors.sel,
+    ECON.P.colors.F,
   ];
   function box(x, y, w, h, col, al = 0.25) {
-    ctx.fillStyle = col;
-    ctx.globalAlpha = al;
-    ctx.fillRect(x, y, w, h);
-    ctx.globalAlpha = 1;
-    ctx.strokeStyle = col;
-    ctx.lineWidth = 1.6;
-    ctx.strokeRect(x + 0.5, y + 0.5, w, h);
+    ECON.ctx.fillStyle = col;
+    ECON.ctx.globalAlpha = al;
+    ECON.ctx.fillRect(x, y, w, h);
+    ECON.ctx.globalAlpha = 1;
+    ECON.ctx.strokeStyle = col;
+    ECON.ctx.lineWidth = 1.6;
+    ECON.ctx.strokeRect(x + 0.5, y + 0.5, w, h);
   }
   function drawComb(R) {
-    const c = P.colors,
-      pT = Math.min(110, H * 0.2);
+    const c = ECON.P.colors,
+      pT = Math.min(110, ECON.H * 0.2);
     let slots = [],
       tail = '';
     const k = R.kind,
@@ -1259,26 +1262,26 @@ import { lang, langFrom } from '../../shared/i18n.js';
       tail = `÷ ${R.list.map((v) => v + '!').join('·')}`;
     }
     const show = slots.length > 10 ? [...slots.slice(0, 4), '…', ...slots.slice(-3)] : slots,
-      bw = Math.min(78, (W - 120) / Math.max(4, show.length * 1.35)),
+      bw = Math.min(78, (ECON.W - 120) / Math.max(4, show.length * 1.35)),
       gap = bw * 0.35,
       tw = show.length * bw + (show.length - 1) * gap,
-      x0 = (W - tw) / 2,
+      x0 = (ECON.W - tw) / 2,
       y0 = pT + 20;
     show.forEach((v, i) => {
       const x = x0 + i * (bw + gap);
       if (v === '…') {
-        txt('…', x + bw / 2, y0 + bw / 2, c.axis, 22);
+        ECON.txt('…', x + bw / 2, y0 + bw / 2, c.axis, 22);
         return;
       }
       box(x, y0, bw, bw, COLS()[i % 7]);
-      txt(String(v), x + bw / 2, y0 + bw / 2, c.axis, Math.min(22, bw * 0.4));
-      if (i < show.length - 1) txt('×', x + bw + gap / 2, y0 + bw / 2, c.axis, 16);
-      if (P.show.labels) txt(`${i + 1}`, x + bw / 2, y0 + bw + 12, c.axis, 11);
+      ECON.txt(String(v), x + bw / 2, y0 + bw / 2, c.axis, Math.min(22, bw * 0.4));
+      if (i < show.length - 1) ECON.txt('×', x + bw + gap / 2, y0 + bw / 2, c.axis, 16);
+      if (ECON.P.show.labels) ECON.txt(`${i + 1}`, x + bw / 2, y0 + bw + 12, c.axis, 11);
     });
-    if (tail) txt(tail, W / 2, y0 + bw + 40, c.sel, 18);
-    txt(`= ${bStr(R.val)}`, W / 2, y0 + bw + (tail ? 72 : 44), c.sel, 22);
+    if (tail) ECON.txt(tail, ECON.W / 2, y0 + bw + 40, c.sel, 18);
+    ECON.txt(`= ${bStr(R.val)}`, ECON.W / 2, y0 + bw + (tail ? 72 : 44), c.sel, 22);
     if (
-      P.show.labels &&
+      ECON.P.show.labels &&
       (k === 'perm' || k === 'arr' || k === 'comb' || k === 'arrRep') &&
       R.val <= 60n &&
       n <= 8
@@ -1300,27 +1303,29 @@ import { lang, langFrom } from '../../shared/i18n.js';
       };
       rec([], []);
       const cols = Math.min(10, Math.ceil(Math.sqrt(items.length * 2))),
-        cw = Math.min(90, (W - 80) / cols),
+        cw = Math.min(90, (ECON.W - 80) / cols),
         yy = y0 + bw + 110;
       items
         .slice(0, 60)
-        .forEach((s, i) => txt(s, 40 + cw * (i % cols) + cw / 2, yy + Math.floor(i / cols) * 24, c.bar, 15));
+        .forEach((s, i) =>
+          ECON.txt(s, 40 + cw * (i % cols) + cw / 2, yy + Math.floor(i / cols) * 24, c.bar, 15)
+        );
     }
   }
   function drawGauge(p, y, lab) {
-    const c = P.colors,
-      w = Math.min(520, W - 120),
-      x = (W - w) / 2;
+    const c = ECON.P.colors,
+      w = Math.min(520, ECON.W - 120),
+      x = (ECON.W - w) / 2;
     box(x, y, w, 26, c.axis, 0.06);
-    ctx.fillStyle = c.sel;
-    ctx.globalAlpha = 0.8;
-    ctx.fillRect(x, y, w * p, 26);
-    ctx.globalAlpha = 1;
-    txt(lab, W / 2, y + 46, c.sel, 18);
+    ECON.ctx.fillStyle = c.sel;
+    ECON.ctx.globalAlpha = 0.8;
+    ECON.ctx.fillRect(x, y, w * p, 26);
+    ECON.ctx.globalAlpha = 1;
+    ECON.txt(lab, ECON.W / 2, y + 46, c.sel, 18);
   }
   function drawClas(R) {
-    const c = P.colors,
-      pT = Math.min(110, H * 0.2);
+    const c = ECON.P.colors,
+      pT = Math.min(110, ECON.H * 0.2);
     if (R.m === 'dice') {
       const [r] = layout(false),
         d = R.d,
@@ -1338,34 +1343,34 @@ import { lang, langFrom } from '../../shared/i18n.js';
           sel = R.dev === 'eq' ? s === R.v : R.dev === 'ge' ? s >= R.v : s <= R.v,
           X = fr.X(s),
           Y = fr.Y(v);
-        ctx.fillStyle = sel ? c.sel : c.bar;
-        ctx.globalAlpha = sel ? 0.9 : 0.5;
-        ctx.fillRect(X - bw / 2, Y, bw, fr.Y(0) - Y);
-        ctx.globalAlpha = 1;
-        if (P.show.labels && hi - lo <= 16) txt(String(d[s]), X, Y - 9, sel ? c.sel : c.axis, 11);
+        ECON.ctx.fillStyle = sel ? c.sel : c.bar;
+        ECON.ctx.globalAlpha = sel ? 0.9 : 0.5;
+        ECON.ctx.fillRect(X - bw / 2, Y, bw, fr.Y(0) - Y);
+        ECON.ctx.globalAlpha = 1;
+        if (ECON.P.show.labels && hi - lo <= 16) ECON.txt(String(d[s]), X, Y - 9, sel ? c.sel : c.axis, 11);
       }
       return;
     }
     if (R.m === 'mn') {
       const n = R.tot,
         cols = Math.ceil(Math.sqrt(n * 1.8)),
-        cs = Math.min(36, (W - 120) / cols, (H * 0.45) / Math.ceil(n / cols)),
-        x0 = (W - cols * cs) / 2;
+        cs = Math.min(36, (ECON.W - 120) / cols, (ECON.H * 0.45) / Math.ceil(n / cols)),
+        x0 = (ECON.W - cols * cs) / 2;
       if (n <= 600)
         for (let i = 0; i < n; i++) {
           const x = x0 + (i % cols) * cs,
             y = pT + 20 + Math.floor(i / cols) * cs;
-          ctx.fillStyle = i < R.fav ? c.sel : c.bar;
-          ctx.globalAlpha = i < R.fav ? 0.85 : 0.35;
-          ctx.fillRect(x + 1, y + 1, cs - 2, cs - 2);
-          ctx.globalAlpha = 1;
+          ECON.ctx.fillStyle = i < R.fav ? c.sel : c.bar;
+          ECON.ctx.globalAlpha = i < R.fav ? 0.85 : 0.35;
+          ECON.ctx.fillRect(x + 1, y + 1, cs - 2, cs - 2);
+          ECON.ctx.globalAlpha = 1;
         }
-      drawGauge(R.P, H - Math.min(140, H * 0.24), `P = ${R.fav}/${R.tot}`);
+      drawGauge(R.P, ECON.H - Math.min(140, ECON.H * 0.24), `P = ${R.fav}/${R.tot}`);
       return;
     }
     const tot = R.N,
-      rad = Math.max(5, Math.min(16, Math.sqrt((W * H * 0.18) / Math.max(tot, 1)) / 2.4)),
-      per = Math.max(1, Math.floor((W - 120) / (rad * 2.6)));
+      rad = Math.max(5, Math.min(16, Math.sqrt((ECON.W * ECON.H * 0.18) / Math.max(tot, 1)) / 2.4)),
+      per = Math.max(1, Math.floor((ECON.W - 120) / (rad * 2.6)));
     let i = 0,
       x0 = 60,
       y0 = pT + 20;
@@ -1373,20 +1378,20 @@ import { lang, langFrom } from '../../shared/i18n.js';
       for (let j = 0; j < Math.min(cnt, 400); j++, i++) {
         const x = x0 + (i % per) * rad * 2.6 + rad,
           y = y0 + Math.floor(i / per) * rad * 2.6 + rad;
-        ctx.fillStyle = COLS()[ci % 7];
-        ctx.beginPath();
-        ctx.arc(x, y, rad, 0, 7);
-        ctx.fill();
+        ECON.ctx.fillStyle = COLS()[ci % 7];
+        ECON.ctx.beginPath();
+        ECON.ctx.arc(x, y, rad, 0, 7);
+        ECON.ctx.fill();
       }
     });
     const rows = Math.ceil(Math.min(i, 400 * R.a.length) / per),
       yy = y0 + rows * rad * 2.6 + 24;
     const pat = R.cev === 'exact' ? R.terms[0] : null;
-    txt(
+    ECON.txt(
       (lang() === 'ru' ? 'Берём ' : 'Draw ') +
         R.n +
         (pat ? (lang() === 'ru' ? ': нужно ' : ': need ') + pat.join(' + ') : ''),
-      W / 2,
+      ECON.W / 2,
       yy,
       c.axis,
       16
@@ -1394,42 +1399,42 @@ import { lang, langFrom } from '../../shared/i18n.js';
     drawGauge(Math.min(1, R.P), yy + 28, `P = ${fracB(R.num, R.den).replace(/ ≈ .*/, '')} ≈ ${fT(R.P, 4)}`);
   }
   function drawOps(R) {
-    const c = P.colors;
+    const c = ECON.P.colors;
     if (R.mode === 'two') {
-      const cx = W / 2,
-        cy = Math.min(H * 0.52, H - 180),
-        r = Math.min(W * 0.18, H * 0.26),
+      const cx = ECON.W / 2,
+        cy = Math.min(ECON.H * 0.52, ECON.H - 180),
+        r = Math.min(ECON.W * 0.18, ECON.H * 0.26),
         d = r * 0.95;
-      ctx.globalAlpha = 0.25;
-      ctx.fillStyle = c.bar;
-      ctx.beginPath();
-      ctx.arc(cx - d / 2, cy, r, 0, 7);
-      ctx.fill();
-      ctx.fillStyle = c.aux;
-      ctx.beginPath();
-      ctx.arc(cx + d / 2, cy, r, 0, 7);
-      ctx.fill();
-      ctx.globalAlpha = 1;
-      ctx.lineWidth = 2.4;
-      ctx.strokeStyle = c.bar;
-      ctx.beginPath();
-      ctx.arc(cx - d / 2, cy, r, 0, 7);
-      ctx.stroke();
-      ctx.strokeStyle = c.aux;
-      ctx.beginPath();
-      ctx.arc(cx + d / 2, cy, r, 0, 7);
-      ctx.stroke();
-      ctx.strokeStyle = c.axis;
-      ctx.globalAlpha = 0.4;
-      ctx.strokeRect(cx - d / 2 - r - 40, cy - r - 30, d + 2 * r + 80, 2 * r + 60);
-      ctx.globalAlpha = 1;
-      txt('A', cx - d / 2 - r * 0.7, cy - r * 0.8, c.bar, 20, 'center', 'middle', true);
-      txt('B', cx + d / 2 + r * 0.7, cy - r * 0.8, c.aux, 20, 'center', 'middle', true);
-      if (P.show.labels) {
-        txt(dc(fmt(R.onlyA, 4)), cx - d / 2 - r * 0.45, cy, c.axis, 15);
-        txt(dc(fmt(R.pab, 4)), cx, cy, c.sel, 16);
-        txt(dc(fmt(R.onlyB, 4)), cx + d / 2 + r * 0.45, cy, c.axis, 15);
-        txt(dc(fmt(R.none, 4)), cx - d / 2 - r - 20, cy + r + 14, c.axis, 13, 'left');
+      ECON.ctx.globalAlpha = 0.25;
+      ECON.ctx.fillStyle = c.bar;
+      ECON.ctx.beginPath();
+      ECON.ctx.arc(cx - d / 2, cy, r, 0, 7);
+      ECON.ctx.fill();
+      ECON.ctx.fillStyle = c.aux;
+      ECON.ctx.beginPath();
+      ECON.ctx.arc(cx + d / 2, cy, r, 0, 7);
+      ECON.ctx.fill();
+      ECON.ctx.globalAlpha = 1;
+      ECON.ctx.lineWidth = 2.4;
+      ECON.ctx.strokeStyle = c.bar;
+      ECON.ctx.beginPath();
+      ECON.ctx.arc(cx - d / 2, cy, r, 0, 7);
+      ECON.ctx.stroke();
+      ECON.ctx.strokeStyle = c.aux;
+      ECON.ctx.beginPath();
+      ECON.ctx.arc(cx + d / 2, cy, r, 0, 7);
+      ECON.ctx.stroke();
+      ECON.ctx.strokeStyle = c.axis;
+      ECON.ctx.globalAlpha = 0.4;
+      ECON.ctx.strokeRect(cx - d / 2 - r - 40, cy - r - 30, d + 2 * r + 80, 2 * r + 60);
+      ECON.ctx.globalAlpha = 1;
+      ECON.txt('A', cx - d / 2 - r * 0.7, cy - r * 0.8, c.bar, 20, 'center', 'middle', true);
+      ECON.txt('B', cx + d / 2 + r * 0.7, cy - r * 0.8, c.aux, 20, 'center', 'middle', true);
+      if (ECON.P.show.labels) {
+        ECON.txt(dc(fmt(R.onlyA, 4)), cx - d / 2 - r * 0.45, cy, c.axis, 15);
+        ECON.txt(dc(fmt(R.pab, 4)), cx, cy, c.sel, 16);
+        ECON.txt(dc(fmt(R.onlyB, 4)), cx + d / 2 + r * 0.45, cy, c.axis, 15);
+        ECON.txt(dc(fmt(R.none, 4)), cx - d / 2 - r - 20, cy + r + 14, c.axis, 13, 'left');
       }
       return;
     }
@@ -1459,19 +1464,19 @@ import { lang, langFrom } from '../../shared/i18n.js';
       const X = fr.X(k),
         Y = fr.Y(v),
         s = inE(k);
-      ctx.fillStyle = s ? c.sel : c.bar;
-      ctx.globalAlpha = s ? 0.9 : 0.5;
-      ctx.fillRect(X - bw / 2, Y, bw, fr.Y(0) - Y);
-      ctx.globalAlpha = 1;
-      if (P.show.labels) txt(dc(fmt(v, 4)), X, Y - 10, s ? c.sel : c.axis, 12);
+      ECON.ctx.fillStyle = s ? c.sel : c.bar;
+      ECON.ctx.globalAlpha = s ? 0.9 : 0.5;
+      ECON.ctx.fillRect(X - bw / 2, Y, bw, fr.Y(0) - Y);
+      ECON.ctx.globalAlpha = 1;
+      if (ECON.P.show.labels) ECON.txt(dc(fmt(v, 4)), X, Y - 10, s ? c.sel : c.axis, 12);
     });
   }
   function drawBayes(R) {
-    const c = P.colors,
-      pT = Math.min(110, H * 0.2),
-      pB = Math.min(80, H * 0.14),
-      hh = H - pT - pB - 30,
-      w = Math.min(W * 0.55, W - 260),
+    const c = ECON.P.colors,
+      pT = Math.min(110, ECON.H * 0.2),
+      pB = Math.min(80, ECON.H * 0.14),
+      hh = ECON.H - pT - pB - 30,
+      w = Math.min(ECON.W * 0.55, ECON.W - 260),
       x0 = 50,
       y0 = pT + 18;
     let x = x0;
@@ -1480,17 +1485,17 @@ import { lang, langFrom } from '../../shared/i18n.js';
         col = COLS()[i % 7];
       box(x, y0, cw, hh, col, 0.12);
       const fh = hh * R.L[i];
-      ctx.fillStyle = col;
-      ctx.globalAlpha = 0.75;
-      ctx.fillRect(x, y0 + hh - fh, cw, fh);
-      ctx.globalAlpha = 1;
+      ECON.ctx.fillStyle = col;
+      ECON.ctx.globalAlpha = 0.75;
+      ECON.ctx.fillRect(x, y0 + hh - fh, cw, fh);
+      ECON.ctx.globalAlpha = 1;
       if (cw > 26) {
-        txt(`H${sb(i + 1)}`, x + cw / 2, y0 - 10, col, 14, 'center', 'middle', true);
-        if (P.show.labels) txt(dc(fmt(R.L[i], 3)), x + cw / 2, y0 + hh - fh - 10, c.axis, 12);
+        ECON.txt(`H${sb(i + 1)}`, x + cw / 2, y0 - 10, col, 14, 'center', 'middle', true);
+        if (ECON.P.show.labels) ECON.txt(dc(fmt(R.L[i], 3)), x + cw / 2, y0 + hh - fh - 10, c.axis, 12);
       }
       x += cw;
     });
-    txt(
+    ECON.txt(
       lang() === 'ru'
         ? `ширина — P(Hᵢ), закрашено — P(${R.bev === 'notA' ? 'Ā' : 'A'} | Hᵢ)`
         : `width — P(Hᵢ), filled — P(${R.bev === 'notA' ? 'Ā' : 'A'} | Hᵢ)`,
@@ -1500,19 +1505,19 @@ import { lang, langFrom } from '../../shared/i18n.js';
       12
     );
     const bx = x0 + w + 70,
-      bw = Math.min(90, W - bx - 90);
+      bw = Math.min(90, ECON.W - bx - 90);
     let y = y0;
-    txt(lang() === 'ru' ? 'после опыта' : 'posterior', bx + bw / 2, y0 - 10, c.axis, 13);
+    ECON.txt(lang() === 'ru' ? 'после опыта' : 'posterior', bx + bw / 2, y0 - 10, c.axis, 13);
     R.post.forEach((p, i) => {
       const h = hh * p,
         col = COLS()[i % 7];
-      ctx.fillStyle = col;
-      ctx.globalAlpha = 0.75;
-      ctx.fillRect(bx, y, bw, h);
-      ctx.globalAlpha = 1;
+      ECON.ctx.fillStyle = col;
+      ECON.ctx.globalAlpha = 0.75;
+      ECON.ctx.fillRect(bx, y, bw, h);
+      ECON.ctx.globalAlpha = 1;
       if (h > 16)
-        txt(
-          P.show.labels ? `H${sb(i + 1)}: ${dc(fmt(p, 3))}` : `H${sb(i + 1)}`,
+        ECON.txt(
+          ECON.P.show.labels ? `H${sb(i + 1)}: ${dc(fmt(p, 3))}` : `H${sb(i + 1)}`,
           bx + bw + 8,
           y + h / 2,
           col,
@@ -1523,35 +1528,8 @@ import { lang, langFrom } from '../../shared/i18n.js';
     });
   }
   /* ---------- справочник ---------- */
-  const gloss = createGlossary({
-    prefs: () => P,
-    save,
-    T,
-    content: { TERMS, FORMAL, ILL, CHAP, REL, DEMOS },
-    onDemo: (id) => runDemo(id),
-    illSvg,
-  });
-  const { termTitle, renderGloss, rerenderGloss, openTerm } = gloss;
-  gloss.init();
-  initDrawers();
 
   /* ---------- экспорт ---------- */
-  const keysUi = createKeys({ T, keys: KEYS });
-  const { renderKeys, openKeys } = keysUi;
-  keysUi.init();
-  const ex = createExport({ name: 'probability', T, state: S, cv, renderNow, req });
-  const { canSave, updExport, flash, exportPng } = ex;
-  ex.init();
-  let fmtMode = 'tex';
-
-  document.querySelectorAll('#xFmt button').forEach(
-    (b) =>
-      (b.onclick = () => {
-        fmtMode = b.dataset.f;
-        document.querySelectorAll('#xFmt button').forEach((x) => x.classList.toggle('on', x === b));
-        renderTex();
-      })
-  );
 
   function illSvg(id) {
     const sp = ILL[id];
@@ -1654,12 +1632,7 @@ import { lang, langFrom } from '../../shared/i18n.js';
     }
     return `<svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false"><rect width="${W}" height="${H}" fill="var(--s-bg)"/>${ax}${o}</svg>`;
   }
-  function runDemo(id) {
-    const d = DEMOS[id];
-    if (!d) return;
-    loadPreset(d.p);
-    showPanel('solve');
-  }
+
   function renderTex() {
     const ta = $('#xTex');
     if (!ta) return;
@@ -1672,11 +1645,11 @@ import { lang, langFrom } from '../../shared/i18n.js';
         .replace(/<sub>(.*?)<\/sub>/g, '_$1')
         .replace(/<sup>(.*?)<\/sup>/g, '^$1')
         .replace(/<[^>]+>/g, '');
-    if (fmtMode === 'txt') {
+    if (ECON.fmtMode === 'txt') {
       ta.value = `${T()['t_' + S.topic]}\n${a}`;
       return;
     }
-    if (fmtMode === 'tex') {
+    if (ECON.fmtMode === 'tex') {
       ta.value = a
         .replace(/≈/g, '\\approx ')
         .replace(/⩽/g, '\\le ')
@@ -1737,21 +1710,12 @@ import { lang, langFrom } from '../../shared/i18n.js';
   }
   /* ---------- горячие клавиши ---------- */
 
-  function flip(k) {
-    P.show[k] = !P.show[k];
-    syncToggles();
-    save();
-    renderCaption();
-    req();
-    const L = T();
-    toast(`${L.tog[k]}: ${P.show[k] ? L.on : L.off}`);
-  }
   onShortcut((c, e, isQ) => {
     const L = T();
     let h = true;
-    if (isQ) openKeys();
+    if (isQ) ECON.openKeys();
     else if (/^(Digit|Numpad)[1-9]$/.test(c)) {
-      setTopic(TOPICS[+c.slice(-1) - 1]);
+      ECON.setTopic(TOPICS[+c.slice(-1) - 1]);
       toast(L['t_' + S.topic]);
     } else if (c === 'BracketLeft' || c === 'BracketRight') {
       const list = PRE[S.topic];
@@ -1759,13 +1723,13 @@ import { lang, langFrom } from '../../shared/i18n.js';
       i = (i + (c === 'BracketLeft' ? -1 : 1) + list.length) % list.length;
       loadPreset(list[i][0]);
       toast(lang() === 'ru' ? list[i][2] : list[i][3]);
-    } else if (c === 'KeyG') flip('bgGrid');
-    else if (c === 'KeyF') flip('Fplot');
-    else if (c === 'KeyP') flip('approx');
-    else if (c === 'KeyM') flip('sigma');
-    else if (c === 'KeyH') flip('hints');
+    } else if (c === 'KeyG') ECON.flip('bgGrid');
+    else if (c === 'KeyF') ECON.flip('Fplot');
+    else if (c === 'KeyP') ECON.flip('approx');
+    else if (c === 'KeyM') ECON.flip('sigma');
+    else if (c === 'KeyH') ECON.flip('hints');
     else if (c === 'KeyS') {
-      if (canSave()) exportPng();
+      if (ECON.canSave()) ECON.exportPng();
       else toast(L.xNoDl);
     } else if (c === 'Slash') {
       $('#openGloss').click();
@@ -1774,22 +1738,6 @@ import { lang, langFrom } from '../../shared/i18n.js';
     return h;
   });
   /* ---------- настройки ---------- */
-  const settings = createSettings({
-    prefs: () => P,
-    setPrefs: (np) => {
-      P = np;
-    },
-    save,
-    T,
-    defaults: DEF,
-    panels: PANELS,
-    palettes: PAL,
-    main,
-    side,
-    hooks: { applyLang, applyOrder, syncToggles, renderAll, req },
-  });
-  const { buildSettings, buildPal, syncSettings, applyDock, applyPrefs } = settings;
-  settings.init();
 
   function applyLang() {
     const L = T();
@@ -1797,26 +1745,22 @@ import { lang, langFrom } from '../../shared/i18n.js';
     document.title = L.title;
     applyTexts(L);
     $('#gq').placeholder = L.search;
-    cv.setAttribute('aria-label', L.canvas);
+    ECON.cv.setAttribute('aria-label', L.canvas);
     document
       .querySelectorAll('#langSeg button,#langSeg2 button')
       .forEach((b) => b.classList.toggle('on', b.dataset.l === lang()));
-    buildPal();
+    ECON.buildPal();
     buildToggles();
-    syncToggles();
-    syncSettings();
-    updExport();
-    renderKeys();
-    if ($('#dGloss').classList.contains('open')) rerenderGloss();
+    ECON.syncToggles();
+    ECON.syncSettings();
+    ECON.updExport();
+    ECON.renderKeys();
+    if ($('#dGloss').classList.contains('open')) ECON.rerenderGloss();
     renderForm();
     recompute();
   }
 
   /* ---------- старт ---------- */
-  buildPanels();
-  buildSettings();
-  applyPrefs();
-  renderForm();
-  applyLang();
-  if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => req());
+
+  ECON.start();
 })();
