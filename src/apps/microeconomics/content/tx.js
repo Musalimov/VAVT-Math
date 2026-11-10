@@ -5,6 +5,10 @@ import { fN } from '../../../shared/format.js';
 
 export const TXM = {
   ru: {
+    prefsReset:
+      'Сохранённые настройки повреждены — восстановлены настройки по умолчанию. Копия старых сохранена в браузере.',
+    prefsNoSave:
+      'Хранилище браузера переполнено или недоступно — настройки не сохранятся после закрытия страницы.',
     p_factors: 'Факторы и сдвиги',
     fac_note:
       'Как каждый фактор сдвигает кривые и меняет переменные. Стрелки посчитаны моделью для текущих параметров. Нажмите на строку, чтобы применить; кривые на графике можно тянуть мышью или пальцем.',
@@ -271,6 +275,9 @@ export const TXM = {
     k_prev: 'предыдущая / следующая задача',
   },
   en: {
+    prefsReset:
+      'Saved settings were damaged — defaults restored. A copy of the old ones is kept in the browser.',
+    prefsNoSave: 'Browser storage is full or unavailable — settings won’t be saved after closing the page.',
     p_factors: 'Factors and shifts',
     fac_note:
       'How each factor shifts the curves and changes the variables. Arrows are computed by the model for the current parameters. Click a row to apply; curves on the chart can be dragged with the mouse or a finger.',

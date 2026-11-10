@@ -199,7 +199,7 @@ for (const app of list) {
     }
   }
   console.log(`${problems.length ? '✗' : '✓'} ${app} (эталон ${R.ref}): ${cases} примеров, ${shots} снимков${problems.length ? '' : ' — совпадают'}`);
-  for (const p of problems.slice(0, 15)) console.log('    ' + p);
+  for (const p of problems.slice(0, +(process.env.E2E_SHOW || 15))) console.log('    ' + p);
   if (problems.length) failed++;
 }
 await browser.close();
