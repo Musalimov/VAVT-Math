@@ -1,3 +1,7 @@
+import { createPanels } from '../../shared/panels.js';
+import { closeDrawers, openDrawer } from '../../shared/drawers.js';
+import { toast } from '../../shared/toast.js';
+import { $, clone } from '../../shared/dom.js';
 import { loadPrefs, makeSaver } from '../../shared/prefs.js';
 import { SOLVE, fp, pc } from './solvers/steps.js';
 import { COMP, E, fin, gv, nI } from './solvers/compute.js';
@@ -40,7 +44,6 @@ import { lang, langFrom } from '../../shared/i18n.js';
 
   /* кривая Филлипса: π = πᵉ − β(u − uⁿ) + v */
 
-  const $ = (s) => document.querySelector(s);
   let LNG = 'ru';
   const KEY = 'macro-viz-v1';
 
@@ -115,7 +118,7 @@ import { lang, langFrom } from '../../shared/i18n.js';
     inp: null,
     preset: null,
   };
-  const clone = (o) => JSON.parse(JSON.stringify(o));
+
   const LOADED = loadPrefs({ key: KEY, defaults: DEF, panels: PANELS });
   let P = LOADED.prefs;
   if (LOADED.status === 'corrupt') setTimeout(() => toast(T().prefsReset, 5000));
@@ -633,84 +636,7 @@ import { lang, langFrom } from '../../shared/i18n.js';
     renderAll();
   }
   /* ---------- панели ---------- */
-  function buildPanels() {
-    document.querySelectorAll('.panel').forEach((p) => {
-      const h = document.createElement('div');
-      h.className = 'ph';
-      h.innerHTML = `<span class="handle" data-it="drag">⠿</span><h3 data-i="p_${p.dataset.id}"></h3><button class="icon" data-mv="-1" data-it="up">↑</button><button class="icon" data-mv="1" data-it="down">↓</button><button class="icon chev" data-col data-it="collapse">▾</button>`;
-      p.prepend(h);
-      const id = p.dataset.id,
-        toggle = () => {
-          P.collapsed[id] = !P.collapsed[id];
-          p.classList.toggle('collapsed', !!P.collapsed[id]);
-          save();
-        };
-      h.querySelector('h3').onclick = toggle;
-      h.querySelector('[data-col]').onclick = toggle;
-      h.querySelectorAll('[data-mv]').forEach(
-        (b) =>
-          (b.onclick = () => {
-            const i = P.order.indexOf(id),
-              j = i + +b.dataset.mv;
-            if (j < 0 || j >= P.order.length) return;
-            [P.order[i], P.order[j]] = [P.order[j], P.order[i]];
-            applyOrder();
-            save();
-          })
-      );
-      const hd = h.querySelector('.handle');
-      hd.addEventListener('pointerdown', () => {
-        p.draggable = true;
-        window.addEventListener(
-          'pointerup',
-          () => {
-            if (!p.classList.contains('dragging')) p.draggable = false;
-          },
-          { once: true }
-        );
-      });
-      p.addEventListener('dragstart', (e) => {
-        p.classList.add('dragging');
-        e.dataTransfer.effectAllowed = 'move';
-        try {
-          e.dataTransfer.setData('text/plain', id);
-        } catch (_) {}
-      });
-      p.addEventListener('dragend', () => {
-        p.classList.remove('dragging');
-        p.draggable = false;
-        P.order = [...side.querySelectorAll('.panel')].map((x) => x.dataset.id);
-        save();
-      });
-    });
-    side.addEventListener('dragover', (e) => {
-      const dr = side.querySelector('.panel.dragging');
-      if (!dr) return;
-      e.preventDefault();
-      const after = [...side.querySelectorAll('.panel:not(.dragging)')].find((el) => {
-        const r = el.getBoundingClientRect();
-        return e.clientY < r.top + r.height / 2;
-      });
-      if (after) side.insertBefore(dr, after);
-      else side.appendChild(dr);
-    });
-  }
-  function applyOrder() {
-    P.order.forEach((id) => {
-      const el = side.querySelector(`.panel[data-id="${id}"]`);
-      if (el) side.appendChild(el);
-    });
-    side
-      .querySelectorAll('.panel')
-      .forEach((p) => p.classList.toggle('collapsed', !!P.collapsed[p.dataset.id]));
-  }
-  function showPanel(id) {
-    P.collapsed[id] = false;
-    applyOrder();
-    save();
-    const el = side.querySelector(`.panel[data-id="${id}"]`);
-    if (el) setTimeout(() => el.scrollIntoView({ block: 'nearest', behavior: 'smooth' }), 50);
-  }
+
   const ol = (a) =>
     `<ol class="stp">${a
       .filter(Boolean)
@@ -846,6 +772,7 @@ import { lang, langFrom } from '../../shared/i18n.js';
     stage = $('#stage'),
     main = $('#main'),
     side = $('#side');
+  const { buildPanels, applyOrder, showPanel } = createPanels({ side, prefs: () => P, save });
   let W = 0,
     H = 0,
     DPR = 1,
@@ -1708,12 +1635,6 @@ import { lang, langFrom } from '../../shared/i18n.js';
     runDemo(b.dataset.demo);
   });
 
-  function openDrawer(id) {
-    document.getElementById(id).classList.add('open');
-  }
-  function closeDrawers() {
-    document.querySelectorAll('.drawer').forEach((d) => d.classList.remove('open'));
-  }
   document.querySelectorAll('[data-close]').forEach((el) => (el.onclick = closeDrawers));
   document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape') closeDrawers();
@@ -1969,13 +1890,7 @@ import { lang, langFrom } from '../../shared/i18n.js';
   }
   $('#openKeys').onclick = openKeys;
   $('#openKeys2').onclick = openKeys;
-  function toast(msg, ms = 1600) {
-    const t = $('#toast');
-    t.textContent = msg;
-    t.classList.add('on');
-    clearTimeout(toast.t);
-    toast.t = setTimeout(() => t.classList.remove('on'), ms);
-  }
+
   function flip(k) {
     P.show[k] = !P.show[k];
     syncToggles();
