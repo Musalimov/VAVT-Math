@@ -10,7 +10,8 @@
  *
  * Запускается один раз перед переносом тренажёра в src/. Потом
  * tests/<имя>.test.mjs сверяет с этим файлом чистые решатели в Node.
- * Работает для тренажёров с COMP/SOLVE: ТВ, игры, микро, макро.
+ * Работает для тренажёров с COMP/SOLVE: ТВ, игры, микро, макро. Если в эталоне
+ * нет таблицы SOLVE (ТВ до фазы 2), её выражение задаётся в SOLVE_EXPR.
  */
 import { chromium } from 'playwright';
 import { execFileSync } from 'node:child_process';
@@ -43,11 +44,12 @@ const ctx = await browser.newContext();
 await ctx.route(/^https?:/, (r) => r.abort());
 const pg = await ctx.newPage();
 await pg.goto('file://' + tmp);
-const cases = await pg.evaluate(() => {
+const cases = await pg.evaluate((se) => {
   const ev = /** @type {any} */ (window).__ev;
   return ev(`(() => {
     const norm = (v) => JSON.parse(JSON.stringify(v, (k, x) =>
       typeof x === 'function' ? undefined :
+      typeof x === 'bigint' ? x + 'n' :
       typeof x === 'number' && !isFinite(x) ? String(x) :
       typeof x === 'number' && Object.is(x, -0) ? 0 : x));
     const out = [];
@@ -62,8 +64,8 @@ const cases = await pg.evaluate(() => {
         c.res = norm(res);
         for (const lang of ['ru', 'en']) {
           P.lang = lang;
-          const s = SOLVE[t](res);
-          c[lang] = norm({ ans: s.ans, st: s.st, rows: s.rows });
+          const s = (typeof SOLVE !== 'undefined' ? SOLVE : ${se})[t](res, inp);
+          c[lang] = norm({ ans: s.ans, st: s.st, rows: s.rows, sub: s.sub });
         }
         P.lang = 'ru';
       } catch (e) { c.err = e && e.msg ? e.msg : String(e); }
@@ -72,7 +74,7 @@ const cases = await pg.evaluate(() => {
     }
     return out;
   })()`);
-});
+}, process.env.SOLVE_EXPR || 'SOLVE');
 await browser.close();
 const outFile = path.join(ROOT, 'tests', 'golden', `${app}.json`);
 fs.writeFileSync(outFile, JSON.stringify({ app, ref: REF, cases }, null, 1) + '\n');
