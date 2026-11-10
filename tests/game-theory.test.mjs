@@ -72,3 +72,13 @@ test('регрессия фазы 1: имена из ввода экраниру
   assert.ok(!html.includes('<img'), 'тег не должен попасть в HTML');
   assert.ok(html.includes('&lt;img'));
 });
+
+test('матричная игра: шаги «наилучшие ответы» — текст, а не исходный код функции (конфликт ключей s_br1/s_br2)', () => {
+  for (const l of ['ru', 'en']) {
+    langFrom(() => l);
+    const c = golden.cases.find((x) => x.id === 'pd');
+    const s = SOLVE.mat(COMP.mat(c.inp), c.inp);
+    for (const line of s.st) assert.equal(typeof line, 'string');
+    assert.ok(!s.st.join(' ').includes('=>'));
+  }
+});

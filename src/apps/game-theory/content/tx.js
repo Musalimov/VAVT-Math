@@ -524,9 +524,9 @@ export const TX2 = {
     s_gsOpt: 'Результат оптимален для предлагающей стороны среди всех устойчивых паросочетаний.',
     acc: 'держит',
     rej: 'отказ',
-    s_br1: (N, a, b) =>
+    s_brs1: (N, a, b) =>
       `${N} водителей едут из A в B. Загруженные дороги A→C и D→B занимают x/${a} минут (x — число машин), свободные C→B и A→D — ${b} минут.`,
-    s_br2:
+    s_brs2:
       'Равновесие Вардропа: на всех используемых маршрутах время одинаково и не больше, чем на неиспользуемых.',
     s_br3: (x, t) => `Потоки: верх ${x[0]}, низ ${x[1]}, через перемычку ${x[2]}; время в пути ${t}.`,
     s_br4: (t0, t1) =>
@@ -753,9 +753,9 @@ export const TX2 = {
     s_gsOpt: 'The result is optimal for the proposing side among all stable matchings.',
     acc: 'holds',
     rej: 'rejected',
-    s_br1: (N, a, b) =>
+    s_brs1: (N, a, b) =>
       `${N} drivers go from A to B. Congested roads A→C and D→B take x/${a} minutes (x cars), free roads C→B and A→D take ${b} minutes.`,
-    s_br2: 'Wardrop equilibrium: all used routes take equal time, no more than unused ones.',
+    s_brs2: 'Wardrop equilibrium: all used routes take equal time, no more than unused ones.',
     s_br3: (x, t) => `Flows: top ${x[0]}, bottom ${x[1]}, via the link ${x[2]}; travel time ${t}.`,
     s_br4: (t0, t1) =>
       `Without the link the time was ${t0}, with it ${t1}: the new road made everyone worse off — the Braess paradox.`,

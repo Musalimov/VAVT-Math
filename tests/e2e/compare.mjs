@@ -182,7 +182,11 @@ for (const app of list) {
         if (r.texts[k] !== c.texts[k]) {
           const ra = (r.texts[k] ?? '').split('\n'), ca = (c.texts[k] ?? '').split('\n');
           const i = ra.findIndex((l, j) => l !== ca[j]);
-          problems.push(`текст ${k}, строка ${i + 1}:\n      было:  ${ra[i]?.slice(0, 160)}\n      стало: ${ca[i]?.slice(0, 160)}`);
+          const x = ra[i] ?? '', y = ca[i] ?? '';
+          let p = 0;
+          while (p < x.length && x[p] === y[p]) p++;
+          const from = Math.max(0, p - 60);
+          problems.push(`текст ${k}, строка ${i + 1}, символ ${p + 1}:\n      было:  …${x.slice(from, p + 100)}\n      стало: …${y.slice(from, p + 100)}`);
         }
       }
     }

@@ -367,8 +367,8 @@ export function solveBraess(R) {
   const L = T(),
     e = R.eq,
     st = [
-      L.s_br1(R.N, fN(R.a), fN(R.b)),
-      L.s_br2,
+      L.s_brs1(R.N, fN(R.a), fN(R.b)),
+      L.s_brs2,
       L.s_br3(
         e.x.map((v) => fN(v, 1)),
         fN(e.T, 3)
