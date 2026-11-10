@@ -525,7 +525,6 @@ import { lang, langFrom } from '../../shared/i18n.js';
     err: null,
     preset: P.preset || null,
     stamp: false,
-    anyAnim: false,
   };
   TOPICS.forEach((t) => {
     S.inp[t] = clone(PRE[t][0][1]);
@@ -1566,25 +1565,11 @@ import { lang, langFrom } from '../../shared/i18n.js';
     S.dlTried = true;
     updExport();
   })();
-  function vidMime() {
-    if (!window.MediaRecorder || !cv.captureStream) return null;
-    for (const m of ['video/webm;codecs=vp9', 'video/webm;codecs=vp8', 'video/webm', 'video/mp4'])
-      if (MediaRecorder.isTypeSupported && MediaRecorder.isTypeSupported(m)) return m;
-    return null;
-  }
+  
   function updExport() {
     const L = T();
-    $('#xPng').disabled = !canSave() || S.rec;
-    $('#xVid').disabled = !canSave() || !vidMime() || S.rec;
-    $('#xNote').textContent = S.rec
-      ? L.xRec
-      : !canSave()
-        ? S.dlTried
-          ? L.xNoDl
-          : ''
-        : !vidMime()
-          ? L.xNoVid
-          : '';
+    $('#xPng').disabled = !canSave();
+    $('#xNote').textContent = !canSave() && S.dlTried ? L.xNoDl : '';
   }
   function flash(msg, ms = 3500) {
     $('#xNote').textContent = msg;
@@ -1631,7 +1616,7 @@ import { lang, langFrom } from '../../shared/i18n.js';
     }
   }
   function exportPng() {
-    if (!canSave() || S.rec) return;
+    if (!canSave()) return;
     S.stamp = $('#xStamp').checked;
     renderNow();
     cv.toBlob((b) => {
@@ -1640,60 +1625,7 @@ import { lang, langFrom } from '../../shared/i18n.js';
       if (b) saveFile('macroeconomics.png', b);
     }, 'image/png');
   }
-  async function exportVideo() {
-    const m = vidMime();
-    if (!canSave() || !m || S.rec || S.err || !S.anyAnim) return;
-    S.rec = true;
-    S.stamp = $('#xStamp').checked;
-    updExport();
-    const keep = (ms) =>
-      new Promise((r) => {
-        const t0 = performance.now();
-        const f = () => {
-          renderNow();
-          if (performance.now() - t0 < ms) requestAnimationFrame(f);
-          else r();
-        };
-        f();
-      });
-    const chunks = [];
-    let rec;
-    try {
-      const stream = cv.captureStream(60);
-      rec = new MediaRecorder(stream, { mimeType: m, videoBitsPerSecond: 8e6 });
-      rec.ondataavailable = (e) => {
-        if (e.data && e.data.size) chunks.push(e.data);
-      };
-      const stopped = new Promise((r) => {
-        rec.onstop = r;
-      });
-      S.t = 0;
-      S.anim = null;
-      rec.start(100);
-      await keep(500);
-      play();
-      await new Promise((r) => {
-        const f = () => (S.anim ? requestAnimationFrame(f) : r());
-        f();
-      });
-      await keep(900);
-      rec.stop();
-      await stopped;
-    } catch (err) {
-      S.rec = false;
-      S.stamp = false;
-      req();
-      flash(T().xFail);
-      return;
-    }
-    S.rec = false;
-    S.stamp = false;
-    req();
-    updExport();
-    const blob = new Blob(chunks, { type: m });
-    if (blob.size) saveFile(`macroeconomics.${m.startsWith('video/mp4') ? 'mp4' : 'webm'}`, blob);
-    else flash(T().xFail);
-  }
+  
   async function copyTex() {
     const ta = $('#xTex'),
       L = T();
@@ -1712,7 +1644,7 @@ import { lang, langFrom } from '../../shared/i18n.js';
     flash(ok ? L.xCopied : L.xSelect);
   }
   $('#xPng').onclick = exportPng;
-  $('#xVid').onclick = exportVideo;
+  
   $('#xCopy').onclick = copyTex;
   document.querySelectorAll('#xFmt button').forEach(
     (b) =>

@@ -34,13 +34,35 @@ const apps = process.argv.slice(2).filter((a) => !a.startsWith('-'));
 const list = apps.length ? apps : ALL;
 const OUT = path.join(ROOT, 'test-results');
 
-/** HTML эталона: в теге файл может лежать в корне (до фазы 2) или в legacy/. @param {string} app */
+/**
+ * Эталон для тренажёра: по умолчанию REF (ref/phase1). Когда поведение
+ * меняется намеренно, в tests/e2e/refs.json указывается коммит, с
+ * которого начинается новое ожидаемое поведение: { "macroeconomics": "abc1234" }.
+ * Если в этом коммите тренажёр уже собирается из src/, эталон собирается
+ * там же (git worktree + build.mjs).
+ */
+const REFS_FILE = path.join(ROOT, 'tests', 'e2e', 'refs.json');
+const REFS = process.env.REF ? {} : fs.existsSync(REFS_FILE) ? JSON.parse(fs.readFileSync(REFS_FILE, 'utf8')) : {};
+
+/** @param {string} app @returns {{ html: Buffer, ref: string }} */
 function refHtml(app) {
+  const ref = REFS[app] || REF;
   for (const p of [`legacy/${app}.html`, `${app}.html`])
     try {
-      return execFileSync('git', ['show', `${REF}:${p}`], { cwd: ROOT, maxBuffer: 64 << 20, stdio: ['ignore', 'pipe', 'ignore'] });
+      return { html: execFileSync('git', ['show', `${ref}:${p}`], { cwd: ROOT, maxBuffer: 64 << 20, stdio: ['ignore', 'pipe', 'ignore'] }), ref };
     } catch {}
-  throw new Error(`в ${REF} нет ${app}.html`);
+  const wt = fs.mkdtempSync(path.join(os.tmpdir(), 'vavt-wt-'));
+  try {
+    execFileSync('git', ['worktree', 'add', '--detach', wt, ref], { cwd: ROOT, stdio: 'ignore' });
+    execFileSync(process.execPath, ['build.mjs'], { cwd: wt, stdio: 'ignore' });
+    return { html: fs.readFileSync(path.join(wt, 'dist', `${app}.html`)), ref };
+  } catch (e) {
+    throw new Error(`в ${ref} нет ${app}.html и не удалось собрать его`);
+  } finally {
+    try {
+      execFileSync('git', ['worktree', 'remove', '--force', wt], { cwd: ROOT, stdio: 'ignore' });
+    } catch {}
+  }
 }
 
 const VIEWS = [
@@ -145,7 +167,8 @@ for (const app of list) {
   const cand = path.join(ROOT, 'dist', `${app}.html`);
   if (!fs.existsSync(cand)) throw new Error(`нет ${path.relative(ROOT, cand)} — сначала npm run build`);
   const ref = path.join(tmp, `${app}.html`);
-  fs.writeFileSync(ref, refHtml(app));
+  const R = refHtml(app);
+  fs.writeFileSync(ref, R.html);
   /** @type {string[]} */
   const problems = [];
   let cases = 0, shots = 0;
@@ -175,7 +198,7 @@ for (const app of list) {
       }
     }
   }
-  console.log(`${problems.length ? '✗' : '✓'} ${app}: ${cases} примеров, ${shots} снимков${problems.length ? '' : ' — совпадают'}`);
+  console.log(`${problems.length ? '✗' : '✓'} ${app} (эталон ${R.ref}): ${cases} примеров, ${shots} снимков${problems.length ? '' : ' — совпадают'}`);
   for (const p of problems.slice(0, 15)) console.log('    ' + p);
   if (problems.length) failed++;
 }
