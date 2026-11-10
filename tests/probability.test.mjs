@@ -15,12 +15,12 @@ const norm = (v) =>
       typeof x === 'function'
         ? undefined
         : typeof x === 'bigint'
-        ? x + 'n'
-        : typeof x === 'number' && !isFinite(x)
-          ? String(x)
-          : Object.is(x, -0)
-            ? 0
-            : x
+          ? x + 'n'
+          : typeof x === 'number' && !isFinite(x)
+            ? String(x)
+            : Object.is(x, -0)
+              ? 0
+              : x
     )
   );
 
