@@ -10,7 +10,8 @@ import { solve } from '../src/math/expr/integrate.js';
 import { tp } from '../src/math/expr/print.js';
 
 langFrom(() => 'ru');
-const near = (a, b, eps = 1e-9) => assert.ok(Math.abs(a - b) <= eps * Math.max(1, Math.abs(b)), `${a} ≠ ${b}`);
+const near = (a, b, eps = 1e-9) =>
+  assert.ok(Math.abs(a - b) <= eps * Math.max(1, Math.abs(b)), `${a} ≠ ${b}`);
 
 test('пределы: «1 000» — тысяча, «1 00» и «2 3» — ошибка (фаза 1)', () => {
   assert.equal(parseLim('1 000').v, 1000);

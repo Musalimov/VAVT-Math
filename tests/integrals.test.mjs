@@ -15,16 +15,22 @@ langFrom(() => 'ru');
 /** Задача, как её собирает setIntegral (без интерфейса). */
 function task(f, as, bs) {
   const fe = parseFx(f);
-  const a = parseLim(as).v, b = parseLim(bs).v;
+  const a = parseLim(as).v,
+    b = parseLim(bs).v;
   return { fe, ff: compile(fe), a, b, err: null, n: 8, rule: 'mid', R: null };
 }
 const summary = (R) => ({
   F: R.F ? tp(R.F, 0, 'txt') : null,
-  val: R.val, exact: R.exact ? tp(R.exact, 0, 'txt') : null,
-  how: R.how, div: !!R.div, num: R.num, ok: R.numOk,
+  val: R.val,
+  exact: R.exact ? tp(R.exact, 0, 'txt') : null,
+  how: R.how,
+  div: !!R.div,
+  num: R.num,
+  ok: R.numOk,
 });
 const close = (a, b, w) => {
-  if (typeof a === 'number' && typeof b === 'number') assert.ok(Math.abs(a - b) <= 1e-9 * Math.max(1, Math.abs(a), Math.abs(b)), `${w}: ${a} ≠ ${b}`);
+  if (typeof a === 'number' && typeof b === 'number')
+    assert.ok(Math.abs(a - b) <= 1e-9 * Math.max(1, Math.abs(a), Math.abs(b)), `${w}: ${a} ≠ ${b}`);
   else assert.deepEqual(a, b, w);
 };
 
@@ -33,7 +39,9 @@ for (const c of golden.cases) {
   test(`эталон: ${c.id} — ∫ ${c.f} от ${c.a} до ${c.b}`, () => {
     const X = task(c.f, c.a, c.b);
     analyzeX(X, true);
-    const s = JSON.parse(JSON.stringify(summary(X.R), (k, x) => (typeof x === 'number' && !isFinite(x) ? String(x) : x)));
+    const s = JSON.parse(
+      JSON.stringify(summary(X.R), (k, x) => (typeof x === 'number' && !isFinite(x) ? String(x) : x))
+    );
     for (const k of Object.keys(c.res)) close(s[k], c.res[k], k);
   });
 }
