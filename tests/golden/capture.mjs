@@ -10,7 +10,8 @@
  *
  * Запускается один раз перед переносом тренажёра в src/. Потом
  * tests/<имя>.test.mjs сверяет с этим файлом чистые решатели в Node.
- * Работает для тренажёров с COMP/SOLVE: ТВ, игры, микро, макро. Если в эталоне
+ * Для тренажёров с COMP/SOLVE (ТВ, игры, микро, макро) — по умолчанию; для
+ * остальных — выражение CAPTURE_EXPR. Работает для тренажёров с COMP/SOLVE: ТВ, игры, микро, макро. Если в эталоне
  * нет таблицы SOLVE (ТВ до фазы 2), её выражение задаётся в SOLVE_EXPR.
  */
 import { chromium } from 'playwright';
@@ -44,7 +45,10 @@ const ctx = await browser.newContext();
 await ctx.route(/^https?:/, (r) => r.abort());
 const pg = await ctx.newPage();
 await pg.goto('file://' + tmp);
-const cases = await pg.evaluate((se) => {
+// CAPTURE_EXPR — своё выражение для тренажёров без COMP/SOLVE (интегралы, МОР, ЛА):
+// возвращает массив случаев { id, … }.
+const custom = process.env.CAPTURE_EXPR;
+const cases = custom ? await pg.evaluate((x) => /** @type {any} */ (window).__ev(x), custom) : await pg.evaluate((se) => {
   const ev = /** @type {any} */ (window).__ev;
   return ev(`(() => {
     const norm = (v) => JSON.parse(JSON.stringify(v, (k, x) =>
