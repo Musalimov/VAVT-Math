@@ -37,7 +37,15 @@ export function numH(v, sup) {
   if (Math.abs(v - Math.round(v)) < 1e-12) return String(Math.round(Math.abs(v)));
   const f = toFrac(Math.abs(v), 1000);
   if (f) return sup ? `${f[0]}/${f[1]}` : frac(f[0], f[1]);
-  return fmt(Math.abs(v), 4);
+  const av = Math.abs(v);
+  if (av < 1e-3 || av >= 1e7) {
+    const [m, ex] = av.toExponential(3).split('e'),
+      mm = String(+m);
+    return sup
+      ? `${mm}e${+ex}`
+      : `${mm === '1' ? '' : mm + '·'}10<sup>${String(+ex).replace('-', '−')}</sup>`;
+  }
+  return fmt(av, 4);
 }
 export function prec(e) {
   switch (e[0]) {

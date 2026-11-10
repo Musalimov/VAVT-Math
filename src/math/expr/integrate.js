@@ -96,6 +96,8 @@ export const SX = {
       `Замена <i>u</i> = ${u}: тогда <i>x</i> = ${x}, d<i>x</i> выражается через d<i>u</i>, и всё подынтегральное выражение становится функцией от <i>u</i>:`,
     weier:
       'Подынтегральная функция рационально выражается через sin <i>x</i> и cos <i>x</i>. Универсальная подстановка <i>t</i> = tg(<i>x</i>/2): sin <i>x</i> = 2<i>t</i>/(1 + <i>t</i>²), cos <i>x</i> = (1 − <i>t</i>²)/(1 + <i>t</i>²), d<i>x</i> = 2 d<i>t</i>/(1 + <i>t</i>²). Получается рациональная дробь:',
+    prodsum:
+      'Произведение синусов и косинусов разных аргументов превращаем в сумму: sin A cos B = ½(sin(A + B) + sin(A − B)), sin A sin B = ½(cos(A − B) − cos(A + B)), cos A cos B = ½(cos(A − B) + cos(A + B)):',
     dist: 'Раскрываем скобки и интегрируем каждое слагаемое:',
     result: 'Получаем:',
   },
@@ -148,6 +150,8 @@ export const SX = {
       `Substitute <i>u</i> = ${u}: then <i>x</i> = ${x}, d<i>x</i> is a multiple of d<i>u</i>, and the whole integrand becomes a function of <i>u</i>:`,
     weier:
       'The integrand is a rational expression in sin <i>x</i> and cos <i>x</i>. The universal substitution <i>t</i> = tan(<i>x</i>/2): sin <i>x</i> = 2<i>t</i>/(1 + <i>t</i>²), cos <i>x</i> = (1 − <i>t</i>²)/(1 + <i>t</i>²), d<i>x</i> = 2 d<i>t</i>/(1 + <i>t</i>²). That gives a rational fraction:',
+    prodsum:
+      'Turn a product of sines and cosines of different arguments into a sum: sin A cos B = ½(sin(A + B) + sin(A − B)), sin A sin B = ½(cos(A − B) − cos(A + B)), cos A cos B = ½(cos(A − B) + cos(A + B)):',
     dist: 'Expand the brackets and integrate each term:',
     result: 'Result:',
   },
@@ -356,6 +360,11 @@ export function R_table(e) {
     if (!L || !L[0]) return null;
     G = TAB[b[1]][String(p)](linAst(L[0], L[1]));
     isTan2 = (b[1] === 'tan' || b[1] === 'cot') && p === 2;
+  } else if (b[0] === 'f' && b[1] === 'abs' && p === 1) {
+    L = linOf(b[2]);
+    if (!L || !L[0]) return null;
+    const Lx = linAst(L[0], L[1]);
+    G = div(mul(Lx, fn('abs', Lx)), Nn(2));
   } else if (b[0] === '^' && !has(b[1]) && isN(b[1]) && b[1][1] > 0 && p === 1) {
     L = linOf(b[2]);
     if (!L || !L[0]) return null;
@@ -1116,6 +1125,7 @@ export const RULES = [
   R_table,
   R_rational,
   R_trigpow,
+  R_prodsum,
   R_trigsub,
   R_divsplit,
   R_usub,
@@ -1193,4 +1203,26 @@ export function solve(f, a, b) {
     if (!checkF(f, F, a, b)) F = null;
   }
   return { F, steps: F ? STP.slice() : [], meth: F ? MS.slice() : [], ne: F ? null : nonElem(f) };
+}
+
+export function R_prodsum(e) {
+  const F = asFactors(e);
+  if (F.fs.length !== 2) return null;
+  const [[b1, p1], [b2, p2]] = F.fs;
+  if (p1 !== 1 || p2 !== 1) return null;
+  const tr = (b) => b[0] === 'f' && (b[1] === 'sin' || b[1] === 'cos') && linOf(b[2]) && linOf(b[2])[0];
+  if (!tr(b1) || !tr(b2) || key(b1[2]) === key(b2[2])) return null;
+  let [A, B] = [b1, b2];
+  if (A[1] === 'cos' && B[1] === 'sin') [A, B] = [B, A];
+  const u = b1[2] === A[2] ? null : null,
+    P = tidy(add(A[2], B[2])),
+    M = tidy(sub(A[2], B[2]));
+  let r;
+  if (A[1] === 'sin' && B[1] === 'cos') r = mul(Nn(0.5), add(fn('sin', P), fn('sin', M)));
+  else if (A[1] === 'sin') r = mul(Nn(0.5), sub(fn('cos', M), fn('cos', P)));
+  else r = mul(Nn(0.5), add(fn('cos', M), fn('cos', P)));
+  r = mul(Nn(F.c), r);
+  meth('prodsum');
+  step(`${Q().prodsum} ${HH(e)} = ${HH(r)}`);
+  return subI(r);
 }

@@ -95,8 +95,25 @@ export function quadF(f, a, b) {
   const n = Math.max(1, Math.min(48, Math.ceil((b - a) / 1.5)));
   let v = 0,
     ok = true;
+  const ad = (p, q, whole, d) => {
+    const m = (p + q) / 2,
+      L = tsFinite(f, p, m),
+      Rr = tsFinite(f, m, q),
+      s = L.v + Rr.v;
+    if (d >= 7 || Math.abs(s - whole.v) <= 1e-12 * Math.max(1, Math.abs(s)))
+      return {
+        v: s,
+        ok: L.ok && Rr.ok && (d < 7 || Math.abs(s - whole.v) < 1e-8 * Math.max(1, Math.abs(s))),
+      };
+    const x = ad(p, m, L, d + 1),
+      y = ad(m, q, Rr, d + 1);
+    return { v: x.v + y.v, ok: x.ok && y.ok };
+  };
   for (let i = 0; i < n; i++) {
-    const r = tsFinite(f, a + ((b - a) * i) / n, a + ((b - a) * (i + 1)) / n);
+    const p = a + ((b - a) * i) / n,
+      q = a + ((b - a) * (i + 1)) / n,
+      w = tsFinite(f, p, q),
+      r = n > 24 ? w : ad(p, q, w, 0);
     v += r.v;
     ok = ok && r.ok;
   }
@@ -104,54 +121,59 @@ export function quadF(f, a, b) {
 }
 export function singular(f, a, b) {
   const out = [];
-  if (!(isFinite(a) && isFinite(b))) return out;
+  if (!(isFinite(a) && isFinite(b)) || b <= a) return out;
   const N = 1200,
     h = (b - a) / N,
+    xs = [],
     ys = [];
-  for (let i = 0; i <= N; i++) ys.push(f(a + h * i));
-  const big = (v) => !isFinite(v) || Math.abs(v) > 1e7;
-  const removable = (x) => {
-    const d = 1e-7 * Math.max(1, Math.abs(x)),
-      y1 = f(x + d),
-      y2 = f(x - d);
-    return (
-      isNaN(f(x)) &&
-      isFinite(y1) &&
-      isFinite(y2) &&
-      Math.abs(y1) < 1e7 &&
-      Math.abs(y1 - y2) < 1e-3 * (1 + Math.abs(y1))
-    );
-  };
   for (let i = 0; i <= N; i++) {
-    if (!big(ys[i])) continue;
-    let x = a + h * i;
-    if (removable(x)) continue;
-    const nb = [ys[i - 1], ys[i + 1]].filter((v) => v !== undefined);
-    if (isFinite(ys[i]) && nb.every((v) => isFinite(v) && Math.abs(v) < Math.abs(ys[i]) * 1e-3)) continue;
-    if (!out.some((s) => Math.abs(s - x) < h * 3)) out.push(x);
+    const x = a + h * i;
+    xs.push(x);
+    ys.push(f(x));
   }
+  const mags = ys
+      .filter(isFinite)
+      .map(Math.abs)
+      .sort((p, q) => p - q),
+    med = mags.length ? mags[mags.length >> 1] : 1,
+    thr = 30 * (1 + med);
+  const put = (x) => {
+    if (!out.some((s) => Math.abs(s - x) < h * 2)) out.push(x);
+  };
+  const refine = (lo, hi) => {
+    for (let k = 0; k < 90; k++) {
+      const m1 = lo + (hi - lo) / 3,
+        m2 = hi - (hi - lo) / 3;
+      if (Math.abs(f(m1)) > Math.abs(f(m2))) hi = m2;
+      else lo = m1;
+    }
+    return (lo + hi) / 2;
+  };
   for (let i = 1; i < N; i++) {
-    const y0 = Math.abs(ys[i - 1]),
-      y1 = Math.abs(ys[i]),
-      y2 = Math.abs(ys[i + 1]);
-    if (isFinite(y1) && y1 > y0 && y1 > y2 && y1 > 50 * (1 + Math.min(y0, y2))) {
-      let lo = a + h * (i - 1),
-        hi = a + h * (i + 1);
-      for (let k = 0; k < 60; k++) {
-        const m1 = lo + (hi - lo) / 3,
-          m2 = hi - (hi - lo) / 3;
-        if (Math.abs(f(m1)) > Math.abs(f(m2))) hi = m2;
-        else lo = m1;
-      }
-      const x = (lo + hi) / 2,
-        v = Math.abs(f(x));
-      if ((!isFinite(v) || v > 1e6) && !out.some((s) => Math.abs(s - x) < h * 3)) out.push(snap(x));
+    const y = ys[i];
+    if (isNaN(y)) continue;
+    if (!isFinite(y)) {
+      put(xs[i]);
+      continue;
+    }
+    const yl = ys[i - 1],
+      yr = ys[i + 1],
+      ay = Math.abs(y);
+    const peak = isFinite(yl) && isFinite(yr) && ay >= Math.abs(yl) && ay >= Math.abs(yr) && ay > thr;
+    const flip = isFinite(yr) && y * yr < 0 && Math.min(ay, Math.abs(yr)) > thr;
+    if (peak || flip) {
+      const s = flip ? refine(xs[i], xs[i + 1]) : refine(xs[i - 1], xs[i + 1]),
+        v = Math.abs(f(s)),
+        d = h * 1e-3,
+        g1 = Math.max(Math.abs(f(s + d)), Math.abs(f(s - d))),
+        g2 = Math.max(Math.abs(f(s + d * 1e-3)), Math.abs(f(s - d * 1e-3)));
+      if (!isFinite(v) || v > 1e8 || (isFinite(g2) && g2 > 50 * g1 && g2 > thr)) put(s);
     }
   }
   return out
     .map((x) => {
-      const r = snap(Math.round(x * 1e6) / 1e6);
-      return Math.abs(r - x) < 1e-5 ? r : x;
+      const r = snap(x);
+      return Math.abs(r - x) < 1e-9 ? r : x;
     })
     .sort((p, q) => p - q);
 }

@@ -227,7 +227,9 @@ export function parseFx(str) {
   return simp(e);
 }
 export function parseLim(str) {
-  const s = str.trim();
+  let s = str.trim().replace(/[\u00a0\u202f]/g, ' ');
+  if (/^[-+−]?\d{1,3}( \d{3})+([.,]\d+)?$/.test(s)) s = s.replace(/ /g, '');
+  if (/\d\s+\d/.test(s)) throw { msg: 'lim' };
   if (/^\+?(inf|∞|infinity)$/i.test(s)) return { v: Infinity };
   if (/^[-−](inf|∞|infinity)$/i.test(s)) return { v: -Infinity };
   const e = parse(s);
