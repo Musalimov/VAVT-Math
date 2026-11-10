@@ -29,8 +29,14 @@ function tmpMods(files) {
 }
 
 test('ошибки сборки понятны', () => {
-  let d = tmpMods({ 'a.js': "import { b } from './b.js';\nexport const a = 1;", 'b.js': "import { a } from './a.js';\nexport const b = 1;" });
-  assert.throws(() => bundle(path.join(d, 'a.js')), (e) => e instanceof BuildError && /циклический импорт/.test(e.message));
+  let d = tmpMods({
+    'a.js': "import { b } from './b.js';\nexport const a = 1;",
+    'b.js': "import { a } from './a.js';\nexport const b = 1;",
+  });
+  assert.throws(
+    () => bundle(path.join(d, 'a.js')),
+    (e) => e instanceof BuildError && /циклический импорт/.test(e.message)
+  );
   d = tmpMods({ 'a.js': "import { nope } from './b.js';", 'b.js': 'export const b = 1;' });
   assert.throws(() => bundle(path.join(d, 'a.js')), /«nope» не экспортируется/);
   d = tmpMods({ 'a.js': 'export let x = 1;' });
