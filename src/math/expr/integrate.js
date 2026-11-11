@@ -156,7 +156,8 @@ export const SX = {
     result: 'Result:',
   },
 };
-export const Q = () => SX[lang()] || SX.ru;
+/** тексты шагов на текущем языке */
+export const SXT = () => SX[lang()] || SX.ru;
 let STP = [],
   MS = [],
   DEP = 0,
@@ -217,7 +218,7 @@ export function integ(e) {
   if (!has(e)) {
     meth('table');
     const F = mul(e, X);
-    step(`${Q().const} ${EQ(e, F)}`);
+    step(`${SXT().const} ${EQ(e, F)}`);
     return F;
   }
   for (const r of RULES) {
@@ -245,16 +246,16 @@ export function R_poly(e) {
   const F = polyAst([0, ...p.map((c, k) => c / (k + 1))]);
   if (expanded) {
     meth('linearity');
-    step(`${Q().expand} ${HH(e)} = ${HH(pa)}`);
+    step(`${SXT().expand} ${HH(e)} = ${HH(pa)}`);
   }
   meth('power');
-  step(`${Q().polyT} ${EQ(pa, F)}`);
+  step(`${SXT().polyT} ${EQ(pa, F)}`);
   return F;
 }
 export function R_neg(e) {
   if (e[0] !== 'neg') return null;
   meth('linearity');
-  step(`${Q().neg} ${IH(e)} = −${IH(e[1])}`);
+  step(`${SXT().neg} ${IH(e)} = −${IH(e[1])}`);
   const F = subI(e[1]);
   return F && neg(F);
 }
@@ -263,7 +264,7 @@ export function R_sum(e) {
   const ts = sumTerms(e);
   meth('linearity');
   step(
-    `${Q().sum} ${IH(e)} = ${ts.map(([s, t], i) => (i ? (s < 0 ? ' − ' : ' + ') : s < 0 ? '−' : '') + IH(t)).join('')}`
+    `${SXT().sum} ${IH(e)} = ${ts.map(([s, t], i) => (i ? (s < 0 ? ' − ' : ' + ') : s < 0 ? '−' : '') + IH(t)).join('')}`
   );
   let F = null;
   for (const [s, t] of ts) {
@@ -282,7 +283,7 @@ export function R_cmul(e) {
   if (isNum(c, 1)) return null;
   const rest = fromFactors(1, vs);
   meth('linearity');
-  step(`${Q().cmul} ${IH(e)} = ${hp(c, 2)}·${IH(rest)}`);
+  step(`${SXT().cmul} ${IH(e)} = ${hp(c, 2)}·${IH(rest)}`);
   const G = subI(rest);
   return G && mul(c, G);
 }
@@ -316,12 +317,12 @@ export function R_powlin(e) {
   if (plain) {
     meth(n === -1 ? 'table' : 'power');
     step(
-      `${n === -1 ? Q().lnRule : Q().powRule(numH(n, true).replace('−', '-').replace('-', '−'))} ${EQ(e, F)}`
+      `${n === -1 ? SXT().lnRule : SXT().powRule(numH(n, true).replace('−', '-').replace('-', '−'))} ${EQ(e, F)}`
     );
   } else {
     meth('linsub');
     meth(n === -1 ? 'table' : 'power');
-    step(`${Q().lin(HH(Lx), numH(k, true))} ${EQ(e, F)}`);
+    step(`${SXT().lin(HH(Lx), numH(k, true))} ${EQ(e, F)}`);
   }
   return F;
 }
@@ -376,7 +377,7 @@ export function R_table(e) {
   meth(isTan2 ? 'trigid' : 'table');
   if (lin) meth('linsub');
   step(
-    `${isTan2 ? Q().tan2 : lin && !(k === 1 && L[1] === 0) ? Q().lin(HH(linAst(L[0], L[1])), numH(k, true)) : Q().tab} ${EQ(e, Fx)}`
+    `${isTan2 ? SXT().tan2 : lin && !(k === 1 && L[1] === 0) ? SXT().lin(HH(linAst(L[0], L[1])), numH(k, true)) : SXT().tab} ${EQ(e, Fx)}`
   );
   return Fx;
 }
@@ -574,7 +575,7 @@ export function R_rational(e) {
   let F = null;
   if (pdeg(P) >= pdeg(Qp)) {
     const [S, R] = pdiv(P, Qp);
-    step(`${Q().polydiv} ${HH(ratAst(P, Qp))} = ${HH(add(polyAst(S), ratAst(R, Qp)))}`);
+    step(`${SXT().polydiv} ${HH(ratAst(P, Qp))} = ${HH(add(polyAst(S), ratAst(R, Qp)))}`);
     meth('polydiv');
     const G = subI(polyAst(S));
     if (!G) return null;
@@ -587,7 +588,7 @@ export function R_rational(e) {
     const k = Qp[1],
       c = P[0] / k,
       G = mul(Nn(c), fn('ln', fn('abs', polyAst(Qp))));
-    step(`${Q().tab} ${EQ(ratAst(P, Qp), G)}`);
+    step(`${SXT().tab} ${EQ(ratAst(P, Qp), G)}`);
     meth('table');
     return F ? add(F, G) : G;
   }
@@ -626,7 +627,7 @@ export function R_rational(e) {
   }
   const sumA = pieces.reduce((s, p) => (s === null ? p : add(s, p)), null);
   meth('partial');
-  step(`${Q().pf} ${HH(ratAst(P, Qp))} = ${HH(sumA)}`);
+  step(`${SXT().pf} ${HH(ratAst(P, Qp))} = ${HH(sumA)}`);
   let G = null;
   const gl = [];
   for (const t of terms) {
@@ -638,7 +639,7 @@ export function R_rational(e) {
     else g = neg(div(Nn(snap((t.A * s ** t.j) / (s * (t.j - 1)))), pow(Lf, Nn(t.j - 1))));
     G = G ? add(G, g) : g;
   }
-  if (G) step(`${Q().pfInt} ${HH(G)}`);
+  if (G) step(`${SXT().pfInt} ${HH(G)}`);
   if (hasQ) {
     const g = quadInt(R, cur, false);
     if (!g) return null;
@@ -660,9 +661,9 @@ export function quadInt(R, Qp, show) {
     Qa = polyAst(Qp);
   let G = null;
   if (Math.abs(al) > 1e-12) {
-    if (show || true) step(Q().qDer(HH(polyAst(pder(Qp))), HH(add(mul(Nn(al), polyAst(pder(Qp))), Nn(be)))));
+    if (show || true) step(SXT().qDer(HH(polyAst(pder(Qp))), HH(add(mul(Nn(al), polyAst(pder(Qp))), Nn(be)))));
     const g = mul(Nn(al), fn('ln', Dd < 0 && a > 0 ? Qa : fn('abs', Qa)));
-    step(`${Q().qLn} ${HH(g)}`);
+    step(`${SXT().qLn} ${HH(g)}`);
     G = g;
     meth('table');
   }
@@ -677,12 +678,12 @@ export function quadInt(R, Qp, show) {
       g = mul(div(Nn(2 * be), s), fn('atan', div(linAst(2 * a, b), s)));
       if (Math.abs(b) < 1e-12) {
         meth('table');
-        step(`${Q().tab} ${HH(g)}`);
-      } else step(`${Q().qSq(sqH)} ${HH(g)}`);
+        step(`${SXT().tab} ${HH(g)}`);
+      } else step(`${SXT().qSq(sqH)} ${HH(g)}`);
     } else {
       const s = sqrtAst(Dd);
       g = mul(div(Nn(be), s), fn('ln', fn('abs', div(sub(linAst(2 * a, b), s), add(linAst(2 * a, b), s)))));
-      step(`${Q().qSqLn(sqH)} ${HH(g)}`);
+      step(`${SXT().qSqLn(sqH)} ${HH(g)}`);
     }
     G = G ? add(G, g) : g;
   }
@@ -725,9 +726,9 @@ export function sincos(m, n, Le, k, show) {
       const ui = withVar(
         () => `${cH(coef)}<span class="ig">∫</span>${hp(polyAst(P), 2)} d<i>u</i> = ${cH(coef)}(${HH(G)})`
       );
-      step(`${odd ? Q().oddS(HH(u), dd(HH(du))) : Q().oddC(HH(u), dd(HH(du)))}`);
+      step(`${odd ? SXT().oddS(HH(u), dd(HH(du))) : SXT().oddC(HH(u), dd(HH(du)))}`);
       step(`= ${ui}`);
-      step(`${Q().usubBack} ${HH(F)}`);
+      step(`${SXT().usubBack} ${HH(F)}`);
     }
     return F;
   }
@@ -736,7 +737,7 @@ export function sincos(m, n, Le, k, show) {
   if (show) {
     meth('trigid');
     step(
-      `${Q().even} ${HH(fromFactors(1, [...(m ? [[fn('sin', Le), m]] : []), ...(n ? [[fn('cos', Le), n]] : [])]))} = ${HH(polyAsc(P, fn('cos', L2)))}`
+      `${SXT().even} ${HH(fromFactors(1, [...(m ? [[fn('sin', Le), m]] : []), ...(n ? [[fn('cos', Le), n]] : [])]))} = ${HH(polyAsc(P, fn('cos', L2)))}`
     );
   }
   let F = null;
@@ -745,7 +746,7 @@ export function sincos(m, n, Le, k, show) {
     const g = j === 0 ? mul(Nn(c), X) : mul(Nn(c), sincos(0, j, L2, 2 * k, false));
     F = F ? add(F, g) : g;
   });
-  if (show) step(`${Q().evenRes} ${HH(tidy(F))}`);
+  if (show) step(`${SXT().evenRes} ${HH(tidy(F))}`);
   return F;
 }
 export function R_trigpow(e) {
@@ -774,7 +775,7 @@ export function R_trigsub(e) {
   if (Math.abs(h) > 1e-12) {
     meth('square');
     step(
-      Q().sqShift(
+      SXT().sqShift(
         `${HH(polyAst(q))} = ${c2 < 0 ? '−' : ''}${s === 1 ? '' : numH(s)}(${HH(W)})<sup>2</sup> ${qq < 0 ? '−' : '+'} ${numH(Math.abs(qq))}`
       )
     );
@@ -786,11 +787,11 @@ export function R_trigsub(e) {
     if (p === 0.5) {
       G = mul(sq, add(mul(div(W, Nn(2)), inner), mul(Nn(A2 / 2), fn('asin', div(W, A)))));
       meth('trigsub');
-      step(`${Q().tsCirc(Wh, Ah)} ${EQ(e, mul(Nn(F.c), G))}`);
+      step(`${SXT().tsCirc(Wh, Ah)} ${EQ(e, mul(Nn(F.c), G))}`);
     } else {
       G = div(fn('asin', div(W, A)), sq);
       meth('table');
-      step(`${Q().asin} ${EQ(e, mul(Nn(F.c), G))}`);
+      step(`${SXT().asin} ${EQ(e, mul(Nn(F.c), G))}`);
     }
   } else if (c2 > 0) {
     const lnA = fn('ln', fn('abs', add(W, inner)));
@@ -802,11 +803,11 @@ export function R_trigsub(e) {
           : sub(mul(div(W, Nn(2)), inner), mul(Nn(A2 / 2), lnA))
       );
       meth('trigsub');
-      step(`${qq > 0 ? Q().tsHyp(Wh, Ah) : Q().tsHyp2(Wh, Ah)} ${EQ(e, mul(Nn(F.c), G))}`);
+      step(`${qq > 0 ? SXT().tsHyp(Wh, Ah) : SXT().tsHyp2(Wh, Ah)} ${EQ(e, mul(Nn(F.c), G))}`);
     } else {
       G = div(lnA, sq);
       meth('table');
-      step(`${Q().longLn} ${EQ(e, mul(Nn(F.c), G))}`);
+      step(`${SXT().longLn} ${EQ(e, mul(Nn(F.c), G))}`);
     }
   } else return null;
   return mul(Nn(F.c), G);
@@ -822,7 +823,7 @@ export function R_divsplit(e) {
     s = s === null ? (sg < 0 ? neg(q) : q) : sg < 0 ? sub(s, q) : add(s, q);
   }
   meth('linearity');
-  step(`${Q().split} ${HH(e)} = ${HH(s)}`);
+  step(`${SXT().split} ${HH(e)} = ${HH(s)}`);
   return subI(s);
 }
 export function cands(e, out = []) {
@@ -921,7 +922,7 @@ export function R_usub(e) {
     const Ru = subst(R, 'u', X);
     const m = mark();
     meth('usub');
-    step(Q().usub(HH(g), dd(HH(dg))));
+    step(SXT().usub(HH(g), dd(HH(dg))));
     let G = null;
     withVar(() => {
       step(
@@ -937,7 +938,7 @@ export function R_usub(e) {
       continue;
     }
     const F = mul(Nn(c), subst(G, 'x', g));
-    step(`${Q().usubBack} ${HH(tidy(F))}`);
+    step(`${SXT().usubBack} ${HH(tidy(F))}`);
     return F;
   }
   return null;
@@ -972,8 +973,8 @@ export function R_parts(e) {
   const du = tidy(D(u)),
     vdu = tidy(mul(v, du));
   meth('parts');
-  step(Q().parts(HH(u), HH(dv)));
-  step(`${Q().parts2(dd(HH(du)), HH(v))} ${IH(e)} = ${hp(mul(u, v), 1)} − ${IH(vdu)}`);
+  step(SXT().parts(HH(u), HH(dv)));
+  step(`${SXT().parts2(dd(HH(du)), HH(v))} ${IH(e)} = ${hp(mul(u, v), 1)} − ${IH(vdu)}`);
   const G = subI(vdu);
   if (!G) return null;
   return sub(mul(u, v), G);
@@ -998,8 +999,8 @@ export function cyclic(c, et) {
     : add(div(mul(E, C), Nn(a)), mul(Nn(b / (a * a)), mul(E, S)));
   meth('parts');
   meth('cyclic');
-  step(`${Q().cyc1} <i>I</i> = ${IH(mul(E, s ? S : C))} = ${HH(first)} − ${cH((b * b) / (a * a))}<i>I</i>`);
-  step(`${Q().cyc2} <i>I</i> = ${HH(mul(Nn(1 / (a * a + b * b)), mul(E, inner)))}`);
+  step(`${SXT().cyc1} <i>I</i> = ${IH(mul(E, s ? S : C))} = ${HH(first)} − ${cH((b * b) / (a * a))}<i>I</i>`);
+  step(`${SXT().cyc2} <i>I</i> = ${HH(mul(Nn(1 / (a * a + b * b)), mul(E, inner)))}`);
   return F;
 }
 export function R_dist(e) {
@@ -1018,7 +1019,7 @@ export function R_dist(e) {
     s = s === null ? (sg < 0 ? neg(q) : q) : sg < 0 ? sub(s, q) : add(s, q);
   }
   meth('linearity');
-  step(`${Q().dist} ${HH(e)} = ${HH(s)}`);
+  step(`${SXT().dist} ${HH(e)} = ${HH(s)}`);
   return subI(s);
 }
 export function R_linu(e) {
@@ -1052,7 +1053,7 @@ export function R_linu(e) {
     const Ru = tidy(subst(R, 'u', X));
     const m0 = mark();
     meth('usub');
-    step(Q().usubL(HH(L), HH(div(sub(['v', 'u'], Nn(m)), Nn(k)))));
+    step(SXT().usubL(HH(L), HH(div(sub(['v', 'u'], Nn(m)), Nn(k)))));
     let G = null;
     withVar(() => {
       step(`= ${IH(Ru)}`);
@@ -1063,7 +1064,7 @@ export function R_linu(e) {
       continue;
     }
     const F = subst(G, 'x', L);
-    step(`${Q().usubBack} ${HH(tidy(F))}`);
+    step(`${SXT().usubBack} ${HH(tidy(F))}`);
     return F;
   }
   return null;
@@ -1099,7 +1100,7 @@ export function R_weier(e) {
   const [P, Qp] = pcancel(rf[0], rf[1]);
   const Rt = pdeg(Qp) < 1 ? polyAst(P) : ratAst(P, Qp);
   meth('weier');
-  step(Q().weier);
+  step(SXT().weier);
   let G = null;
   {
     const o = PRINT.v;
@@ -1113,7 +1114,7 @@ export function R_weier(e) {
   }
   if (!G) return null;
   const F = subst(G, 'x', fn('tan', div(X, Nn(2))));
-  step(`${Q().usubBack} ${HH(tidy(F))}`);
+  step(`${SXT().usubBack} ${HH(tidy(F))}`);
   return F;
 }
 export const RULES = [
@@ -1223,6 +1224,6 @@ export function R_prodsum(e) {
   else r = mul(Nn(0.5), add(fn('cos', M), fn('cos', P)));
   r = mul(Nn(F.c), r);
   meth('prodsum');
-  step(`${Q().prodsum} ${HH(e)} = ${HH(r)}`);
+  step(`${SXT().prodsum} ${HH(e)} = ${HH(r)}`);
   return subI(r);
 }

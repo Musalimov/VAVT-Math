@@ -1,247 +1,53 @@
+import { csRecover, dot, dualOf, feasible, intSearch, opt2, parseProblem, ranging, region2, symNorm } from './solvers/lp.js';
+import { lang, langFrom } from '../../shared/i18n.js';
+import { Q1, Z0 } from '../../math/fractions.js';
+import { Q } from '../../math/fractions.js';
+import { bigNum } from '../../math/fractions.js';
+import { bgcd } from '../../math/fractions.js';
+import { simplex } from '../../math/simplex.js';
+import { bigOf } from '../../math/fractions.js';
+import { toFrac } from '../../math/fractions.js';
 (()=>{
 'use strict';
 /* ---------- точные дроби ---------- */
-function toFrac(v,maxD=1000,tol=1e-10){if(!isFinite(v))return null;if(Number.isInteger(v))return[v,1];
-  const s=v<0?-1:1;v=Math.abs(v);let h0=0,h1=1,k0=1,k1=0,x=v;
-  for(let i=0;i<40;i++){const a=Math.floor(x),h2=a*h1+h0,k2=a*k1+k0;if(k2>maxD)break;h0=h1;h1=h2;k0=k1;k1=k2;
-    if(Math.abs(v-h1/k1)<=tol*Math.max(1,v))return[s*h1,k1];const fr=x-a;if(fr<1e-15)break;x=1/fr}
-  return null}
-const gcdI=(a,b)=>{a=Math.abs(a);b=Math.abs(b);while(b){[a,b]=[b,a%b]}return a};
+
+
 /* Q — рациональное число на BigInt: точность не теряется ни при каком числе итераций симплекса.
    N, D — точные BigInt (D > 0, НОД = 1). n, d, v — Number-приближения для логики отображения;
    цифры печатаем только из ns / ds / as (строки), чтобы большие дроби не искажались. */
-const bgcd=(a,b)=>{if(a<0n)a=-a;if(b<0n)b=-b;while(b){[a,b]=[b,a%b]}return a};
-function bigOf(x){if(typeof x==='bigint')return x;if(Number.isSafeInteger(x))return BigInt(x);throw{msg:'tok'}}
-function bigNum(N,D){const a=Number(N),b=Number(D);if(isFinite(a)&&isFinite(b))return a/b;
-  const k=Math.max(String(N<0n?-N:N).length,String(D).length)-300,p=10n**BigInt(k);return Number(N/p)/Number(D/p)}
-class Q{constructor(n,d=1){n=bigOf(n);d=bigOf(d);if(d===0n)throw{msg:'tok'};if(d<0n){n=-n;d=-d}const g=bgcd(n,d)||1n;this.N=n/g;this.D=d/g}
-  static of(x){if(x instanceof Q)return x;if(typeof x==='bigint'||Number.isSafeInteger(x))return new Q(x,1);const f=toFrac(x,1e6,1e-12);return f?new Q(f[0],f[1]):new Q(Math.round(x*1e6),1e6)}
-  add(o){o=Q.of(o);return new Q(this.N*o.D+o.N*this.D,this.D*o.D)}
-  sub(o){o=Q.of(o);return new Q(this.N*o.D-o.N*this.D,this.D*o.D)}
-  mul(o){o=Q.of(o);return new Q(this.N*o.N,this.D*o.D)}
-  div(o){o=Q.of(o);return new Q(this.N*o.D,this.D*o.N)}
-  neg(){return new Q(-this.N,this.D)}
-  get n(){return Number(this.N)}
-  get d(){return Number(this.D)}
-  get ns(){return String(this.N)}
-  get ds(){return String(this.D)}
-  get as(){return String(this.N<0n?-this.N:this.N)}
-  get key(){return this.N+'/'+this.D}
-  get int(){return this.D===1n}
-  get z(){return this.N===0n}
-  get s(){return this.N>0n?1:this.N<0n?-1:0}
-  get v(){return bigNum(this.N,this.D)}
-  cmp(o){return this.sub(o).s}
-  eq(o){return this.cmp(o)===0}
-  abs(){return this.N<0n?this.neg():this}
-}
-const Z0=new Q(0),Q1=new Q(1);
-function parseNum(s){s=s.replace(',','.');if(s.includes('/')){const[a,b]=s.split('/');return parseNum(a).div(parseNum(b))}
-  s=s.trim();if(!/^[-+]?(\d+\.?\d*|\.\d+)$/.test(s))throw{msg:'tok'};const neg=s[0]==='-';s=s.replace(/^[-+]/,'');
-  const[i,f='']=s.split('.');const N=BigInt((i||'0')+f)*(neg?-1n:1n);return new Q(N,10n**BigInt(f.length))}
+
+
+
+
+
+
 /* ---------- разбор задачи ---------- */
-function normLine(l){return l.replace(/[−–—]/g,'-').replace(/[⩽≤]/g,'<=').replace(/[⩾≥]/g,'>=').replace(/=</g,'<=').replace(/=>/g,'>=').replace(/→/g,'->').replace(/·|×|\*/g,'*').replace(/(\d),(\d)/g,'$1.$2').trim()}
-function natCmp(a,b){const ma=/^([a-zA-Zа-яА-Я_']*)(\d*)(.*)$/.exec(a),mb=/^([a-zA-Zа-яА-Я_']*)(\d*)(.*)$/.exec(b);if(ma[1]!==mb[1])return ma[1]<mb[1]?-1:1;const na=+ma[2]||0,nb=+mb[2]||0;if(na!==nb)return na-nb;return a<b?-1:a>b?1:0}
-function parseLin(s){// -> {coef:{name:Q}, c:Q}
-  /* «1e3», «2,5e-2» (без пробелов): экспоненциальная запись или коэффициент при переменной e3? Не угадываем — просим уточнить.
-     Проверяем до удаления пробелов: «3e + 2x» — это переменная e, а «2*e1» — явное умножение. */
-  {const m=/(?:^|[^\w.,*\/])([\d.,\/]*\d[eE][-+]?\d+)/.exec(s);if(m)throw{msg:'exp',line:m[1]}}
-  s=s.replace(/\s+/g,'');if(!s)throw{msg:'empty'};const out={coef:{},c:Z0};let i=0;
-  if(s[0]!=='+'&&s[0]!=='-')s='+'+s;
-  while(i<s.length){const sg=s[i]==='-'?-1:1;if(s[i]!=='+'&&s[i]!=='-')throw{msg:'tok',at:s.slice(i)};i++;
-    let num=null,m=/^(\d+(\.\d+)?|\.\d+)(\/(\d+(\.\d+)?))?/.exec(s.slice(i));if(m){num=parseNum(m[0]);i+=m[0].length;if(s[i]==='*')i++}
-    let v=null;m=/^([a-zA-Z][a-zA-Z_]*\d*'*|[a-zA-Z]_?\d+)/.exec(s.slice(i));if(m){v=m[0].replace('_','');i+=m[0].length}
-    if(num===null&&v===null)throw{msg:'tok',at:s.slice(i)};
-    let q=num||Q1;
-    while(s[i]==='/'){m=/^\/(\d+(\.\d+)?)/.exec(s.slice(i));if(!m)throw{msg:'tok'};q=q.div(parseNum(m[1]));i+=m[0].length}
-    if(sg<0)q=q.neg();
-    if(v){out.coef[v]=(out.coef[v]||Z0).add(q)}else out.c=out.c.add(q)}
-  return out}
-function parseProblem(text){const lines=[];for(const l0 of text.split(/\n|;/).map(normLine).filter(l=>l&&!/^\/\//.test(l))){const ops=[...l0.matchAll(/<=|>=/g)];
-    if(ops.length===2){const a=ops[0],b=ops[1],L=l0.slice(0,a.index),M=l0.slice(a.index+2,b.index),Rr=l0.slice(b.index+2);lines.push(L+a[0]+M,M+b[0]+Rr)}else lines.push(l0)}
-  let obj=null;const cons=[],sign={},ints=new Set(),bins=new Set();let allInt=false,allBin=false,anySign=false;
-  const setSign=(v,sv,src)=>{if(sign[v]&&sign[v]!=='free'&&sign[v]!==sv)cons.push({coef:{[v]:Q.of(1)},op:sv==='ge'?'>=':'<=',b:Q.of(0),src});else sign[v]=sv};
-  const varsIn=s=>(s.match(/[a-zA-Z][a-zA-Z_]*\d*'*/g)||[]).filter(w=>!/^(max|min|int|Z|N|z|bin)$/.test(w));
-  for(const l0 of lines){let l=l0;
-    if(/->|\b(max|min)\b/i.test(l)&&!/<=|>=/.test(l)){const sense=/max/i.test(l)?'max':'min';l=l.replace(/->/,' ').replace(/\b(max|min)\b/ig,' ').replace(/^\s*[a-zA-Z]\w*\s*\(?[^=()]*\)?\s*=/,' ').replace(/[:]/g,' ');
-      obj={sense,...parseLin(l)};continue}
-    if(/∈|\bint\b|целы|бинар|\bbin\b|\{0 ?[.,;] ?1\}/i.test(l)){const isB=/бинар|\bbin\b|\{0 ?[.,;] ?1\}/i.test(l);const vs=varsIn(l.replace(/\{[^}]*\}/,'').replace(/∈.*$/,''));
-      if(!vs.length){if(isB)allBin=true;else allInt=true}else vs.forEach(v=>{(isB?bins:ints).add(v)});
-      if(/>=\s*0|Z_?\+|Z>=0|⩾0/.test(l)||isB){vs.forEach(v=>{setSign(v,'ge',l0);anySign=true})}continue}
-    if(/люб|free|произв|\bR\b|∈ ?R/i.test(l)&&!/<=|>=/.test(l)){varsIn(l).forEach(v=>{sign[v]='free'});continue}
-    const m=/(<=|>=|=)/.exec(l);if(!m)throw{msg:'line',line:l0};const op=m[1],L=l.slice(0,m.index),R=l.slice(m.index+op.length);
-    if(/,/.test(L)&&/^\s*0\s*$/.test(R)&&op!=='='){const vs=L.split(',').map(x=>x.trim().replace('_',''));if(vs.every(v=>/^[a-zA-Z][a-zA-Z_]*\d*'*$/.test(v))){vs.forEach(v=>{setSign(v,op==='>='?'ge':'le',l0);anySign=true});continue}}
-    const lp=parseLin(L),rp=parseLin(R);const coef={...lp.coef};for(const k in rp.coef)coef[k]=(coef[k]||Z0).sub(rp.coef[k]);const b=rp.c.sub(lp.c);
-    const ks=Object.keys(coef).filter(k=>!coef[k].z);
-    if(ks.length===1&&b.z&&op!=='='){const k=ks[0],pos=coef[k].s>0;setSign(k,(op==='>=')===pos?'ge':'le',l0);anySign=true;continue}
-    if(!ks.length){const hold=op==='<='?b.s>=0:op==='>='?b.s<=0:b.z;if(hold)continue;cons.push({coef:{},op,b,src:l0});continue}
-    cons.push({coef,op,b,src:l0})}
-  if(!obj)throw{msg:'noobj'};if(!cons.length&&!Object.keys(obj.coef).length)throw{msg:'nocons'};
-  const names=new Set(Object.keys(obj.coef));cons.forEach(c=>Object.keys(c.coef).forEach(k=>names.add(k)));
-  const expand=k=>{if(names.has(k))return[k];const ex=[...names].filter(n=>new RegExp('^'+k+'_?\\d').test(n));return ex.length?ex:[k]};
-  for(const k of Object.keys(sign)){const e=expand(k);if(e.length>1||e[0]!==k){e.forEach(n=>{sign[n]=sign[k]});delete sign[k]}}
-  for(const S of[ints,bins])for(const k of[...S]){const e=expand(k);if(e.length>1||e[0]!==k){S.delete(k);e.forEach(n=>S.add(n))}}
-  Object.keys(sign).forEach(k=>names.add(k));
-  const vars=[...names].sort(natCmp);if(!vars.length)throw{msg:'novars'};if(vars.length>14)throw{msg:'many'};if(cons.length>20)throw{msg:'manyc'};
-  const P={vars,sense:obj.sense,c:vars.map(v=>obj.coef[v]||Z0),c0:obj.c,cons:cons.map(c=>({a:vars.map(v=>c.coef[v]||Z0),op:c.op,b:c.b})),
-    sign:vars.map(v=>sign[v]||'free'),int:vars.map(v=>allInt||allBin||ints.has(v)||bins.has(v)),bin:vars.map(v=>allBin||bins.has(v)),anySign};
-  P.cons=P.cons.filter(c=>!(c.a.every(x=>x.z)));
-  P.bin.forEach((b,j)=>{if(b){P.sign[j]='ge';const implied=P.cons.some(c=>(c.op==='<='||c.op==='=')&&c.a[j].s>0&&c.a.every((q,k)=>q.s>=0||!P.bin[k])&&c.a.every(q=>q.s>=0)&&c.b.div(c.a[j]).cmp(Q1)<=0);if(!implied)P.cons.push({a:vars.map((_,k)=>k===j?Q1:Z0),op:'<=',b:Q1,auto:true})}});
-  return P}
+
+
+
+
 /* ---------- двойственная задача (правила из § 4.1) ---------- */
-function dualOf(P){const m=P.cons.length,n=P.vars.length,max=P.sense==='max';const base=P.vars.every(v=>/^y/.test(v))?'u':'y';
-  const dv=P.cons.map((_,i)=>base+(i+1));
-  const sign=P.cons.map(c=>c.op==='='?'free':max?(c.op==='<='?'ge':'le'):(c.op==='<='?'le':'ge'));
-  const cons=P.vars.map((_,j)=>({a:P.cons.map(c=>c.a[j]),op:P.sign[j]==='free'?'=':max?(P.sign[j]==='ge'?'>=':'<='):(P.sign[j]==='ge'?'<=':'>='),b:P.c[j]}));
-  return{vars:dv,sense:max?'min':'max',c:P.cons.map(c=>c.b),c0:P.c0,cons,sign,int:dv.map(()=>false),bin:dv.map(()=>false),anySign:true,isDual:true}}
+
 /* ---------- вычисление значения ---------- */
-const dot=(a,x)=>a.reduce((s,ai,j)=>s.add(ai.mul(x[j])),Z0);
-function feasible(P,x){for(let j=0;j<x.length;j++){if(P.sign[j]==='ge'&&x[j].s<0)return false;if(P.sign[j]==='le'&&x[j].s>0)return false}
-  return P.cons.every(c=>{const l=dot(c.a,x),d=l.cmp(c.b);return c.op==='<='?d<=0:c.op==='>='?d>=0:d===0})}
+
+
 /* ---------- симплекс-метод (как в § 5.2) ---------- */
-function simplex(P,opt={}){if(!P.vars.length){const P2={...P,vars:['_0'],c:[Q.of(0)],sign:['ge'],int:[false],bin:[false],cons:P.cons.map(c=>({...c,a:[Q.of(0)]}))};const r=simplex(P2,opt);const cut=v=>v?v.slice(0,0):v;return{...r,x:r.x?[]:r.x,verts:(r.verts||[]).map(()=>[]),rays:[]}}if(!P.cons.length)P={...P,cons:[{a:P.vars.map(()=>Q.of(0)),op:'<=',b:Q.of(1),auto:true,dummy:true}]};
-  const log=[];const n=P.vars.length,max=P.sense==='max';
-  // 1) переменные: x<=0 -> -x', free -> x'-x''
-  const cols=[];const map=[];// map[j] = [[colIdx,sign],...]
-  P.vars.forEach((v,j)=>{if(P.sign[j]==='ge'){map.push([[cols.length,1]]);cols.push(v)}else if(P.sign[j]==='le'){map.push([[cols.length,-1]]);cols.push(v+"'")}else{map.push([[cols.length,1],[cols.length+1,-1]]);cols.push(v+"'",v+"''")}});
-  const nOrig=cols.length;const sub=a=>{const r=new Array(nOrig).fill(Z0);P.vars.forEach((_,j)=>map[j].forEach(([k,s])=>{r[k]=r[k].add(s>0?a[j]:a[j].neg())}));return r};
-  const c=sub(P.c).map(x=>max?x:x.neg()),c0=max?P.c0:P.c0.neg();
-  const transforms={min:!max,le:P.vars.filter((_,j)=>P.sign[j]==='le'),free:P.vars.filter((_,j)=>P.sign[j]==='free')};
-  // 2) допуски
-  const isX=P.vars.every(v=>/^x\d+$/.test(v))&&P.sign.every(s=>s==='ge');const mat=isX&&P.vars.length>2&&P.vars.every(v=>/^x\d\d+$/.test(v));let nextIdx=mat?1:isX?Math.max(...P.vars.map(v=>+v.slice(1)))+1:1;
-  const rows=[];const slackOf=[];
-  P.cons.forEach((cn,i)=>{const a=sub(cn.a);let sl=null;if(cn.op!=='='){sl=cols.length;let nm;do{nm=(isX?'x':'s')+(nextIdx++)}while(cols.includes(nm)||P.vars.includes(nm));cols.push(nm)}rows.push({a,op:cn.op,b:cn.b,sl});slackOf.push(sl)});
-  const N=cols.length;let T=rows.map(r=>{const row=new Array(N+1).fill(Z0);r.a.forEach((v,k)=>{row[k]=v});if(r.sl!==null)row[r.sl]=r.op==='<='?Q1:Q1.neg();row[N]=r.b;return row});
-  const flipped=[];T.forEach((row,i)=>{if(row[N].s<0){T[i]=row.map(x=>x.neg());flipped.push(i)}});
-  let Z=new Array(N+1).fill(Z0);c.forEach((v,k)=>{Z[k]=v.neg()});Z[N]=c0;
-  const snap=(note,piv,kind)=>log.push({T:T.map(r=>r.slice()),Z:Z.slice(),B:basis.slice(),note,piv,kind});
-  let basis=new Array(T.length).fill(-1);
-  const isUnitCol=(k,i)=>T.every((r,ii)=>ii===i?r[k].eq(Q1):r[k].z);
-  const ord=[...Array(N).keys()].filter(k=>k>=nOrig).concat([...Array(nOrig).keys()]);
-  for(let i=0;i<T.length;i++)for(const k of ord){if(basis.includes(k))continue;if(isUnitCol(k,i)){basis[i]=k;break}}
-  const pivot=(s,r)=>{const p=T[s][r];T[s]=T[s].map(x=>x.div(p));for(let i=0;i<T.length;i++)if(i!==s&&!T[i][r].z){const f=T[i][r];T[i]=T[i].map((x,k)=>x.sub(f.mul(T[s][k])))}
-    if(!Z[r].z){const f=Z[r];Z=Z.map((x,k)=>x.sub(f.mul(T[s][k])))}basis[s]=r};
-  const res={cols,nOrig,map,slackOf,flipped,transforms,log,N,max};
-  snap({t:'init'},null,'init');
-  // обнулить нижнюю строку под исходно базисными
-  basis.forEach((k,i)=>{if(k>=0&&!Z[k].z){const f=Z[k];Z=Z.map((x,kk)=>x.sub(f.mul(T[i][kk])));snap({t:'zrow',col:k},null,'p1')}});
-  // фаза 1: единичная матрица
-  let guard=0;
-  while(basis.includes(-1)&&guard++<60){const i=basis.indexOf(-1);const row=T[i];
-    if(row.slice(0,N).every(x=>x.s<=0)){if(row[N].s>0){res.status='infeasible';res.infRow=i;snap({t:'infeas',row:i},null,'end');return res}
-      if(row.slice(0,N).every(x=>x.z)){T.splice(i,1);basis.splice(i,1);slackOf.forEach((s,ii)=>{});snap({t:'redundant',row:i},null,'p1');continue}
-      T[i]=row.map(x=>x.neg());snap({t:'neg',row:i},null,'p1');continue}
-    const cand=[];for(let k=0;k<N;k++){if(row[k].s<=0||basis.includes(k))continue;let best=null,bi=-1,ties=[];
-      for(let ii=0;ii<T.length;ii++){if(T[ii][k].s<=0)continue;const q=T[ii][N].div(T[ii][k]);if(best===null||q.cmp(best)<0){best=q;bi=ii;ties=[ii]}else if(q.eq(best))ties.push(ii)}
-      cand.push({k,s:ties.includes(i)?i:bi,good:ties.includes(i),one:row[k].eq(Q1)})}
-    let ch=cand.find(c=>c.good&&c.one)||cand.find(c=>c.good)||cand[0];
-    if(!ch){for(let k=0;k<N;k++)if(row[k].s>0){let best=null,bi=-1;for(let ii=0;ii<T.length;ii++){if(T[ii][k].s<=0)continue;const q=T[ii][N].div(T[ii][k]);if(best===null||q.cmp(best)<0){best=q;bi=ii}}ch={k,s:bi};break}}
-    const ratios=[];for(let ii=0;ii<T.length;ii++)if(T[ii][ch.k].s>0)ratios.push([ii,T[ii][N].div(T[ii][ch.k])]);
-    const pv=T[ch.s][ch.k];pivot(ch.s,ch.k);snap({t:'p1',col:ch.k,row:ch.s,pv,ratios},[ch.s,ch.k],'p1')}
-  if(basis.includes(-1)){res.status='fail';return res}
-  // фаза 2
-  guard=0;let bland=false;
-  for(;;){if(guard++>2000){res.status='fail';return res}if(guard>40)bland=true;
-    let r=-1;for(let k=0;k<N;k++){if(Z[k].s<0&&(r<0||(bland?false:Z[k].cmp(Z[r])<0)))r=k}
-    if(r<0)break;
-    let s=-1,best=null;const ratios=[];for(let i=0;i<T.length;i++){if(T[i][r].s<=0)continue;const q=T[i][N].div(T[i][r]);ratios.push([i,q]);if(best===null||q.cmp(best)<0){best=q;s=i}}
-    if(s<0){res.status='unbounded';res.ubCol=r;snap({t:'unb',col:r},null,'end');return res}
-    const pv=T[s][r],zr=Z[r];pivot(s,r);snap({t:'p2',col:r,row:s,pv,ratios,zr},[s,r],'p2')}
-  res.status='optimal';res.T=T;res.Z=Z;res.B=basis.slice();res.M=Z[N];
-  const xs=new Array(N).fill(Z0);basis.forEach((k,i)=>{xs[k]=T[i][N]});res.xs=xs;
-  res.value=max?Z[N]:Z[N].neg();
-  const zeroNB=[];for(let k=0;k<N;k++)if(!basis.includes(k)&&Z[k].z)zeroNB.push(k);res.zeroNB=zeroNB;res.unique=!zeroNB.length;
-  snap({t:'opt',zeroNB},null,'end');
-  // все решения
-  const verts=[],rays=[],seen=new Set();
-  const back=xs=>P.vars.map((_,j)=>map[j].reduce((s,[k,sg])=>s.add(sg>0?xs[k]:xs[k].neg()),Z0));
-  const addV=x=>{const k=x.map(q=>q.key).join(',');if(!verts.some(v=>v.map(q=>q.key).join(',')===k))verts.push(x)};
-  const explore=(T0,Z0_,B0,depth)=>{const key=B0.slice().sort((a,b)=>a-b).join(',');if(seen.has(key)||seen.size>40)return;seen.add(key);
-    const x=new Array(N).fill(Z0);B0.forEach((k,i)=>{x[k]=T0[i][N]});addV(back(x));
-    for(let k=0;k<N;k++){if(B0.includes(k)||!Z0_[k].z)continue;const pos=[];let best=null;
-      for(let i=0;i<T0.length;i++){if(T0[i][k].s<=0)continue;const q=T0[i][N].div(T0[i][k]);if(best===null||q.cmp(best)<0){best=q}}
-      if(best===null){const d=new Array(N).fill(Z0);d[k]=Q1;B0.forEach((kk,i)=>{d[kk]=T0[i][k].neg()});const db=back(d);if(db.some(q=>!q.z)){const nz=db.find(q=>!q.z);const nm=db.map(q=>q.div(nz.abs()));const key2=nm.map(q=>q.key).join(',');if(!rays.some(r=>r.key===key2))rays.push({d:db,key:key2})}continue}
-      for(let i=0;i<T0.length;i++){if(T0[i][k].s<=0)continue;if(!T0[i][N].div(T0[i][k]).eq(best))continue;
-        let T1=T0.map(r=>r.slice()),Z1=Z0_.slice();const B1=B0.slice();const p=T1[i][k];T1[i]=T1[i].map(v=>v.div(p));
-        for(let ii=0;ii<T1.length;ii++)if(ii!==i&&!T1[ii][k].z){const f=T1[ii][k];T1[ii]=T1[ii].map((v,kk)=>v.sub(f.mul(T1[i][kk])))}
-        if(!Z1[k].z){const f=Z1[k];Z1=Z1.map((v,kk)=>v.sub(f.mul(T1[i][kk])))}B1[i]=k;explore(T1,Z1,B1,depth+1)}}};
-  explore(T.map(r=>r.slice()),Z.slice(),basis.slice(),0);
-  res.verts=verts;res.rays=rays.map(r=>r.d);res.x=back(xs);
-  return res}
+
 /* ---------- линейные системы ---------- */
-function solveSys(A,b){// A: m x k (Q), returns {x:[Q]} if unique, {none:true} if inconsistent, {many:true} otherwise
-  const m=A.length,k=A[0]?A[0].length:0;const M=A.map((r,i)=>[...r,b[i]]);let row=0;const piv=[];
-  for(let c=0;c<k&&row<m;c++){let p=-1;for(let i=row;i<m;i++)if(!M[i][c].z){p=i;break}if(p<0)continue;[M[row],M[p]]=[M[p],M[row]];
-    const pv=M[row][c];M[row]=M[row].map(x=>x.div(pv));for(let i=0;i<m;i++)if(i!==row&&!M[i][c].z){const f=M[i][c];M[i]=M[i].map((x,j)=>x.sub(f.mul(M[row][j])))}piv.push(c);row++}
-  for(let i=row;i<m;i++)if(!M[i][k].z)return{none:true};
-  if(piv.length<k)return{many:true};const x=new Array(k).fill(Z0);piv.forEach((c,i)=>{x[c]=M[i][k]});return{x}}
+
 /* ---------- геометрия двух переменных ---------- */
-function region2(P){// returns {poly:[[x,y]...] floats, verts:[{p:[Q,Q],f:[x,y],lines:[i..]}], unbounded, empty, lines:[{a,b,c,op,i,kind}]}
-  const L=[];P.cons.forEach((c,i)=>L.push({a:c.a[0],b:c.a[1],c:c.b,op:c.op,i,kind:'c'}));
-  P.sign.forEach((s,j)=>{if(s==='free')return;const a=j===0?Q1:Z0,b=j===1?Q1:Z0;L.push({a,b,c:Z0,op:s==='ge'?'>=':'<=',i:j,kind:'s'})});
-  const scale=Math.max(1,...L.map(l=>Math.abs(l.c.v)/Math.max(1e-9,Math.hypot(l.a.v,l.b.v))));const B=scale*1e3;
-  let poly=[[-B,-B],[B,-B],[B,B],[-B,B]];
-  const clip=(poly,a,b,c,op)=>{// keep a x + b y (op) c
-    const f=p=>{const v=a*p[0]+b*p[1]-c;return op==='<='?-v:v};const eps=1e-9*B;const out=[];
-    for(let i=0;i<poly.length;i++){const p=poly[i],q=poly[(i+1)%poly.length],fp=f(p),fq=f(q);if(fp>=-eps)out.push(p);if((fp>=-eps)!==(fq>=-eps)){const t=fp/(fp-fq);out.push([p[0]+t*(q[0]-p[0]),p[1]+t*(q[1]-p[1])])}}
-    return out};
-  for(const l of L){if(l.op==='=') {poly=clip(poly,l.a.v,l.b.v,l.c.v,'<=');poly=clip(poly,l.a.v,l.b.v,l.c.v,'>=')}else poly=clip(poly,l.a.v,l.b.v,l.c.v,l.op);if(!poly.length)break}
-  // убрать дубли
-  const P2=[];for(const p of poly){if(!P2.some(q=>Math.hypot(q[0]-p[0],q[1]-p[1])<1e-7*Math.max(1,scale)))P2.push(p)}
-  const res={lines:L,poly:P2,B,empty:!P2.length};if(res.empty)return res;
-  const verts=[];let unb=false;
-  for(const p of P2){if(Math.abs(p[0])>=B*.999||Math.abs(p[1])>=B*.999){unb=true;verts.push({f:p,box:true});continue}
-    const on=L.filter(l=>Math.abs(l.a.v*p[0]+l.b.v*p[1]-l.c.v)<=1e-6*Math.max(1,Math.abs(l.c.v),Math.hypot(l.a.v,l.b.v)*Math.hypot(p[0],p[1])));
-    let ex=null;for(let i=0;i<on.length&&!ex;i++)for(let j=i+1;j<on.length&&!ex;j++){const l1=on[i],l2=on[j],det=l1.a.mul(l2.b).sub(l1.b.mul(l2.a));if(det.z)continue;
-      ex={p:[l1.c.mul(l2.b).sub(l1.b.mul(l2.c)).div(det),l1.a.mul(l2.c).sub(l1.c.mul(l2.a)).div(det)],pair:[l1,l2]}}
-    verts.push({f:p,p:ex?ex.p:[Q.of(p[0]),Q.of(p[1])],on,pair:ex?ex.pair:null})}
-  res.verts=verts;res.unbounded=unb;return res}
-function opt2(P,R){if(R.empty)return{status:'infeasible'};const max=P.sense==='max';const c=P.c;
-  const real=R.verts.filter(v=>!v.box);let best=null;for(const v of real){const z=dot(c,v.p);if(best===null||(max?z.cmp(best)>0:z.cmp(best)<0))best=z}
-  // неограниченность: есть точка на «бесконечности» лучше
-  const cv=[c[0].v,c[1].v];const boxBetter=R.verts.filter(v=>v.box).some(v=>{const z=cv[0]*v.f[0]+cv[1]*v.f[1];return best===null?true:(max?z>best.v+1e-6*Math.max(1,Math.abs(best.v))*1e3:z<best.v-1e-6*Math.max(1,Math.abs(best.v))*1e3)});
-  if(boxBetter||best===null)return{status:'unbounded'};
-  const optV=real.filter(v=>dot(c,v.p).eq(best));
-  const rayOpt=R.verts.filter(v=>v.box).some(v=>{const z=cv[0]*v.f[0]+cv[1]*v.f[1];return Math.abs(z-best.v)<=1e-6*Math.max(1,Math.abs(best.v))*1e3});
-  return{status:'optimal',value:best.add(P.c0),zb:best,opt:optV,ray:rayOpt}}
+
+
 /* ---------- дополняющая нежёсткость: решение прямой по двойственной ---------- */
-function csRecover(P,D,y){const n=P.vars.length,m=P.cons.length;const info={zeroX:[],tightRows:[],dualSl:[],y};
-  // остатки двойственных ограничений (соответствуют x_j)
-  D.cons.forEach((c,j)=>{const r=dot(c.a,y).sub(c.b);info.dualSl.push(r);if(P.sign[j]!=='free'&&!r.z)info.zeroX.push(j)});
-  P.cons.forEach((c,i)=>{if(c.op==='='||!y[i].z)info.tightRows.push(i)});
-  const A=[],b=[];info.zeroX.forEach(j=>{const r=new Array(n).fill(Z0);r[j]=Q1;A.push(r);b.push(Z0)});
-  info.tightRows.forEach(i=>{A.push(P.cons[i].a.slice());b.push(P.cons[i].b)});
-  info.sys={A,b};const s=A.length?solveSys(A,b):{many:true};info.sol=s;
-  if(s.x){info.x=s.x;info.feasible=feasible(P,s.x)}return info}
+
 /* ---------- целочисленный перебор ---------- */
-function intSearch(P,R){const n=P.vars.length,max=P.sense==='max';const fz=x=>P.c.reduce((s,c,j)=>s+c.v*x[j],0);
-  const ok=x=>{for(let j=0;j<n;j++){if(P.sign[j]==='ge'&&x[j]<0)return false;if(P.sign[j]==='le'&&x[j]>0)return false;if(P.bin[j]&&x[j]>1)return false}
-    return P.cons.every(c=>{const l=c.a.reduce((s,a,j)=>s+a.v*x[j],0),e=1e-9*Math.max(1,Math.abs(c.b.v));return c.op==='<='?l<=c.b.v+e:c.op==='>='?l>=c.b.v-e:Math.abs(l-c.b.v)<=e})};
-  let pts=[],cnt=0;
-  if(n===2&&R&&!R.empty){let xs=R.poly.map(p=>p[0]),ys=R.poly.map(p=>p[1]);let x0=Math.ceil(Math.min(...xs)-1e-9),x1=Math.floor(Math.max(...xs)+1e-9),y0=Math.ceil(Math.min(...ys)-1e-9),y1=Math.floor(Math.max(...ys)+1e-9);
-    const cap=60;if(R.unbounded){const rv=R.verts.filter(v=>!v.box).map(v=>v.f);const cx=rv.length?rv.reduce((s,p)=>s+p[0],0)/rv.length:0,cy=rv.length?rv.reduce((s,p)=>s+p[1],0)/rv.length:0;
-      x0=Math.max(x0,Math.floor(cx-cap));x1=Math.min(x1,Math.ceil(cx+cap));y0=Math.max(y0,Math.floor(cy-cap));y1=Math.min(y1,Math.ceil(cy+cap))}
-    if((x1-x0+1)*(y1-y0+1)>40000)return{tooMany:true};
-    for(let a=x0;a<=x1;a++)for(let b=y0;b<=y1;b++){cnt++;const x=[a,b];if(P.int[0]||P.int[1]){if(!P.int[0]&&!Number.isInteger(a))continue}if(ok(x))pts.push(x)}}
-  else{if(!P.bin.every(Boolean)||n>16)return{unsupported:true};for(let mask=0;mask<(1<<n);mask++){const x=P.vars.map((_,j)=>(mask>>j)&1);cnt++;if(ok(x))pts.push(x)}}
-  if(!pts.length)return{pts,best:[],none:true,cnt};let bv=null;for(const x of pts){const z=fz(x);if(bv===null||(max?z>bv:z<bv))bv=z}
-  const best=pts.filter(x=>Math.abs(fz(x)-bv)<=1e-9*Math.max(1,Math.abs(bv))).map(x=>x.map(v=>new Q(v)));
-  const val=dot(P.c,best[0]).add(P.c0);return{pts,best,val,cnt,unbHint:R&&R.unbounded}}
+
 /* ---------- устойчивость и чувствительность (производственная задача) ---------- */
-function isProduction(P){return P.sense==='max'&&P.sign.every(s=>s==='ge')&&P.cons.every(c=>c.op==='<='&&c.b.s>=0)}
-function ranging(P,r){if(!isProduction(P)||r.status!=='optimal')return null;const n=P.vars.length,m=P.cons.length,T=r.T,Z=r.Z,B=r.B,N=r.N;if(T.length!==m)return null;
-  const nb=[];for(let k=0;k<N;k++)if(!B.includes(k))nb.push(k);
-  const cR=P.vars.map((_,j)=>{const row=B.indexOf(j);if(row<0)return{lo:null,hi:P.c[j].add(Z[j]),basic:false};
-    let lo=null,hi=null;for(const k of nb){const t=T[row][k];if(t.z)continue;const q=Z[k].neg().div(t);if(t.s>0){if(lo===null||q.cmp(lo)>0)lo=q}else{if(hi===null||q.cmp(hi)<0)hi=q}}
-    return{lo:lo&&P.c[j].add(lo),hi:hi&&P.c[j].add(hi),basic:true}});
-  const bR=P.cons.map((c,i)=>{const k=n+i,row=B.indexOf(k);if(row>=0)return{lo:c.b.sub(T[row][N]),hi:null,basic:true};
-    let lo=null,hi=null;for(let rr=0;rr<m;rr++){const p=T[rr][k];if(p.z)continue;const q=T[rr][N].neg().div(p);if(p.s>0){if(lo===null||q.cmp(lo)>0)lo=q}else{if(hi===null||q.cmp(hi)<0)hi=q}}
-    return{lo:lo&&c.b.add(lo),hi:hi&&c.b.add(hi),basic:false}});
-  const degenerate=T.some(row=>row[N].z);return{cR,bR,degenerate}}
+
+
 
 /* ---------- приведение к симметричной форме (как на семинаре) ---------- */
-function symNorm(P){const max=P.sense==='max',flips=[];const cons=P.cons.map((c,i)=>{if(c.op!=='='&&c.op!==(max?'<=':'>=')){flips.push(i);return{...c,a:c.a.map(q=>q.neg()),b:c.b.neg(),op:max?'<=':'>=',flipped:true}}return c});
-  return{...P,cons,flips}}
+
 const TX={
 ru:{title:'Методы оптимизации',brand:'Оптимизация <span class="sub">наглядно</span>',gloss:'Справочник',glossT:'Справочник понятий и методов',settings:'Настройки',canvas:'Допустимое множество, градиент и линия уровня',
  zIn:'Приблизить',zOut:'Отдалить',zHome:'Показать всё',capX:'Скрыть подсказки',capOpen:'Подсказки',grip:'перетащите панель',close:'Закрыть',drag:'Перетащить',up:'Выше',down:'Ниже',collapse:'Свернуть',
@@ -614,7 +420,7 @@ const PAL={
   neon:{bg:'#07020f',bgGrid:'#1f1533',axis:'#ffffff',reg:'#39ff88',line:'#4dd2ff',grad:'#fff35c',level:'#ff9ecf',opt:'#ff4d6d',vert:'#a98bff',int:'#ffa53d'},
   nord:{bg:'#2e3440',bgGrid:'#3b4252',axis:'#eceff4',reg:'#a3be8c',line:'#88c0d0',grad:'#ebcb8b',level:'#e5a0c0',opt:'#bf616a',vert:'#b48ead',int:'#d08770'}
 };
-const T=()=>{const b=TX[P.lang]||TX.ru;if(P.style!=='sem')return b;const o=(TXS[P.lang]||TXS.ru);return{...b,...o,cap:{...b.cap,...(o.cap||{})},tog:{...b.tog,...(o.tog||{})},colors:{...b.colors,...(o.colors||{})},sv:{...b.sv,...(o.sv||{})},grp:{...b.grp,...(o.grp||{})}}};
+const T=()=>{const b=TX[lang()]||TX.ru;if(P.style!=='sem')return b;const o=(TXS[lang()]||TXS.ru);return{...b,...o,cap:{...b.cap,...(o.cap||{})},tog:{...b.tog,...(o.tog||{})},colors:{...b.colors,...(o.colors||{})},sv:{...b.sv,...(o.sv||{})},grp:{...b.grp,...(o.grp||{})}}};
 const SEM=()=>P.style==='sem';
 const PANELS=['problem','presets','solve','dual','simplex','excel','anim','show','export'];
 const DEF={palette:'classic',colors:{...PAL.classic},dock:'auto',width:380,bottomH:46,ui:'auto',font:100,speed:1,lw:1,order:PANELS.slice(),collapsed:{excel:true,export:true},read:{},float:{x:12,y:12},
@@ -626,7 +432,7 @@ function load(){let r=null;try{r=JSON.parse(localStorage.getItem(KEY)||'null')}c
   const ord=Array.isArray(r.order)?r.order.filter(x=>PANELS.includes(x)):[];PANELS.forEach(x=>{if(!ord.includes(x))ord.push(x)});p.order=ord;
   p.collapsed=r.collapsed||{};p.float=r.float||{x:12,y:12};
   /* защита от повреждённых/старых настроек: числа — в пределах ползунков, иначе по умолчанию */const RNG={width:[240,560],bottomH:[25,75],font:[80,130],speed:[.25,3],lw:[.5,2.5]};for(const k in RNG){const v=p[k],[a,b]=RNG[k];p[k]=typeof v==='number'&&isFinite(v)?Math.min(b,Math.max(a,v)):DEF[k]}if(!p.float||typeof p.float!=='object'||!isFinite(p.float.x)||!isFinite(p.float.y))p.float={x:12,y:12};if(!p.collapsed||typeof p.collapsed!=='object'||Array.isArray(p.collapsed))p.collapsed={};return p}
-let P=load();if(!P.lang)P.lang=(navigator.language||'').toLowerCase().startsWith('ru')?'ru':'en';let saveT=0;
+let P=load();langFrom(()=>P.lang);if(!P.lang)P.lang=(navigator.language||'').toLowerCase().startsWith('ru')?'ru':'en';let saveT=0;
 function save(){clearTimeout(saveT);saveT=setTimeout(()=>{try{localStorage.setItem(KEY,JSON.stringify(P))}catch(e){}},250)}
 
 /* ---------- примеры ---------- */
@@ -964,20 +770,20 @@ function buildToggles(){const box=$('#tog');box.innerHTML='';TOG.forEach(k=>{con
   l.querySelector('input').onchange=e=>{P.show[k]=e.target.checked;save();renderCaption();req()};box.appendChild(l)})}
 function syncToggles(){document.querySelectorAll('#tog input').forEach(i=>{i.checked=!!P.show[i.dataset.k]})}
 /* ---------- справочник ---------- */
-const termTitle=id=>{const t=TERMS.find(x=>x.id===id);return t?(t[P.lang]||t.ru)[0]:id};
+const termTitle=id=>{const t=TERMS.find(x=>x.id===id);return t?(t[lang()]||t.ru)[0]:id};
 function mathify(h){return h}
 function gTabs(id,html){const f=FORMAL[id];if(!f)return html;const L=T(),ft=P.gTab==='f';
-  return`<div class="seg gtabs"><button data-tab="i" class="${ft?'':'on'}">${L.tabI}</button><button data-tab="f" class="${ft?'on':''}">${L.tabF}</button></div><div class="pane" data-pane="i"${ft?' hidden':''}>${html}</div><div class="pane" data-pane="f"${ft?'':' hidden'}>${f[P.lang]||f.ru}</div>`}
-function termHtml(t,L){const x=t[P.lang]||t.ru,rd=!!P.read[t.id];
+  return`<div class="seg gtabs"><button data-tab="i" class="${ft?'':'on'}">${L.tabI}</button><button data-tab="f" class="${ft?'on':''}">${L.tabF}</button></div><div class="pane" data-pane="i"${ft?' hidden':''}>${html}</div><div class="pane" data-pane="f"${ft?'':' hidden'}>${f[lang()]||f.ru}</div>`}
+function termHtml(t,L){const x=t[lang()]||t.ru,rd=!!P.read[t.id];
   return`<details class="term${rd?' read':''}" id="g-${t.id}"><summary><span>${rd?'<b class="rd">✓</b>':''}${x[0]}</span><small>${x[1]}</small></summary><div class="tb">${ILL[t.id]?`<figure class="ill">${illSvg(t.id)}</figure>`:''}${gTabs(t.id,x[2])}${DEMOS[t.id]?`<button class="btn sm primary" data-demo="${t.id}">${L.showDemo}</button>`:''}${REL[t.id]?`<div class="rel">${L.seeAlso} ${REL[t.id].map(r=>`<button class="chip" data-term="${r}">${termTitle(r)}</button>`).join('')}</div>`:''}<div class="row" style="margin-top:.8rem"><button class="btn sm readbtn${rd?' on':''}" data-read="${t.id}">${rd?L.readDone:L.readMark}</button></div></div></details>`}
 function renderGloss(q=''){q=q.trim().toLowerCase();const L=T();if(!P.read||typeof P.read!=='object')P.read={};
   const total=TERMS.length,done=TERMS.filter(t=>P.read[t.id]).length;
-  const match=t=>{if(!q)return true;const x=t[P.lang]||t.ru,o=t[P.lang==='ru'?'en':'ru'],f=FORMAL[t.id];return(x[0]+' '+x[1]+' '+x[2]+' '+o[0]+' '+(f?(f[P.lang]||f.ru):'')).replace(/<[^>]+>/g,'').toLowerCase().includes(q)};
+  const match=t=>{if(!q)return true;const x=t[lang()]||t.ru,o=t[lang()==='ru'?'en':'ru'],f=FORMAL[t.id];return(x[0]+' '+x[1]+' '+x[2]+' '+o[0]+' '+(f?(f[lang()]||f.ru):'')).replace(/<[^>]+>/g,'').toLowerCase().includes(q)};
   let html=`<div class="prog"><span>${L.readOf(done,total)}</span><span class="bar"><i style="width:${Math.round(done/total*100)}%"></i></span>${done?`<button class="linkbtn" id="readReset">${L.readReset}</button>`:''}</div>`;
   let any=false,num=0;
   CHAP.forEach(ch=>{if(!ch.extra)num++;const ts=ch.ids.map(id=>TERMS.find(t=>t.id===id)).filter(Boolean).filter(match);if(!ts.length)return;any=true;
     const r=ch.ids.filter(id=>P.read[id]).length;
-    html+=`<section class="chap"><h3>${ch.extra?'':num+'. '}${ch[P.lang]||ch.ru}<span class="cnt">${r} / ${ch.ids.length}</span></h3>${ts.map(t=>termHtml(t,L)).join('')}</section>`});
+    html+=`<section class="chap"><h3>${ch.extra?'':num+'. '}${ch[lang()]||ch.ru}<span class="cnt">${r} / ${ch.ids.length}</span></h3>${ts.map(t=>termHtml(t,L)).join('')}</section>`});
   $('#gl').innerHTML=any?html:html+`<p class="note">${L.noFound}</p>`}
 function rerenderGloss(){const sh=$('#dGloss .sheet'),st=sh.scrollTop,open=[...document.querySelectorAll('#gl details[open]')].map(d=>d.id);renderGloss($('#gq').value);open.forEach(id=>{const e=document.getElementById(id);if(e)e.open=true});sh.scrollTop=st}
 $('#gq').oninput=e=>renderGloss(e.target.value);
@@ -1090,7 +896,7 @@ function buildSettings(){
   $('#fR').oninput=e=>{P.font=+e.target.value;applyPrefs()};
   $('#lR').oninput=e=>{P.lw=+e.target.value;applyPrefs()};
   $('#resetOrder').onclick=()=>{P.order=PANELS.slice();P.collapsed={};applyPrefs()};
-  $('#resetAll').onclick=()=>{const lg=P.lang,rd=P.read,last=P.last;P=clone(DEF);P.lang=lg;P.read=rd||{};P.last=last;syncToggles();$('#spR').value=P.speed;$('#spOut').textContent='×1';applyPrefs();renderAll()};
+  $('#resetAll').onclick=()=>{const lg=lang(),rd=P.read,last=P.last;P=clone(DEF);P.lang=lg;P.read=rd||{};P.last=last;syncToggles();$('#spR').value=P.speed;$('#spOut').textContent='×1';applyPrefs();renderAll()};
 }
 function buildPal(){const L=T();
   const pc=$('#palChips');pc.innerHTML='';Object.entries(PAL).forEach(([k,p])=>{const b=document.createElement('button');b.className='chip';b.dataset.p=k;b.innerHTML=`<span class="sw" style="background:${p.bg};box-shadow:inset 0 0 0 3px ${p.f||Object.values(p)[3]}"></span>${L.pal[k]}`;
@@ -1098,13 +904,13 @@ function buildPal(){const L=T();
   const cs=$('#colors');cs.innerHTML='';Object.keys(L.colors).forEach(k=>{const l=document.createElement('label');l.innerHTML=`<input type="color" data-k="${k}"> ${L.colors[k]}`;
     l.querySelector('input').oninput=e=>{P.colors[k]=e.target.value;P.palette='custom';applyPrefs()};cs.appendChild(l)});
 }
-function applyLang(){const L=T();LNG=P.lang;document.documentElement.lang=P.lang;document.title=L.title;
+function applyLang(){const L=T();LNG=lang();document.documentElement.lang=lang();document.title=L.title;
   document.querySelectorAll('[data-i]').forEach(e=>{e.textContent=L[e.dataset.i]});
   document.querySelectorAll('[data-ih]').forEach(e=>{e.innerHTML=L[e.dataset.ih]});
   document.querySelectorAll('[data-it]').forEach(e=>{e.title=L[e.dataset.it];e.setAttribute('aria-label',L[e.dataset.it])});
   document.querySelectorAll('[data-ia]').forEach(e=>{e.setAttribute('aria-label',L[e.dataset.ia])});
   $('#gq').placeholder=L.search;cv.setAttribute('aria-label',L.canvas);
-  document.querySelectorAll('#langSeg button,#langSeg2 button').forEach(b=>b.classList.toggle('on',b.dataset.l===P.lang));
+  document.querySelectorAll('#langSeg button,#langSeg2 button').forEach(b=>b.classList.toggle('on',b.dataset.l===lang()));
   buildPal();buildToggles();syncToggles();syncSettings();updExport();renderKeys();
   if($('#dGloss').classList.contains('open'))rerenderGloss();
   if(S.txt){solveAll({keepT:true})}syncStyle()}
