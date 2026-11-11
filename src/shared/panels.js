@@ -7,9 +7,9 @@
  *
  * prefs — функция, а не объект: настройки могут быть заменены целиком
  * («Сбросить всё»), и обработчики должны видеть текущие.
- * @param {{ side: HTMLElement, prefs: () => { order: string[], collapsed: Record<string, boolean> }, save: () => void }} o
+ * @param {{ side: HTMLElement, prefs: () => { order: string[], collapsed: Record<string, boolean> }, save: () => void, openDetails?: boolean }} o
  */
-export function createPanels({ side, prefs, save }) {
+export function createPanels({ side, prefs, save, openDetails = false }) {
   function buildPanels() {
     document.querySelectorAll('.panel').forEach((p) => {
       const h = document.createElement('div');
@@ -88,6 +88,11 @@ export function createPanels({ side, prefs, save }) {
     applyOrder();
     save();
     const el = side.querySelector(`.panel[data-id="${id}"]`);
+    // openDetails: раскрыть внутри блока «подробнее» и шаги (в ЛА — для демо справочника)
+    if (el && openDetails)
+      el.querySelectorAll('details.more,details.steps').forEach((d) => {
+        /** @type {HTMLDetailsElement} */ (d).open = true;
+      });
     if (el) setTimeout(() => el.scrollIntoView({ block: 'nearest', behavior: 'smooth' }), 50);
   }
 

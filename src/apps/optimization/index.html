@@ -24,7 +24,7 @@
       <canvas id="cv"></canvas>
       <div class="ov" id="ov"></div>
       <div class="zoom"><button id="zIn" data-it="zIn">+</button><button id="zOut" data-it="zOut">−</button><button id="zHome" data-it="zHome">⌂</button></div>
-      <div class="toast" id="toast"></div>
+      <div class="toast" id="toast" role="status" aria-live="polite"></div>
       <button class="capOpen" id="capOpen" hidden><span aria-hidden="true">💡</span><span data-i="capOpen"></span></button>
       <div class="cap" id="cap"><span id="capT"></span><button id="capX" data-it="capX">×</button></div>
     </div>
@@ -71,7 +71,7 @@
     </aside>
   </div>
 </div>
-<div class="drawer" id="dGloss" role="dialog">
+<div class="drawer" id="dGloss" role="dialog" aria-modal="true">
   <div class="scrim" data-close></div>
   <div class="sheet">
     <div class="sh-h"><h2 data-i="gloss"></h2><button class="icon" data-close data-it="close">✕</button></div>
@@ -80,7 +80,7 @@
   </div>
 </div>
 
-<div class="drawer" id="dKeys" role="dialog">
+<div class="drawer" id="dKeys" role="dialog" aria-modal="true">
   <div class="scrim" data-close></div>
   <div class="sheet">
     <div class="sh-h"><h2 data-i="keys"></h2><button class="icon" data-close data-it="close">✕</button></div>
@@ -89,7 +89,7 @@
   </div>
 </div>
 
-<div class="drawer" id="dSet" role="dialog">
+<div class="drawer" id="dSet" role="dialog" aria-modal="true">
   <div class="scrim" data-close></div>
   <div class="sheet">
     <div class="sh-h"><h2 data-i="settings"></h2><button class="icon" data-close data-it="close">✕</button></div>

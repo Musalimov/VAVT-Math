@@ -1,5 +1,5 @@
 // @ts-check
-import { $ } from './dom.js';
+import { $, setOn } from './dom.js';
 import { closeDrawers, openDrawer } from './drawers.js';
 
 /**
@@ -32,7 +32,7 @@ export function createGlossary({ prefs, save, T, content, onDemo, illSvg = () =>
     if (!f) return html;
     const L = T(),
       ft = prefs().gTab === 'f';
-    return `<div class="seg gtabs"><button data-tab="i" class="${ft ? '' : 'on'}">${L.tabI}</button><button data-tab="f" class="${ft ? 'on' : ''}">${L.tabF}</button></div><div class="pane" data-pane="i"${ft ? ' hidden' : ''}>${html}</div><div class="pane" data-pane="f"${ft ? '' : ' hidden'}>${f[prefs().lang] || f.ru}</div>`;
+    return `<div class="seg gtabs"><button data-tab="i" class="${ft ? '' : 'on'}" aria-pressed="${!ft}">${L.tabI}</button><button data-tab="f" class="${ft ? 'on' : ''}" aria-pressed="${ft}">${L.tabF}</button></div><div class="pane" data-pane="i"${ft ? ' hidden' : ''}>${html}</div><div class="pane" data-pane="f"${ft ? '' : ' hidden'}>${mathify(f[prefs().lang] || f.ru)}</div>`;
   }
 
   function termHtml(t, L) {
@@ -122,9 +122,7 @@ export function createGlossary({ prefs, save, T, content, onDemo, illSvg = () =>
       if (!tb) return;
       const box = tb.closest('.tb');
       prefs().gTab = tb.dataset.tab;
-      box
-        .querySelectorAll('[data-tab]')
-        .forEach((x) => x.classList.toggle('on', x.dataset.tab === prefs().gTab));
+      box.querySelectorAll('[data-tab]').forEach((x) => setOn(x, x.dataset.tab === prefs().gTab));
       box.querySelectorAll('.pane').forEach((p) => {
         p.hidden = p.dataset.pane !== prefs().gTab;
       });

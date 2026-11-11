@@ -1,5 +1,6 @@
 // @ts-check
 import { $ } from './dom.js';
+import { pub } from './state.js';
 
 /**
  * Экспорт: снимок холста в PNG, копирование текста решения, сохранение
@@ -11,12 +12,17 @@ import { $ } from './dom.js';
  *
  * state.stamp — рисовать ли подпись на снимке (холст читает его при перерисовке),
  * state.dlTried — проверка возможности сохранять завершена.
- * Видео (по желанию): video = { ready: () => boolean, play: () => void } — запись холста
+ * Видео (по желанию): video = { ready?, play, reset?, frame? } — запись холста;
+ * reset — вернуть анимацию в начало (по умолчанию state.t = 0, state.anim = null),
+ * frame — дорисовка каждого кадра (в ЛА — подписи поверх холста);
  * с анимацией тренажёра (state.anim, state.t), кнопка #xVid. Без video кнопки видео нет.
  * @param {{ name: string, T: () => any, state: any, cv: HTMLCanvasElement, renderNow: () => void, req: () => void,
- *   video?: { ready: () => boolean, play: () => void } | null }} o
+ *   video?: { ready?: () => boolean, play: () => void, reset?: () => void, frame?: () => void } | null,
+ *   name: string | (() => string) }} o
  */
 export function createExport({ name, T, state, cv, renderNow, req, video = null }) {
+  /** имя файла без расширения: строка или функция (в ЛА зависит от режима 2D/3D) */
+  const base = () => (typeof name === 'function' ? name() : name);
   /** @type {any} */
   let DL = null;
 
@@ -53,8 +59,9 @@ export function createExport({ name, T, state, cv, renderNow, req, video = null 
 
   async function exportVideo() {
     const m = vidMime();
-    if (!video || !canSave() || !m || state.rec || state.err || !video.ready()) return;
+    if (!video || !canSave() || !m || state.rec || state.err || (video.ready && !video.ready())) return;
     state.rec = true;
+    pub('rec', 'recording');
     state.stamp = /** @type {HTMLInputElement} */ ($('#xStamp')).checked;
     updExport();
     const keep = (/** @type {number} */ ms) =>
@@ -62,6 +69,7 @@ export function createExport({ name, T, state, cv, renderNow, req, video = null 
         const t0 = performance.now();
         const f = () => {
           renderNow();
+          if (video.frame) video.frame();
           if (performance.now() - t0 < ms) requestAnimationFrame(f);
           else r(undefined);
         };
@@ -79,8 +87,11 @@ export function createExport({ name, T, state, cv, renderNow, req, video = null 
       const stopped = new Promise((r) => {
         rec.onstop = r;
       });
-      state.t = 0;
-      state.anim = null;
+      if (video.reset) video.reset();
+      else {
+        state.t = 0;
+        state.anim = null;
+      }
       rec.start(100);
       await keep(500);
       video.play();
@@ -93,17 +104,19 @@ export function createExport({ name, T, state, cv, renderNow, req, video = null 
       await stopped;
     } catch (err) {
       state.rec = false;
+      pub('rec', 'idle');
       state.stamp = false;
       req();
       flash(T().xFail);
       return;
     }
     state.rec = false;
+    pub('rec', 'idle');
     state.stamp = false;
     req();
     updExport();
     const blob = new Blob(chunks, { type: m });
-    if (blob.size) saveFile(`${name}.${m.startsWith('video/mp4') ? 'mp4' : 'webm'}`, blob);
+    if (blob.size) saveFile(`${base()}.${m.startsWith('video/mp4') ? 'mp4' : 'webm'}`, blob);
     else flash(T().xFail);
   }
 
@@ -160,7 +173,7 @@ export function createExport({ name, T, state, cv, renderNow, req, video = null 
     cv.toBlob((b) => {
       state.stamp = false;
       req();
-      if (b) saveFile(`${name}.png`, b);
+      if (b) saveFile(`${base()}.png`, b);
     }, 'image/png');
   }
 

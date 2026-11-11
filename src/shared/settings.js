@@ -1,5 +1,5 @@
 // @ts-check
-import { $, clone } from './dom.js';
+import { $, clone, setOn } from './dom.js';
 import { openDrawer } from './drawers.js';
 import { fmt } from './format.js';
 
@@ -16,6 +16,7 @@ import { fmt } from './format.js';
  *   settings.buildSettings();   // обработчики элементов шторки
  *   settings.applyPrefs();      // применить настройки к странице
  *
+ * swatch(p) — цвет обводки образца палитры (по умолчанию p.f или первый цвет графика).
  * hooks.onReset(np) — по желанию: что тренажёр сбрасывает у себя после «Сбросить всё».
  * hooks — то, что у каждого тренажёра своё (перевод интерфейса, порядок блоков,
  * переключатели слоёв, перерисовка).
@@ -24,7 +25,19 @@ import { fmt } from './format.js';
  *   main: HTMLElement, side: HTMLElement,
  *   hooks: { applyLang: () => void, applyOrder: () => void, syncToggles: () => void, renderAll: () => void, req: () => void } }} o
  */
-export function createSettings({ prefs, setPrefs, save, T, defaults, panels, palettes, main, side, hooks }) {
+export function createSettings({
+  prefs,
+  setPrefs,
+  save,
+  T,
+  defaults,
+  panels,
+  palettes,
+  main,
+  side,
+  hooks,
+  swatch = (p) => p.f || Object.values(p)[3],
+}) {
   function buildSettings() {
     document.querySelectorAll('#langSeg button,#langSeg2 button').forEach(
       (b) =>
@@ -92,7 +105,7 @@ export function createSettings({ prefs, setPrefs, save, T, defaults, panels, pal
       const b = document.createElement('button');
       b.className = 'chip';
       b.dataset.p = k;
-      b.innerHTML = `<span class="sw" style="background:${p.bg};box-shadow:inset 0 0 0 3px ${p.f || Object.values(p)[3]}"></span>${L.pal[k]}`;
+      b.innerHTML = `<span class="sw" style="background:${p.bg};box-shadow:inset 0 0 0 3px ${swatch(p)}"></span>${L.pal[k]}`;
       b.onclick = () => {
         prefs().palette = k;
         prefs().colors = { ...palettes[k] };
@@ -115,15 +128,9 @@ export function createSettings({ prefs, setPrefs, save, T, defaults, panels, pal
   }
 
   function syncSettings() {
-    document
-      .querySelectorAll('#uiSeg button')
-      .forEach((b) => b.classList.toggle('on', b.dataset.v === prefs().ui));
-    document
-      .querySelectorAll('#dockSeg button')
-      .forEach((b) => b.classList.toggle('on', b.dataset.v === prefs().dock));
-    document
-      .querySelectorAll('#palChips .chip')
-      .forEach((b) => b.classList.toggle('on', b.dataset.p === prefs().palette));
+    document.querySelectorAll('#uiSeg button').forEach((b) => setOn(b, b.dataset.v === prefs().ui));
+    document.querySelectorAll('#dockSeg button').forEach((b) => setOn(b, b.dataset.v === prefs().dock));
+    document.querySelectorAll('#palChips .chip').forEach((b) => setOn(b, b.dataset.p === prefs().palette));
     document.querySelectorAll('#colors input').forEach((i) => {
       i.value = prefs().colors[i.dataset.k];
     });
