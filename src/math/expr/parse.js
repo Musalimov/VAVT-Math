@@ -68,7 +68,8 @@ export function tokenize(s) {
         p = i;
       while (w.length) {
         const m = WORDS.find((k) => w.startsWith(k));
-        if (!m) throw { at: p, w };
+        // неизвестное слово: в ошибке — слово целиком, чтобы назвать его студенту
+        if (!m) throw { at: p, w, msg: 'word', word: s.slice(i, j) };
         if (m === 'x') T.push({ t: 'x' });
         else if (m === 'pi') T.push({ t: 'c', v: 'pi' });
         else if (m === 'e') T.push({ t: 'c', v: 'e' });

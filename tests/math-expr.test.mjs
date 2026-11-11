@@ -51,3 +51,15 @@ test('символьно интегрируются суммы (две sumTerms 
     assert.equal(typeof tp(r.F, 0, 'txt'), 'string');
   }
 });
+
+test('регрессия фазы 1 (№12): неизвестное слово в формуле называется в ошибке', () => {
+  for (const [f, w] of [
+    ['sec(x)', 'sec'],
+    ['foo(x)+1', 'foo'],
+    ['2*y', 'y'],
+  ])
+    assert.throws(
+      () => parseFx(f),
+      (e) => e.msg === 'word' && e.word === w
+    );
+});

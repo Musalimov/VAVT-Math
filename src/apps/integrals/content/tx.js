@@ -1,6 +1,8 @@
 import { lang } from '../../../shared/i18n.js';
 export const TX = {
   ru: {
+    errWord: (w) =>
+      `Не знаю функцию или обозначение «${w}». Доступны: sin, cos, tg (tan), ctg (cot), arcsin, arccos, arctg (arctan), sh, ch, th, exp, ln, lg (log), sqrt, abs; константы pi и e; переменная x.`,
     prefsReset:
       'Сохранённые настройки повреждены — восстановлены настройки по умолчанию. Копия старых сохранена в браузере.',
     prefsNoSave:
@@ -388,6 +390,8 @@ export const TX = {
     fxA: 'Подынтегральная функция f(x)',
   },
   en: {
+    errWord: (w) =>
+      `Unknown function or symbol “${w}”. Available: sin, cos, tan (tg), cot (ctg), arcsin, arccos, arctan, sinh, cosh, tanh, exp, ln, log (lg), sqrt, abs; constants pi and e; variable x.`,
     prefsReset:
       'Saved settings were damaged — defaults restored. A copy of the old ones is kept in the browser.',
     prefsNoSave: 'Browser storage is full or unavailable — settings won’t be saved after closing the page.',

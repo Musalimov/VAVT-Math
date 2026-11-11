@@ -57,7 +57,65 @@ import {
 } from '../../math/expr/poly.js';
 import { ALIAS, WORDS, hasInf, parse, parseFx, parseLim, tokenize } from '../../math/expr/parse.js';
 import { quadF, singular, tsFinite } from '../../math/expr/numeric.js';
-import { EQ, HH, IH, RULES, R_cmul, R_dist, R_divsplit, R_linu, R_neg, R_parts, R_poly, R_powlin, R_prodsum, R_rational, R_sum, R_table, R_trigpow, R_trigsub, R_usub, R_weier, SMP, SX, TAB, VN, cH, cands, checkF, cyclic, dd, dxh, integ, isET, isLogLike, linFac, linFacScale, mark, meth, nonElem, onlyTrigX, pcancel, polyAsc, polyGcd, powForm, propConst, quadInt, quiet, ratAst, ratFun, ratOf, ratRoots, reset, scFactors, sincos, solve, step, subI, withVar,  } from '../../math/expr/integrate.js';
+import {
+  EQ,
+  HH,
+  IH,
+  RULES,
+  R_cmul,
+  R_dist,
+  R_divsplit,
+  R_linu,
+  R_neg,
+  R_parts,
+  R_poly,
+  R_powlin,
+  R_prodsum,
+  R_rational,
+  R_sum,
+  R_table,
+  R_trigpow,
+  R_trigsub,
+  R_usub,
+  R_weier,
+  SMP,
+  SX,
+  TAB,
+  VN,
+  cH,
+  cands,
+  checkF,
+  cyclic,
+  dd,
+  dxh,
+  integ,
+  isET,
+  isLogLike,
+  linFac,
+  linFacScale,
+  mark,
+  meth,
+  nonElem,
+  onlyTrigX,
+  pcancel,
+  polyAsc,
+  polyGcd,
+  powForm,
+  propConst,
+  quadInt,
+  quiet,
+  ratAst,
+  ratFun,
+  ratOf,
+  ratRoots,
+  reset,
+  scFactors,
+  sincos,
+  solve,
+  step,
+  subI,
+  withVar,
+} from '../../math/expr/integrate.js';
 import {
   CV,
   D,
@@ -296,6 +354,7 @@ import { lang, langFrom } from '../../shared/i18n.js';
       S.ff = compile(S.fe);
     } catch (e) {
       S.err = e && e.msg === 'inf' ? 'inf' : 'f';
+      S.errWord = e && e.msg === 'word' ? e.word : null;
     }
     if (!S.err) {
       try {
@@ -1264,7 +1323,15 @@ import { lang, langFrom } from '../../shared/i18n.js';
     if (S.err) {
       er.hidden = false;
       er.textContent =
-        S.err === 'f' ? L.errParse : S.err === 'inf' ? L.errInfF : S.err === 'x' ? L.errX : L.errLim;
+        S.err === 'f' && S.errWord
+          ? L.errWord(S.errWord)
+          : S.err === 'f'
+            ? L.errParse
+            : S.err === 'inf'
+              ? L.errInfF
+              : S.err === 'x'
+                ? L.errX
+                : L.errLim;
       $('#fPrev').innerHTML = '';
       return;
     }
