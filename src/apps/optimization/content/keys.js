@@ -1,0 +1,22 @@
+// Список горячих клавиш в шторке «?»: клавиша и ключ текста в TX.
+export const KEYS = [
+  ['Space', 'k_play'],
+  ['← →', 'k_t'],
+  ['Shift + ← →', 'k_t2'],
+  ['Home / End', 'k_t01'],
+  ['1 – 9', 'k_pre'],
+  ['D', 'k_mode'],
+  ['V', 'k_grad'],
+  ['L', 'k_level'],
+  ['B', 'k_vert'],
+  ['R', 'k_sides'],
+  ['G', 'k_grid'],
+  ['H', 'k_hint'],
+  ['+ / −', 'k_zoom'],
+  ['0', 'k_home'],
+  ['S', 'k_png'],
+  ['A', 'k_vid'],
+  ['/', 'k_gloss'],
+  ['?', 'k_keys'],
+  ['Esc', 'k_esc'],
+];

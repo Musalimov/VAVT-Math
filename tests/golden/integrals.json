@@ -1,0 +1,868 @@
+{
+ "app": "integrals",
+ "ref": "ref/phase1",
+ "cases": [
+  {
+   "id": "p_pow:I",
+   "f": "x^2",
+   "a": "0",
+   "b": "2",
+   "err": null,
+   "res": {
+    "F": "1/3*x^3",
+    "val": 2.6666666666666665,
+    "exact": "8/3",
+    "how": "nl",
+    "div": false,
+    "num": 2.666666666666666,
+    "ok": true
+   },
+   "ru": "Степенная формула\n\nИдея: Это степени x: каждую интегрируем по формуле xⁿ → xⁿ⁺¹/(n + 1).\n\nРешение по шагам\nTerm by term with ∫xn dx = xn+1/(n + 1): ∫x2 dx = \nx3\n3\nОтвет\n∫x2 dx = \nx3\n3\n + C\n\n✓ Проверка: производная найденной функции совпадает с f(x) во всех контрольных точках.?\n\nC — любая постоянная: у функции бесконечно много первообразных, их графики получаются сдвигом вверх-вниз. Подвигайте ползунок C в блоке «Интеграл».?",
+   "en": "Power rule\n\nIdea: These are powers of x: integrate each with xⁿ → xⁿ⁺¹/(n + 1).\n\nStep-by-step solution\nTerm by term with ∫xn dx = xn+1/(n + 1): ∫x2 dx = \nx3\n3\nAnswer\n∫x2 dx = \nx3\n3\n + C\n\n✓ Check: the derivative of the result matches f(x) at every test point.?\n\nC is any constant: a function has infinitely many antiderivatives, and their graphs are vertical shifts of each other. Move the C slider in the Integral block.?"
+  },
+  {
+   "id": "p_pow:D",
+   "f": "x^2",
+   "a": "0",
+   "b": "2",
+   "err": null,
+   "res": {
+    "F": "1/3*x^3",
+    "val": 2.6666666666666665,
+    "exact": "8/3",
+    "how": "nl",
+    "div": false,
+    "num": 2.666666666666666,
+    "ok": true
+   },
+   "ru": "Степенная формула\n\nИдея: Степенная функция — табличный интеграл.\n\nРешение по шагам\nПочленно по формуле ∫xn dx = xn+1/(n + 1): ∫x2 dx = \nx3\n3\nОтвет\n∫x2 dx = \nx3\n3\n + C\n\n✓ Проверка: производная найденной функции совпадает с f(x) во всех контрольных точках.?\n\nОпределённый интеграл\n\nПо формуле Ньютона–Лейбница:\n\n∫\n2\n0\nx2 dx = F(2) − F(0) = 2.6667 − 0 = \n8\n3\n ≈ 2.66667",
+   "en": "Power rule\n\nIdea: A power function is a table integral.\n\nStep-by-step solution\nПочленно по формуле ∫xn dx = xn+1/(n + 1): ∫x2 dx = \nx3\n3\nAnswer\n∫x2 dx = \nx3\n3\n + C\n\n✓ Check: the derivative of the result matches f(x) at every test point.?\n\nDefinite integral\n\nBy the Newton–Leibniz formula:\n\n∫\n2\n0\nx2 dx = F(2) − F(0) = 2.6667 − 0 = \n8\n3\n ≈ 2.66667"
+  },
+  {
+   "id": "p_sin:I",
+   "f": "sin x",
+   "a": "0",
+   "b": "pi",
+   "err": null,
+   "res": {
+    "F": "-cos(x)",
+    "val": 2,
+    "exact": "2",
+    "how": "nl",
+    "div": false,
+    "num": 1.9999999999999982,
+    "ok": true
+   },
+   "ru": "Табличный\n\nИдея: Подынтегральная функция есть в таблице интегралов — ответ сразу.\n\nРешение по шагам\nТабличный интеграл: ∫sin x dx = −cos x\nОтвет\n∫sin x dx = −cos x + C\n\n✓ Проверка: производная найденной функции совпадает с f(x) во всех контрольных точках.?\n\nC — любая постоянная: у функции бесконечно много первообразных, их графики получаются сдвигом вверх-вниз. Подвигайте ползунок C в блоке «Интеграл».?",
+   "en": "Table integral\n\nIdea: The integrand is in the table of integrals, so the answer is immediate.\n\nStep-by-step solution\nТабличный интеграл: ∫sin x dx = −cos x\nAnswer\n∫sin x dx = −cos x + C\n\n✓ Check: the derivative of the result matches f(x) at every test point.?\n\nC is any constant: a function has infinitely many antiderivatives, and their graphs are vertical shifts of each other. Move the C slider in the Integral block.?"
+  },
+  {
+   "id": "p_sin:D",
+   "f": "sin x",
+   "a": "0",
+   "b": "pi",
+   "err": null,
+   "res": {
+    "F": "-cos(x)",
+    "val": 2,
+    "exact": "2",
+    "how": "nl",
+    "div": false,
+    "num": 1.9999999999999982,
+    "ok": true
+   },
+   "ru": "Табличный\n\nИдея: Табличный интеграл; вся площадь над осью.\n\nРешение по шагам\nТабличный интеграл: ∫sin x dx = −cos x\nОтвет\n∫sin x dx = −cos x + C\n\n✓ Проверка: производная найденной функции совпадает с f(x) во всех контрольных точках.?\n\nОпределённый интеграл\n\nПо формуле Ньютона–Лейбница:\n\n∫\nπ\n0\nsin x dx = F(π) − F(0) = 1 − (−1) = 2",
+   "en": "Table integral\n\nIdea: A table integral; all the area is above the axis.\n\nStep-by-step solution\nТабличный интеграл: ∫sin x dx = −cos x\nAnswer\n∫sin x dx = −cos x + C\n\n✓ Check: the derivative of the result matches f(x) at every test point.?\n\nDefinite integral\n\nBy the Newton–Leibniz formula:\n\n∫\nπ\n0\nsin x dx = F(π) − F(0) = 1 − (−1) = 2"
+  },
+  {
+   "id": "p_lin:I",
+   "f": "(2x+1)^3",
+   "a": "0",
+   "b": "1",
+   "err": null,
+   "res": {
+    "F": "1/8*(2*x + 1)^4",
+    "val": 10,
+    "exact": "10",
+    "how": "nl",
+    "div": false,
+    "num": 10,
+    "ok": true
+   },
+   "ru": "Линейная замена\nСтепенная формула\n\nИдея: Внутри табличной функции стоит линейное выражение kx + b: считаем по таблице и делим на k.\n\nРешение по шагам\nВнутри стоит линейная функция u = 2x + 1. Считаем по таблице, как будто аргумент просто x, и делим на коэффициент 2 при x: ∫(2x + 1)3 dx = \n(2x + 1)4\n8\nОтвет\n∫(2x + 1)3 dx = \n(2x + 1)4\n8\n + C\n\n✓ Проверка: производная найденной функции совпадает с f(x) во всех контрольных точках.?\n\nC — любая постоянная: у функции бесконечно много первообразных, их графики получаются сдвигом вверх-вниз. Подвигайте ползунок C в блоке «Интеграл».?",
+   "en": "Linear substitution\nPower rule\n\nIdea: A table function of a linear expression kx + b: use the table and divide by k.\n\nStep-by-step solution\nВнутри стоит линейная функция u = 2x + 1. Считаем по таблице, как будто аргумент просто x, и делим на коэффициент 2 при x: ∫(2x + 1)3 dx = \n(2x + 1)4\n8\nAnswer\n∫(2x + 1)3 dx = \n(2x + 1)4\n8\n + C\n\n✓ Check: the derivative of the result matches f(x) at every test point.?\n\nC is any constant: a function has infinitely many antiderivatives, and their graphs are vertical shifts of each other. Move the C slider in the Integral block.?"
+  },
+  {
+   "id": "p_lin:D",
+   "f": "(2x+1)^3",
+   "a": "0",
+   "b": "1",
+   "err": null,
+   "res": {
+    "F": "1/8*(2*x + 1)^4",
+    "val": 10,
+    "exact": "10",
+    "how": "nl",
+    "div": false,
+    "num": 10,
+    "ok": true
+   },
+   "ru": "Линейная замена\nСтепенная формула\n\nИдея: Не раскрывайте куб: внутри линейная функция, достаточно поделить на 2.\n\nРешение по шагам\nВнутри стоит линейная функция u = 2x + 1. Считаем по таблице, как будто аргумент просто x, и делим на коэффициент 2 при x: ∫(2x + 1)3 dx = \n(2x + 1)4\n8\nОтвет\n∫(2x + 1)3 dx = \n(2x + 1)4\n8\n + C\n\n✓ Проверка: производная найденной функции совпадает с f(x) во всех контрольных точках.?\n\nОпределённый интеграл\n\nПо формуле Ньютона–Лейбница:\n\n∫\n1\n0\n(2x + 1)3 dx = F(1) − F(0) = 10.125 − 0.125 = 10",
+   "en": "Linear substitution\nPower rule\n\nIdea: Don’t expand the cube: the inside is linear, just divide by 2.\n\nStep-by-step solution\nВнутри стоит линейная функция u = 2x + 1. Считаем по таблице, как будто аргумент просто x, и делим на коэффициент 2 при x: ∫(2x + 1)3 dx = \n(2x + 1)4\n8\nAnswer\n∫(2x + 1)3 dx = \n(2x + 1)4\n8\n + C\n\n✓ Check: the derivative of the result matches f(x) at every test point.?\n\nDefinite integral\n\nBy the Newton–Leibniz formula:\n\n∫\n1\n0\n(2x + 1)3 dx = F(1) − F(0) = 10.125 − 0.125 = 10"
+  },
+  {
+   "id": "p_usub:I",
+   "f": "x e^(x^2)",
+   "a": "0",
+   "b": "1",
+   "err": null,
+   "res": {
+    "F": "1/2*exp(x^2)",
+    "val": 0.8591409142295225,
+    "exact": "1/2*e - 1/2",
+    "how": "nl",
+    "div": false,
+    "num": 0.8591409142295224,
+    "ok": true
+   },
+   "ru": "Замена переменной\nТабличный\n\nИдея: Множитель снаружи — производная внутренней функции. Замена u превращает интеграл в табличный.\n\nРешение по шагам\nЗамена u = x2. Тогда du = 2x dx, и эта производная уже стоит в интеграле множителем:\n∫x·ex2 dx = \n1\n2\n·∫eu du\nТабличный интеграл: ∫eu du = eu\nВозвращаемся к x: \nex2\n2\nОтвет\n∫x·ex2 dx = \nex2\n2\n + C\n\n✓ Проверка: производная найденной функции совпадает с f(x) во всех контрольных точках.?\n\nC — любая постоянная: у функции бесконечно много первообразных, их графики получаются сдвигом вверх-вниз. Подвигайте ползунок C в блоке «Интеграл».?",
+   "en": "Substitution\nTable integral\n\nIdea: The outside factor is the derivative of the inner function. Substituting u makes it a table integral.\n\nStep-by-step solution\nЗамена u = x2. Тогда du = 2x dx, и эта производная уже стоит в интеграле множителем:\n∫x·ex2 dx = \n1\n2\n·∫eu du\nТабличный интеграл: ∫eu du = eu\nВозвращаемся к x: \nex2\n2\nAnswer\n∫x·ex2 dx = \nex2\n2\n + C\n\n✓ Check: the derivative of the result matches f(x) at every test point.?\n\nC is any constant: a function has infinitely many antiderivatives, and their graphs are vertical shifts of each other. Move the C slider in the Integral block.?"
+  },
+  {
+   "id": "p_usub:D",
+   "f": "x e^(x^2)",
+   "a": "0",
+   "b": "1",
+   "err": null,
+   "res": {
+    "F": "1/2*exp(x^2)",
+    "val": 0.8591409142295225,
+    "exact": "1/2*e - 1/2",
+    "how": "nl",
+    "div": false,
+    "num": 0.8591409142295224,
+    "ok": true
+   },
+   "ru": "Замена переменной\nТабличный\n\nИдея: Производная x² — это 2x, и x уже стоит множителем.\n\nРешение по шагам\nЗамена u = x2. Тогда du = 2x dx, и эта производная уже стоит в интеграле множителем:\n∫x·ex2 dx = \n1\n2\n·∫eu du\nТабличный интеграл: ∫eu du = eu\nВозвращаемся к x: \nex2\n2\nОтвет\n∫x·ex2 dx = \nex2\n2\n + C\n\n✓ Проверка: производная найденной функции совпадает с f(x) во всех контрольных точках.?\n\nОпределённый интеграл\n\nПо формуле Ньютона–Лейбница:\n\n∫\n1\n0\nx·ex2 dx = F(1) − F(0) = 1.3591 − 0.5 = \ne\n2\n − \n1\n2\n ≈ 0.85914",
+   "en": "Substitution\nTable integral\n\nIdea: The derivative of x² is 2x, and x is already a factor.\n\nStep-by-step solution\nЗамена u = x2. Тогда du = 2x dx, и эта производная уже стоит в интеграле множителем:\n∫x·ex2 dx = \n1\n2\n·∫eu du\nТабличный интеграл: ∫eu du = eu\nВозвращаемся к x: \nex2\n2\nAnswer\n∫x·ex2 dx = \nex2\n2\n + C\n\n✓ Check: the derivative of the result matches f(x) at every test point.?\n\nDefinite integral\n\nBy the Newton–Leibniz formula:\n\n∫\n1\n0\nx·ex2 dx = F(1) − F(0) = 1.3591 − 0.5 = \ne\n2\n − \n1\n2\n ≈ 0.85914"
+  },
+  {
+   "id": "p_parts:I",
+   "f": "x e^x",
+   "a": "0",
+   "b": "1",
+   "err": null,
+   "res": {
+    "F": "x*exp(x) - exp(x)",
+    "val": 1,
+    "exact": "1",
+    "how": "nl",
+    "div": false,
+    "num": 0.9999999999999998,
+    "ok": true
+   },
+   "ru": "По частям\nТабличный\n\nИдея: Произведение, где один множитель упрощается при дифференцировании, а другой легко интегрируется: формула по частям.\n\nРешение по шагам\nИнтегрируем по частям: u = x, dv = ex dx.\nТогда du = dx, v = ex. По формуле ∫u dv = uv − ∫v du: ∫x·ex dx = x·ex − ∫ex dx\nТабличный интеграл: ∫ex dx = ex\nОтвет\n∫x·ex dx = x·ex − ex + C\n\n✓ Проверка: производная найденной функции совпадает с f(x) во всех контрольных точках.?\n\nC — любая постоянная: у функции бесконечно много первообразных, их графики получаются сдвигом вверх-вниз. Подвигайте ползунок C в блоке «Интеграл».?",
+   "en": "By parts\nTable integral\n\nIdea: A product where one factor simplifies when differentiated and the other is easy to integrate: use integration by parts.\n\nStep-by-step solution\nИнтегрируем по частям: u = x, dv = ex dx.\nТогда du = dx, v = ex. По формуле ∫u dv = uv − ∫v du: ∫x·ex dx = x·ex − ∫ex dx\nТабличный интеграл: ∫ex dx = ex\nAnswer\n∫x·ex dx = x·ex − ex + C\n\n✓ Check: the derivative of the result matches f(x) at every test point.?\n\nC is any constant: a function has infinitely many antiderivatives, and their graphs are vertical shifts of each other. Move the C slider in the Integral block.?"
+  },
+  {
+   "id": "p_parts:D",
+   "f": "x e^x",
+   "a": "0",
+   "b": "1",
+   "err": null,
+   "res": {
+    "F": "x*exp(x) - exp(x)",
+    "val": 1,
+    "exact": "1",
+    "how": "nl",
+    "div": false,
+    "num": 0.9999999999999998,
+    "ok": true
+   },
+   "ru": "По частям\nТабличный\n\nИдея: u = x упрощается при дифференцировании, eˣ не меняется при интегрировании.\n\nРешение по шагам\nИнтегрируем по частям: u = x, dv = ex dx.\nТогда du = dx, v = ex. По формуле ∫u dv = uv − ∫v du: ∫x·ex dx = x·ex − ∫ex dx\nТабличный интеграл: ∫ex dx = ex\nОтвет\n∫x·ex dx = x·ex − ex + C\n\n✓ Проверка: производная найденной функции совпадает с f(x) во всех контрольных точках.?\n\nОпределённый интеграл\n\nПо формуле Ньютона–Лейбница:\n\n∫\n1\n0\nx·ex dx = F(1) − F(0) = 0 − (−1) = 1",
+   "en": "By parts\nTable integral\n\nIdea: u = x simplifies when differentiated, eˣ stays the same when integrated.\n\nStep-by-step solution\nИнтегрируем по частям: u = x, dv = ex dx.\nТогда du = dx, v = ex. По формуле ∫u dv = uv − ∫v du: ∫x·ex dx = x·ex − ∫ex dx\nТабличный интеграл: ∫ex dx = ex\nAnswer\n∫x·ex dx = x·ex − ex + C\n\n✓ Check: the derivative of the result matches f(x) at every test point.?\n\nDefinite integral\n\nBy the Newton–Leibniz formula:\n\n∫\n1\n0\nx·ex dx = F(1) − F(0) = 0 − (−1) = 1"
+  },
+  {
+   "id": "p_cyc:I",
+   "f": "e^x sin x",
+   "a": "0",
+   "b": "pi",
+   "err": null,
+   "res": {
+    "F": "1/2*(sin(x) - cos(x))*exp(x)",
+    "val": 12.070346316389635,
+    "exact": "1/2*exp(pi) + 1/2",
+    "how": "nl",
+    "div": false,
+    "num": 12.070346316389625,
+    "ok": true
+   },
+   "ru": "По частям\nЦиклическое по частям\n\nИдея: Произведение, где один множитель упрощается при дифференцировании, а другой легко интегрируется: формула по частям.\n\nРешение по шагам\nИнтегрируем по частям два раза. После второго раза снова появляется исходный интеграл I: I = ∫ex·sin x dx = ex·sin x − ex·cos x − I\nПереносим I в левую часть и решаем уравнение: I = \nex·(sin x − cos x)\n2\nОтвет\n∫ex·sin x dx = \n(sin x − cos x)·ex\n2\n + C\n\n✓ Проверка: производная найденной функции совпадает с f(x) во всех контрольных точках.?\n\nC — любая постоянная: у функции бесконечно много первообразных, их графики получаются сдвигом вверх-вниз. Подвигайте ползунок C в блоке «Интеграл».?",
+   "en": "By parts\nCyclic by parts\n\nIdea: A product where one factor simplifies when differentiated and the other is easy to integrate: use integration by parts.\n\nStep-by-step solution\nИнтегрируем по частям два раза. После второго раза снова появляется исходный интеграл I: I = ∫ex·sin x dx = ex·sin x − ex·cos x − I\nПереносим I в левую часть и решаем уравнение: I = \nex·(sin x − cos x)\n2\nAnswer\n∫ex·sin x dx = \n(sin x − cos x)·ex\n2\n + C\n\n✓ Check: the derivative of the result matches f(x) at every test point.?\n\nC is any constant: a function has infinitely many antiderivatives, and their graphs are vertical shifts of each other. Move the C slider in the Integral block.?"
+  },
+  {
+   "id": "p_cyc:D",
+   "f": "e^x sin x",
+   "a": "0",
+   "b": "pi",
+   "err": null,
+   "res": {
+    "F": "1/2*(sin(x) - cos(x))*exp(x)",
+    "val": 12.070346316389635,
+    "exact": "1/2*exp(pi) + 1/2",
+    "how": "nl",
+    "div": false,
+    "num": 12.070346316389625,
+    "ok": true
+   },
+   "ru": "По частям\nЦиклическое по частям\n\nИдея: Дважды по частям, затем решаем уравнение относительно I.\n\nРешение по шагам\nИнтегрируем по частям два раза. После второго раза снова появляется исходный интеграл I: I = ∫ex·sin x dx = ex·sin x − ex·cos x − I\nПереносим I в левую часть и решаем уравнение: I = \nex·(sin x − cos x)\n2\nОтвет\n∫ex·sin x dx = \n(sin x − cos x)·ex\n2\n + C\n\n✓ Проверка: производная найденной функции совпадает с f(x) во всех контрольных точках.?\n\nОпределённый интеграл\n\nПо формуле Ньютона–Лейбница:\n\n∫\nπ\n0\nex·sin x dx = F(π) − F(0) = 11.5703 − (−0.5) = \neπ\n2\n + \n1\n2\n ≈ 12.07035",
+   "en": "By parts\nCyclic by parts\n\nIdea: By parts twice, then solve the equation for I.\n\nStep-by-step solution\nИнтегрируем по частям два раза. После второго раза снова появляется исходный интеграл I: I = ∫ex·sin x dx = ex·sin x − ex·cos x − I\nПереносим I в левую часть и решаем уравнение: I = \nex·(sin x − cos x)\n2\nAnswer\n∫ex·sin x dx = \n(sin x − cos x)·ex\n2\n + C\n\n✓ Check: the derivative of the result matches f(x) at every test point.?\n\nDefinite integral\n\nBy the Newton–Leibniz formula:\n\n∫\nπ\n0\nex·sin x dx = F(π) − F(0) = 11.5703 − (−0.5) = \neπ\n2\n + \n1\n2\n ≈ 12.07035"
+  },
+  {
+   "id": "p_pf:I",
+   "f": "1/(x(x+1))",
+   "a": "1",
+   "b": "2",
+   "err": null,
+   "res": {
+    "F": "ln(abs(x)) - ln(abs(x + 1))",
+    "val": 0.2876820724517808,
+    "exact": "2*ln(2) - ln(3)",
+    "how": "nl",
+    "div": false,
+    "num": 0.2876820724517809,
+    "ok": true
+   },
+   "ru": "Простейшие дроби\n\nИдея: Рациональная дробь: раскладываем на простейшие, каждая интегрируется по таблице.\n\nРешение по шагам\nЗнаменатель раскладывается на множители, поэтому раскладываем дробь на простейшие: \n1\nx2 + x\n = \n1\nx\n + \n−1\nx + 1\nКаждая простейшая дробь интегрируется по таблице: ln|x| − ln|x + 1|\nОтвет\n∫\n1\nx·(x + 1)\n dx = ln|x| − ln|x + 1| + C\n\n✓ Проверка: производная найденной функции совпадает с f(x) во всех контрольных точках.?\n\nC — любая постоянная: у функции бесконечно много первообразных, их графики получаются сдвигом вверх-вниз. Подвигайте ползунок C в блоке «Интеграл».?",
+   "en": "Partial fractions\n\nIdea: A rational function: split it into partial fractions, each a table integral.\n\nStep-by-step solution\nЗнаменатель раскладывается на множители, поэтому раскладываем дробь на простейшие: \n1\nx2 + x\n = \n1\nx\n + \n−1\nx + 1\nКаждая простейшая дробь интегрируется по таблице: ln|x| − ln|x + 1|\nAnswer\n∫\n1\nx·(x + 1)\n dx = ln|x| − ln|x + 1| + C\n\n✓ Check: the derivative of the result matches f(x) at every test point.?\n\nC is any constant: a function has infinitely many antiderivatives, and their graphs are vertical shifts of each other. Move the C slider in the Integral block.?"
+  },
+  {
+   "id": "p_pf:D",
+   "f": "1/(x(x+1))",
+   "a": "1",
+   "b": "2",
+   "err": null,
+   "res": {
+    "F": "ln(abs(x)) - ln(abs(x + 1))",
+    "val": 0.2876820724517808,
+    "exact": "2*ln(2) - ln(3)",
+    "how": "nl",
+    "div": false,
+    "num": 0.2876820724517809,
+    "ok": true
+   },
+   "ru": "Простейшие дроби\n\nИдея: 1/(x(x + 1)) = 1/x − 1/(x + 1).\n\nРешение по шагам\nЗнаменатель раскладывается на множители, поэтому раскладываем дробь на простейшие: \n1\nx2 + x\n = \n1\nx\n + \n−1\nx + 1\nКаждая простейшая дробь интегрируется по таблице: ln|x| − ln|x + 1|\nОтвет\n∫\n1\nx·(x + 1)\n dx = ln|x| − ln|x + 1| + C\n\n✓ Проверка: производная найденной функции совпадает с f(x) во всех контрольных точках.?\n\nОпределённый интеграл\n\nПо формуле Ньютона–Лейбница:\n\n∫\n2\n1\n1\nx·(x + 1)\n dx = F(2) − F(1) = −0.4055 − (−0.6931) = 2ln(2) − ln(3) ≈ 0.28768",
+   "en": "Partial fractions\n\nIdea: 1/(x(x + 1)) = 1/x − 1/(x + 1).\n\nStep-by-step solution\nЗнаменатель раскладывается на множители, поэтому раскладываем дробь на простейшие: \n1\nx2 + x\n = \n1\nx\n + \n−1\nx + 1\nКаждая простейшая дробь интегрируется по таблице: ln|x| − ln|x + 1|\nAnswer\n∫\n1\nx·(x + 1)\n dx = ln|x| − ln|x + 1| + C\n\n✓ Check: the derivative of the result matches f(x) at every test point.?\n\nDefinite integral\n\nBy the Newton–Leibniz formula:\n\n∫\n2\n1\n1\nx·(x + 1)\n dx = F(2) − F(1) = −0.4055 − (−0.6931) = 2ln(2) − ln(3) ≈ 0.28768"
+  },
+  {
+   "id": "p_sin2:I",
+   "f": "sin^2 x",
+   "a": "0",
+   "b": "pi",
+   "err": null,
+   "res": {
+    "F": "1/2*x - 1/4*sin(2*x)",
+    "val": 1.5707963267948966,
+    "exact": "1/2*pi",
+    "how": "nl",
+    "div": false,
+    "num": 1.5707963267948957,
+    "ok": true
+   },
+   "ru": "Понижение степени\n\nИдея: Чётные степени sin и cos понижаются формулами двойного угла.\n\nРешение по шагам\nОбе степени чётные: понижаем степень формулами sin²u = (1 − cos 2u)/2 и cos²u = (1 + cos 2u)/2: sin2 x = \n1\n2\n − \ncos(2x)\n2\nИнтегрируем каждое слагаемое: \nx\n2\n − \nsin(2x)\n4\nОтвет\n∫sin2 x dx = \nx\n2\n − \nsin(2x)\n4\n + C\n\n✓ Проверка: производная найденной функции совпадает с f(x) во всех контрольных точках.?\n\nC — любая постоянная: у функции бесконечно много первообразных, их графики получаются сдвигом вверх-вниз. Подвигайте ползунок C в блоке «Интеграл».?",
+   "en": "Power reduction\n\nIdea: Even powers of sin and cos are reduced with double-angle formulas.\n\nStep-by-step solution\nОбе степени чётные: понижаем степень формулами sin²u = (1 − cos 2u)/2 и cos²u = (1 + cos 2u)/2: sin2 x = \n1\n2\n − \ncos(2x)\n2\nИнтегрируем каждое слагаемое: \nx\n2\n − \nsin(2x)\n4\nAnswer\n∫sin2 x dx = \nx\n2\n − \nsin(2x)\n4\n + C\n\n✓ Check: the derivative of the result matches f(x) at every test point.?\n\nC is any constant: a function has infinitely many antiderivatives, and their graphs are vertical shifts of each other. Move the C slider in the Integral block.?"
+  },
+  {
+   "id": "p_sin2:D",
+   "f": "sin^2 x",
+   "a": "0",
+   "b": "pi",
+   "err": null,
+   "res": {
+    "F": "1/2*x - 1/4*sin(2*x)",
+    "val": 1.5707963267948966,
+    "exact": "1/2*pi",
+    "how": "nl",
+    "div": false,
+    "num": 1.5707963267948957,
+    "ok": true
+   },
+   "ru": "Понижение степени\n\nИдея: sin²x = (1 − cos 2x)/2.\n\nРешение по шагам\nОбе степени чётные: понижаем степень формулами sin²u = (1 − cos 2u)/2 и cos²u = (1 + cos 2u)/2: sin2 x = \n1\n2\n − \ncos(2x)\n2\nИнтегрируем каждое слагаемое: \nx\n2\n − \nsin(2x)\n4\nОтвет\n∫sin2 x dx = \nx\n2\n − \nsin(2x)\n4\n + C\n\n✓ Проверка: производная найденной функции совпадает с f(x) во всех контрольных точках.?\n\nОпределённый интеграл\n\nПо формуле Ньютона–Лейбница:\n\n∫\nπ\n0\nsin2 x dx = F(π) − F(0) = 1.5708 − 0 = \nπ\n2\n ≈ 1.5708",
+   "en": "Power reduction\n\nIdea: sin²x = (1 − cos 2x)/2.\n\nStep-by-step solution\nОбе степени чётные: понижаем степень формулами sin²u = (1 − cos 2u)/2 и cos²u = (1 + cos 2u)/2: sin2 x = \n1\n2\n − \ncos(2x)\n2\nИнтегрируем каждое слагаемое: \nx\n2\n − \nsin(2x)\n4\nAnswer\n∫sin2 x dx = \nx\n2\n − \nsin(2x)\n4\n + C\n\n✓ Check: the derivative of the result matches f(x) at every test point.?\n\nDefinite integral\n\nBy the Newton–Leibniz formula:\n\n∫\nπ\n0\nsin2 x dx = F(π) − F(0) = 1.5708 − 0 = \nπ\n2\n ≈ 1.5708"
+  },
+  {
+   "id": "p_circ:I",
+   "f": "sqrt(1-x^2)",
+   "a": "-1",
+   "b": "1",
+   "err": null,
+   "res": {
+    "F": "1/2*x*sqrt(1 - x^2) + 1/2*arcsin(x)",
+    "val": 1.5707963267948966,
+    "exact": "1/2*pi",
+    "how": "nl",
+    "div": false,
+    "num": 1.5707963267948963,
+    "ok": true
+   },
+   "ru": "Тригонометрическая подстановка\n\nИдея: Корень из a² − x² или x² ± a² убирается тригонометрической подстановкой.\n\nРешение по шагам\nТригонометрическая подстановка x = sin t: тогда корень превращается в cos t, и интеграл сводится к ∫cos²t dt. Возвращаясь к x, получаем: ∫√1 − x2 dx = \nx·√1 − x2\n2\n + \narcsin x\n2\nОтвет\n∫√1 − x2 dx = \nx·√1 − x2\n2\n + \narcsin x\n2\n + C\n\n✓ Проверка: производная найденной функции совпадает с f(x) во всех контрольных точках.?\n\nC — любая постоянная: у функции бесконечно много первообразных, их графики получаются сдвигом вверх-вниз. Подвигайте ползунок C в блоке «Интеграл».?",
+   "en": "Trig substitution\n\nIdea: A root of a² − x² or x² ± a² is removed by a trigonometric substitution.\n\nStep-by-step solution\nТригонометрическая подстановка x = sin t: тогда корень превращается в cos t, и интеграл сводится к ∫cos²t dt. Возвращаясь к x, получаем: ∫√1 − x2 dx = \nx·√1 − x2\n2\n + \narcsin x\n2\nAnswer\n∫√1 − x2 dx = \nx·√1 − x2\n2\n + \narcsin x\n2\n + C\n\n✓ Check: the derivative of the result matches f(x) at every test point.?\n\nC is any constant: a function has infinitely many antiderivatives, and their graphs are vertical shifts of each other. Move the C slider in the Integral block.?"
+  },
+  {
+   "id": "p_circ:D",
+   "f": "sqrt(1-x^2)",
+   "a": "-1",
+   "b": "1",
+   "err": null,
+   "res": {
+    "F": "1/2*x*sqrt(1 - x^2) + 1/2*arcsin(x)",
+    "val": 1.5707963267948966,
+    "exact": "1/2*pi",
+    "how": "nl",
+    "div": false,
+    "num": 1.5707963267948963,
+    "ok": true
+   },
+   "ru": "Тригонометрическая подстановка\n\nИдея: Подстановка x = sin t; площадь получается как у полукруга.\n\nРешение по шагам\nТригонометрическая подстановка x = sin t: тогда корень превращается в cos t, и интеграл сводится к ∫cos²t dt. Возвращаясь к x, получаем: ∫√1 − x2 dx = \nx·√1 − x2\n2\n + \narcsin x\n2\nОтвет\n∫√1 − x2 dx = \nx·√1 − x2\n2\n + \narcsin x\n2\n + C\n\n✓ Проверка: производная найденной функции совпадает с f(x) во всех контрольных точках.?\n\nОпределённый интеграл\n\nПо формуле Ньютона–Лейбница:\n\n∫\n1\n−1\n√1 − x2 dx = F(1) − F(−1) = 0.7854 − (−0.7854) = \nπ\n2\n ≈ 1.5708\n\nФункция чётная, а отрезок симметричен: можно посчитать интеграл от 0 до b и удвоить.?",
+   "en": "Trig substitution\n\nIdea: Substitute x = sin t; the area is that of a half-disc.\n\nStep-by-step solution\nТригонометрическая подстановка x = sin t: тогда корень превращается в cos t, и интеграл сводится к ∫cos²t dt. Возвращаясь к x, получаем: ∫√1 − x2 dx = \nx·√1 − x2\n2\n + \narcsin x\n2\nAnswer\n∫√1 − x2 dx = \nx·√1 − x2\n2\n + \narcsin x\n2\n + C\n\n✓ Check: the derivative of the result matches f(x) at every test point.?\n\nDefinite integral\n\nBy the Newton–Leibniz formula:\n\n∫\n1\n−1\n√1 − x2 dx = F(1) − F(−1) = 0.7854 − (−0.7854) = \nπ\n2\n ≈ 1.5708\n\nThe function is even and the interval is symmetric: integrate from 0 to b and double it.?"
+  },
+  {
+   "id": "p_poly:I",
+   "f": "3x^2-2x+1",
+   "a": "-1",
+   "b": "2",
+   "err": null,
+   "res": {
+    "F": "x^3 - x^2 + x",
+    "val": 9,
+    "exact": "9",
+    "how": "nl",
+    "div": false,
+    "num": 8.999999999999998,
+    "ok": true
+   },
+   "ru": "Степенная формула\n\nИдея: Это степени x: каждую интегрируем по формуле xⁿ → xⁿ⁺¹/(n + 1).\n\nРешение по шагам\nПочленно по формуле ∫xn dx = xn+1/(n + 1): ∫(3x2 − 2x + 1) dx = x3 − x2 + x\nОтвет\n∫(3x2 − 2x + 1) dx = x3 − x2 + x + C\n\n✓ Проверка: производная найденной функции совпадает с f(x) во всех контрольных точках.?\n\nC — любая постоянная: у функции бесконечно много первообразных, их графики получаются сдвигом вверх-вниз. Подвигайте ползунок C в блоке «Интеграл».?",
+   "en": "Power rule\n\nIdea: These are powers of x: integrate each with xⁿ → xⁿ⁺¹/(n + 1).\n\nStep-by-step solution\nПочленно по формуле ∫xn dx = xn+1/(n + 1): ∫(3x2 − 2x + 1) dx = x3 − x2 + x\nAnswer\n∫(3x2 − 2x + 1) dx = x3 − x2 + x + C\n\n✓ Check: the derivative of the result matches f(x) at every test point.?\n\nC is any constant: a function has infinitely many antiderivatives, and their graphs are vertical shifts of each other. Move the C slider in the Integral block.?"
+  },
+  {
+   "id": "p_poly:D",
+   "f": "3x^2-2x+1",
+   "a": "-1",
+   "b": "2",
+   "err": null,
+   "res": {
+    "F": "x^3 - x^2 + x",
+    "val": 9,
+    "exact": "9",
+    "how": "nl",
+    "div": false,
+    "num": 8.999999999999998,
+    "ok": true
+   },
+   "ru": "Степенная формула\n\nИдея: Многочлен интегрируем почленно.\n\nРешение по шагам\nПочленно по формуле ∫xn dx = xn+1/(n + 1): ∫(3x2 − 2x + 1) dx = x3 − x2 + x\nОтвет\n∫(3x2 − 2x + 1) dx = x3 − x2 + x + C\n\n✓ Проверка: производная найденной функции совпадает с f(x) во всех контрольных точках.?\n\nОпределённый интеграл\n\nПо формуле Ньютона–Лейбница:\n\n∫\n2\n−1\n(3x2 − 2x + 1) dx = F(2) − F(−1) = 6 − (−3) = 9",
+   "en": "Power rule\n\nIdea: Integrate the polynomial term by term.\n\nStep-by-step solution\nПочленно по формуле ∫xn dx = xn+1/(n + 1): ∫(3x2 − 2x + 1) dx = x3 − x2 + x\nAnswer\n∫(3x2 − 2x + 1) dx = x3 − x2 + x + C\n\n✓ Check: the derivative of the result matches f(x) at every test point.?\n\nDefinite integral\n\nBy the Newton–Leibniz formula:\n\n∫\n2\n−1\n(3x2 − 2x + 1) dx = F(2) − F(−1) = 6 − (−3) = 9"
+  },
+  {
+   "id": "p_ln:I",
+   "f": "1/x",
+   "a": "1",
+   "b": "e",
+   "err": null,
+   "res": {
+    "F": "ln(abs(x))",
+    "val": 1,
+    "exact": "1",
+    "how": "nl",
+    "div": false,
+    "num": 0.9999999999999993,
+    "ok": true
+   },
+   "ru": "Табличный\n\nИдея: Подынтегральная функция есть в таблице интегралов — ответ сразу.\n\nРешение по шагам\nТабличный интеграл ∫ dx/x = ln|x|: ∫\n1\nx\n dx = ln|x|\nОтвет\n∫\n1\nx\n dx = ln|x| + C\n\n✓ Проверка: производная найденной функции совпадает с f(x) во всех контрольных точках.?\n\nC — любая постоянная: у функции бесконечно много первообразных, их графики получаются сдвигом вверх-вниз. Подвигайте ползунок C в блоке «Интеграл».?",
+   "en": "Table integral\n\nIdea: The integrand is in the table of integrals, so the answer is immediate.\n\nStep-by-step solution\nТабличный интеграл ∫ dx/x = ln|x|: ∫\n1\nx\n dx = ln|x|\nAnswer\n∫\n1\nx\n dx = ln|x| + C\n\n✓ Check: the derivative of the result matches f(x) at every test point.?\n\nC is any constant: a function has infinitely many antiderivatives, and their graphs are vertical shifts of each other. Move the C slider in the Integral block.?"
+  },
+  {
+   "id": "p_ln:D",
+   "f": "1/x",
+   "a": "1",
+   "b": "e",
+   "err": null,
+   "res": {
+    "F": "ln(abs(x))",
+    "val": 1,
+    "exact": "1",
+    "how": "nl",
+    "div": false,
+    "num": 0.9999999999999993,
+    "ok": true
+   },
+   "ru": "Табличный\n\nИдея: Табличный: ∫dx/x = ln|x|, а ln e = 1.\n\nРешение по шагам\nТабличный интеграл ∫ dx/x = ln|x|: ∫\n1\nx\n dx = ln|x|\nОтвет\n∫\n1\nx\n dx = ln|x| + C\n\n✓ Проверка: производная найденной функции совпадает с f(x) во всех контрольных точках.?\n\nОпределённый интеграл\n\nПо формуле Ньютона–Лейбница:\n\n∫\ne\n1\n1\nx\n dx = F(e) − F(1) = 1 − 0 = 1",
+   "en": "Table integral\n\nIdea: Table integral: ∫dx/x = ln|x|, and ln e = 1.\n\nStep-by-step solution\nТабличный интеграл ∫ dx/x = ln|x|: ∫\n1\nx\n dx = ln|x|\nAnswer\n∫\n1\nx\n dx = ln|x| + C\n\n✓ Check: the derivative of the result matches f(x) at every test point.?\n\nDefinite integral\n\nBy the Newton–Leibniz formula:\n\n∫\ne\n1\n1\nx\n dx = F(e) − F(1) = 1 − 0 = 1"
+  },
+  {
+   "id": "p_lnx:I",
+   "f": "ln(x)/x",
+   "a": "1",
+   "b": "e",
+   "err": null,
+   "res": {
+    "F": "1/2*ln(x)^2",
+    "val": 0.5,
+    "exact": "1/2",
+    "how": "nl",
+    "div": false,
+    "num": 0.49999999999999956,
+    "ok": true
+   },
+   "ru": "Замена переменной\nСтепенная формула\n\nИдея: Множитель снаружи — производная внутренней функции. Замена u превращает интеграл в табличный.\n\nРешение по шагам\nЗамена u = ln x. Тогда du = \n1\nx\n dx, и эта производная уже стоит в интеграле множителем:\n∫\nln x\nx\n dx = ∫u du\nПочленно по формуле ∫xn dx = xn+1/(n + 1): ∫u du = \nu2\n2\nВозвращаемся к x: \nln2 x\n2\nОтвет\n∫\nln x\nx\n dx = \nln2 x\n2\n + C\n\n✓ Проверка: производная найденной функции совпадает с f(x) во всех контрольных точках.?\n\nC — любая постоянная: у функции бесконечно много первообразных, их графики получаются сдвигом вверх-вниз. Подвигайте ползунок C в блоке «Интеграл».?",
+   "en": "Substitution\nPower rule\n\nIdea: The outside factor is the derivative of the inner function. Substituting u makes it a table integral.\n\nStep-by-step solution\nЗамена u = ln x. Тогда du = \n1\nx\n dx, и эта производная уже стоит в интеграле множителем:\n∫\nln x\nx\n dx = ∫u du\nПочленно по формуле ∫xn dx = xn+1/(n + 1): ∫u du = \nu2\n2\nВозвращаемся к x: \nln2 x\n2\nAnswer\n∫\nln x\nx\n dx = \nln2 x\n2\n + C\n\n✓ Check: the derivative of the result matches f(x) at every test point.?\n\nC is any constant: a function has infinitely many antiderivatives, and their graphs are vertical shifts of each other. Move the C slider in the Integral block.?"
+  },
+  {
+   "id": "p_lnx:D",
+   "f": "ln(x)/x",
+   "a": "1",
+   "b": "e",
+   "err": null,
+   "res": {
+    "F": "1/2*ln(x)^2",
+    "val": 0.5,
+    "exact": "1/2",
+    "how": "nl",
+    "div": false,
+    "num": 0.49999999999999956,
+    "ok": true
+   },
+   "ru": "Замена переменной\nСтепенная формула\n\nИдея: Производная ln x — это 1/x, она уже в интеграле.\n\nРешение по шагам\nЗамена u = ln x. Тогда du = \n1\nx\n dx, и эта производная уже стоит в интеграле множителем:\n∫\nln x\nx\n dx = ∫u du\nПочленно по формуле ∫xn dx = xn+1/(n + 1): ∫u du = \nu2\n2\nВозвращаемся к x: \nln2 x\n2\nОтвет\n∫\nln x\nx\n dx = \nln2 x\n2\n + C\n\n✓ Проверка: производная найденной функции совпадает с f(x) во всех контрольных точках.?\n\nОпределённый интеграл\n\nПо формуле Ньютона–Лейбница:\n\n∫\ne\n1\nln x\nx\n dx = F(e) − F(1) = 0.5 − 0 = \n1\n2\n ≈ 0.5",
+   "en": "Substitution\nPower rule\n\nIdea: The derivative of ln x is 1/x, already in the integral.\n\nStep-by-step solution\nЗамена u = ln x. Тогда du = \n1\nx\n dx, и эта производная уже стоит в интеграле множителем:\n∫\nln x\nx\n dx = ∫u du\nПочленно по формуле ∫xn dx = xn+1/(n + 1): ∫u du = \nu2\n2\nВозвращаемся к x: \nln2 x\n2\nAnswer\n∫\nln x\nx\n dx = \nln2 x\n2\n + C\n\n✓ Check: the derivative of the result matches f(x) at every test point.?\n\nDefinite integral\n\nBy the Newton–Leibniz formula:\n\n∫\ne\n1\nln x\nx\n dx = F(e) − F(1) = 0.5 − 0 = \n1\n2\n ≈ 0.5"
+  },
+  {
+   "id": "p_xsin:I",
+   "f": "x sin x",
+   "a": "0",
+   "b": "pi",
+   "err": null,
+   "res": {
+    "F": "sin(x) - x*cos(x)",
+    "val": 3.141592653589793,
+    "exact": "pi",
+    "how": "nl",
+    "div": false,
+    "num": 3.141592653589791,
+    "ok": true
+   },
+   "ru": "По частям\nЛинейность\nТабличный\n\nИдея: Произведение, где один множитель упрощается при дифференцировании, а другой легко интегрируется: формула по частям.\n\nРешение по шагам\nИнтегрируем по частям: u = x, dv = sin x dx.\nТогда du = dx, v = −cos x. По формуле ∫u dv = uv − ∫v du: ∫x·sin x dx = −x·cos x − ∫(−cos x) dx\nМинус выносим за знак интеграла: ∫(−cos x) dx = −∫cos x dx\nТабличный интеграл: ∫cos x dx = sin x\nОтвет\n∫x·sin x dx = sin x − x·cos x + C\n\n✓ Проверка: производная найденной функции совпадает с f(x) во всех контрольных точках.?\n\nC — любая постоянная: у функции бесконечно много первообразных, их графики получаются сдвигом вверх-вниз. Подвигайте ползунок C в блоке «Интеграл».?",
+   "en": "By parts\nLinearity\nTable integral\n\nIdea: A product where one factor simplifies when differentiated and the other is easy to integrate: use integration by parts.\n\nStep-by-step solution\nИнтегрируем по частям: u = x, dv = sin x dx.\nТогда du = dx, v = −cos x. По формуле ∫u dv = uv − ∫v du: ∫x·sin x dx = −x·cos x − ∫(−cos x) dx\nМинус выносим за знак интеграла: ∫(−cos x) dx = −∫cos x dx\nТабличный интеграл: ∫cos x dx = sin x\nAnswer\n∫x·sin x dx = sin x − x·cos x + C\n\n✓ Check: the derivative of the result matches f(x) at every test point.?\n\nC is any constant: a function has infinitely many antiderivatives, and their graphs are vertical shifts of each other. Move the C slider in the Integral block.?"
+  },
+  {
+   "id": "p_xsin:D",
+   "f": "x sin x",
+   "a": "0",
+   "b": "pi",
+   "err": null,
+   "res": {
+    "F": "sin(x) - x*cos(x)",
+    "val": 3.141592653589793,
+    "exact": "pi",
+    "how": "nl",
+    "div": false,
+    "num": 3.141592653589791,
+    "ok": true
+   },
+   "ru": "По частям\nЛинейность\nТабличный\n\nИдея: u = x, dv = sin x dx.\n\nРешение по шагам\nИнтегрируем по частям: u = x, dv = sin x dx.\nТогда du = dx, v = −cos x. По формуле ∫u dv = uv − ∫v du: ∫x·sin x dx = −x·cos x − ∫(−cos x) dx\nМинус выносим за знак интеграла: ∫(−cos x) dx = −∫cos x dx\nТабличный интеграл: ∫cos x dx = sin x\nОтвет\n∫x·sin x dx = sin x − x·cos x + C\n\n✓ Проверка: производная найденной функции совпадает с f(x) во всех контрольных точках.?\n\nОпределённый интеграл\n\nПо формуле Ньютона–Лейбница:\n\n∫\nπ\n0\nx·sin x dx = F(π) − F(0) = 3.1416 − 0 = π ≈ 3.14159",
+   "en": "By parts\nLinearity\nTable integral\n\nIdea: u = x, dv = sin x dx.\n\nStep-by-step solution\nИнтегрируем по частям: u = x, dv = sin x dx.\nТогда du = dx, v = −cos x. По формуле ∫u dv = uv − ∫v du: ∫x·sin x dx = −x·cos x − ∫(−cos x) dx\nМинус выносим за знак интеграла: ∫(−cos x) dx = −∫cos x dx\nТабличный интеграл: ∫cos x dx = sin x\nAnswer\n∫x·sin x dx = sin x − x·cos x + C\n\n✓ Check: the derivative of the result matches f(x) at every test point.?\n\nDefinite integral\n\nBy the Newton–Leibniz formula:\n\n∫\nπ\n0\nx·sin x dx = F(π) − F(0) = 3.1416 − 0 = π ≈ 3.14159"
+  },
+  {
+   "id": "p_lnparts:I",
+   "f": "ln x",
+   "a": "1",
+   "b": "e",
+   "err": null,
+   "res": {
+    "F": "x*ln(x) - x",
+    "val": 1,
+    "exact": "1",
+    "how": "nl",
+    "div": false,
+    "num": 0.9999999999999989,
+    "ok": true
+   },
+   "ru": "По частям\nТабличный\n\nИдея: Произведение, где один множитель упрощается при дифференцировании, а другой легко интегрируется: формула по частям.\n\nРешение по шагам\nИнтегрируем по частям: u = ln x, dv = 1 dx.\nТогда du = \n1\nx\n dx, v = x. По формуле ∫u dv = uv − ∫v du: ∫ln x dx = ln x·x − ∫1 dx\nИнтеграл константы: ∫1 dx = x\nОтвет\n∫ln x dx = x·ln x − x + C\n\n✓ Проверка: производная найденной функции совпадает с f(x) во всех контрольных точках.?\n\nC — любая постоянная: у функции бесконечно много первообразных, их графики получаются сдвигом вверх-вниз. Подвигайте ползунок C в блоке «Интеграл».?",
+   "en": "By parts\nTable integral\n\nIdea: A product where one factor simplifies when differentiated and the other is easy to integrate: use integration by parts.\n\nStep-by-step solution\nИнтегрируем по частям: u = ln x, dv = 1 dx.\nТогда du = \n1\nx\n dx, v = x. По формуле ∫u dv = uv − ∫v du: ∫ln x dx = ln x·x − ∫1 dx\nИнтеграл константы: ∫1 dx = x\nAnswer\n∫ln x dx = x·ln x − x + C\n\n✓ Check: the derivative of the result matches f(x) at every test point.?\n\nC is any constant: a function has infinitely many antiderivatives, and their graphs are vertical shifts of each other. Move the C slider in the Integral block.?"
+  },
+  {
+   "id": "p_lnparts:D",
+   "f": "ln x",
+   "a": "1",
+   "b": "e",
+   "err": null,
+   "res": {
+    "F": "x*ln(x) - x",
+    "val": 1,
+    "exact": "1",
+    "how": "nl",
+    "div": false,
+    "num": 0.9999999999999989,
+    "ok": true
+   },
+   "ru": "По частям\nТабличный\n\nИдея: Хитрость: dv = dx, а u = ln x.\n\nРешение по шагам\nИнтегрируем по частям: u = ln x, dv = 1 dx.\nТогда du = \n1\nx\n dx, v = x. По формуле ∫u dv = uv − ∫v du: ∫ln x dx = ln x·x − ∫1 dx\nИнтеграл константы: ∫1 dx = x\nОтвет\n∫ln x dx = x·ln x − x + C\n\n✓ Проверка: производная найденной функции совпадает с f(x) во всех контрольных точках.?\n\nОпределённый интеграл\n\nПо формуле Ньютона–Лейбница:\n\n∫\ne\n1\nln x dx = F(e) − F(1) = 0 − (−1) = 1",
+   "en": "By parts\nTable integral\n\nIdea: The trick: dv = dx and u = ln x.\n\nStep-by-step solution\nИнтегрируем по частям: u = ln x, dv = 1 dx.\nТогда du = \n1\nx\n dx, v = x. По формуле ∫u dv = uv − ∫v du: ∫ln x dx = ln x·x − ∫1 dx\nИнтеграл константы: ∫1 dx = x\nAnswer\n∫ln x dx = x·ln x − x + C\n\n✓ Check: the derivative of the result matches f(x) at every test point.?\n\nDefinite integral\n\nBy the Newton–Leibniz formula:\n\n∫\ne\n1\nln x dx = F(e) − F(1) = 0 − (−1) = 1"
+  },
+  {
+   "id": "p_atan:I",
+   "f": "1/(1+x^2)",
+   "a": "0",
+   "b": "1",
+   "err": null,
+   "res": {
+    "F": "arctan(x)",
+    "val": 0.7853981633974483,
+    "exact": "1/4*pi",
+    "how": "nl",
+    "div": false,
+    "num": 0.7853981633974483,
+    "ok": true
+   },
+   "ru": "Табличный\n\nИдея: Подынтегральная функция есть в таблице интегралов — ответ сразу.\n\nРешение по шагам\nТабличный интеграл: arctg x\nОтвет\n∫\n1\n1 + x2\n dx = arctg x + C\n\n✓ Проверка: производная найденной функции совпадает с f(x) во всех контрольных точках.?\n\nC — любая постоянная: у функции бесконечно много первообразных, их графики получаются сдвигом вверх-вниз. Подвигайте ползунок C в блоке «Интеграл».?",
+   "en": "Table integral\n\nIdea: The integrand is in the table of integrals, so the answer is immediate.\n\nStep-by-step solution\nТабличный интеграл: arctg x\nAnswer\n∫\n1\n1 + x2\n dx = arctan x + C\n\n✓ Check: the derivative of the result matches f(x) at every test point.?\n\nC is any constant: a function has infinitely many antiderivatives, and their graphs are vertical shifts of each other. Move the C slider in the Integral block.?"
+  },
+  {
+   "id": "p_atan:D",
+   "f": "1/(1+x^2)",
+   "a": "0",
+   "b": "1",
+   "err": null,
+   "res": {
+    "F": "arctan(x)",
+    "val": 0.7853981633974483,
+    "exact": "1/4*pi",
+    "how": "nl",
+    "div": false,
+    "num": 0.7853981633974483,
+    "ok": true
+   },
+   "ru": "Табличный\n\nИдея: Табличный интеграл с арктангенсом.\n\nРешение по шагам\nТабличный интеграл: arctg x\nОтвет\n∫\n1\n1 + x2\n dx = arctg x + C\n\n✓ Проверка: производная найденной функции совпадает с f(x) во всех контрольных точках.?\n\nОпределённый интеграл\n\nПо формуле Ньютона–Лейбница:\n\n∫\n1\n0\n1\n1 + x2\n dx = F(1) − F(0) = 0.7854 − 0 = \nπ\n4\n ≈ 0.7854",
+   "en": "Table integral\n\nIdea: A table integral with arctangent.\n\nStep-by-step solution\nТабличный интеграл: arctg x\nAnswer\n∫\n1\n1 + x2\n dx = arctan x + C\n\n✓ Check: the derivative of the result matches f(x) at every test point.?\n\nDefinite integral\n\nBy the Newton–Leibniz formula:\n\n∫\n1\n0\n1\n1 + x2\n dx = F(1) − F(0) = 0.7854 − 0 = \nπ\n4\n ≈ 0.7854"
+  },
+  {
+   "id": "p_sq:I",
+   "f": "(x+3)/(x^2+2x+5)",
+   "a": "-1",
+   "b": "2",
+   "err": null,
+   "res": {
+    "F": "1/2*ln(x^2 + 2*x + 5) + arctan(1/2*(x + 1))",
+    "val": 1.572121221418152,
+    "exact": null,
+    "how": "nl",
+    "div": false,
+    "num": 1.5721212214181515,
+    "ok": true
+   },
+   "ru": "Табличный\nПолный квадрат\n\nИдея: Подынтегральная функция есть в таблице интегралов — ответ сразу.\n\nРешение по шагам\nВ числителе выделяем производную знаменателя 2x + 2: числитель = \n2x + 2\n2\n + 2.\nЧасть с производной знаменателя даёт логарифм: \nln(x2 + 2x + 5)\n2\nВыделяем полный квадрат: x2 + 2x + 5 = (x + 1)2 + 4. Получается табличный интеграл с арктангенсом: arctg(\n2x + 2\n4\n)\nОтвет\n∫\nx + 3\nx2 + 2x + 5\n dx = \nln(x2 + 2x + 5)\n2\n + arctg(\nx + 1\n2\n) + C\n\n✓ Проверка: производная найденной функции совпадает с f(x) во всех контрольных точках.?\n\nC — любая постоянная: у функции бесконечно много первообразных, их графики получаются сдвигом вверх-вниз. Подвигайте ползунок C в блоке «Интеграл».?",
+   "en": "Table integral\nCompleting the square\n\nIdea: The integrand is in the table of integrals, so the answer is immediate.\n\nStep-by-step solution\nВ числителе выделяем производную знаменателя 2x + 2: числитель = \n2x + 2\n2\n + 2.\nЧасть с производной знаменателя даёт логарифм: \nln(x2 + 2x + 5)\n2\nВыделяем полный квадрат: x2 + 2x + 5 = (x + 1)2 + 4. Получается табличный интеграл с арктангенсом: arctg(\n2x + 2\n4\n)\nAnswer\n∫\nx + 3\nx2 + 2x + 5\n dx = \nln(x2 + 2x + 5)\n2\n + arctan(\nx + 1\n2\n) + C\n\n✓ Check: the derivative of the result matches f(x) at every test point.?\n\nC is any constant: a function has infinitely many antiderivatives, and their graphs are vertical shifts of each other. Move the C slider in the Integral block.?"
+  },
+  {
+   "id": "p_sq:D",
+   "f": "(x+3)/(x^2+2x+5)",
+   "a": "-1",
+   "b": "2",
+   "err": null,
+   "res": {
+    "F": "1/2*ln(x^2 + 2*x + 5) + arctan(1/2*(x + 1))",
+    "val": 1.572121221418152,
+    "exact": null,
+    "how": "nl",
+    "div": false,
+    "num": 1.5721212214181515,
+    "ok": true
+   },
+   "ru": "Табличный\nПолный квадрат\n\nИдея: Выделяем производную знаменателя и полный квадрат.\n\nРешение по шагам\nВ числителе выделяем производную знаменателя 2x + 2: числитель = \n2x + 2\n2\n + 2.\nЧасть с производной знаменателя даёт логарифм: \nln(x2 + 2x + 5)\n2\nВыделяем полный квадрат: x2 + 2x + 5 = (x + 1)2 + 4. Получается табличный интеграл с арктангенсом: arctg(\n2x + 2\n4\n)\nОтвет\n∫\nx + 3\nx2 + 2x + 5\n dx = \nln(x2 + 2x + 5)\n2\n + arctg(\nx + 1\n2\n) + C\n\n✓ Проверка: производная найденной функции совпадает с f(x) во всех контрольных точках.?\n\nОпределённый интеграл\n\nПо формуле Ньютона–Лейбница:\n\n∫\n2\n−1\nx + 3\nx2 + 2x + 5\n dx = F(2) − F(−1) = 2.2653 − 0.6931 = ≈ 1.572121",
+   "en": "Table integral\nCompleting the square\n\nIdea: Split off the derivative of the denominator and complete the square.\n\nStep-by-step solution\nВ числителе выделяем производную знаменателя 2x + 2: числитель = \n2x + 2\n2\n + 2.\nЧасть с производной знаменателя даёт логарифм: \nln(x2 + 2x + 5)\n2\nВыделяем полный квадрат: x2 + 2x + 5 = (x + 1)2 + 4. Получается табличный интеграл с арктангенсом: arctg(\n2x + 2\n4\n)\nAnswer\n∫\nx + 3\nx2 + 2x + 5\n dx = \nln(x2 + 2x + 5)\n2\n + arctan(\nx + 1\n2\n) + C\n\n✓ Check: the derivative of the result matches f(x) at every test point.?\n\nDefinite integral\n\nBy the Newton–Leibniz formula:\n\n∫\n2\n−1\nx + 3\nx2 + 2x + 5\n dx = F(2) − F(−1) = 2.2653 − 0.6931 = ≈ 1.572121"
+  },
+  {
+   "id": "p_sin3:I",
+   "f": "sin^3 x",
+   "a": "0",
+   "b": "pi/2",
+   "err": null,
+   "res": {
+    "F": "1/3*cos(x)^3 - cos(x)",
+    "val": 0.6666666666666666,
+    "exact": "2/3",
+    "how": "nl",
+    "div": false,
+    "num": 0.6666666666666664,
+    "ok": true
+   },
+   "ru": "Нечётная степень\nЗамена переменной\n\nИдея: Нечётная степень sin или cos: один множитель уходит в дифференциал, остальное через замену.\n\nРешение по шагам\nНечётная степень синуса: отделяем один множитель sin, остальные выражаем через cos по формуле sin² = 1 − cos². Замена u = cos x, du = −sin x dx:\n= −∫(1 − u2) du = −(u − \nu3\n3\n)\nВозвращаемся к x: \ncos3 x\n3\n − cos x\nОтвет\n∫sin3 x dx = \ncos3 x\n3\n − cos x + C\n\n✓ Проверка: производная найденной функции совпадает с f(x) во всех контрольных точках.?\n\nC — любая постоянная: у функции бесконечно много первообразных, их графики получаются сдвигом вверх-вниз. Подвигайте ползунок C в блоке «Интеграл».?",
+   "en": "Odd power\nSubstitution\n\nIdea: An odd power of sin or cos: one factor goes into the differential, the rest by substitution.\n\nStep-by-step solution\nНечётная степень синуса: отделяем один множитель sin, остальные выражаем через cos по формуле sin² = 1 − cos². Замена u = cos x, du = −sin x dx:\n= −∫(1 − u2) du = −(u − \nu3\n3\n)\nВозвращаемся к x: \ncos3 x\n3\n − cos x\nAnswer\n∫sin3 x dx = \ncos3 x\n3\n − cos x + C\n\n✓ Check: the derivative of the result matches f(x) at every test point.?\n\nC is any constant: a function has infinitely many antiderivatives, and their graphs are vertical shifts of each other. Move the C slider in the Integral block.?"
+  },
+  {
+   "id": "p_sin3:D",
+   "f": "sin^3 x",
+   "a": "0",
+   "b": "pi/2",
+   "err": null,
+   "res": {
+    "F": "1/3*cos(x)^3 - cos(x)",
+    "val": 0.6666666666666666,
+    "exact": "2/3",
+    "how": "nl",
+    "div": false,
+    "num": 0.6666666666666664,
+    "ok": true
+   },
+   "ru": "Нечётная степень\nЗамена переменной\n\nИдея: Один sin уходит в d(cos x), остальное — многочлен от cos.\n\nРешение по шагам\nНечётная степень синуса: отделяем один множитель sin, остальные выражаем через cos по формуле sin² = 1 − cos². Замена u = cos x, du = −sin x dx:\n= −∫(1 − u2) du = −(u − \nu3\n3\n)\nВозвращаемся к x: \ncos3 x\n3\n − cos x\nОтвет\n∫sin3 x dx = \ncos3 x\n3\n − cos x + C\n\n✓ Проверка: производная найденной функции совпадает с f(x) во всех контрольных точках.?\n\nОпределённый интеграл\n\nПо формуле Ньютона–Лейбница:\n\n∫\nπ/2\n0\nsin3 x dx = F(π/2) − F(0) = 0 − (−0.6667) = \n2\n3\n ≈ 0.66667",
+   "en": "Odd power\nSubstitution\n\nIdea: One sin goes into d(cos x), the rest is a polynomial in cos.\n\nStep-by-step solution\nНечётная степень синуса: отделяем один множитель sin, остальные выражаем через cos по формуле sin² = 1 − cos². Замена u = cos x, du = −sin x dx:\n= −∫(1 − u2) du = −(u − \nu3\n3\n)\nВозвращаемся к x: \ncos3 x\n3\n − cos x\nAnswer\n∫sin3 x dx = \ncos3 x\n3\n − cos x + C\n\n✓ Check: the derivative of the result matches f(x) at every test point.?\n\nDefinite integral\n\nBy the Newton–Leibniz formula:\n\n∫\nπ/2\n0\nsin3 x dx = F(π/2) − F(0) = 0 − (−0.6667) = \n2\n3\n ≈ 0.66667"
+  },
+  {
+   "id": "p_weier:I",
+   "f": "1/(2+cos x)",
+   "a": "0",
+   "b": "pi/2",
+   "err": null,
+   "res": {
+    "F": "2*arctan(tan(1/2*x)/sqrt(3))/sqrt(3)",
+    "val": 0.6045997880780726,
+    "exact": "1/9*pi*sqrt(3)",
+    "how": "nl",
+    "div": false,
+    "num": 0.6045997880780725,
+    "ok": true
+   },
+   "ru": "Универсальная подстановка\nЛинейность\nТабличный\n\nИдея: Рациональное выражение от sin x и cos x: подстановка t = tg(x/2) делает дробь рациональной.\n\nРешение по шагам\nПодынтегральная функция рационально выражается через sin x и cos x. Универсальная подстановка t = tg(x/2): sin x = 2t/(1 + t²), cos x = (1 − t²)/(1 + t²), dx = 2 dt/(1 + t²). Получается рациональная дробь:\n= ∫\n2\nt2 + 3\n dt\nПостоянный множитель выносим за знак интеграла: ∫\n2\nt2 + 3\n dt = 2·∫\n1\nt2 + 3\n dt\nТабличный интеграл: \n1\n√3\n·arctg(\nt\n√3\n)\nВозвращаемся к x: \n2arctg(\ntg(\nx\n2\n)\n√3\n)\n√3\nОтвет\n∫\n1\n2 + cos x\n dx = \n2arctg(\ntg(\nx\n2\n)\n√3\n)\n√3\n + C\n\n✓ Проверка: производная найденной функции совпадает с f(x) во всех контрольных точках.?\n\nC — любая постоянная: у функции бесконечно много первообразных, их графики получаются сдвигом вверх-вниз. Подвигайте ползунок C в блоке «Интеграл».?",
+   "en": "Universal substitution\nLinearity\nTable integral\n\nIdea: A rational expression in sin x and cos x: t = tan(x/2) makes it a rational function.\n\nStep-by-step solution\nПодынтегральная функция рационально выражается через sin x и cos x. Универсальная подстановка t = tg(x/2): sin x = 2t/(1 + t²), cos x = (1 − t²)/(1 + t²), dx = 2 dt/(1 + t²). Получается рациональная дробь:\n= ∫\n2\nt2 + 3\n dt\nПостоянный множитель выносим за знак интеграла: ∫\n2\nt2 + 3\n dt = 2·∫\n1\nt2 + 3\n dt\nТабличный интеграл: \n1\n√3\n·arctg(\nt\n√3\n)\nВозвращаемся к x: \n2arctg(\ntg(\nx\n2\n)\n√3\n)\n√3\nAnswer\n∫\n1\n2 + cos x\n dx = \n2arctan(\ntan(\nx\n2\n)\n√3\n)\n√3\n + C\n\n✓ Check: the derivative of the result matches f(x) at every test point.?\n\nC is any constant: a function has infinitely many antiderivatives, and their graphs are vertical shifts of each other. Move the C slider in the Integral block.?"
+  },
+  {
+   "id": "p_weier:D",
+   "f": "1/(2+cos x)",
+   "a": "0",
+   "b": "pi/2",
+   "err": null,
+   "res": {
+    "F": "2*arctan(tan(1/2*x)/sqrt(3))/sqrt(3)",
+    "val": 0.6045997880780726,
+    "exact": "1/9*pi*sqrt(3)",
+    "how": "nl",
+    "div": false,
+    "num": 0.6045997880780725,
+    "ok": true
+   },
+   "ru": "Универсальная подстановка\nЛинейность\nТабличный\n\nИдея: Универсальная подстановка t = tg(x/2).\n\nРешение по шагам\nПодынтегральная функция рационально выражается через sin x и cos x. Универсальная подстановка t = tg(x/2): sin x = 2t/(1 + t²), cos x = (1 − t²)/(1 + t²), dx = 2 dt/(1 + t²). Получается рациональная дробь:\n= ∫\n2\nt2 + 3\n dt\nПостоянный множитель выносим за знак интеграла: ∫\n2\nt2 + 3\n dt = 2·∫\n1\nt2 + 3\n dt\nТабличный интеграл: \n1\n√3\n·arctg(\nt\n√3\n)\nВозвращаемся к x: \n2arctg(\ntg(\nx\n2\n)\n√3\n)\n√3\nОтвет\n∫\n1\n2 + cos x\n dx = \n2arctg(\ntg(\nx\n2\n)\n√3\n)\n√3\n + C\n\n✓ Проверка: производная найденной функции совпадает с f(x) во всех контрольных точках.?\n\nОпределённый интеграл\n\nПо формуле Ньютона–Лейбница:\n\n∫\nπ/2\n0\n1\n2 + cos x\n dx = F(π/2) − F(0) = 0.6046 − 0 = \nπ·√3\n9\n ≈ 0.6046",
+   "en": "Universal substitution\nLinearity\nTable integral\n\nIdea: The universal substitution t = tan(x/2).\n\nStep-by-step solution\nПодынтегральная функция рационально выражается через sin x и cos x. Универсальная подстановка t = tg(x/2): sin x = 2t/(1 + t²), cos x = (1 − t²)/(1 + t²), dx = 2 dt/(1 + t²). Получается рациональная дробь:\n= ∫\n2\nt2 + 3\n dt\nПостоянный множитель выносим за знак интеграла: ∫\n2\nt2 + 3\n dt = 2·∫\n1\nt2 + 3\n dt\nТабличный интеграл: \n1\n√3\n·arctg(\nt\n√3\n)\nВозвращаемся к x: \n2arctg(\ntg(\nx\n2\n)\n√3\n)\n√3\nAnswer\n∫\n1\n2 + cos x\n dx = \n2arctan(\ntan(\nx\n2\n)\n√3\n)\n√3\n + C\n\n✓ Check: the derivative of the result matches f(x) at every test point.?\n\nDefinite integral\n\nBy the Newton–Leibniz formula:\n\n∫\nπ/2\n0\n1\n2 + cos x\n dx = F(π/2) − F(0) = 0.6046 − 0 = \nπ·√3\n9\n ≈ 0.6046"
+  },
+  {
+   "id": "p_odd:I",
+   "f": "x^3-4x",
+   "a": "-2",
+   "b": "2",
+   "err": null,
+   "res": {
+    "F": "1/4*x^4 - 2*x^2",
+    "val": 0,
+    "exact": "0",
+    "how": "nl",
+    "div": false,
+    "num": 0,
+    "ok": true
+   },
+   "ru": "Степенная формула\n\nИдея: Это степени x: каждую интегрируем по формуле xⁿ → xⁿ⁺¹/(n + 1).\n\nРешение по шагам\nПочленно по формуле ∫xn dx = xn+1/(n + 1): ∫(x3 − 4x) dx = \nx4\n4\n − 2x2\nОтвет\n∫(x3 − 4x) dx = \nx4\n4\n − 2x2 + C\n\n✓ Проверка: производная найденной функции совпадает с f(x) во всех контрольных точках.?\n\nC — любая постоянная: у функции бесконечно много первообразных, их графики получаются сдвигом вверх-вниз. Подвигайте ползунок C в блоке «Интеграл».?",
+   "en": "Power rule\n\nIdea: These are powers of x: integrate each with xⁿ → xⁿ⁺¹/(n + 1).\n\nStep-by-step solution\nПочленно по формуле ∫xn dx = xn+1/(n + 1): ∫(x3 − 4x) dx = \nx4\n4\n − 2x2\nAnswer\n∫(x3 − 4x) dx = \nx4\n4\n − 2x2 + C\n\n✓ Check: the derivative of the result matches f(x) at every test point.?\n\nC is any constant: a function has infinitely many antiderivatives, and their graphs are vertical shifts of each other. Move the C slider in the Integral block.?"
+  },
+  {
+   "id": "p_odd:D",
+   "f": "x^3-4x",
+   "a": "-2",
+   "b": "2",
+   "err": null,
+   "res": {
+    "F": "1/4*x^4 - 2*x^2",
+    "val": 0,
+    "exact": "0",
+    "how": "nl",
+    "div": false,
+    "num": 0,
+    "ok": true
+   },
+   "ru": "Степенная формула\nСимметрия\n\nИдея: Нечётная функция на симметричном отрезке: площади взаимно гасятся.\n\nРешение по шагам\nПочленно по формуле ∫xn dx = xn+1/(n + 1): ∫(x3 − 4x) dx = \nx4\n4\n − 2x2\nОтвет\n∫(x3 − 4x) dx = \nx4\n4\n − 2x2 + C\n\n✓ Проверка: производная найденной функции совпадает с f(x) во всех контрольных точках.?\n\nОпределённый интеграл\n\nПо формуле Ньютона–Лейбница:\n\n∫\n2\n−2\n(x3 − 4x) dx = F(2) − F(−2) = −4 − (−4) = 0\n\nФункция нечётная, а отрезок симметричен относительно нуля: площади слева и справа взаимно уничтожаются, интеграл равен 0.?",
+   "en": "Power rule\nSymmetry\n\nIdea: An odd function on a symmetric interval: the areas cancel.\n\nStep-by-step solution\nПочленно по формуле ∫xn dx = xn+1/(n + 1): ∫(x3 − 4x) dx = \nx4\n4\n − 2x2\nAnswer\n∫(x3 − 4x) dx = \nx4\n4\n − 2x2 + C\n\n✓ Check: the derivative of the result matches f(x) at every test point.?\n\nDefinite integral\n\nBy the Newton–Leibniz formula:\n\n∫\n2\n−2\n(x3 − 4x) dx = F(2) − F(−2) = −4 − (−4) = 0\n\nThe function is odd and the interval is symmetric about zero: the areas on the left and right cancel, so the integral is 0.?"
+  },
+  {
+   "id": "p_imp1:I",
+   "f": "1/sqrt(x)",
+   "a": "0",
+   "b": "1",
+   "err": null,
+   "res": {
+    "F": "2*sqrt(x)",
+    "val": 2,
+    "exact": "2",
+    "how": "lim",
+    "div": false,
+    "num": 1.9999999999999996,
+    "ok": true
+   },
+   "ru": "Степенная формула\n\nИдея: Это степени x: каждую интегрируем по формуле xⁿ → xⁿ⁺¹/(n + 1).\n\nРешение по шагам\nСтепенная формула при n = 1/2: ∫\n1\n√x\n dx = 2√x\nОтвет\n∫\n1\n√x\n dx = 2√x + C\n\n✓ Проверка: производная найденной функции совпадает с f(x) во всех контрольных точках.?\n\nC — любая постоянная: у функции бесконечно много первообразных, их графики получаются сдвигом вверх-вниз. Подвигайте ползунок C в блоке «Интеграл».?",
+   "en": "Power rule\n\nIdea: These are powers of x: integrate each with xⁿ → xⁿ⁺¹/(n + 1).\n\nStep-by-step solution\nСтепенная формула при n = 1/2: ∫\n1\n√x\n dx = 2√x\nAnswer\n∫\n1\n√x\n dx = 2√x + C\n\n✓ Check: the derivative of the result matches f(x) at every test point.?\n\nC is any constant: a function has infinitely many antiderivatives, and their graphs are vertical shifts of each other. Move the C slider in the Integral block.?"
+  },
+  {
+   "id": "p_imp1:D",
+   "f": "1/sqrt(x)",
+   "a": "0",
+   "b": "1",
+   "err": null,
+   "res": {
+    "F": "2*sqrt(x)",
+    "val": 2,
+    "exact": "2",
+    "how": "lim",
+    "div": false,
+    "num": 1.9999999999999996,
+    "ok": true
+   },
+   "ru": "Степенная формула\nНесобственный\n\nИдея: Функция неограничена у нуля, но площадь конечна.\n\nРешение по шагам\nСтепенная формула при n = 1/2: ∫\n1\n√x\n dx = 2√x\nОтвет\n∫\n1\n√x\n dx = 2√x + C\n\n✓ Проверка: производная найденной функции совпадает с f(x) во всех контрольных точках.?\n\nОпределённый интеграл\n\nНесобственный интеграл: подынтегральная функция или отрезок неограничены, поэтому значение — это предел. Предел существует, интеграл сходится:\n\n∫\n1\n0\n1\n√x\n dx = 2",
+   "en": "Power rule\nImproper\n\nIdea: The function is unbounded near zero, yet the area is finite.\n\nStep-by-step solution\nСтепенная формула при n = 1/2: ∫\n1\n√x\n dx = 2√x\nAnswer\n∫\n1\n√x\n dx = 2√x + C\n\n✓ Check: the derivative of the result matches f(x) at every test point.?\n\nDefinite integral\n\nImproper integral: the integrand or the interval is unbounded, so the value is a limit. The limit exists, so the integral converges:\n\n∫\n1\n0\n1\n√x\n dx = 2"
+  },
+  {
+   "id": "p_imp2:I",
+   "f": "1/x^2",
+   "a": "1",
+   "b": "inf",
+   "err": null,
+   "res": {
+    "F": "-1/x",
+    "val": 1,
+    "exact": "1",
+    "how": "lim",
+    "div": false,
+    "num": 0.9999999999999999,
+    "ok": true
+   },
+   "ru": "Степенная формула\n\nИдея: Это степени x: каждую интегрируем по формуле xⁿ → xⁿ⁺¹/(n + 1).\n\nРешение по шагам\nСтепенная формула при n = 2: ∫\n1\nx2\n dx = −\n1\nx\nОтвет\n∫\n1\nx2\n dx = −\n1\nx\n + C\n\n✓ Проверка: производная найденной функции совпадает с f(x) во всех контрольных точках.?\n\nC — любая постоянная: у функции бесконечно много первообразных, их графики получаются сдвигом вверх-вниз. Подвигайте ползунок C в блоке «Интеграл».?",
+   "en": "Power rule\n\nIdea: These are powers of x: integrate each with xⁿ → xⁿ⁺¹/(n + 1).\n\nStep-by-step solution\nСтепенная формула при n = 2: ∫\n1\nx2\n dx = −\n1\nx\nAnswer\n∫\n1\nx2\n dx = −\n1\nx\n + C\n\n✓ Check: the derivative of the result matches f(x) at every test point.?\n\nC is any constant: a function has infinitely many antiderivatives, and their graphs are vertical shifts of each other. Move the C slider in the Integral block.?"
+  },
+  {
+   "id": "p_imp2:D",
+   "f": "1/x^2",
+   "a": "1",
+   "b": "inf",
+   "err": null,
+   "res": {
+    "F": "-1/x",
+    "val": 1,
+    "exact": "1",
+    "how": "lim",
+    "div": false,
+    "num": 0.9999999999999999,
+    "ok": true
+   },
+   "ru": "Степенная формула\nНесобственный\n\nИдея: Бесконечный отрезок, но площадь конечна.\n\nРешение по шагам\nСтепенная формула при n = 2: ∫\n1\nx2\n dx = −\n1\nx\nОтвет\n∫\n1\nx2\n dx = −\n1\nx\n + C\n\n✓ Проверка: производная найденной функции совпадает с f(x) во всех контрольных точках.?\n\nОпределённый интеграл\n\nНесобственный интеграл: подынтегральная функция или отрезок неограничены, поэтому значение — это предел. Предел существует, интеграл сходится:\n\n∫\n∞\n1\n1\nx2\n dx = 1",
+   "en": "Power rule\nImproper\n\nIdea: An infinite interval, yet the area is finite.\n\nStep-by-step solution\nСтепенная формула при n = 2: ∫\n1\nx2\n dx = −\n1\nx\nAnswer\n∫\n1\nx2\n dx = −\n1\nx\n + C\n\n✓ Check: the derivative of the result matches f(x) at every test point.?\n\nDefinite integral\n\nImproper integral: the integrand or the interval is unbounded, so the value is a limit. The limit exists, so the integral converges:\n\n∫\n∞\n1\n1\nx2\n dx = 1"
+  },
+  {
+   "id": "p_gauss:I",
+   "f": "e^(-x^2)",
+   "a": "-inf",
+   "b": "inf",
+   "err": null,
+   "res": {
+    "F": null,
+    "val": 1.7724538509055159,
+    "exact": "sqrt(pi)",
+    "how": "num",
+    "div": false,
+    "num": 1.7724538509055159,
+    "ok": true
+   },
+   "ru": "Неберущийся\n\nЭтот интеграл не выражается в элементарных функциях: первообразная от e−x² — это функция ошибок erf. Значение посчитано численно.",
+   "en": "Non-elementary\n\nThis integral has no elementary antiderivative: the antiderivative of e−x² is the error function erf. The value is computed numerically."
+  },
+  {
+   "id": "p_gauss:D",
+   "f": "e^(-x^2)",
+   "a": "-inf",
+   "b": "inf",
+   "err": null,
+   "res": {
+    "F": null,
+    "val": 1.7724538509055159,
+    "exact": "sqrt(pi)",
+    "how": "num",
+    "div": false,
+    "num": 1.7724538509055159,
+    "ok": true
+   },
+   "ru": "Неберущийся\nНесобственный\n\nИдея: Первообразная не элементарна, но интеграл по всей прямой равен √π.\n\nЭтот интеграл не выражается в элементарных функциях: первообразная от e−x² — это функция ошибок erf. Значение посчитано численно.\n\nОпределённый интеграл\n\nНесобственный интеграл: подынтегральная функция или отрезок неограничены, поэтому значение — это предел.\n\n∫\n∞\n−∞\ne−x2 dx = √π ≈ 1.77245",
+   "en": "Non-elementary\nImproper\n\nIdea: No elementary antiderivative, but the integral over the whole line equals √π.\n\nThis integral has no elementary antiderivative: the antiderivative of e−x² is the error function erf. The value is computed numerically.\n\nDefinite integral\n\nImproper integral: the integrand or the interval is unbounded, so the value is a limit.\n\n∫\n∞\n−∞\ne−x2 dx = √π ≈ 1.77245"
+  },
+  {
+   "id": "p_sinc:I",
+   "f": "sin(x)/x",
+   "a": "0",
+   "b": "10",
+   "err": null,
+   "res": {
+    "F": null,
+    "val": 1.658347594218874,
+    "exact": null,
+    "how": "num",
+    "div": false,
+    "num": 1.658347594218874,
+    "ok": true
+   },
+   "ru": "Неберущийся\n\nЭтот интеграл не выражается в элементарных функциях (интегральный синус, косинус или экспонента). Значение посчитано численно.",
+   "en": "Non-elementary\n\nThis integral has no elementary antiderivative (sine, cosine or exponential integral). The value is computed numerically."
+  },
+  {
+   "id": "p_sinc:D",
+   "f": "sin(x)/x",
+   "a": "0",
+   "b": "10",
+   "err": null,
+   "res": {
+    "F": null,
+    "val": 1.658347594218874,
+    "exact": null,
+    "how": "num",
+    "div": false,
+    "num": 1.658347594218874,
+    "ok": true
+   },
+   "ru": "Неберущийся\n\nИдея: Интегральный синус: только численно.\n\nЭтот интеграл не выражается в элементарных функциях (интегральный синус, косинус или экспонента). Значение посчитано численно.\n\nОпределённый интеграл\n∫\n10\n0\nsin x\nx\n dx ≈ 1.658348",
+   "en": "Non-elementary\n\nIdea: The sine integral: numerical only.\n\nThis integral has no elementary antiderivative (sine, cosine or exponential integral). The value is computed numerically.\n\nDefinite integral\n∫\n10\n0\nsin x\nx\n dx ≈ 1.658348"
+  },
+  {
+   "id": "p_div:I",
+   "f": "1/x^2",
+   "a": "-1",
+   "b": "1",
+   "err": null,
+   "res": {
+    "F": "-1/x",
+    "exact": null,
+    "how": "div",
+    "div": true,
+    "num": 8.123588014795945e+103,
+    "ok": false
+   },
+   "ru": "Степенная формула\n\nИдея: Это степени x: каждую интегрируем по формуле xⁿ → xⁿ⁺¹/(n + 1).\n\nРешение по шагам\nСтепенная формула при n = 2: ∫\n1\nx2\n dx = −\n1\nx\nОтвет\n∫\n1\nx2\n dx = −\n1\nx\n + C\n\n✓ Проверка: производная найденной функции совпадает с f(x) во всех контрольных точках.?\n\nC — любая постоянная: у функции бесконечно много первообразных, их графики получаются сдвигом вверх-вниз. Подвигайте ползунок C в блоке «Интеграл».?",
+   "en": "Power rule\n\nIdea: These are powers of x: integrate each with xⁿ → xⁿ⁺¹/(n + 1).\n\nStep-by-step solution\nСтепенная формула при n = 2: ∫\n1\nx2\n dx = −\n1\nx\nAnswer\n∫\n1\nx2\n dx = −\n1\nx\n + C\n\n✓ Check: the derivative of the result matches f(x) at every test point.?\n\nC is any constant: a function has infinitely many antiderivatives, and their graphs are vertical shifts of each other. Move the C slider in the Integral block.?"
+  },
+  {
+   "id": "p_div:D",
+   "f": "1/x^2",
+   "a": "-1",
+   "b": "1",
+   "err": null,
+   "res": {
+    "F": "-1/x",
+    "exact": null,
+    "how": "div",
+    "div": true,
+    "num": 8.123588014795945e+103,
+    "ok": false
+   },
+   "ru": "Степенная формула\nНесобственный\n\nИдея: Площадь у нуля бесконечна.\n\nРешение по шагам\nСтепенная формула при n = 2: ∫\n1\nx2\n dx = −\n1\nx\nОтвет\n∫\n1\nx2\n dx = −\n1\nx\n + C\n\n✓ Проверка: производная найденной функции совпадает с f(x) во всех контрольных точках.?\n\nОпределённый интеграл\n\nНесобственный интеграл: подынтегральная функция или отрезок неограничены, поэтому значение — это предел.\n\n∫\n1\n−1\n1\nx2\n dx: Интеграл расходится: накопленная площадь неограниченно растёт.\n\nФункция чётная, а отрезок симметричен: можно посчитать интеграл от 0 до b и удвоить.?",
+   "en": "Power rule\nImproper\n\nIdea: The area near zero is infinite.\n\nStep-by-step solution\nСтепенная формула при n = 2: ∫\n1\nx2\n dx = −\n1\nx\nAnswer\n∫\n1\nx2\n dx = −\n1\nx\n + C\n\n✓ Check: the derivative of the result matches f(x) at every test point.?\n\nDefinite integral\n\nImproper integral: the integrand or the interval is unbounded, so the value is a limit.\n\n∫\n1\n−1\n1\nx2\n dx: The integral diverges: the accumulated area grows without bound.\n\nThe function is even and the interval is symmetric: integrate from 0 to b and double it.?"
+  }
+ ]
+}

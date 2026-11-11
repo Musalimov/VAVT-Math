@@ -1,0 +1,19 @@
+{
+  "name": "vavt-math",
+  "private": true,
+  "type": "module",
+  "description": "Интерактивные тренажёры по математике для студентов ВАВТ",
+  "license": "MIT",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "build": "node build.mjs",
+    "watch": "node build.mjs --watch",
+    "test": "node --test",
+    "e2e": "node tests/e2e/compare.mjs"
+  },
+  "devDependencies": {
+    "playwright": "1.49.1"
+  }
+}
