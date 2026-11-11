@@ -1,3 +1,15 @@
+import { applyTexts, createSettings } from '../../shared/settings.js';
+import { createKeys, onShortcut } from '../../shared/keys.js';
+import { createExport } from '../../shared/export.js';
+import { createGlossary } from '../../shared/glossary.js';
+import { initDrawers } from '../../shared/drawers.js';
+import { createPanels } from '../../shared/panels.js';
+import { loadPrefs, makeSaver } from '../../shared/prefs.js';
+import { $, clone } from '../../shared/dom.js';
+import { pub } from '../../shared/state.js';
+import { setOn } from '../../shared/dom.js';
+import { openDrawer, closeDrawers } from '../../shared/drawers.js';
+import { toast } from '../../shared/toast.js';
 import { KEYS } from './content/keys.js';
 import { CHAP, FORMAL, ILL, REL, TERMS } from './content/glossary.js';
 import { PRE } from './content/examples.js';
@@ -36,15 +48,7 @@ import { lang, langFrom } from '../../shared/i18n.js';
    rec      idle ⇄ recording   (S.rec, exportVideo)
    mode/shape  2d|3d × 2x2|2x1|1x2|3x3|3x2|2x3 — у 2D и 3D своё состояние (S.d2/S.d3)
 */
-  const $ = (s) => document.querySelector(s);
-  const PUB = {};
-  function pub(k, v) {
-    v = String(v);
-    if (PUB[k] !== v) {
-      PUB[k] = v;
-      document.body.dataset[k] = v;
-    }
-  }
+
   const KEY = 'linal-viz-v1';
   const PAL = {
     classic: {
@@ -144,51 +148,15 @@ import { lang, langFrom } from '../../shared/i18n.js';
       trails: false,
     },
   };
-  const clone = (o) => JSON.parse(JSON.stringify(o));
-  const setOn = (el, on) => {
-    el.classList.toggle('on', !!on);
-    el.setAttribute('aria-pressed', on ? 'true' : 'false');
-  };
-  function load() {
-    let r = null;
-    try {
-      r = JSON.parse(localStorage.getItem(KEY) || 'null');
-    } catch (e) {}
-    const p = clone(DEF);
-    if (!r || typeof r !== 'object') return p;
-    Object.assign(p, r);
-    p.colors = { ...DEF.colors, ...(r.colors || {}) };
-    p.show = { ...DEF.show, ...(r.show || {}) };
-    const ord = Array.isArray(r.order) ? r.order.filter((x) => PANELS.includes(x)) : [];
-    PANELS.forEach((x) => {
-      if (!ord.includes(x)) ord.push(x);
-    });
-    p.order = ord;
-    p.collapsed = r.collapsed || {};
-    p.float = r.float || { x: 12, y: 12 };
-    /* защита от повреждённых/старых настроек: числа — в пределах ползунков, иначе по умолчанию */ const RNG =
-      { width: [240, 560], bottomH: [25, 75], font: [80, 130], speed: [0.25, 3], lw: [0.5, 2.5] };
-    for (const k in RNG) {
-      const v = p[k],
-        [a, b] = RNG[k];
-      p[k] = typeof v === 'number' && isFinite(v) ? Math.min(b, Math.max(a, v)) : DEF[k];
-    }
-    if (!p.float || typeof p.float !== 'object' || !isFinite(p.float.x) || !isFinite(p.float.y))
-      p.float = { x: 12, y: 12 };
-    if (!p.collapsed || typeof p.collapsed !== 'object' || Array.isArray(p.collapsed)) p.collapsed = {};
-    return p;
-  }
-  let P = load();
+
+  const LOADED = loadPrefs({ key: KEY, defaults: DEF, panels: PANELS });
+  let P = LOADED.prefs;
+  if (LOADED.status === 'corrupt') setTimeout(() => toast(T().prefsReset, 5000));
   langFrom(() => P.lang);
   if (!P.lang) P.lang = (navigator.language || '').toLowerCase().startsWith('ru') ? 'ru' : 'en';
-  let saveT = 0;
+  // настройки: схема 2, миграция со схемы 1, -bak, предупреждение при переполнении (src/shared/prefs.js)
   function save() {
-    clearTimeout(saveT);
-    saveT = setTimeout(() => {
-      try {
-        localStorage.setItem(KEY, JSON.stringify(P));
-      } catch (e) {}
-    }, 250);
+    (save.f ||= makeSaver({ key: KEY, get: () => P, onFail: () => toast(T().prefsNoSave, 4000) }))();
   }
 
   /* ---------- математика ---------- */
@@ -415,6 +383,12 @@ import { lang, langFrom } from '../../shared/i18n.js';
     stage = $('#stage'),
     main = $('#main'),
     side = $('#side');
+  const { buildPanels, applyOrder, showPanel } = createPanels({
+    side,
+    prefs: () => P,
+    save,
+    openDetails: true,
+  });
   let W = 0,
     H = 0,
     DPR = 1,
@@ -1506,77 +1480,6 @@ import { lang, langFrom } from '../../shared/i18n.js';
   };
 
   /* ---------- панели ---------- */
-  function buildPanels() {
-    document.querySelectorAll('.panel').forEach((p) => {
-      const h = document.createElement('div');
-      h.className = 'ph';
-      h.innerHTML = `<span class="handle" data-it="drag">⠿</span><h3 data-i="p_${p.dataset.id}"></h3><button class="icon" data-mv="-1" data-it="up">↑</button><button class="icon" data-mv="1" data-it="down">↓</button><button class="icon chev" data-col data-it="collapse">▾</button>`;
-      p.prepend(h);
-      const id = p.dataset.id,
-        toggle = () => {
-          P.collapsed[id] = !P.collapsed[id];
-          p.classList.toggle('collapsed', !!P.collapsed[id]);
-          save();
-        };
-      h.querySelector('h3').onclick = toggle;
-      h.querySelector('[data-col]').onclick = toggle;
-      h.querySelectorAll('[data-mv]').forEach(
-        (b) =>
-          (b.onclick = () => {
-            const i = P.order.indexOf(id),
-              j = i + +b.dataset.mv;
-            if (j < 0 || j >= P.order.length) return;
-            [P.order[i], P.order[j]] = [P.order[j], P.order[i]];
-            applyOrder();
-            save();
-          })
-      );
-      const hd = h.querySelector('.handle');
-      hd.addEventListener('pointerdown', () => {
-        p.draggable = true;
-        window.addEventListener(
-          'pointerup',
-          () => {
-            if (!p.classList.contains('dragging')) p.draggable = false;
-          },
-          { once: true }
-        );
-      });
-      p.addEventListener('dragstart', (e) => {
-        p.classList.add('dragging');
-        e.dataTransfer.effectAllowed = 'move';
-        try {
-          e.dataTransfer.setData('text/plain', id);
-        } catch (_) {}
-      });
-      p.addEventListener('dragend', () => {
-        p.classList.remove('dragging');
-        p.draggable = false;
-        P.order = [...side.querySelectorAll('.panel')].map((x) => x.dataset.id);
-        save();
-      });
-    });
-    side.addEventListener('dragover', (e) => {
-      const dr = side.querySelector('.panel.dragging');
-      if (!dr) return;
-      e.preventDefault();
-      const after = [...side.querySelectorAll('.panel:not(.dragging)')].find((el) => {
-        const r = el.getBoundingClientRect();
-        return e.clientY < r.top + r.height / 2;
-      });
-      if (after) side.insertBefore(dr, after);
-      else side.appendChild(dr);
-    });
-  }
-  function applyOrder() {
-    P.order.forEach((id) => {
-      const el = side.querySelector(`.panel[data-id="${id}"]`);
-      if (el) side.appendChild(el);
-    });
-    side
-      .querySelectorAll('.panel')
-      .forEach((p) => p.classList.toggle('collapsed', !!P.collapsed[p.dataset.id]));
-  }
 
   function buildMatrixInputs() {
     const n = N(),
@@ -1979,17 +1882,7 @@ import { lang, langFrom } from '../../shared/i18n.js';
     renderCob();
     req();
   }
-  function showPanel(id) {
-    P.collapsed[id] = false;
-    applyOrder();
-    save();
-    const el = side.querySelector(`.panel[data-id="${id}"]`);
-    if (el)
-      el.querySelectorAll('details.more,details.steps').forEach((d) => {
-        d.open = true;
-      });
-    if (el) setTimeout(() => el.scrollIntoView({ block: 'nearest', behavior: 'smooth' }), 50);
-  }
+
   $('#cbOn').onchange = (e) => {
     S.cob.on = e.target.checked;
     renderCob();
@@ -2234,13 +2127,6 @@ import { lang, langFrom } from '../../shared/i18n.js';
           .join('')}</span>`;
       });
 
-  function gTabs(id, html) {
-    const f = FORMAL[id];
-    if (!f) return html;
-    const L = T(),
-      ft = P.gTab === 'f';
-    return `<div class="seg gtabs"><button data-tab="i" class="${ft ? '' : 'on'}" aria-pressed="${!ft}">${L.tabI}</button><button data-tab="f" class="${ft ? 'on' : ''}" aria-pressed="${ft}">${L.tabF}</button></div><div class="pane" data-pane="i"${ft ? ' hidden' : ''}>${html}</div><div class="pane" data-pane="f"${ft ? '' : ' hidden'}>${mathify(f[lang()] || f.ru)}</div>`;
-  }
   const DEMOS = {
     vector: () => {
       go2();
@@ -2412,11 +2298,23 @@ import { lang, langFrom } from '../../shared/i18n.js';
       play();
     },
   };
-
-  const termTitle = (id) => {
-    const t = TERMS.find((x) => x.id === id);
-    return t ? (t[lang()] || t.ru)[0] : id;
-  };
+  const gloss = createGlossary({
+    prefs: () => P,
+    save,
+    T,
+    content: { TERMS, FORMAL, ILL, CHAP, REL, DEMOS },
+    // демо ЛА: сначала синхронизировать слои и сохранить, потом сыграть сцену
+    onDemo: (id) => {
+      syncToggles();
+      save();
+      DEMOS[id]();
+    },
+    illSvg,
+    mathify,
+  });
+  const { termTitle, renderGloss, rerenderGloss, openTerm } = gloss;
+  gloss.init();
+  initDrawers();
 
   function illSvg(id) {
     const sp = ILL[id];
@@ -2582,261 +2480,33 @@ import { lang, langFrom } from '../../shared/i18n.js';
     return `<svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false"><rect width="${W}" height="${H}" fill="var(--s-bg)"/>${out}</svg>`;
   }
 
-  function termHtml(t, L) {
-    const x = t[lang()] || t.ru,
-      rd = !!P.read[t.id];
-    return `<details class="term${rd ? ' read' : ''}" id="g-${t.id}"><summary><span>${rd ? '<b class="rd">✓</b>' : ''}${x[0]}</span><small>${x[1]}</small></summary><div class="tb">${ILL[t.id] ? `<figure class="ill">${illSvg(t.id)}</figure>` : ''}${gTabs(t.id, x[2])}${DEMOS[t.id] ? `<button class="btn sm primary" data-demo="${t.id}">${L.showDemo}</button>` : ''}${REL[t.id] ? `<div class="rel">${L.seeAlso} ${REL[t.id].map((r) => `<button class="chip" data-term="${r}">${termTitle(r)}</button>`).join('')}</div>` : ''}<div class="row" style="margin-top:.8rem"><button class="btn sm readbtn${rd ? ' on' : ''}" data-read="${t.id}">${rd ? L.readDone : L.readMark}</button></div></div></details>`;
-  }
-  function renderGloss(q = '') {
-    q = q.trim().toLowerCase();
-    const L = T();
-    if (!P.read || typeof P.read !== 'object') P.read = {};
-    const total = TERMS.length,
-      done = TERMS.filter((t) => P.read[t.id]).length;
-    const match = (t) => {
-      if (!q) return true;
-      const x = t[lang()] || t.ru,
-        f = FORMAL[t.id];
-      return (x[0] + ' ' + x[1] + ' ' + x[2] + ' ' + (f ? f[lang()] || f.ru : ''))
-        .replace(/<[^>]+>/g, '')
-        .toLowerCase()
-        .includes(q);
-    };
-    let html = `<div class="prog"><span>${L.readOf(done, total)}</span><span class="bar"><i style="width:${Math.round((done / total) * 100)}%"></i></span>${done ? `<button class="linkbtn" id="readReset">${L.readReset}</button>` : ''}</div>`;
-    let any = false,
-      num = 0;
-    CHAP.forEach((ch) => {
-      if (!ch.extra) num++;
-      const ts = ch.ids
-        .map((id) => TERMS.find((t) => t.id === id))
-        .filter(Boolean)
-        .filter(match);
-      if (!ts.length) return;
-      any = true;
-      const r = ch.ids.filter((id) => P.read[id]).length;
-      html += `<section class="chap"><h3>${ch.extra ? '' : num + '. '}${ch[lang()] || ch.ru}<span class="cnt">${r} / ${ch.ids.length}</span></h3>${ts.map((t) => termHtml(t, L)).join('')}</section>`;
-    });
-    $('#gl').innerHTML = any ? html : html + `<p class="note">${L.noFound}</p>`;
-  }
-  function rerenderGloss() {
-    const sh = $('#dGloss .sheet'),
-      st = sh.scrollTop,
-      open = [...document.querySelectorAll('#gl details[open]')].map((d) => d.id);
-    renderGloss($('#gq').value);
-    open.forEach((id) => {
-      const e = document.getElementById(id);
-      if (e) e.open = true;
-    });
-    sh.scrollTop = st;
-  }
-  $('#gq').oninput = (e) => renderGloss(e.target.value);
-  $('#gl').addEventListener('click', (e) => {
-    const rb = e.target.closest('[data-read]');
-    if (rb) {
-      P.read[rb.dataset.read] = !P.read[rb.dataset.read];
-      if (!P.read[rb.dataset.read]) delete P.read[rb.dataset.read];
-      save();
-      rerenderGloss();
-      return;
-    }
-    if (e.target.closest('#readReset')) {
-      P.read = {};
-      save();
-      rerenderGloss();
-    }
-  });
-  $('#gl').addEventListener('click', (e) => {
-    const tb = e.target.closest('[data-tab]');
-    if (!tb) return;
-    const box = tb.closest('.tb');
-    P.gTab = tb.dataset.tab;
-    box.querySelectorAll('[data-tab]').forEach((x) => setOn(x, x.dataset.tab === P.gTab));
-    box.querySelectorAll('.pane').forEach((p) => {
-      p.hidden = p.dataset.pane !== P.gTab;
-    });
-    save();
-  });
-  $('#gl').addEventListener('click', (e) => {
-    const b = e.target.closest('[data-demo]');
-    if (!b) return;
-    closeDrawers();
-    syncToggles();
-    save();
-    DEMOS[b.dataset.demo]();
-  });
-  let drawerRet = null;
-  const DRW = { dGloss: 'gloss', dKeys: 'keys', dSet: 'settings' };
-  function openDrawer(id) {
-    const el = document.getElementById(id);
-    if (!document.querySelector('.drawer.open')) drawerRet = document.activeElement;
-    document.querySelectorAll('.drawer.open').forEach((d) => {
-      if (d !== el) d.classList.remove('open');
-    });
-    el.classList.add('open');
-    pub('drawer', DRW[id]);
-    const sh = el.querySelector('.sheet');
-    if (!sh.contains(document.activeElement)) {
-      sh.tabIndex = -1;
-      sh.focus({ preventScroll: true });
-    }
-  }
-  function closeDrawers() {
-    const was = document.querySelector('.drawer.open');
-    document.querySelectorAll('.drawer').forEach((d) => d.classList.remove('open'));
-    pub('drawer', 'none');
-    if (
-      was &&
-      drawerRet &&
-      drawerRet.isConnected &&
-      (!document.activeElement ||
-        document.activeElement === document.body ||
-        was.contains(document.activeElement))
-    )
-      drawerRet.focus({ preventScroll: true });
-    drawerRet = null;
-  }
-  document.querySelectorAll('[data-close]').forEach((el) => (el.onclick = closeDrawers));
-  document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape') closeDrawers();
-  });
   /* ---------- экспорт ---------- */
-  let DL = null,
-    fmtMode = 'tex';
-  const LOCAL = !window.claude;
-  const canSave = () => !!(DL || LOCAL);
+  const keysUi = createKeys({ T, keys: KEYS });
+  const { renderKeys, openKeys } = keysUi;
+  keysUi.init();
+  const ex = createExport({
+    name: () => `linear-${S.mode}`,
+    T,
+    state: S,
+    cv,
+    renderNow,
+    req,
+    // видео: анимация преобразования; в начало — через автомат анимации, кадр — с подписями
+    video: {
+      play: () => play(),
+      reset: () => {
+        stopAnim();
+        D().t = 0;
+      },
+      frame: () => renderOverlay(),
+    },
+  });
+  const { canSave, updExport, flash, exportPng, exportVideo, vidMime } = ex;
+  ex.init();
+  let fmtMode = 'tex';
+
   const wait = (ms) => new Promise((r) => setTimeout(r, ms));
-  function vidMime() {
-    if (!window.MediaRecorder || !cv.captureStream) return null;
-    for (const m of ['video/webm;codecs=vp9', 'video/webm;codecs=vp8', 'video/webm', 'video/mp4'])
-      if (MediaRecorder.isTypeSupported && MediaRecorder.isTypeSupported(m)) return m;
-    return null;
-  }
-  function updExport() {
-    const L = T();
-    $('#xPng').disabled = !canSave() || S.rec;
-    $('#xVid').disabled = !canSave() || !vidMime() || S.rec;
-    $('#xNote').textContent = S.rec
-      ? L.xRec
-      : !canSave()
-        ? S.dlTried
-          ? L.xNoDl
-          : ''
-        : !vidMime()
-          ? L.xNoVid
-          : '';
-  }
-  function flash(msg, ms = 3500) {
-    $('#xNote').textContent = msg;
-    clearTimeout(flash.t);
-    if (ms) flash.t = setTimeout(updExport, ms);
-  }
-  async function saveFile(name, data) {
-    const L = T();
-    if (!DL) {
-      if (LOCAL) {
-        const u = URL.createObjectURL(data),
-          a = document.createElement('a');
-        a.href = u;
-        a.download = name;
-        document.body.appendChild(a);
-        a.click();
-        a.remove();
-        setTimeout(() => URL.revokeObjectURL(u), 5000);
-        flash(L.xSaved);
-      }
-      return;
-    }
-    try {
-      await DL.save({ filename: name, data });
-      flash(L.xSaved);
-    } catch (e) {
-      const c = e && e.code;
-      if (c === 'declined') {
-        updExport();
-        return;
-      }
-      if (
-        c === 'unavailable' ||
-        c === 'not_granted' ||
-        c === 'capability_disabled' ||
-        c === 'capability_removed'
-      ) {
-        DL = null;
-        S.dlTried = true;
-        updExport();
-        return;
-      }
-      flash(c === 'rate_limited' ? L.xBusy : L.xFail);
-    }
-  }
-  function exportPng() {
-    if (!canSave() || S.rec) return;
-    S.stamp = $('#xStamp').checked;
-    renderNow();
-    cv.toBlob((b) => {
-      S.stamp = false;
-      req();
-      if (b) saveFile(`linear-${S.mode}.png`, b);
-    }, 'image/png');
-  }
-  async function exportVideo() {
-    const m = vidMime();
-    if (!canSave() || !m || S.rec) return;
-    S.rec = true;
-    pub('rec', 'recording');
-    S.stamp = $('#xStamp').checked;
-    updExport();
-    const keep = (ms) =>
-      new Promise((r) => {
-        const t0 = performance.now();
-        const f = () => {
-          renderNow();
-          renderOverlay();
-          if (performance.now() - t0 < ms) requestAnimationFrame(f);
-          else r();
-        };
-        f();
-      });
-    const chunks = [];
-    let rec;
-    try {
-      const stream = cv.captureStream(60);
-      rec = new MediaRecorder(stream, { mimeType: m, videoBitsPerSecond: 8e6 });
-      rec.ondataavailable = (e) => {
-        if (e.data && e.data.size) chunks.push(e.data);
-      };
-      const stopped = new Promise((r) => {
-        rec.onstop = r;
-      });
-      stopAnim();
-      D().t = 0;
-      rec.start(100);
-      await keep(500);
-      play();
-      await new Promise((r) => {
-        const f = () => (S.anim ? requestAnimationFrame(f) : r());
-        f();
-      });
-      await keep(900);
-      rec.stop();
-      await stopped;
-    } catch (err) {
-      S.rec = false;
-      pub('rec', 'idle');
-      S.stamp = false;
-      req();
-      flash(T().xFail);
-      return;
-    }
-    S.rec = false;
-    pub('rec', 'idle');
-    S.stamp = false;
-    req();
-    updExport();
-    const blob = new Blob(chunks, { type: m });
-    if (blob.size) saveFile(`linear-${S.mode}.${m.startsWith('video/mp4') ? 'mp4' : 'webm'}`, blob);
-    else flash(T().xFail);
-  }
+
   function renderTex() {
     const d = D(),
       n = N(),
@@ -2852,26 +2522,7 @@ import { lang, langFrom } from '../../shared/i18n.js';
           ? 'np.array([\n' + rows.map((r) => '    [' + r.join(', ') + ']').join(',\n') + '\n])'
           : rows.map((r) => r.join('\t')).join('\n');
   }
-  async function copyTex() {
-    const ta = $('#xTex'),
-      L = T();
-    let ok = false;
-    try {
-      await navigator.clipboard.writeText(ta.value);
-      ok = true;
-    } catch (e) {}
-    if (!ok) {
-      ta.focus();
-      ta.select();
-      try {
-        ok = document.execCommand('copy');
-      } catch (e) {}
-    }
-    flash(ok ? L.xCopied : L.xSelect);
-  }
-  $('#xPng').onclick = exportPng;
-  $('#xVid').onclick = exportVideo;
-  $('#xCopy').onclick = copyTex;
+
   document.querySelectorAll('#xFmt button').forEach(
     (b) =>
       (b.onclick = () => {
@@ -2880,41 +2531,9 @@ import { lang, langFrom } from '../../shared/i18n.js';
         renderTex();
       })
   );
-  (async () => {
-    try {
-      if (window.claude && typeof window.claude.use === 'function') DL = await window.claude.use('downloads');
-    } catch (e) {
-      DL = null;
-    }
-    S.dlTried = true;
-    updExport();
-  })();
+
   /* ---------- горячие клавиши ---------- */
 
-  function renderKeys() {
-    const L = T();
-    $('#keysList').innerHTML = KEYS.map(
-      ([k, d]) =>
-        `<span>${k
-          .split(' ')
-          .map((p, i) => (i > 0 && /^[+\/–]$/.test(p) ? p : `<kbd>${p}</kbd>`))
-          .join(' ')}</span><span>${L[d]}</span>`
-    ).join('');
-  }
-  function openKeys() {
-    renderKeys();
-    closeDrawers();
-    openDrawer('dKeys');
-  }
-  $('#openKeys').onclick = openKeys;
-  $('#openKeys2').onclick = openKeys;
-  function toast(msg, ms = 1300) {
-    const t = $('#toast');
-    t.textContent = msg;
-    t.classList.add('on');
-    clearTimeout(toast.t);
-    toast.t = setTimeout(() => t.classList.remove('on'), ms);
-  }
   function flip(k) {
     P.show[k] = !P.show[k];
     if (k === 'decomp' && P.show.decomp) P.show.vec = true;
@@ -2925,21 +2544,8 @@ import { lang, langFrom } from '../../shared/i18n.js';
     const L = T();
     toast(`${L.tog[k]}: ${P.show[k] ? L.on : L.off}`);
   }
-  document.addEventListener('keydown', (e) => {
-    if (e.ctrlKey || e.metaKey || e.altKey) return;
-    const tg = e.target,
-      tag = tg && tg.tagName;
-    if (
-      (tag === 'INPUT' && !['checkbox', 'range', 'radio', 'color'].includes(tg.type)) ||
-      tag === 'TEXTAREA' ||
-      tag === 'SELECT' ||
-      (tg && tg.isContentEditable)
-    )
-      return;
-    const isQ = e.key === '?' || (e.code === 'Slash' && e.shiftKey);
-    if (document.querySelector('.drawer.open') && !isQ) return;
+  onShortcut((c, e, isQ) => {
     const d = D(),
-      c = e.code,
       L = T();
     let h = true;
     const setT = (v) => {
@@ -2994,130 +2600,45 @@ import { lang, langFrom } from '../../shared/i18n.js';
       $('#openGloss').click();
       setTimeout(() => $('#gq').focus(), 30);
     } else h = false;
-    if (h) e.preventDefault();
+    return h;
   });
-  $('#openGloss').onclick = () => {
-    $('#gq').value = '';
-    renderGloss();
-    openDrawer('dGloss');
-  };
-  function openTerm(id) {
-    $('#gq').value = '';
-    renderGloss();
-    openDrawer('dGloss');
-    const el = document.getElementById('g-' + id);
-    if (el) {
-      el.open = true;
-      setTimeout(() => el.scrollIntoView({ block: 'start' }), 30);
-    }
-  }
 
   /* ---------- настройки ---------- */
-  $('#openSet').onclick = () => {
-    syncSettings();
-    openDrawer('dSet');
-  };
-  function buildSettings() {
-    buildPal();
-    document.querySelectorAll('#langSeg button,#langSeg2 button').forEach(
-      (b) =>
-        (b.onclick = () => {
-          P.lang = b.dataset.l;
-          applyLang();
-          save();
-        })
-    );
-    document.querySelectorAll('#uiSeg button').forEach(
-      (b) =>
-        (b.onclick = () => {
-          P.ui = b.dataset.v;
-          applyPrefs();
-        })
-    );
-    document.querySelectorAll('#dockSeg button').forEach(
-      (b) =>
-        (b.onclick = () => {
-          P.dock = b.dataset.v;
-          applyPrefs();
-        })
-    );
-    $('#wR').oninput = (e) => {
-      P.width = +e.target.value;
-      applyPrefs();
-    };
-    $('#hR').oninput = (e) => {
-      P.bottomH = +e.target.value;
-      applyPrefs();
-    };
-    $('#fR').oninput = (e) => {
-      P.font = +e.target.value;
-      applyPrefs();
-    };
-    $('#lR').oninput = (e) => {
-      P.lw = +e.target.value;
-      applyPrefs();
-    };
-    $('#resetOrder').onclick = () => {
-      P.order = PANELS.slice();
-      P.collapsed = {};
-      applyPrefs();
-    };
-    $('#resetAll').onclick = () => {
-      const lg = lang(),
-        rd = P.read;
-      P = clone(DEF);
-      P.lang = lg;
-      P.read = rd || {};
-      syncToggles();
-      $('#spR').value = P.speed;
-      $('#spOut').textContent = '×1';
-      applyPrefs();
-      renderCaption();
-    };
-  }
-  function buildPal() {
-    const L = T();
-    const pc = $('#palChips');
-    pc.innerHTML = '';
-    Object.entries(PAL).forEach(([k, p]) => {
-      const b = document.createElement('button');
-      b.className = 'chip';
-      b.dataset.p = k;
-      b.innerHTML = `<span class="sw" style="background:${p.bg};box-shadow:inset 0 0 0 3px ${p.grid}"></span>${L.pal[k]}`;
-      b.onclick = () => {
-        P.palette = k;
-        P.colors = { ...PAL[k] };
-        applyPrefs();
-      };
-      pc.appendChild(b);
-    });
-    const cs = $('#colors');
-    cs.innerHTML = '';
-    Object.keys(L.colors).forEach((k) => {
-      const l = document.createElement('label');
-      l.innerHTML = `<input type="color" data-k="${k}"> ${L.colors[k]}`;
-      l.querySelector('input').oninput = (e) => {
-        P.colors[k] = e.target.value;
-        P.palette = 'custom';
-        applyPrefs();
-      };
-      cs.appendChild(l);
-    });
-  }
+  const settings = createSettings({
+    prefs: () => P,
+    setPrefs: (np) => {
+      P = np;
+    },
+    save,
+    T,
+    defaults: DEF,
+    panels: PANELS,
+    palettes: PAL,
+    main,
+    side,
+    // образец палитры в ЛА обводится цветом сетки
+    swatch: (p) => p.grid,
+    hooks: {
+      applyLang,
+      applyOrder,
+      syncToggles,
+      // после «Сбросить всё» ЛА обновляет только подпись (сцена перерисуется через req)
+      renderAll: () => renderCaption(),
+      req,
+      onReset: (np) => {
+        $('#spR').value = np.speed;
+        $('#spOut').textContent = '×1';
+      },
+    },
+  });
+  const { buildSettings, buildPal, syncSettings, applyDock, applyPrefs } = settings;
+  settings.init();
+
   function applyLang() {
     const L = T();
     document.documentElement.lang = lang();
     document.title = L.title;
-    document.querySelectorAll('[data-i]').forEach((e) => {
-      e.textContent = L[e.dataset.i];
-    });
-    document.querySelectorAll('[data-ih]').forEach((e) => {
-      e.innerHTML = L[e.dataset.ih];
-    });
-    document.querySelectorAll('[data-it]').forEach((e) => {
-      e.title = L[e.dataset.it];
-      e.setAttribute('aria-label', L[e.dataset.it]);
-    });
+    applyTexts(L);
     $('#gq').placeholder = L.search;
     cv.setAttribute('aria-label', L.canvas);
     document
@@ -3138,81 +2659,11 @@ import { lang, langFrom } from '../../shared/i18n.js';
     }
     if (S.K) changed();
   }
-  function syncSettings() {
-    document.querySelectorAll('#uiSeg button').forEach((b) => setOn(b, b.dataset.v === P.ui));
-    document.querySelectorAll('#dockSeg button').forEach((b) => setOn(b, b.dataset.v === P.dock));
-    document.querySelectorAll('#palChips .chip').forEach((b) => setOn(b, b.dataset.p === P.palette));
-    document.querySelectorAll('#colors input').forEach((i) => {
-      i.value = P.colors[i.dataset.k];
-    });
-    $('#wR').value = P.width;
-    $('#wOut').textContent = P.width + ' px';
-    $('#hR').value = P.bottomH;
-    $('#hOut').textContent = P.bottomH + ' %';
-    $('#fR').value = P.font;
-    $('#fOut').textContent = P.font + ' %';
-    $('#lR').value = P.lw;
-    $('#lOut').textContent = '×' + fmt(P.lw, 1);
-  }
-  function effDock() {
-    return P.dock === 'auto' ? (innerWidth < 760 ? 'bottom' : 'right') : P.dock;
-  }
-  function applyDock() {
-    const d = effDock();
-    main.dataset.dock = d;
-    if (d === 'float') {
-      const mr = main.getBoundingClientRect(),
-        sw = side.offsetWidth || P.width;
-      P.float.x = Math.max(8, Math.min(P.float.x, mr.width - Math.min(sw, mr.width) - 8));
-      P.float.y = Math.max(8, Math.min(P.float.y, mr.height - 80));
-      side.style.left = P.float.x + 'px';
-      side.style.top = P.float.y + 'px';
-    } else {
-      side.style.left = '';
-      side.style.top = '';
-    }
-  }
-  function applyPrefs() {
-    const r = document.documentElement;
-    if (P.ui === 'auto') r.removeAttribute('data-theme');
-    else r.setAttribute('data-theme', P.ui);
-    r.style.fontSize = (16 * P.font) / 100 + 'px';
-    r.style.setProperty('--side-w', P.width + 'px');
-    r.style.setProperty('--side-h', P.bottomH + '%');
-    Object.entries(P.colors).forEach(([k, v]) => r.style.setProperty('--s-' + k, v));
-    applyDock();
-    applyOrder();
-    syncSettings();
-    save();
-    req();
-  }
-  (() => {
-    const g = $('#grip');
-    let st = null;
-    g.addEventListener('pointerdown', (e) => {
-      g.setPointerCapture(e.pointerId);
-      st = { x: e.clientX, y: e.clientY, fx: P.float.x, fy: P.float.y };
-    });
-    g.addEventListener('pointermove', (e) => {
-      if (!st) return;
-      P.float.x = st.fx + e.clientX - st.x;
-      P.float.y = st.fy + e.clientY - st.y;
-      applyDock();
-    });
-    const end = () => {
-      if (st) {
-        st = null;
-        save();
-      }
-    };
-    g.addEventListener('pointerup', end);
-    g.addEventListener('pointercancel', end);
-  })();
-  window.addEventListener('resize', () => applyDock());
 
   /* ---------- старт ---------- */
   buildPanels();
   buildSettings();
+  buildPal();
   $('#spR').value = P.speed;
   $('#spOut').textContent = '×' + fmt(P.speed);
   applyPrefs();

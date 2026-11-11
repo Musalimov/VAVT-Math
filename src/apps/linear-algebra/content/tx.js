@@ -1,6 +1,8 @@
 import { lang } from '../../../shared/i18n.js';
 export const TX = {
   ru: {
+    prefsReset: 'Сохранённые настройки повреждены — восстановлены настройки по умолчанию. Копия старых сохранена в браузере.',
+    prefsNoSave: 'Хранилище браузера переполнено или недоступно — настройки не сохранятся после закрытия страницы.',
     title: 'Linear algebra',
     brand: 'Linear algebra',
     gloss: 'Справочник',
@@ -299,6 +301,8 @@ export const TX = {
     },
   },
   en: {
+    prefsReset: 'Saved settings were damaged — defaults restored. A copy of the old ones is kept in the browser.',
+    prefsNoSave: 'Browser storage is full or unavailable — settings won’t be saved after closing the page.',
     title: 'Linear algebra',
     brand: 'Linear algebra',
     gloss: 'Glossary',
