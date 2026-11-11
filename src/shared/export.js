@@ -4,14 +4,12 @@ import { pub } from './state.js';
 
 /**
  * Экспорт: снимок холста в PNG, копирование текста решения, сохранение
- * файла (в браузере — загрузка, внутри Claude — через window.claude.use('downloads')),
- * строка состояния под кнопками.
+ * файла загрузкой браузера, строка состояния под кнопками.
  *
  *   const ex = createExport({ name: 'macroeconomics', T, state: S, cv, renderNow, req });
- *   ex.init();   // один раз: проверка возможности сохранять, обработчики #xPng и #xCopy
+ *   ex.init();   // один раз: обработчики #xPng, #xCopy (и #xVid, если есть видео)
  *
- * state.stamp — рисовать ли подпись на снимке (холст читает его при перерисовке),
- * state.dlTried — проверка возможности сохранять завершена.
+ * state.stamp — рисовать ли подпись на снимке (холст читает его при перерисовке).
  * Видео (по желанию): video = { ready?, play, reset?, frame? } — запись холста;
  * reset — вернуть анимацию в начало (по умолчанию state.t = 0, state.anim = null),
  * frame — дорисовка каждого кадра (в ЛА — подписи поверх холста);
@@ -23,12 +21,8 @@ import { pub } from './state.js';
 export function createExport({ name, T, state, cv, renderNow, req, video = null }) {
   /** имя файла без расширения: строка или функция (в ЛА зависит от режима 2D/3D) */
   const base = () => (typeof name === 'function' ? name() : name);
-  /** @type {any} */
-  let DL = null;
-
-  const LOCAL = !window.claude;
-
-  const canSave = () => !!(DL || LOCAL);
+  /** Сохранение файла — загрузкой браузера; доступно всегда. */
+  const canSave = () => true;
 
   function updExport() {
     const L = T();
@@ -126,44 +120,17 @@ export function createExport({ name, T, state, cv, renderNow, req, video = null 
     if (ms) flash.t = setTimeout(updExport, ms);
   }
 
-  async function saveFile(name, data) {
+  function saveFile(/** @type {string} */ name, /** @type {Blob} */ data) {
     const L = T();
-    if (!DL) {
-      if (LOCAL) {
-        const u = URL.createObjectURL(data),
-          a = document.createElement('a');
-        a.href = u;
-        a.download = name;
-        document.body.appendChild(a);
-        a.click();
-        a.remove();
-        setTimeout(() => URL.revokeObjectURL(u), 5000);
-        flash(L.xSaved);
-      }
-      return;
-    }
-    try {
-      await DL.save({ filename: name, data });
-      flash(L.xSaved);
-    } catch (e) {
-      const c = e && e.code;
-      if (c === 'declined') {
-        updExport();
-        return;
-      }
-      if (
-        c === 'unavailable' ||
-        c === 'not_granted' ||
-        c === 'capability_disabled' ||
-        c === 'capability_removed'
-      ) {
-        DL = null;
-        state.dlTried = true;
-        updExport();
-        return;
-      }
-      flash(c === 'rate_limited' ? L.xBusy : L.xFail);
-    }
+    const u = URL.createObjectURL(data),
+      a = document.createElement('a');
+    a.href = u;
+    a.download = name;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(u), 5000);
+    flash(L.xSaved);
   }
 
   function exportPng() {
@@ -197,16 +164,7 @@ export function createExport({ name, T, state, cv, renderNow, req, video = null 
 
   function init() {
     if (video) $('#xVid').onclick = () => exportVideo();
-    (async () => {
-      try {
-        if (window.claude && typeof window.claude.use === 'function')
-          DL = await window.claude.use('downloads');
-      } catch (e) {
-        DL = null;
-      }
-      state.dlTried = true;
-      updExport();
-    })();
+    updExport();
     $('#xPng').onclick = exportPng;
     $('#xCopy').onclick = copyTex;
   }
