@@ -35,3 +35,19 @@ for (const c of golden.cases) {
     close(res, c.res, c.id);
   });
 }
+
+test('регрессия фазы 1 (№8): допуски относительные — 10⁻⁵·E невырождена, 10⁻¹⁰·E имеет ранг 2', async () => {
+  const { isSingular } = await import('../src/math/linalg.js');
+  const E5 = [1e-5, 0, 0, 1e-5];
+  assert.equal(isSingular(E5, 2), false);
+  inv(E5, 2).forEach((x, i) => assert.ok(Math.abs(x - [1e5, 0, 0, 1e5][i]) < 1e-6));
+  assert.equal(nullspace([1e-10, 0, 0, 1e-10], 2, 1e-9).rank, 2);
+  assert.equal(
+    isSingular([1e8, 1e8 + 1, 1e8, 1e8], 2),
+    false,
+    'det = −10⁸ — обратима, хотя элементы большие'
+  );
+  assert.equal(isSingular([1, 1, 1, 1 + 1e-12], 2), true, 'почти вырожденная');
+  assert.equal(isSingular([1, 2, 2, 4], 2), true);
+  assert.equal(nullspace([1, 2, 2, 4], 2, 1e-9).rank, 1);
+});

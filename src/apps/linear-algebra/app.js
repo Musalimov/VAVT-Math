@@ -14,7 +14,7 @@ import { KEYS } from './content/keys.js';
 import { CHAP, FORMAL, ILL, REL, TERMS } from './content/glossary.js';
 import { PRE } from './content/examples.js';
 import { T } from './content/tx.js';
-import { rot2, rx, rz } from '../../math/linalg.js';
+import { isSingular, rot2, rx, rz } from '../../math/linalg.js';
 import {
   I,
   add,
@@ -951,7 +951,7 @@ import { lang, langFrom } from '../../shared/i18n.js';
       const b1 = S.cob.b1,
         b2 = S.cob.b2,
         Pm = [b1[0], b2[0], b1[1], b2[1]];
-      if (Math.abs(det(Pm, 2)) > 1e-9) {
+      if (!isSingular(Pm, 2)) {
         const n = Math.min(60, Math.ceil(R / Math.max(sigmaMin2(Pm), R / 60)) + 1);
         ctx.save();
         ctx.globalAlpha = 0.45;
@@ -984,7 +984,7 @@ import { lang, langFrom } from '../../shared/i18n.js';
     if (P.show.vec) {
       const v = d.v,
         dA = det(A, 2);
-      if (Math.abs(dA) > 1e-9 && S.cr) {
+      if (!isSingular(A, 2) && S.cr) {
         const X = ap(M, v, 2),
           Mi = col(M, 0, 2),
           Mj = col(M, 1, 2),
@@ -1007,7 +1007,7 @@ import { lang, langFrom } from '../../shared/i18n.js';
           txt('S = ' + fmt(det(M, 2) * v[S.cr - 1]), pc[0], pc[1], c.span, 15, false);
         }
       }
-      if (Math.abs(dA) <= 1e-9 && S.K.ns.rank === 1) {
+      if (isSingular(A, 2) && S.K.ns.rank === 1) {
         const k = S.K.ns.basis[0];
         seg(w2s(...add(v, sc2(k, -2 * R))), w2s(...add(v, sc2(k, 2 * R))), c.vec, 1.6 * lw, 0.35, [3, 6]);
         const p0 = ap(M, v, 2),
@@ -1251,7 +1251,7 @@ import { lang, langFrom } from '../../shared/i18n.js';
             1.5 * lw
           )
         );
-      if (sh.labels && isSq() && Math.abs(det(M, 3)) > 1e-9) {
+      if (sh.labels && isSq() && !isSingular(M, 3)) {
         const p = pr(ap(M, [0.5, 0.5, 0.5], 3));
         txt('det = ' + fmt(det(M, 3)), p[0], p[1], c.det, 16, false);
       }
@@ -1646,7 +1646,7 @@ import { lang, langFrom } from '../../shared/i18n.js';
       A = d.to,
       K = S.K,
       dt = K.det,
-      z = Math.abs(dt) < 1e-9,
+      z = isSingular(A, n),
       L = T();
     const detNote = z ? L.detCol(n) : dt < 0 ? L.detNeg(n, fmt(-dt)) : L.detPos(n, fmt(dt));
     const rk = K.ns.rank,
@@ -1689,7 +1689,7 @@ import { lang, langFrom } from '../../shared/i18n.js';
       b = ap(A, v, 2),
       dA = det(A, 2);
     let h = '';
-    if (Math.abs(dA) <= 1e-9) h = `<p class="note">${L.vSing}</p>`;
+    if (isSingular(A, 2)) h = `<p class="note">${L.vSing}</p>`;
     else if (S.cr) {
       const A1 = [b[0], A[1], b[1], A[3]],
         A2 = [A[0], b[0], A[2], b[1]],
@@ -1697,7 +1697,7 @@ import { lang, langFrom } from '../../shared/i18n.js';
       h = `<div class="crm"><i>x</i>${S.cr === 1 ? '₁' : '₂'} = det ${miniMat(Ai, 2)} / det <i>A</i> = ${fmt(det(Ai, 2))} / ${fmt(dA)} = <b>${fmt(v[S.cr - 1])}</b></div><p class="note">${L.crEx(S.cr)}</p>`;
     }
     $('#crOut').innerHTML = h;
-    $('#crCtl').hidden = Math.abs(dA) <= 1e-9;
+    $('#crCtl').hidden = isSingular(A, 2);
   }
   function renderVec() {
     renderCr();
@@ -1738,7 +1738,7 @@ import { lang, langFrom } from '../../shared/i18n.js';
     if (!isSq()) t = C.nsq(SH(), K.ns.rank, K.ns.basis.length);
     else if (isI(A, n)) t = C.id(n);
     else if (K.ns.rank === 0) t = C.zero;
-    else if (Math.abs(dt) < 1e-9) t = C.sing(n, K.ns.rank);
+    else if (isSingular(A, n)) t = C.sing(n, K.ns.rank);
     else if (n === 2 && K.E.roots.some((r) => r.im)) t = C.complex(fmt(dt));
     else if (dt < 0) t = C.neg(n, fmt(dt), fmt(-dt));
     else t = C.pos(n, fmt(dt)) + (K.E.vecs.length && !K.E.vecs.some((e) => e.dim === n) ? C.eig : '');
@@ -1861,7 +1861,7 @@ import { lang, langFrom } from '../../shared/i18n.js';
       dP = det(Pm, 2),
       d = S.d2;
     let h = `<i>P</i> = [b₁ b₂] = ${miniMat(Pm, 2)}, det <i>P</i> = ${fmt(dP)}`;
-    if (Math.abs(dP) < 1e-9) h += `<p class="note">${L.cbBad}</p>`;
+    if (isSingular(Pm, 2)) h += `<p class="note">${L.cbBad}</p>`;
     else {
       const A2 = mul(mul(inv(Pm, 2), d.to, 2), Pm, 2),
         dg = Math.abs(A2[1]) < 1e-9 && Math.abs(A2[2]) < 1e-9;

@@ -19,9 +19,19 @@ export function det(M, n) {
   const [a, b, c, e, f, g, h, i, j] = M;
   return a * (f * j - g * i) - b * (e * j - g * h) + c * (e * i - f * h);
 }
+/**
+ * Вырождена ли матрица: |det| ≤ 1e-9 · (max |aᵢⱼ|)ⁿ — допуск относительный, поэтому
+ * 10⁻⁵·E не объявляется вырожденной, а почти вырожденная матрица с большими
+ * элементами — объявляется.
+ * @param {number[]} M @param {number} n
+ */
+export function isSingular(M, n) {
+  const s = Math.max(...M.slice(0, n * n).map(Math.abs));
+  return s === 0 || Math.abs(det(M, n)) <= 1e-9 * Math.pow(s, n);
+}
 export function inv(M, n) {
   const d = det(M, n);
-  if (Math.abs(d) < 1e-12) return null;
+  if (isSingular(M, n)) return null;
   if (n === 2) return [M[3] / d, -M[1] / d, -M[2] / d, M[0] / d];
   const [a, b, c, e, f, g, h, i, j] = M;
   return [
@@ -51,10 +61,15 @@ export const nz = (v) => {
 export const isI = (M, n) => M.every((x, i) => Math.abs(x - I(n)[i]) < 1e-9);
 export const add = (a, b) => a.map((x, i) => x + b[i]);
 export const sc = (a, s) => a.map((x) => x * s);
-export function nullspace(A, n, tol) {
+/**
+ * Ядро и ранг. Допуск — tol · scale, где scale по умолчанию — max |aᵢⱼ| самой матрицы;
+ * для M − λE (собственные векторы) передаётся масштаб исходной M.
+ */
+export function nullspace(A, n, tol, scale = Math.max(...A.map(Math.abs))) {
   const m = [];
   for (let i = 0; i < n; i++) m.push(A.slice(i * n, i * n + n));
-  const T = tol * Math.max(1, ...A.map(Math.abs));
+  // допуск относительно величины элементов (раньше — не меньше tol: 10⁻¹⁰·E давала ранг 0)
+  const T = tol * scale;
   let r = 0;
   const piv = [];
   for (let c = 0; c < n && r < n; c++) {
@@ -159,7 +174,7 @@ export function eigen(A, n) {
   real.forEach((l) => {
     const B = A.slice();
     for (let i = 0; i < n; i++) B[i * n + i] -= l;
-    const ns = nullspace(B, n, 1e-6);
+    const ns = nullspace(B, n, 1e-6, Math.max(...A.map(Math.abs)));
     ns.basis.forEach((v) => vecs.push({ l, v, dim: ns.basis.length }));
   });
   return { roots, vecs };
