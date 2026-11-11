@@ -1,0 +1,953 @@
+import { TXB } from '../../../shared/econ/txb.js';
+import { $ } from '../../../shared/dom.js';
+import { lang } from '../../../shared/i18n.js';
+import { fN } from '../../../shared/format.js';
+
+export const TXM = {
+  ru: {
+    prefsReset:
+      'Сохранённые настройки повреждены — восстановлены настройки по умолчанию. Копия старых сохранена в браузере.',
+    prefsNoSave:
+      'Хранилище браузера переполнено или недоступно — настройки не сохранятся после закрытия страницы.',
+    p_factors: 'Факторы и сдвиги',
+    fac_note:
+      'Как каждый фактор сдвигает кривые и меняет переменные. Стрелки посчитаны моделью для текущих параметров. Нажмите на строку, чтобы применить; кривые на графике можно тянуть мышью или пальцем.',
+    fac_f: 'Фактор',
+    fac_c: 'Кривая',
+    fac_reset: 'Убрать сдвиг',
+    fac_mode: 'Факторы доступны в варианте «рынок труда и рента».',
+    fac_none:
+      'Для этого раздела факторов нет. Кривые спроса, предложения, бюджетную линию и цену можно тянуть на графике.',
+    m_shift: (d, s, q, P) =>
+      `Сдвиг кривых: спрос на ${d}, предложение на ${s} по цене. Исходное равновесие E₀: q = ${q}, P = ${P}.`,
+    title: 'Микроэкономика',
+    brand: 'Микроэкономика <span class="sub">наглядно</span>',
+    canvas: 'График рынка',
+    p_topic: 'Задача',
+    p_presets: 'Задачи из учебника',
+    grp: { mkt: 'Рынок', cons: 'Потребитель', firm: 'Фирма и рыночные структуры' },
+    t_sd: 'Спрос и предложение',
+    t_el: 'Эластичность',
+    t_cons: 'Выбор потребителя',
+    t_cost: 'Издержки',
+    t_comp: 'Совершенная конкуренция',
+    t_mono: 'Монополия',
+    tt: {
+      sd: 'Тема 4: равновесие, выигрыши потребителей и производителей, налог, субсидия, потолок и пол цены, квота',
+      el: 'Тема 5: точечная и дуговая эластичность, эластичность и выручка, по доходу, перекрёстная',
+      cons: 'Тема 6: бюджетная линия, кривые безразличия, оптимум, эффекты замещения и дохода',
+      cost: 'Тема 9: TC, FC, VC, AC, AVC, AFC, MC в коротком периоде',
+      comp: 'Тема 10: P = MC, точки безубыточности и закрытия, прибыль и убытки',
+      mono: 'Тема 11: MR = MC, индекс Лернера, мёртвый груз, ценовая дискриминация',
+    },
+    typeHelp:
+      '<p>Функции спроса и предложения — линейные, в любой форме: <code>P = 20 - 2q</code>, <code>q = 6000 - 50P</code>, <code>Qd = 100 - 2P</code>, <code>P = 5 + q/4</code>. Дробные коэффициенты — с запятой или точкой.</p><p>Затраты — формула от q: <code>2q^3 - 20q^2 + 60q</code>, <code>q^2/200</code>, <code>10q + 5</code>.</p>',
+    f: {
+      shD: 'Сдвиг спроса по цене',
+      shS: 'Сдвиг предложения по цене',
+      dI: 'ΔI — изменение дохода',
+      D: 'Спрос',
+      S: 'Предложение',
+      iv: 'Вмешательство',
+      v: 'Величина',
+      em: 'Что считаем',
+      P1: 'Цена P₁',
+      P2: 'Цена P₂',
+      Ev: '|E| в искомой точке',
+      ek: 'Вид эластичности',
+      q1: 'q₁',
+      q2: 'q₂',
+      x1: 'Фактор: было',
+      x2: 'Фактор: стало',
+      ut: 'Полезность',
+      al: 'a',
+      be: 'b',
+      I: 'Доход I',
+      px: 'Цена Pₓ',
+      py: 'Цена Pᵧ',
+      px2: 'Новая цена Pₓ (для эффектов)',
+      FC: 'FC — постоянные',
+      VC: 'VC(q) — переменные',
+      qmax: 'q до',
+      P: 'Цена P',
+      dm: 'Вариант',
+      D2: 'Спрос 2-й группы',
+      c: 'MC (постоянные)',
+    },
+    opt: {
+      iv: {
+        none: 'нет',
+        tax: 'потоварный налог t',
+        sub: 'субсидия s',
+        ceil: 'потолок цены',
+        floor: 'минимальная цена',
+        quota: 'квота на выпуск',
+      },
+      em: {
+        pt: 'точечная при цене P',
+        arc: 'дуговая между P₁ и P₂',
+        find: 'где |E| равна заданной',
+        pts: 'по двум наблюдениям',
+      },
+      ek: { price: 'по цене', inc: 'по доходу', cross: 'перекрёстная' },
+      ut: {
+        cd: 'U = xᵃ·yᵇ (Кобб–Дуглас)',
+        sub: 'U = a·x + b·y (заменители)',
+        comp: 'U = min(a·x, b·y) (дополнители)',
+      },
+      dm: { one: 'один рынок', disc: 'дискриминация 3-й степени' },
+    },
+    err: {
+      nonlin: 'Функция должна быть линейной относительно P и q.',
+      lin: 'Не удалось прочитать линейную функцию. Пример: P = 20 - 2q или P = (40 - q)/2.',
+      dslope: 'Спрос должен убывать: P падает с ростом q.',
+      sslope: 'Предложение должно возрастать.',
+      pos: 'Нужны положительные числа.',
+      nocross: 'Кривые не пересекаются при положительном q.',
+      prange: 'Цена должна быть между 0 и максимальной ценой спроса.',
+      vc: 'Не удалось прочитать функцию затрат от q.',
+      bug: 'Не удалось вычислить: внутренняя ошибка или слишком большие числа. Если ввод верный — сообщите, пожалуйста, в Issues на GitHub (раздел и ввод).',
+      num: 'Не получилось прочитать число.',
+    },
+    m_lines: (d, s) => `Спрос: ${d}; предложение: ${s}.`,
+    m_eq: (q, P) => `Равновесие: приравниваем цены спроса и предложения — q* = ${q}, P* = ${P}.`,
+    m_cs: (v) => `Выигрыш потребителей — площадь между спросом и ценой: CS = ${v}.`,
+    m_ps: (v) => `Выигрыш производителей — площадь между ценой и предложением: PS = ${v}.`,
+    m_tax: (t, s) => `Потоварный налог t = ${t} сдвигает предложение вверх на t: ${s}.`,
+    m_sub: (t, s) => `Субсидия s = ${t} сдвигает предложение вниз на s: ${s}.`,
+    m_taxEq: (q, b, s) =>
+      `Новое равновесие: q = ${q}; цена покупателя ${b}, цена продавца ${s} (разница — налог).`,
+    m_rev: (v) => `Налоговые поступления: t·q = ${v}.`,
+    m_cost: (v) => `Расходы бюджета на субсидию: s·q = ${v}.`,
+    m_inc: (b, s, pb, ps) =>
+      `Распределение бремени: покупатели платят на ${b} больше, продавцы получают на ${s} меньше — ${pb}% и ${ps}%. Бремя тяжелее для менее эластичной стороны.`,
+    m_gone:
+      'Налог больше, чем разница между максимальной ценой спроса и минимальной ценой предложения: сделки прекращаются, рынок исчезает. Налоговый сбор равен нулю, а весь прежний выигрыш становится мёртвым грузом.',
+    n_none: (mc, a) =>
+      `MC = ${mc} уже при q = 0 не ниже максимальной цены спроса ${a}: производить невыгодно, q = 0.`,
+    m_dwl: (v) => `Чистые потери (мёртвый груз) — треугольник между спросом и предложением: DWL = ${v}.`,
+    m_noBindC: (v, P) => `Потолок ${v} выше равновесной цены ${P}: он не действует.`,
+    m_noBindF: (v, P) => `Минимальная цена ${v} ниже равновесной ${P}: она не действует.`,
+    m_qdqs: (P, qd, qs) => `При цене ${P}: величина спроса ${qd}, величина предложения ${qs}.`,
+    m_short: (g) => `Дефицит: q_d − q_s = ${g}.`,
+    m_surp: (g) => `Избыток: q_s − q_d = ${g}.`,
+    m_after: (q, c, p) => `Продаётся меньшее из двух — ${q}; CS = ${c}, PS = ${p}.`,
+    m_noBindQ: (v, q) => `Квота ${v} не меньше равновесного объёма ${q}: она не действует.`,
+    m_quota: (q, b, s, r) =>
+      `При квоте q = ${q} покупатели готовы платить ${b}, а продавцы согласились бы на ${s}; разница — квотная рента ${r}.`,
+    e_arcF: (k) => `Дуговая эластичность ${k} — по формуле средней точки: E = (Δq / q̄) / (Δx / x̄).`,
+    ek: { price: 'по цене', inc: 'по доходу', cross: 'перекрёстная' },
+    e_int: {
+      price: (E) =>
+        Math.abs(E) > 1
+          ? '|E| > 1: спрос эластичен.'
+          : Math.abs(E) < 1
+            ? '|E| < 1: спрос неэластичен.'
+            : '|E| = 1: единичная эластичность.',
+      inc: (E) =>
+        E < 0
+          ? 'E < 0: низшее благо.'
+          : E < 1
+            ? '0 < E < 1: нормальное благо первой необходимости.'
+            : 'E > 1: нормальное благо — предмет роскоши.',
+      cross: (E) =>
+        E > 0
+          ? 'E > 0: товары — заменители.'
+          : E < 0
+            ? 'E < 0: товары — дополнители.'
+            : 'E = 0: товары независимы.',
+    },
+    e_line: (l, k) => `Спрос ${l}; на прямой dq/dP постоянна и равна ${k}.`,
+    e_pt: (P, q, E) => `Точечная эластичность: E = (dq/dP)·(P/q), при P = ${P} q = ${q}: E = ${E}.`,
+    e_cls: (E) =>
+      Math.abs(E) > 1
+        ? 'Спрос эластичен: снижение цены увеличивает выручку.'
+        : Math.abs(E) < 1
+          ? 'Спрос неэластичен: снижение цены уменьшает выручку.'
+          : 'Единичная эластичность: выручка максимальна.',
+    e_two: (p1, q1, p2, q2) => `Точки на спросе: (${q1}; ${p1}) и (${q2}; ${p2}).`,
+    e_tr: (a, b) => `Выручка: TR₁ = ${a}, TR₂ = ${b}.`,
+    e_find: (e, P, q) =>
+      `На линейном спросе |E| = P/(a − P); из |E| = ${e} получаем P = a·|E|/(1 + |E|) = ${P}, q = ${q}.`,
+    e_mid: (P, q, tr) =>
+      `|E| = 1 в середине прямой спроса: P = ${P}, q = ${q}; выручка там максимальна: TR = ${tr}.`,
+    c_U: {
+      cd: (a, b) => `Полезность U = x^${a}·y^${b} (Кобб–Дуглас).`,
+      sub: (a, b) => `Полезность U = ${a}x + ${b}y: совершенные заменители.`,
+      comp: (a, b) => `Полезность U = min(${a}x, ${b}y): совершенные дополнители.`,
+    },
+    c_bud: (px, py, I) => `Бюджетное ограничение: ${px}x + ${py}y = ${I}.`,
+    c_opt: {
+      cd: (a, b, px, py) =>
+        `Оптимум: MRS = MUₓ/MUᵧ = (a·y)/(b·x) = Pₓ/Pᵧ. Для Кобба–Дугласа на X тратится доля a/(a + b) дохода: x = a/(a + b)·I/Pₓ, y = b/(a + b)·I/Pᵧ.`,
+      sub: (a, b, px, py) =>
+        `Сравниваем полезность на рубль: a/Pₓ = ${fN(+a.replace(',', '.') / +px.replace(',', '.'), 4)}, b/Pᵧ = ${fN(+b.replace(',', '.') / +py.replace(',', '.'), 4)} — весь доход идёт на благо с большей величиной (угловое решение).`,
+      comp: () =>
+        'Блага потребляются в фиксированной пропорции: a·x = b·y, вершина «уголка» лежит на бюджетной линии.',
+    },
+    c_res: (x, y, U) => `Оптимальный набор A: x = ${x}, y = ${y}, U = ${U}.`,
+    c_tie: 'Наклоны совпадают — оптимален любой набор на бюджетной линии.',
+    c_mrs: (m, r) => `Проверка: MRS = ${m} = Pₓ/Pᵧ = ${r}.`,
+    c_new: (p, x, y) => `При новой цене Pₓ = ${p} оптимум B: x = ${x}, y = ${y}.`,
+    c_hicks: (x, y, I) =>
+      `По Хиксу: набор C на прежней кривой безразличия при новых ценах — x = ${x}, y = ${y}; нужный доход ${I}.`,
+    c_effH: (s, i, t) => `Эффект замещения A → C: ${s}; эффект дохода C → B: ${i}; общее изменение ${t}.`,
+    c_sl: (I, x, s, i) =>
+      `По Слуцкому (доход, позволяющий купить прежний набор: ${I}): x = ${x}, эффект замещения ${s}, дохода ${i}.`,
+    k_def: (FC) => `TC = FC + VC, FC = ${FC}; AC = TC/q, AVC = VC/q, AFC = FC/q, MC = dTC/dq.`,
+    k_avc: (q, v) => `Минимум AVC при q = ${q}: AVC = ${v} (здесь MC = AVC).`,
+    k_ac: (q, v) => `Минимум AC при q = ${q}: AC = ${v} (здесь MC = AC).`,
+    k_edge: '(минимум на границе отрезка — увеличьте «q до»)',
+    k_cross: 'Кривая MC пересекает AVC и AC в точках их минимума.',
+    p_rule:
+      'Конкурентная фирма принимает цену: P = MR. Максимум прибыли — где P = MC на возрастающем участке MC, если P не ниже минимума AVC.',
+    p_shut: (P, v) => `P = ${P} ниже минимума AVC = ${v}: фирме выгоднее закрыться в коротком периоде.`,
+    p_loss: (FC) => `Убыток при закрытии равен постоянным затратам: ${FC}.`,
+    p_q: (P, q) => `P = MC при q* = ${q}.`,
+    p_cap: (P, q) =>
+      `Цена ${P} выше MC при любом выпуске: прибыль растёт с каждой единицей, поэтому выпуск ограничен только мощностью — q = ${q} (верхняя граница «q до»).`,
+    p_pr: (tr, tc, pr) => `Прибыль = TR − TC = ${tr} − ${tc} = ${pr}.`,
+    p_pos: 'Прибыль неотрицательна — фирма работает.',
+    p_neg: (FC) =>
+      `Убыток, но меньше постоянных затрат ${FC}: в коротком периоде фирме выгодно продолжать работу.`,
+    p_pts: (a, b) =>
+      `Точка закрытия: P = min AVC = ${a}; точка безубыточности: P = min AC = ${b}. Кривая предложения фирмы — участок MC выше min AVC.`,
+    p_be: (l) => `Выпуски, при которых TR = TC: ${l}.`,
+    d_rule: (c) => `Монополист назначает каждой группе свою цену: MR₁ = MR₂ = MC = ${c}.`,
+    d_m: (k, l, q, P, pr) => `Группа ${k} (${l}): q = ${q}, P = ${P}, прибыль ${pr}.`,
+    d_tot: (pr) => `Общая прибыль при дискриминации: ${pr}.`,
+    d_naive: (P, Q, pr) =>
+      `Если сложить спрос обеих групп и приравнять MR = MC, получится P = ${P}, Q = ${Q}, прибыль ${pr}.`,
+    d_uni: (P, Q, pr) => `Но наилучшая единая цена — P = ${P}, Q = ${Q}, прибыль ${pr}.`,
+    d_excl:
+      'Выгоднее вообще не обслуживать группу с низкой готовностью платить: суммарный спрос имеет излом, и решение MR = MC на нижнем участке — не глобальный максимум.',
+    n_mr: (l, a, b) =>
+      `Спрос ${l}; выручка TR = P·q, предельная выручка MR = ${a} ${b.startsWith('−') ? '−' : '+'} ${b.replace('−', '')}q (наклон вдвое круче спроса).`,
+    n_q: (q, mc) => `MR = MC при q = ${q} (MC = ${mc}).`,
+    n_P: (P, pr, ac) => `Цену берём со спроса: P = ${P}; AC = ${ac}; прибыль ${pr}.`,
+    n_lern: (L, E, i) =>
+      `Индекс Лернера L = (P − MC)/P = ${L}; эластичность спроса в точке E = ${E}, 1/|E| = ${i}.`,
+    n_dwl: (q, P, d) => `В конкуренции было бы P = MC: q = ${q}, P = ${P}. Мёртвый груз монополии: ${d}.`,
+    n_shut: 'Убыток больше постоянных затрат — выгоднее прекратить производство.',
+    n_stay: (FC) => `Убыток меньше постоянных затрат ${FC}: в коротком периоде монополист продолжает работу.`,
+    v: {
+      CS: 'Выигрыш потребителей',
+      PS: 'Выигрыш производителей',
+      DWL: 'Мёртвый груз',
+      arc: 'Дуговая E',
+      sub: 'Эффект замещения',
+      inc: 'Эффект дохода',
+      profit: 'Прибыль',
+      shutP: 'Цена закрытия',
+      beP: 'Цена безубыточности',
+      lerner: 'Индекс Лернера',
+      rent: 'квотная рента',
+    },
+    tog: {
+      bgGrid: 'Сетка',
+      coords: 'Числа на осях',
+      labels: 'Подписи',
+      areas: 'Площади (выигрыши, налог, потери)',
+      hints: 'Подсказки на сцене',
+    },
+    cap: {
+      err: 'Исправьте данные в блоке «Задача».',
+      sd: 'Синяя — спрос, оранжевая — предложение. Закрашены выигрыши потребителей и производителей, налог (фиолетовый) и мёртвый груз (красный).',
+      el: 'Сверху — спрос: эластичная часть выше середины, неэластичная ниже. Снизу — выручка TR(q): максимум при |E| = 1.',
+      cons: 'Бюджетная линия и кривые безразличия. A — исходный оптимум, B — после изменения цены, C — компенсированный набор по Хиксу.',
+      cost: 'Сверху — MC, AC, AVC, AFC: MC проходит через минимумы AVC и AC. Снизу — TC, VC и FC.',
+      comp: 'Цена — горизонталь P = MR. Прибыль (зелёный) или убыток (красный) — прямоугольник между P и AC.',
+      mono: 'Спрос, MR, MC и AC. M — монопольная точка; закрашены прибыль и мёртвый груз (красный).',
+    },
+    colors: {
+      bg: 'Фон сцены',
+      bgGrid: 'Сетка',
+      axis: 'Оси и текст',
+      p1: 'Спрос, AC',
+      p2: 'Предложение, MC',
+      eq: 'Равновесие',
+      area: 'Прибыль, выручка',
+      curve: 'MR',
+      mark: 'Налог, отметки',
+      bad: 'Потери, MC',
+    },
+    k_topic: 'разделы',
+    k_prev: 'предыдущая / следующая задача',
+  },
+  en: {
+    prefsReset:
+      'Saved settings were damaged — defaults restored. A copy of the old ones is kept in the browser.',
+    prefsNoSave: 'Browser storage is full or unavailable — settings won’t be saved after closing the page.',
+    p_factors: 'Factors and shifts',
+    fac_note:
+      'How each factor shifts the curves and changes the variables. Arrows are computed by the model for the current parameters. Click a row to apply; curves on the chart can be dragged with the mouse or a finger.',
+    fac_f: 'Factor',
+    fac_c: 'Curve',
+    fac_reset: 'Remove the shift',
+    fac_mode: 'Factors are available in the “labor market and rent” variant.',
+    fac_none:
+      'No factors for this section. Demand, supply, the budget line and the price can be dragged on the chart.',
+    m_shift: (d, s, q, P) =>
+      `Curve shifts: demand by ${d}, supply by ${s} in price. Initial equilibrium E₀: q = ${q}, P = ${P}.`,
+    title: 'Microeconomics',
+    brand: 'Microeconomics <span class="sub">visually</span>',
+    canvas: 'Market chart',
+    p_topic: 'Problem',
+    p_presets: 'Textbook problems',
+    grp: { mkt: 'Market', cons: 'Consumer', firm: 'Firm and market structures' },
+    t_sd: 'Supply and demand',
+    t_el: 'Elasticity',
+    t_cons: 'Consumer choice',
+    t_cost: 'Costs',
+    t_comp: 'Perfect competition',
+    t_mono: 'Monopoly',
+    tt: {
+      sd: 'Topic 4: equilibrium, consumer and producer surplus, tax, subsidy, price ceiling and floor, quota',
+      el: 'Topic 5: point and arc elasticity, elasticity and revenue, income and cross elasticity',
+      cons: 'Topic 6: budget line, indifference curves, optimum, substitution and income effects',
+      cost: 'Topic 9: TC, FC, VC, AC, AVC, AFC, MC in the short run',
+      comp: 'Topic 10: P = MC, break-even and shutdown points, profit and loss',
+      mono: 'Topic 11: MR = MC, Lerner index, deadweight loss, price discrimination',
+    },
+    typeHelp:
+      '<p>Demand and supply are linear, in any form: <code>P = 20 - 2q</code>, <code>q = 6000 - 50P</code>, <code>Qd = 100 - 2P</code>, <code>P = 5 + q/4</code>.</p><p>Costs are a formula in q: <code>2q^3 - 20q^2 + 60q</code>, <code>q^2/200</code>, <code>10q + 5</code>.</p>',
+    f: {
+      shD: 'Demand shift in price',
+      shS: 'Supply shift in price',
+      dI: 'ΔI — income change',
+      D: 'Demand',
+      S: 'Supply',
+      iv: 'Intervention',
+      v: 'Value',
+      em: 'What to compute',
+      P1: 'Price P₁',
+      P2: 'Price P₂',
+      Ev: '|E| at the point',
+      ek: 'Kind',
+      q1: 'q₁',
+      q2: 'q₂',
+      x1: 'Factor: before',
+      x2: 'Factor: after',
+      ut: 'Utility',
+      al: 'a',
+      be: 'b',
+      I: 'Income I',
+      px: 'Price Pₓ',
+      py: 'Price Pᵧ',
+      px2: 'New price Pₓ (for effects)',
+      FC: 'FC — fixed',
+      VC: 'VC(q) — variable',
+      qmax: 'q up to',
+      P: 'Price P',
+      dm: 'Variant',
+      D2: 'Demand of group 2',
+      c: 'MC (constant)',
+    },
+    opt: {
+      iv: {
+        none: 'none',
+        tax: 'per-unit tax t',
+        sub: 'subsidy s',
+        ceil: 'price ceiling',
+        floor: 'price floor',
+        quota: 'output quota',
+      },
+      em: {
+        pt: 'point, at price P',
+        arc: 'arc between P₁ and P₂',
+        find: 'where |E| equals a value',
+        pts: 'from two observations',
+      },
+      ek: { price: 'price', inc: 'income', cross: 'cross' },
+      ut: {
+        cd: 'U = xᵃ·yᵇ (Cobb–Douglas)',
+        sub: 'U = a·x + b·y (substitutes)',
+        comp: 'U = min(a·x, b·y) (complements)',
+      },
+      dm: { one: 'one market', disc: 'third-degree discrimination' },
+    },
+    err: {
+      nonlin: 'The function must be linear in P and q.',
+      lin: 'Couldn’t read the linear function. Example: P = 20 - 2q or P = (40 - q)/2.',
+      dslope: 'Demand must slope down.',
+      sslope: 'Supply must slope up.',
+      pos: 'Positive numbers are needed.',
+      nocross: 'The curves don’t cross at positive q.',
+      prange: 'The price must be between 0 and the demand intercept.',
+      vc: 'Couldn’t read the cost function of q.',
+      bug: 'Couldn’t compute: an internal error or numbers too large. If the input is right, please report it in GitHub Issues (section and input).',
+      num: 'Couldn’t read a number.',
+    },
+    m_lines: (d, s) => `Demand: ${d}; supply: ${s}.`,
+    m_eq: (q, P) => `Equilibrium: set demand price equal to supply price — q* = ${q}, P* = ${P}.`,
+    m_cs: (v) => `Consumer surplus, the area between demand and price: CS = ${v}.`,
+    m_ps: (v) => `Producer surplus, the area between price and supply: PS = ${v}.`,
+    m_tax: (t, s) => `A per-unit tax t = ${t} shifts supply up by t: ${s}.`,
+    m_sub: (t, s) => `A subsidy s = ${t} shifts supply down by s: ${s}.`,
+    m_taxEq: (q, b, s) =>
+      `New equilibrium: q = ${q}; buyers pay ${b}, sellers receive ${s} (the gap is the tax).`,
+    m_rev: (v) => `Tax revenue: t·q = ${v}.`,
+    m_cost: (v) => `Budget cost of the subsidy: s·q = ${v}.`,
+    m_inc: (b, s, pb, ps) =>
+      `Incidence: buyers pay ${b} more, sellers receive ${s} less — ${pb}% and ${ps}%. The less elastic side bears more.`,
+    m_gone:
+      'The tax exceeds the gap between the top demand price and the lowest supply price: trade stops and the market disappears. Tax revenue is zero and the whole former surplus becomes deadweight loss.',
+    n_none: (mc, a) =>
+      `MC = ${mc} at q = 0 already reaches the top demand price ${a}: producing doesn’t pay, q = 0.`,
+    m_dwl: (v) => `Deadweight loss, the triangle between demand and supply: DWL = ${v}.`,
+    m_noBindC: (v, P) => `The ceiling ${v} is above the equilibrium price ${P}: it doesn’t bind.`,
+    m_noBindF: (v, P) => `The floor ${v} is below the equilibrium price ${P}: it doesn’t bind.`,
+    m_qdqs: (P, qd, qs) => `At price ${P}: quantity demanded ${qd}, quantity supplied ${qs}.`,
+    m_short: (g) => `Shortage: q_d − q_s = ${g}.`,
+    m_surp: (g) => `Surplus: q_s − q_d = ${g}.`,
+    m_after: (q, c, p) => `The smaller of the two is traded — ${q}; CS = ${c}, PS = ${p}.`,
+    m_noBindQ: (v, q) => `The quota ${v} is not below the equilibrium quantity ${q}: it doesn’t bind.`,
+    m_quota: (q, b, s, r) =>
+      `With a quota q = ${q} buyers will pay ${b} while sellers would accept ${s}; the gap is the quota rent ${r}.`,
+    e_arcF: (k) => `Arc ${k} elasticity by the midpoint formula: E = (Δq / q̄) / (Δx / x̄).`,
+    ek: { price: 'price', inc: 'income', cross: 'cross' },
+    e_int: {
+      price: (E) =>
+        Math.abs(E) > 1
+          ? '|E| > 1: elastic demand.'
+          : Math.abs(E) < 1
+            ? '|E| < 1: inelastic demand.'
+            : '|E| = 1: unit elastic.',
+      inc: (E) =>
+        E < 0
+          ? 'E < 0: inferior good.'
+          : E < 1
+            ? '0 < E < 1: normal necessity.'
+            : 'E > 1: normal luxury good.',
+      cross: (E) =>
+        E > 0 ? 'E > 0: substitutes.' : E < 0 ? 'E < 0: complements.' : 'E = 0: unrelated goods.',
+    },
+    e_line: (l, k) => `Demand ${l}; on a line dq/dP is constant: ${k}.`,
+    e_pt: (P, q, E) => `Point elasticity: E = (dq/dP)·(P/q); at P = ${P}, q = ${q}: E = ${E}.`,
+    e_cls: (E) =>
+      Math.abs(E) > 1
+        ? 'Elastic: a lower price raises revenue.'
+        : Math.abs(E) < 1
+          ? 'Inelastic: a lower price lowers revenue.'
+          : 'Unit elastic: revenue is at its maximum.',
+    e_two: (p1, q1, p2, q2) => `Points on demand: (${q1}; ${p1}) and (${q2}; ${p2}).`,
+    e_tr: (a, b) => `Revenue: TR₁ = ${a}, TR₂ = ${b}.`,
+    e_find: (e, P, q) =>
+      `On linear demand |E| = P/(a − P); from |E| = ${e}, P = a·|E|/(1 + |E|) = ${P}, q = ${q}.`,
+    e_mid: (P, q, tr) =>
+      `|E| = 1 at the midpoint of the demand line: P = ${P}, q = ${q}; revenue peaks there: TR = ${tr}.`,
+    c_U: {
+      cd: (a, b) => `Utility U = x^${a}·y^${b} (Cobb–Douglas).`,
+      sub: (a, b) => `Utility U = ${a}x + ${b}y: perfect substitutes.`,
+      comp: (a, b) => `Utility U = min(${a}x, ${b}y): perfect complements.`,
+    },
+    c_bud: (px, py, I) => `Budget constraint: ${px}x + ${py}y = ${I}.`,
+    c_opt: {
+      cd: () =>
+        'Optimum: MRS = MUₓ/MUᵧ = (a·y)/(b·x) = Pₓ/Pᵧ. With Cobb–Douglas the share a/(a + b) of income goes to X: x = a/(a + b)·I/Pₓ, y = b/(a + b)·I/Pᵧ.',
+      sub: (a, b, px, py) =>
+        `Compare utility per unit of money: a/Pₓ = ${fN(+a.replace(',', '.') / +px.replace(',', '.'), 4)}, b/Pᵧ = ${fN(+b.replace(',', '.') / +py.replace(',', '.'), 4)} — all income goes to the higher one (corner solution).`,
+      comp: () =>
+        'Goods are consumed in fixed proportion: a·x = b·y, the corner of the “L” lies on the budget line.',
+    },
+    c_res: (x, y, U) => `Optimal bundle A: x = ${x}, y = ${y}, U = ${U}.`,
+    c_tie: 'Slopes coincide — any bundle on the budget line is optimal.',
+    c_mrs: (m, r) => `Check: MRS = ${m} = Pₓ/Pᵧ = ${r}.`,
+    c_new: (p, x, y) => `At the new price Pₓ = ${p} the optimum is B: x = ${x}, y = ${y}.`,
+    c_hicks: (x, y, I) =>
+      `Hicks: bundle C on the original indifference curve at the new prices — x = ${x}, y = ${y}; income needed ${I}.`,
+    c_effH: (s, i, t) => `Substitution effect A → C: ${s}; income effect C → B: ${i}; total change ${t}.`,
+    c_sl: (I, x, s, i) =>
+      `Slutsky (income that buys the old bundle: ${I}): x = ${x}, substitution ${s}, income ${i}.`,
+    k_def: (FC) => `TC = FC + VC, FC = ${FC}; AC = TC/q, AVC = VC/q, AFC = FC/q, MC = dTC/dq.`,
+    k_avc: (q, v) => `Minimum AVC at q = ${q}: AVC = ${v} (MC = AVC here).`,
+    k_ac: (q, v) => `Minimum AC at q = ${q}: AC = ${v} (MC = AC here).`,
+    k_edge: '(minimum at the edge — increase “q up to”)',
+    k_cross: 'MC crosses AVC and AC at their minima.',
+    p_rule:
+      'A competitive firm takes the price: P = MR. Profit peaks where P = MC on the rising part of MC, if P is not below minimum AVC.',
+    p_shut: (P, v) => `P = ${P} is below minimum AVC = ${v}: the firm shuts down in the short run.`,
+    p_loss: (FC) => `The loss when shut equals fixed cost: ${FC}.`,
+    p_q: (P, q) => `P = MC at q* = ${q}.`,
+    p_cap: (P, q) =>
+      `The price ${P} exceeds MC at every output: each unit adds profit, so output is limited only by capacity — q = ${q} (the “q up to” bound).`,
+    p_pr: (tr, tc, pr) => `Profit = TR − TC = ${tr} − ${tc} = ${pr}.`,
+    p_pos: 'Profit is non-negative: the firm operates.',
+    p_neg: (FC) => `A loss, but smaller than fixed cost ${FC}: the firm keeps operating in the short run.`,
+    p_pts: (a, b) =>
+      `Shutdown point: P = min AVC = ${a}; break-even point: P = min AC = ${b}. The firm’s supply curve is MC above min AVC.`,
+    p_be: (l) => `Outputs where TR = TC: ${l}.`,
+    d_rule: (c) => `The monopolist sets a price for each group: MR₁ = MR₂ = MC = ${c}.`,
+    d_m: (k, l, q, P, pr) => `Group ${k} (${l}): q = ${q}, P = ${P}, profit ${pr}.`,
+    d_tot: (pr) => `Total profit with discrimination: ${pr}.`,
+    d_naive: (P, Q, pr) =>
+      `Adding the two demands and setting MR = MC gives P = ${P}, Q = ${Q}, profit ${pr}.`,
+    d_uni: (P, Q, pr) => `But the best single price is P = ${P}, Q = ${Q}, profit ${pr}.`,
+    d_excl:
+      'It pays not to serve the low-willingness group at all: the summed demand has a kink, and MR = MC on the lower part isn’t the global maximum.',
+    n_mr: (l, a, b) =>
+      `Demand ${l}; revenue TR = P·q, marginal revenue MR = ${a} ${b.startsWith('−') ? '−' : '+'} ${b.replace('−', '')}q (twice as steep as demand).`,
+    n_q: (q, mc) => `MR = MC at q = ${q} (MC = ${mc}).`,
+    n_P: (P, pr, ac) => `The price comes from demand: P = ${P}; AC = ${ac}; profit ${pr}.`,
+    n_lern: (L, E, i) =>
+      `Lerner index L = (P − MC)/P = ${L}; demand elasticity at the point E = ${E}, 1/|E| = ${i}.`,
+    n_dwl: (q, P, d) => `Under competition P = MC: q = ${q}, P = ${P}. Deadweight loss of monopoly: ${d}.`,
+    n_shut: 'The loss exceeds fixed cost: shutting down pays.',
+    n_stay: (FC) => `The loss is below fixed cost ${FC}: the monopolist keeps operating in the short run.`,
+    v: {
+      CS: 'Consumer surplus',
+      PS: 'Producer surplus',
+      DWL: 'Deadweight loss',
+      arc: 'Arc E',
+      sub: 'Substitution effect',
+      inc: 'Income effect',
+      profit: 'Profit',
+      shutP: 'Shutdown price',
+      beP: 'Break-even price',
+      lerner: 'Lerner index',
+      rent: 'quota rent',
+    },
+    tog: {
+      bgGrid: 'Grid',
+      coords: 'Axis numbers',
+      labels: 'Labels',
+      areas: 'Areas (surplus, tax, loss)',
+      hints: 'Hints on the scene',
+    },
+    cap: {
+      err: 'Fix the data in the Problem block.',
+      sd: 'Blue is demand, orange is supply. Shaded: consumer and producer surplus, tax (purple) and deadweight loss (red).',
+      el: 'Top: demand — elastic above the midpoint, inelastic below. Bottom: revenue TR(q), peaking at |E| = 1.',
+      cons: 'Budget line and indifference curves. A is the initial optimum, B after the price change, C the Hicks-compensated bundle.',
+      cost: 'Top: MC, AC, AVC, AFC — MC passes through the minima of AVC and AC. Bottom: TC, VC and FC.',
+      comp: 'The price is the horizontal P = MR. Profit (green) or loss (red) is the rectangle between P and AC.',
+      mono: 'Demand, MR, MC and AC. M is the monopoly point; profit and deadweight loss (red) are shaded.',
+    },
+    colors: {
+      bg: 'Scene background',
+      bgGrid: 'Grid',
+      axis: 'Axes and text',
+      p1: 'Demand, AC',
+      p2: 'Supply, MC',
+      eq: 'Equilibrium',
+      area: 'Profit, revenue',
+      curve: 'MR',
+      mark: 'Tax, marks',
+      bad: 'Loss, MC',
+    },
+    k_topic: 'sections',
+    k_prev: 'previous / next problem',
+  },
+};
+export const TX = { ru: { ...TXB.ru, ...TXM.ru }, en: { ...TXB.en, ...TXM.en } };
+export const TXM2 = {
+  ru: {
+    grp: { res: 'Рынки ресурсов', pub: 'Внешние эффекты и общественные блага' },
+    t_ppf: 'КПВ',
+    t_prod: 'Производство',
+    t_mc: 'Монополистическая конкуренция',
+    t_olig: 'Олигополия',
+    t_labor: 'Рынок труда',
+    t_cap: 'Капитал и процент',
+    t_ext: 'Внешние эффекты',
+    t_pg: 'Общественные блага',
+    tt: {
+      ppf: 'Тема 2: кривая производственных возможностей, альтернативные затраты, эффективность',
+      prod: 'Тема 8: TP, AP, MP, изокванта, изокоста, оптимум производителя, отдача от масштаба',
+      mc: 'Тема 12: равновесие монопольно конкурентной фирмы, избыточная мощность',
+      olig: 'Тема 13: Курно, Штакельберг, картель, индекс Херфиндаля–Хиршмана',
+      labor: 'Тема 14: MRP = w, рынок труда, экономическая рента, монопсония, минимальная зарплата',
+      cap: 'Тема 15: будущая и приведённая стоимость, аннуитеты, NPV, IRR, цена земли',
+      ext: 'Тема 16: внешние издержки, общественный оптимум, налог Пигу',
+      pg: 'Тема 16: вертикальное суммирование спроса, оптимум общественного блага',
+    },
+    f: {
+      dDl: 'Сдвиг спроса на труд',
+      dSl: 'Сдвиг предложения труда',
+      tab: 'Альтернативы: x y по строкам',
+      ptx: 'Точка: x',
+      pty: 'Точка: y',
+      prm: 'Период',
+      f: 'q(L, K) или q(L)',
+      K: 'K (фиксирован)',
+      Lmax: 'L до',
+      w: 'w — цена труда',
+      r: 'r — цена капитала',
+      C: 'Бюджет на ресурсы',
+      q0: 'Нужный выпуск q',
+      LTC: 'LTC(q)',
+      om: 'Модель',
+      a: 'a в P = a − bQ',
+      b: 'b',
+      c1: 'Фирма 1: c₁ (линейные затраты)',
+      d1: 'd₁ (квадратичные, TC = cq + dq²)',
+      c2: 'Фирма 2: c₂',
+      d2: 'd₂',
+      sh: 'Доли рынка, %',
+      lm: 'Вариант',
+      p: 'Цена продукции p',
+      Dl: 'Спрос на труд (MRP)',
+      Sl: 'Предложение труда',
+      wm: 'Минимальная зарплата',
+      km: 'Что считаем',
+      pm: 'Ежегодный платёж',
+      pv: 'Сумма кредита / PV',
+      i: 'Ставка i',
+      n: 'Лет n',
+      fl: 'Потоки по годам (с 0-го) / спрос на землю; предложение',
+      e: 'Внешние издержки на единицу',
+      list: 'Потребители: «число: спрос»',
+      MC: 'MC (предложение)',
+    },
+    opt: {
+      prm: {
+        short: 'короткий: TP, AP, MP',
+        long: 'длительный: max q при бюджете',
+        mincost: 'минимум затрат для выпуска',
+      },
+      om: { cour: 'Курно', stack: 'Штакельберг (лидер — фирма 1)', cart: 'картель', hhi: 'индекс HHI' },
+      lm: { firm: 'фирма: MRP = w', mkt: 'рынок труда и рента', mon: 'монопсония' },
+      km: {
+        fv: 'будущая стоимость аннуитета (БС)',
+        pv: 'приведённая стоимость аннуитета (ПС)',
+        pmt: 'ежегодный платёж (ПЛТ)',
+        nper: 'срок погашения (КПЕР)',
+        npv: 'NPV и IRR',
+        land: 'рента и цена земли',
+      },
+    },
+    err: {
+      tab: 'Нужны строки «x y», минимум две.',
+      pf: 'Не удалось прочитать производственную функцию. Пример: L^0.5*K^0.5.',
+    },
+    f_tab:
+      'Альтернативные затраты x — сколько y приходится отдать за дополнительную единицу x на каждом участке КПВ:',
+    f_oc: 'затраты 1 x (в y)',
+    f_inc: 'Альтернативные затраты растут — закон возрастающих альтернативных затрат, КПВ выпукла наружу.',
+    f_noinc: 'Альтернативные затраты не возрастают на всех участках.',
+    f_pt: {
+      in: (y) => `Точка лежит внутри КПВ (граница при этом x: y = ${y}) — ресурсы используются неэффективно.`,
+      on: () => 'Точка лежит на КПВ — производство эффективно.',
+      out: () => 'Точка лежит вне КПВ — недостижима при имеющихся ресурсах и технологиях.',
+    },
+    f_ans: { in: 'неэффективная', on: 'эффективная', out: 'недостижимая' },
+    f_incA: 'затраты возрастают',
+    f_noincA: 'затраты не возрастают',
+    r_sr: (K) => `Короткий период: капитал фиксирован, K = ${K}; меняется только труд.`,
+    r_ap: (L, v) => `AP = TP/L максимален при L = ${L} (AP = ${v}); здесь MP = AP.`,
+    r_mp0: (L, tp) => `MP = 0 при L = ${L}: дальше TP падает (максимум TP = ${tp}).`,
+    r_apDec:
+      'Средний продукт убывает при любом L: максимум AP только у нуля, стадии роста AP нет (типично для q = AL^α при α < 1).',
+    r_dim: 'Закон убывающей отдачи: с ростом L при неизменном K предельный продукт в конце концов снижается.',
+    r_iso: (w, r, C) => `Изокоста: ${w}L + ${r}K = ${C}.`,
+    r_rule: 'Оптимум производителя — касание изокванты и изокосты: MRTS = MPL/MPK = w/r.',
+    r_opt: (L, K, q, m, rt) => `L = ${L}, K = ${K}, q = ${q}; MRTS = ${m} = w/r = ${rt}.`,
+    r_rts: (k) =>
+      `Отдача от масштаба: при удвоении L и K выпуск растёт в ${k} раза (${+k > 2.0001 ? 'возрастающая' : +k < 1.9999 ? 'убывающая' : 'постоянная'}).`,
+    r_min: (q, w, r) =>
+      `Нужен выпуск q = ${q} при w = ${w}, r = ${r}: ищем точку изокванты с минимальными затратами.`,
+    r_minR: (L, K, C) => `L = ${L}, K = ${K}, минимальные затраты TC = ${C}.`,
+    mc_rule:
+      'Фирма в монополистической конкуренции ведёт себя как монополист на своей кривой спроса: MR = MC.',
+    mc_p: (P, ac, pr) => `Цена со спроса P = ${P}; LAC = ${ac}; прибыль ${pr}.`,
+    mc_lr: 'P ≈ LAC: прибыль нулевая — долгосрочное равновесие (кривая спроса касается LAC).',
+    mc_in:
+      'Прибыль положительна: в длительном периоде в отрасль войдут новые фирмы, спрос на продукт фирмы снизится.',
+    mc_out: 'Убыток: в длительном периоде часть фирм уйдёт, спрос на продукт оставшихся вырастет.',
+    mc_ex: (q, v, e) =>
+      `Минимум LAC при q = ${q} (LAC = ${v}). Избыточная мощность: ${e} — фирма производит меньше эффективного объёма.`,
+    o_hhi: (e, H) => `HHI = ${e} = ${H}.`,
+    o_h1: 'HHI < 1000: неконцентрированный рынок.',
+    o_h2: '1000 ⩽ HHI < 1800: умеренно концентрированный рынок.',
+    o_h3: 'HHI ⩾ 1800: высококонцентрированный рынок.',
+    o_set: (a, b, c1, d1, c2, d2) =>
+      `Спрос P = ${a} − ${b}Q; затраты TC₁ = ${c1}q₁ + ${d1}q₁², TC₂ = ${c2}q₂ + ${d2}q₂².`,
+    om: { cour: 'Курно', stack: 'Штакельберг', cart: 'Картель' },
+    o_br: 'Функция реакции фирмы i из условия ∂πᵢ/∂qᵢ = 0: qᵢ = (a − cᵢ − b·qⱼ)/(2b + 2dᵢ). Равновесие Курно — пересечение функций реакции.',
+    o_st: 'Лидер подставляет функцию реакции последователя в свою прибыль и максимизирует её.',
+    o_ca: 'Картель максимизирует общую прибыль: MR(Q) = MC₁ = MC₂.',
+    o_tie: 'При одинаковых постоянных MC распределение выпуска внутри картеля может быть любым.',
+    o_cmp: 'Сравнение моделей:',
+    o_cheat: (br, q) => `Картель неустойчив: при квоте партнёра фирме 1 выгодно выпускать ${br} вместо ${q}.`,
+    w_rule: 'Конкурентная фирма нанимает труд, пока MRP = p·MP_L не сравняется с зарплатой: MRP = w.',
+    w_res: (p, w, L, q) => `p = ${p}, w = ${w}: L = ${L}, выпуск q = ${q}.`,
+    w_eq: (L, w) => `Равновесие на рынке труда: L = ${L}, w = ${w}.`,
+    w_rent: (r, wb) =>
+      `Экономическая рента работников — площадь между зарплатой и предложением труда: ${r} (фонд оплаты ${wb}).`,
+    w_mon: (l) =>
+      `Монопсонист сталкивается с кривой предложения ${l}; предельные затраты на труд MRC вдвое круче.`,
+    w_monR: (L, w, m, e) =>
+      `MRC = MRP при L = ${L}; зарплата со стороны предложения w = ${w} ниже MRP = ${m} на ${e} (монопсоническая эксплуатация).`,
+    w_comp: (L, w) => `В конкуренции было бы L = ${L}, w = ${w}.`,
+    w_minNo: (w, m) =>
+      `Минимальная зарплата ${w} не выше той, что монопсонист платит и так (${m}): она ничего не меняет.`,
+    w_minU: (w, L, u) =>
+      `Минимальная зарплата ${w} выше конкурентной: занятость ${L} определяется спросом, ${u} человек готовы работать, но не находят места — безработица.`,
+    mc_over: (q, v) =>
+      `Минимум LAC при q = ${q} (LAC = ${v}); фирма выпускает больше этого объёма — так бывает в коротком периоде при положительной прибыли, избыточной мощности нет.`,
+    w_cap: (w) =>
+      `MRP выше зарплаты ${w} при любой занятости: каждый работник приносит больше, чем стоит, — найм ограничен только верхней границей «L до».`,
+    o_det:
+      'Здесь лидеру выгодно выпустить столько, чтобы последователь вообще не вошёл на рынок (сдерживание входа).',
+    w_min: (w, L) =>
+      `Минимальная зарплата ${w}: занятость ${L}. Между монопсонической и конкурентной зарплатой минимум зарплаты увеличивает занятость.`,
+    k_fv: (pm, i, n, v) =>
+      `БС аннуитета: FV = PMT·((1 + i)ⁿ − 1)/i = ${pm}·((1 + ${i})^${n} − 1)/${i} = ${v}.`,
+    k_pv: (pm, i, n, v) =>
+      `ПС аннуитета: PV = PMT·(1 − (1 + i)⁻ⁿ)/i при PMT = ${pm}, i = ${i}, n = ${n}: ${v}.`,
+    k_pmt: (pv, i, n, v) => `ПЛТ: PMT = PV·i/(1 − (1 + i)⁻ⁿ) при PV = ${pv}, i = ${i}, n = ${n}: ${v} в год.`,
+    k_np: (pv, i, pm, v) =>
+      `КПЕР: n = −ln(1 − PV·i/PMT)/ln(1 + i) при PV = ${pv}, i = ${i}, PMT = ${pm}: n = ${v} лет.`,
+    k_npInf: (pm, it) => `Платёж ${pm} не больше годовых процентов ${it}: долг никогда не будет погашен.`,
+    k_npv: (fl, i, v) => `NPV = Σ CFₜ/(1 + i)ᵗ для потоков ${fl} при i = ${i}: ${v}.`,
+    k_irr: (r) => `IRR (ставка, при которой NPV = 0): ${r}%.`,
+    k_noirr: 'IRR не найдена.',
+    k_yes: 'NPV ⩾ 0: проект выгоден.',
+    k_no: 'NPV < 0: проект невыгоден.',
+    k_land: (T, R, i, v) =>
+      `Предложение земли фиксировано: T = ${T}. Рента со спроса R = ${R}. Цена земли — капитализированная рента: R/i = ${R}/${i} = ${v}.`,
+    x_m: (q, P) => `Рынок без вмешательства: q = ${q}, P = ${P}.`,
+    x_s: (e, l, q, P) =>
+      `Общественные предельные издержки SMC = PMC + ${e}: ${l}. Оптимум: q = ${q}, P = ${P}.`,
+    x_d: (d, w) => `Внешний ущерб при рыночном выпуске: ${d}; потери мёртвого груза: ${w}.`,
+    x_pig: (e) =>
+      `Налог Пигу t = ${e} на единицу интернализирует внешние издержки: рынок сам придёт к оптимуму.`,
+    g_rule:
+      'Общественное благо потребляют все одновременно, поэтому общая готовность платить — сумма индивидуальных цен спроса (вертикальное суммирование).',
+    g_sum: (e) => `ΣMB(q) = ${e}.`,
+    g_opt: (l, q) => `Оптимум: ΣMB = MC (${l}): q* = ${q}.`,
+    g_priv: (P, Q) =>
+      `Если бы это было частное благо, спрос суммировался бы по горизонтали: P = ${P}, Q = ${Q}.`,
+    g_free:
+      'Каждый в отдельности готов платить меньше MC — без государства благо недопроизводится (проблема безбилетника).',
+    v: {
+      excess: 'Избыточная мощность',
+      rent2: 'Экономическая рента',
+      minw: 'мин. зарплата',
+      price: 'цена земли',
+      inc2: 'Затраты растут',
+      pt: 'Точка',
+      res: 'Результат',
+      qm: 'Рыночный выпуск',
+      qs: 'Оптимальный выпуск',
+      yes: 'да',
+      no: 'нет',
+    },
+    cap: {
+      ppf: 'Ломаная КПВ: точки внутри — неэффективное использование ресурсов, вне — недостижимые наборы.',
+      prod: 'Короткий период: TP сверху, AP и MP снизу. Длительный: изокванта касается изокосты в точке оптимума.',
+      mc: 'Спрос, MR, LMC и LAC. Разница между выпуском фирмы и минимумом LAC — избыточная мощность.',
+      olig: 'Функции реакции фирм; отмечены равновесия Курно, Штакельберга и картеля.',
+      labor: 'Спрос на труд (MRP) и предложение; для монопсонии — MRC и разрыв между MRP и зарплатой.',
+      cap: 'Потоки по годам: накопление, дисконтированные платежи или остаток долга.',
+      ext: 'PMC — частные, SMC — общественные предельные издержки. Красный треугольник — потери от перепроизводства.',
+      pg: 'Пунктир — индивидуальный спрос, жирная — ΣMB. Пересечение с MC — оптимум общественного блага.',
+    },
+  },
+  en: {
+    grp: { res: 'Factor markets', pub: 'Externalities and public goods' },
+    t_ppf: 'PPF',
+    t_prod: 'Production',
+    t_mc: 'Monopolistic competition',
+    t_olig: 'Oligopoly',
+    t_labor: 'Labor market',
+    t_cap: 'Capital and interest',
+    t_ext: 'Externalities',
+    t_pg: 'Public goods',
+    tt: {
+      ppf: 'Topic 2: production possibilities frontier, opportunity cost, efficiency',
+      prod: 'Topic 8: TP, AP, MP, isoquant, isocost, producer optimum, returns to scale',
+      mc: 'Topic 12: monopolistically competitive equilibrium, excess capacity',
+      olig: 'Topic 13: Cournot, Stackelberg, cartel, Herfindahl–Hirschman index',
+      labor: 'Topic 14: MRP = w, labor market, economic rent, monopsony, minimum wage',
+      cap: 'Topic 15: future and present value, annuities, NPV, IRR, land price',
+      ext: 'Topic 16: external costs, social optimum, Pigouvian tax',
+      pg: 'Topic 16: vertical summation of demand, optimal public good',
+    },
+    f: {
+      dDl: 'Labor demand shift',
+      dSl: 'Labor supply shift',
+      tab: 'Alternatives: x y per line',
+      ptx: 'Point: x',
+      pty: 'Point: y',
+      prm: 'Horizon',
+      f: 'q(L, K) or q(L)',
+      K: 'K (fixed)',
+      Lmax: 'L up to',
+      w: 'w — wage',
+      r: 'r — rental rate',
+      C: 'Budget for inputs',
+      q0: 'Required output q',
+      LTC: 'LTC(q)',
+      om: 'Model',
+      a: 'a in P = a − bQ',
+      b: 'b',
+      c1: 'Firm 1: c₁ (linear cost)',
+      d1: 'd₁ (quadratic, TC = cq + dq²)',
+      c2: 'Firm 2: c₂',
+      d2: 'd₂',
+      sh: 'Market shares, %',
+      lm: 'Variant',
+      p: 'Output price p',
+      Dl: 'Labor demand (MRP)',
+      Sl: 'Labor supply',
+      wm: 'Minimum wage',
+      km: 'What to compute',
+      pm: 'Annual payment',
+      pv: 'Loan / PV',
+      i: 'Rate i',
+      n: 'Years n',
+      fl: 'Flows by year (from 0) / land demand; supply',
+      e: 'External cost per unit',
+      list: 'Consumers: “count: demand”',
+      MC: 'MC (supply)',
+    },
+    opt: {
+      prm: {
+        short: 'short run: TP, AP, MP',
+        long: 'long run: max q for a budget',
+        mincost: 'minimum cost for an output',
+      },
+      om: { cour: 'Cournot', stack: 'Stackelberg (firm 1 leads)', cart: 'cartel', hhi: 'HHI index' },
+      lm: { firm: 'firm: MRP = w', mkt: 'labor market and rent', mon: 'monopsony' },
+      km: {
+        fv: 'future value of an annuity (FV)',
+        pv: 'present value of an annuity (PV)',
+        pmt: 'annual payment (PMT)',
+        nper: 'repayment period (NPER)',
+        npv: 'NPV and IRR',
+        land: 'land rent and price',
+      },
+    },
+    err: {
+      tab: 'Lines “x y” are needed, at least two.',
+      pf: 'Couldn’t read the production function. Example: L^0.5*K^0.5.',
+    },
+    f_tab: 'Opportunity cost of x — how much y is given up per extra unit of x on each segment:',
+    f_oc: 'cost of 1 x (in y)',
+    f_inc: 'Opportunity costs rise — the law of increasing opportunity cost; the PPF bows outward.',
+    f_noinc: 'Opportunity costs don’t rise on every segment.',
+    f_pt: {
+      in: (y) =>
+        `The point lies inside the PPF (the frontier at this x: y = ${y}) — resources are used inefficiently.`,
+      on: () => 'The point lies on the PPF — production is efficient.',
+      out: () => 'The point lies outside the PPF — unattainable with current resources and technology.',
+    },
+    f_ans: { in: 'inefficient', on: 'efficient', out: 'unattainable' },
+    f_incA: 'costs rise',
+    f_noincA: 'costs don’t rise',
+    r_sr: (K) => `Short run: capital is fixed, K = ${K}; only labor varies.`,
+    r_ap: (L, v) => `AP = TP/L peaks at L = ${L} (AP = ${v}); MP = AP there.`,
+    r_mp0: (L, tp) => `MP = 0 at L = ${L}: TP falls beyond (max TP = ${tp}).`,
+    r_apDec:
+      'The average product falls for every L: AP peaks only at zero, there is no stage of rising AP (typical for q = AL^α with α < 1).',
+    r_dim: 'Diminishing returns: as L grows with K fixed, the marginal product eventually falls.',
+    r_iso: (w, r, C) => `Isocost: ${w}L + ${r}K = ${C}.`,
+    r_rule: 'The producer optimum is where the isoquant touches the isocost: MRTS = MPL/MPK = w/r.',
+    r_opt: (L, K, q, m, rt) => `L = ${L}, K = ${K}, q = ${q}; MRTS = ${m} = w/r = ${rt}.`,
+    r_rts: (k) =>
+      `Returns to scale: doubling L and K multiplies output by ${k} (${+k > 2.0001 ? 'increasing' : +k < 1.9999 ? 'decreasing' : 'constant'}).`,
+    r_min: (q, w, r) =>
+      `Output q = ${q} is needed at w = ${w}, r = ${r}: find the cheapest point on the isoquant.`,
+    r_minR: (L, K, C) => `L = ${L}, K = ${K}, minimum cost TC = ${C}.`,
+    mc_rule: 'A monopolistically competitive firm acts as a monopolist on its own demand: MR = MC.',
+    mc_p: (P, ac, pr) => `Price from demand P = ${P}; LAC = ${ac}; profit ${pr}.`,
+    mc_lr: 'P ≈ LAC: zero profit — long-run equilibrium (demand is tangent to LAC).',
+    mc_in: 'Positive profit: new firms enter in the long run and the firm’s demand falls.',
+    mc_out: 'A loss: some firms leave in the long run and the remaining firms’ demand rises.',
+    mc_ex: (q, v, e) =>
+      `Minimum LAC at q = ${q} (LAC = ${v}). Excess capacity: ${e} — the firm produces less than the efficient scale.`,
+    o_hhi: (e, H) => `HHI = ${e} = ${H}.`,
+    o_h1: 'HHI < 1000: unconcentrated market.',
+    o_h2: '1000 ⩽ HHI < 1800: moderately concentrated.',
+    o_h3: 'HHI ⩾ 1800: highly concentrated.',
+    o_set: (a, b, c1, d1, c2, d2) =>
+      `Demand P = ${a} − ${b}Q; costs TC₁ = ${c1}q₁ + ${d1}q₁², TC₂ = ${c2}q₂ + ${d2}q₂².`,
+    om: { cour: 'Cournot', stack: 'Stackelberg', cart: 'Cartel' },
+    o_br: 'Firm i’s reaction function from ∂πᵢ/∂qᵢ = 0: qᵢ = (a − cᵢ − b·qⱼ)/(2b + 2dᵢ). The Cournot equilibrium is where they cross.',
+    o_st: 'The leader plugs the follower’s reaction into its profit and maximizes.',
+    o_ca: 'A cartel maximizes joint profit: MR(Q) = MC₁ = MC₂.',
+    o_tie: 'With equal constant MC any split of the cartel output is optimal.',
+    o_cmp: 'Comparing models:',
+    o_cheat: (br, q) =>
+      `The cartel is unstable: given the partner’s quota, firm 1 would rather produce ${br} instead of ${q}.`,
+    w_rule: 'A competitive firm hires until MRP = p·MP_L equals the wage: MRP = w.',
+    w_res: (p, w, L, q) => `p = ${p}, w = ${w}: L = ${L}, output q = ${q}.`,
+    w_eq: (L, w) => `Labor market equilibrium: L = ${L}, w = ${w}.`,
+    w_rent: (r, wb) =>
+      `Workers’ economic rent, the area between the wage and labor supply: ${r} (wage bill ${wb}).`,
+    w_mon: (l) => `The monopsonist faces supply ${l}; the marginal cost of labor MRC is twice as steep.`,
+    w_monR: (L, w, m, e) =>
+      `MRC = MRP at L = ${L}; the wage from supply w = ${w} is below MRP = ${m} by ${e} (monopsonistic exploitation).`,
+    w_comp: (L, w) => `Under competition L = ${L}, w = ${w}.`,
+    w_minNo: (w, m) =>
+      `A minimum wage of ${w} is not above what the monopsonist pays anyway (${m}): it changes nothing.`,
+    w_minU: (w, L, u) =>
+      `A minimum wage of ${w} exceeds the competitive wage: employment ${L} is set by demand, and ${u} people willing to work find no job — unemployment.`,
+    mc_over: (q, v) =>
+      `Minimum LAC at q = ${q} (LAC = ${v}); the firm produces more than that — possible in the short run with positive profit, no excess capacity.`,
+    w_cap: (w) =>
+      `MRP exceeds the wage ${w} at any employment: each worker brings more than they cost — hiring is limited only by the “L up to” bound.`,
+    o_det: 'Here the leader prefers to produce enough to keep the follower out entirely (entry deterrence).',
+    w_min: (w, L) =>
+      `Minimum wage ${w}: employment ${L}. Between the monopsony and competitive wage, a minimum wage raises employment.`,
+    k_fv: (pm, i, n, v) => `Annuity FV = PMT·((1 + i)ⁿ − 1)/i = ${pm}·((1 + ${i})^${n} − 1)/${i} = ${v}.`,
+    k_pv: (pm, i, n, v) => `Annuity PV = PMT·(1 − (1 + i)⁻ⁿ)/i with PMT = ${pm}, i = ${i}, n = ${n}: ${v}.`,
+    k_pmt: (pv, i, n, v) => `PMT = PV·i/(1 − (1 + i)⁻ⁿ) with PV = ${pv}, i = ${i}, n = ${n}: ${v} a year.`,
+    k_np: (pv, i, pm, v) =>
+      `NPER: n = −ln(1 − PV·i/PMT)/ln(1 + i) with PV = ${pv}, i = ${i}, PMT = ${pm}: n = ${v} years.`,
+    k_npInf: (pm, it) => `The payment ${pm} doesn’t exceed annual interest ${it}: the debt is never repaid.`,
+    k_npv: (fl, i, v) => `NPV = Σ CFₜ/(1 + i)ᵗ for flows ${fl} at i = ${i}: ${v}.`,
+    k_irr: (r) => `IRR (the rate where NPV = 0): ${r}%.`,
+    k_noirr: 'IRR not found.',
+    k_yes: 'NPV ⩾ 0: the project pays.',
+    k_no: 'NPV < 0: the project doesn’t pay.',
+    k_land: (T, R, i, v) =>
+      `Land supply is fixed: T = ${T}. Rent from demand R = ${R}. Land price is capitalized rent: R/i = ${R}/${i} = ${v}.`,
+    x_m: (q, P) => `Unregulated market: q = ${q}, P = ${P}.`,
+    x_s: (e, l, q, P) => `Social marginal cost SMC = PMC + ${e}: ${l}. Optimum: q = ${q}, P = ${P}.`,
+    x_d: (d, w) => `External damage at market output: ${d}; deadweight loss: ${w}.`,
+    x_pig: (e) =>
+      `A Pigouvian tax t = ${e} per unit internalizes the external cost: the market reaches the optimum itself.`,
+    g_rule:
+      'Everyone consumes a public good at once, so total willingness to pay is the sum of individual demand prices (vertical summation).',
+    g_sum: (e) => `ΣMB(q) = ${e}.`,
+    g_opt: (l, q) => `Optimum: ΣMB = MC (${l}): q* = ${q}.`,
+    g_priv: (P, Q) => `If it were a private good, demands would add horizontally: P = ${P}, Q = ${Q}.`,
+    g_free:
+      'Each person alone values it below MC — without the state the good is underprovided (the free-rider problem).',
+    v: {
+      excess: 'Excess capacity',
+      rent2: 'Economic rent',
+      minw: 'min. wage',
+      price: 'land price',
+      inc2: 'Costs rise',
+      pt: 'Point',
+      res: 'Result',
+      qm: 'Market output',
+      qs: 'Optimal output',
+      yes: 'yes',
+      no: 'no',
+    },
+    cap: {
+      ppf: 'The PPF polyline: points inside use resources inefficiently, points outside are unattainable.',
+      prod: 'Short run: TP on top, AP and MP below. Long run: the isoquant touches the isocost at the optimum.',
+      mc: 'Demand, MR, LMC and LAC. The gap between the firm’s output and minimum LAC is excess capacity.',
+      olig: 'Reaction functions; Cournot, Stackelberg and cartel outcomes are marked.',
+      labor: 'Labor demand (MRP) and supply; for monopsony also MRC and the gap between MRP and the wage.',
+      cap: 'Flows by year: accumulation, discounted payments or remaining debt.',
+      ext: 'PMC is private, SMC social marginal cost. The red triangle is the loss from overproduction.',
+      pg: 'Dashed: individual demand; bold: ΣMB. Where it meets MC is the optimal public good.',
+    },
+  },
+};
+export const T = () => TX[lang()] || TX.ru;
+// часть 2 тренажёра дополняет общие таблицы
+for (const l of ['ru', 'en']) {
+  const a = TX[l],
+    b = TXM2[l];
+  for (const k in b) {
+    if (typeof b[k] === 'object' && typeof a[k] === 'object' && a[k]) a[k] = { ...a[k], ...b[k] };
+    else a[k] = b[k];
+  }
+}

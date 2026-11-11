@@ -1,0 +1,3613 @@
+{
+ "app": "microeconomics",
+ "ref": "ref/phase1",
+ "cases": [
+  {
+   "topic": "ppf",
+   "id": "p1",
+   "inp": {
+    "tab": "0 15\n1 14\n2 12\n3 9\n4 5\n5 0",
+    "ptx": "2",
+    "pty": "10"
+   },
+   "res": {
+    "s": [
+     [
+      0,
+      15
+     ],
+     [
+      1,
+      14
+     ],
+     [
+      2,
+      12
+     ],
+     [
+      3,
+      9
+     ],
+     [
+      4,
+      5
+     ],
+     [
+      5,
+      0
+     ]
+    ],
+    "oc": [
+     {
+      "from": 0,
+      "to": 1,
+      "dx": 1,
+      "dy": 1,
+      "oc": 1
+     },
+     {
+      "from": 1,
+      "to": 2,
+      "dx": 1,
+      "dy": 2,
+      "oc": 2
+     },
+     {
+      "from": 2,
+      "to": 3,
+      "dx": 1,
+      "dy": 3,
+      "oc": 3
+     },
+     {
+      "from": 3,
+      "to": 4,
+      "dx": 1,
+      "dy": 4,
+      "oc": 4
+     },
+     {
+      "from": 4,
+      "to": 5,
+      "dx": 1,
+      "dy": 5,
+      "oc": 5
+     }
+    ],
+    "incr": true,
+    "where": "in",
+    "yb": 12
+   },
+   "ru": {
+    "ans": "неэффективная",
+    "st": [
+     "Альтернативные затраты x — сколько y приходится отдать за дополнительную единицу x на каждом участке КПВ:",
+     "<div class=\"tw\"><table class=\"tab\"><tr><th></th><th>Δx</th><th>Δy</th><th>затраты 1 x (в y)</th></tr><tr><td>A→B</td><td>1</td><td>1</td><td>1</td></tr><tr><td>B→C</td><td>1</td><td>2</td><td>2</td></tr><tr><td>C→D</td><td>1</td><td>3</td><td>3</td></tr><tr><td>D→E</td><td>1</td><td>4</td><td>4</td></tr><tr><td>E→F</td><td>1</td><td>5</td><td>5</td></tr></table></div>",
+     "Альтернативные затраты растут — закон возрастающих альтернативных затрат, КПВ выпукла наружу.",
+     "Точка лежит внутри КПВ (граница при этом x: y = 12) — ресурсы используются неэффективно."
+    ]
+   },
+   "en": {
+    "ans": "inefficient",
+    "st": [
+     "Opportunity cost of x — how much y is given up per extra unit of x on each segment:",
+     "<div class=\"tw\"><table class=\"tab\"><tr><th></th><th>Δx</th><th>Δy</th><th>cost of 1 x (in y)</th></tr><tr><td>A→B</td><td>1</td><td>1</td><td>1</td></tr><tr><td>B→C</td><td>1</td><td>2</td><td>2</td></tr><tr><td>C→D</td><td>1</td><td>3</td><td>3</td></tr><tr><td>D→E</td><td>1</td><td>4</td><td>4</td></tr><tr><td>E→F</td><td>1</td><td>5</td><td>5</td></tr></table></div>",
+     "Opportunity costs rise — the law of increasing opportunity cost; the PPF bows outward.",
+     "The point lies inside the PPF (the frontier at this x: y = 12) — resources are used inefficiently."
+    ]
+   }
+  },
+  {
+   "topic": "ppf",
+   "id": "p2",
+   "inp": {
+    "tab": "0 20\n10 10\n20 0",
+    "ptx": "5",
+    "pty": "5"
+   },
+   "res": {
+    "s": [
+     [
+      0,
+      20
+     ],
+     [
+      10,
+      10
+     ],
+     [
+      20,
+      0
+     ]
+    ],
+    "oc": [
+     {
+      "from": 0,
+      "to": 1,
+      "dx": 10,
+      "dy": 10,
+      "oc": 1
+     },
+     {
+      "from": 1,
+      "to": 2,
+      "dx": 10,
+      "dy": 10,
+      "oc": 1
+     }
+    ],
+    "incr": true,
+    "where": "in",
+    "yb": 15
+   },
+   "ru": {
+    "ans": "неэффективная",
+    "st": [
+     "Альтернативные затраты x — сколько y приходится отдать за дополнительную единицу x на каждом участке КПВ:",
+     "<div class=\"tw\"><table class=\"tab\"><tr><th></th><th>Δx</th><th>Δy</th><th>затраты 1 x (в y)</th></tr><tr><td>A→B</td><td>10</td><td>10</td><td>1</td></tr><tr><td>B→C</td><td>10</td><td>10</td><td>1</td></tr></table></div>",
+     "Альтернативные затраты растут — закон возрастающих альтернативных затрат, КПВ выпукла наружу.",
+     "Точка лежит внутри КПВ (граница при этом x: y = 15) — ресурсы используются неэффективно."
+    ]
+   },
+   "en": {
+    "ans": "inefficient",
+    "st": [
+     "Opportunity cost of x — how much y is given up per extra unit of x on each segment:",
+     "<div class=\"tw\"><table class=\"tab\"><tr><th></th><th>Δx</th><th>Δy</th><th>cost of 1 x (in y)</th></tr><tr><td>A→B</td><td>10</td><td>10</td><td>1</td></tr><tr><td>B→C</td><td>10</td><td>10</td><td>1</td></tr></table></div>",
+     "Opportunity costs rise — the law of increasing opportunity cost; the PPF bows outward.",
+     "The point lies inside the PPF (the frontier at this x: y = 15) — resources are used inefficiently."
+    ]
+   }
+  },
+  {
+   "topic": "ppf",
+   "id": "p3",
+   "inp": {
+    "tab": "0 15\n1 14\n2 12\n3 9\n4 5\n5 0",
+    "ptx": "3",
+    "pty": "11"
+   },
+   "res": {
+    "s": [
+     [
+      0,
+      15
+     ],
+     [
+      1,
+      14
+     ],
+     [
+      2,
+      12
+     ],
+     [
+      3,
+      9
+     ],
+     [
+      4,
+      5
+     ],
+     [
+      5,
+      0
+     ]
+    ],
+    "oc": [
+     {
+      "from": 0,
+      "to": 1,
+      "dx": 1,
+      "dy": 1,
+      "oc": 1
+     },
+     {
+      "from": 1,
+      "to": 2,
+      "dx": 1,
+      "dy": 2,
+      "oc": 2
+     },
+     {
+      "from": 2,
+      "to": 3,
+      "dx": 1,
+      "dy": 3,
+      "oc": 3
+     },
+     {
+      "from": 3,
+      "to": 4,
+      "dx": 1,
+      "dy": 4,
+      "oc": 4
+     },
+     {
+      "from": 4,
+      "to": 5,
+      "dx": 1,
+      "dy": 5,
+      "oc": 5
+     }
+    ],
+    "incr": true,
+    "where": "out",
+    "yb": 9
+   },
+   "ru": {
+    "ans": "недостижимая",
+    "st": [
+     "Альтернативные затраты x — сколько y приходится отдать за дополнительную единицу x на каждом участке КПВ:",
+     "<div class=\"tw\"><table class=\"tab\"><tr><th></th><th>Δx</th><th>Δy</th><th>затраты 1 x (в y)</th></tr><tr><td>A→B</td><td>1</td><td>1</td><td>1</td></tr><tr><td>B→C</td><td>1</td><td>2</td><td>2</td></tr><tr><td>C→D</td><td>1</td><td>3</td><td>3</td></tr><tr><td>D→E</td><td>1</td><td>4</td><td>4</td></tr><tr><td>E→F</td><td>1</td><td>5</td><td>5</td></tr></table></div>",
+     "Альтернативные затраты растут — закон возрастающих альтернативных затрат, КПВ выпукла наружу.",
+     "Точка лежит вне КПВ — недостижима при имеющихся ресурсах и технологиях."
+    ]
+   },
+   "en": {
+    "ans": "unattainable",
+    "st": [
+     "Opportunity cost of x — how much y is given up per extra unit of x on each segment:",
+     "<div class=\"tw\"><table class=\"tab\"><tr><th></th><th>Δx</th><th>Δy</th><th>cost of 1 x (in y)</th></tr><tr><td>A→B</td><td>1</td><td>1</td><td>1</td></tr><tr><td>B→C</td><td>1</td><td>2</td><td>2</td></tr><tr><td>C→D</td><td>1</td><td>3</td><td>3</td></tr><tr><td>D→E</td><td>1</td><td>4</td><td>4</td></tr><tr><td>E→F</td><td>1</td><td>5</td><td>5</td></tr></table></div>",
+     "Opportunity costs rise — the law of increasing opportunity cost; the PPF bows outward.",
+     "The point lies outside the PPF — unattainable with current resources and technology."
+    ]
+   }
+  },
+  {
+   "topic": "sd",
+   "id": "s16",
+   "inp": {
+    "D": "P = 20 - 2q",
+    "S": "P = 5 + q",
+    "iv": "none",
+    "v": ""
+   },
+   "res": {
+    "D": {
+     "kind": "lin",
+     "a": 20,
+     "b": -2
+    },
+    "S": {
+     "kind": "lin",
+     "a": 5,
+     "b": 1
+    },
+    "E": {
+     "q": 5,
+     "P": 10
+    },
+    "CS": 25,
+    "PS": 12.5,
+    "W": 37.5,
+    "iv": "none"
+   },
+   "ru": {
+    "ans": "q* = 5, P* = 10",
+    "st": [
+     "Спрос: P = 20 − 2q; предложение: P = 5 + 1q.",
+     "Равновесие: приравниваем цены спроса и предложения — q* = 5, P* = 10.",
+     "Выигрыш потребителей — площадь между спросом и ценой: CS = 25.",
+     "Выигрыш производителей — площадь между ценой и предложением: PS = 12,5."
+    ]
+   },
+   "en": {
+    "ans": "q* = 5, P* = 10",
+    "st": [
+     "Demand: P = 20 − 2q; supply: P = 5 + 1q.",
+     "Equilibrium: set demand price equal to supply price — q* = 5, P* = 10.",
+     "Consumer surplus, the area between demand and price: CS = 25.",
+     "Producer surplus, the area between price and supply: PS = 12.5."
+    ]
+   }
+  },
+  {
+   "topic": "sd",
+   "id": "s17",
+   "inp": {
+    "D": "P = 60 - 0,25q",
+    "S": "P = 20 + 0,15q",
+    "iv": "none",
+    "v": ""
+   },
+   "res": {
+    "D": {
+     "kind": "lin",
+     "a": 60,
+     "b": -0.25
+    },
+    "S": {
+     "kind": "lin",
+     "a": 20,
+     "b": 0.14999999999999858
+    },
+    "E": {
+     "q": 100.00000000000036,
+     "P": 34.999999999999915
+    },
+    "CS": 1250.0000000000084,
+    "PS": 749.9999999999986,
+    "W": 2000.000000000007,
+    "iv": "none"
+   },
+   "ru": {
+    "ans": "q* = 100, P* = 35",
+    "st": [
+     "Спрос: P = 60 − 0,25q; предложение: P = 20 + 0,15q.",
+     "Равновесие: приравниваем цены спроса и предложения — q* = 100, P* = 35.",
+     "Выигрыш потребителей — площадь между спросом и ценой: CS = 1250.",
+     "Выигрыш производителей — площадь между ценой и предложением: PS = 750."
+    ]
+   },
+   "en": {
+    "ans": "q* = 100, P* = 35",
+    "st": [
+     "Demand: P = 60 − 0.25q; supply: P = 20 + 0.15q.",
+     "Equilibrium: set demand price equal to supply price — q* = 100, P* = 35.",
+     "Consumer surplus, the area between demand and price: CS = 1250.",
+     "Producer surplus, the area between price and supply: PS = 750."
+    ]
+   }
+  },
+  {
+   "topic": "sd",
+   "id": "s19",
+   "inp": {
+    "D": "P = 80 - 5q",
+    "S": "P = 32 + q",
+    "iv": "ceil",
+    "v": "35"
+   },
+   "res": {
+    "D": {
+     "kind": "lin",
+     "a": 80,
+     "b": -5
+    },
+    "S": {
+     "kind": "lin",
+     "a": 32,
+     "b": 1
+    },
+    "E": {
+     "q": 8,
+     "P": 40
+    },
+    "CS": 160,
+    "PS": 32,
+    "W": 192,
+    "bind": true,
+    "P2": 35,
+    "qd": 9,
+    "qs": 3,
+    "q2": 3,
+    "gap": 6,
+    "CS2": 112.5,
+    "PS2": 4.5,
+    "W2": 117,
+    "DWL": 75,
+    "iv": "ceil",
+    "v": 35
+   },
+   "ru": {
+    "ans": "дефицит 6",
+    "st": [
+     "Спрос: P = 80 − 5q; предложение: P = 32 + 1q.",
+     "Равновесие: приравниваем цены спроса и предложения — q* = 8, P* = 40.",
+     "Выигрыш потребителей — площадь между спросом и ценой: CS = 160.",
+     "Выигрыш производителей — площадь между ценой и предложением: PS = 32.",
+     "При цене 35: величина спроса 9, величина предложения 3.",
+     "Дефицит: q_d − q_s = 6.",
+     "Продаётся меньшее из двух — 3; CS = 112,5, PS = 4,5.",
+     "Чистые потери (мёртвый груз) — треугольник между спросом и предложением: DWL = 75."
+    ]
+   },
+   "en": {
+    "ans": "shortage 6",
+    "st": [
+     "Demand: P = 80 − 5q; supply: P = 32 + 1q.",
+     "Equilibrium: set demand price equal to supply price — q* = 8, P* = 40.",
+     "Consumer surplus, the area between demand and price: CS = 160.",
+     "Producer surplus, the area between price and supply: PS = 32.",
+     "At price 35: quantity demanded 9, quantity supplied 3.",
+     "Shortage: q_d − q_s = 6.",
+     "The smaller of the two is traded — 3; CS = 112.5, PS = 4.5.",
+     "Deadweight loss, the triangle between demand and supply: DWL = 75."
+    ]
+   }
+  },
+  {
+   "topic": "sd",
+   "id": "s20",
+   "inp": {
+    "D": "P = 12 - 2q",
+    "S": "P = 4 + 2q",
+    "iv": "tax",
+    "v": "2"
+   },
+   "res": {
+    "D": {
+     "kind": "lin",
+     "a": 12,
+     "b": -2
+    },
+    "S": {
+     "kind": "lin",
+     "a": 4,
+     "b": 2
+    },
+    "E": {
+     "q": 2,
+     "P": 8
+    },
+    "CS": 4,
+    "PS": 4,
+    "W": 8,
+    "gone": false,
+    "q2": 1.5,
+    "Pb": 9,
+    "Ps": 7,
+    "S2": {
+     "kind": "lin",
+     "a": 6,
+     "b": 2
+    },
+    "rev": 3,
+    "CS2": 2.25,
+    "PS2": 2.25,
+    "W2": 7.5,
+    "DWL": 0.5,
+    "shareB": 0.5,
+    "shareS": 0.5,
+    "iv": "tax",
+    "v": 2
+   },
+   "ru": {
+    "ans": "q = 1,5, P_пок = 9, P_прод = 7",
+    "st": [
+     "Спрос: P = 12 − 2q; предложение: P = 4 + 2q.",
+     "Равновесие: приравниваем цены спроса и предложения — q* = 2, P* = 8.",
+     "Выигрыш потребителей — площадь между спросом и ценой: CS = 4.",
+     "Выигрыш производителей — площадь между ценой и предложением: PS = 4.",
+     "Потоварный налог t = 2 сдвигает предложение вверх на t: P = 6 + 2q.",
+     "Новое равновесие: q = 1,5; цена покупателя 9, цена продавца 7 (разница — налог).",
+     "Налоговые поступления: t·q = 3.",
+     "Распределение бремени: покупатели платят на 1 больше, продавцы получают на 1 меньше — 50% и 50%. Бремя тяжелее для менее эластичной стороны.",
+     "Чистые потери (мёртвый груз) — треугольник между спросом и предложением: DWL = 0,5."
+    ]
+   },
+   "en": {
+    "ans": "q = 1.5, P_b = 9, P_s = 7",
+    "st": [
+     "Demand: P = 12 − 2q; supply: P = 4 + 2q.",
+     "Equilibrium: set demand price equal to supply price — q* = 2, P* = 8.",
+     "Consumer surplus, the area between demand and price: CS = 4.",
+     "Producer surplus, the area between price and supply: PS = 4.",
+     "A per-unit tax t = 2 shifts supply up by t: P = 6 + 2q.",
+     "New equilibrium: q = 1.5; buyers pay 9, sellers receive 7 (the gap is the tax).",
+     "Tax revenue: t·q = 3.",
+     "Incidence: buyers pay 1 more, sellers receive 1 less — 50% and 50%. The less elastic side bears more.",
+     "Deadweight loss, the triangle between demand and supply: DWL = 0.5."
+    ]
+   }
+  },
+  {
+   "topic": "sd",
+   "id": "ssub",
+   "inp": {
+    "D": "P = 12 - 2q",
+    "S": "P = 4 + 2q",
+    "iv": "sub",
+    "v": "2"
+   },
+   "res": {
+    "D": {
+     "kind": "lin",
+     "a": 12,
+     "b": -2
+    },
+    "S": {
+     "kind": "lin",
+     "a": 4,
+     "b": 2
+    },
+    "E": {
+     "q": 2,
+     "P": 8
+    },
+    "CS": 4,
+    "PS": 4,
+    "W": 8,
+    "gone": false,
+    "q2": 2.5,
+    "Pb": 7,
+    "Ps": 9,
+    "S2": {
+     "kind": "lin",
+     "a": 2,
+     "b": 2
+    },
+    "rev": -5,
+    "CS2": 6.25,
+    "PS2": 6.25,
+    "W2": 7.5,
+    "DWL": 0.5,
+    "shareB": 0.5,
+    "shareS": 0.5,
+    "iv": "sub",
+    "v": 2
+   },
+   "ru": {
+    "ans": "q = 2,5, P_пок = 7, P_прод = 9",
+    "st": [
+     "Спрос: P = 12 − 2q; предложение: P = 4 + 2q.",
+     "Равновесие: приравниваем цены спроса и предложения — q* = 2, P* = 8.",
+     "Выигрыш потребителей — площадь между спросом и ценой: CS = 4.",
+     "Выигрыш производителей — площадь между ценой и предложением: PS = 4.",
+     "Субсидия s = 2 сдвигает предложение вниз на s: P = 2 + 2q.",
+     "Новое равновесие: q = 2,5; цена покупателя 7, цена продавца 9 (разница — налог).",
+     "Расходы бюджета на субсидию: s·q = 5.",
+     "Распределение бремени: покупатели платят на 1 больше, продавцы получают на 1 меньше — 50% и 50%. Бремя тяжелее для менее эластичной стороны.",
+     "Чистые потери (мёртвый груз) — треугольник между спросом и предложением: DWL = 0,5."
+    ]
+   },
+   "en": {
+    "ans": "q = 2.5, P_b = 7, P_s = 9",
+    "st": [
+     "Demand: P = 12 − 2q; supply: P = 4 + 2q.",
+     "Equilibrium: set demand price equal to supply price — q* = 2, P* = 8.",
+     "Consumer surplus, the area between demand and price: CS = 4.",
+     "Producer surplus, the area between price and supply: PS = 4.",
+     "A subsidy s = 2 shifts supply down by s: P = 2 + 2q.",
+     "New equilibrium: q = 2.5; buyers pay 7, sellers receive 9 (the gap is the tax).",
+     "Budget cost of the subsidy: s·q = 5.",
+     "Incidence: buyers pay 1 more, sellers receive 1 less — 50% and 50%. The less elastic side bears more.",
+     "Deadweight loss, the triangle between demand and supply: DWL = 0.5."
+    ]
+   }
+  },
+  {
+   "topic": "sd",
+   "id": "sfl",
+   "inp": {
+    "D": "P = 20 - 2q",
+    "S": "P = 5 + q",
+    "iv": "floor",
+    "v": "14"
+   },
+   "res": {
+    "D": {
+     "kind": "lin",
+     "a": 20,
+     "b": -2
+    },
+    "S": {
+     "kind": "lin",
+     "a": 5,
+     "b": 1
+    },
+    "E": {
+     "q": 5,
+     "P": 10
+    },
+    "CS": 25,
+    "PS": 12.5,
+    "W": 37.5,
+    "bind": true,
+    "P2": 14,
+    "qd": 3,
+    "qs": 9,
+    "q2": 3,
+    "gap": 6,
+    "CS2": 9,
+    "PS2": 22.5,
+    "W2": 31.5,
+    "DWL": 6,
+    "iv": "floor",
+    "v": 14
+   },
+   "ru": {
+    "ans": "избыток 6",
+    "st": [
+     "Спрос: P = 20 − 2q; предложение: P = 5 + 1q.",
+     "Равновесие: приравниваем цены спроса и предложения — q* = 5, P* = 10.",
+     "Выигрыш потребителей — площадь между спросом и ценой: CS = 25.",
+     "Выигрыш производителей — площадь между ценой и предложением: PS = 12,5.",
+     "При цене 14: величина спроса 3, величина предложения 9.",
+     "Избыток: q_s − q_d = 6.",
+     "Продаётся меньшее из двух — 3; CS = 9, PS = 22,5.",
+     "Чистые потери (мёртвый груз) — треугольник между спросом и предложением: DWL = 6."
+    ]
+   },
+   "en": {
+    "ans": "surplus 6",
+    "st": [
+     "Demand: P = 20 − 2q; supply: P = 5 + 1q.",
+     "Equilibrium: set demand price equal to supply price — q* = 5, P* = 10.",
+     "Consumer surplus, the area between demand and price: CS = 25.",
+     "Producer surplus, the area between price and supply: PS = 12.5.",
+     "At price 14: quantity demanded 3, quantity supplied 9.",
+     "Surplus: q_s − q_d = 6.",
+     "The smaller of the two is traded — 3; CS = 9, PS = 22.5.",
+     "Deadweight loss, the triangle between demand and supply: DWL = 6."
+    ]
+   }
+  },
+  {
+   "topic": "sd",
+   "id": "squo",
+   "inp": {
+    "D": "P = 20 - 2q",
+    "S": "P = 5 + q",
+    "iv": "quota",
+    "v": "3"
+   },
+   "res": {
+    "D": {
+     "kind": "lin",
+     "a": 20,
+     "b": -2
+    },
+    "S": {
+     "kind": "lin",
+     "a": 5,
+     "b": 1
+    },
+    "E": {
+     "q": 5,
+     "P": 10
+    },
+    "CS": 25,
+    "PS": 12.5,
+    "W": 37.5,
+    "bind": true,
+    "q2": 3,
+    "Pb": 14,
+    "Ps": 8,
+    "rent": 18,
+    "CS2": 9,
+    "PS2": 22.5,
+    "W2": 31.5,
+    "DWL": 6,
+    "iv": "quota",
+    "v": 3
+   },
+   "ru": {
+    "ans": "P = 14, квотная рента 18",
+    "st": [
+     "Спрос: P = 20 − 2q; предложение: P = 5 + 1q.",
+     "Равновесие: приравниваем цены спроса и предложения — q* = 5, P* = 10.",
+     "Выигрыш потребителей — площадь между спросом и ценой: CS = 25.",
+     "Выигрыш производителей — площадь между ценой и предложением: PS = 12,5.",
+     "При квоте q = 3 покупатели готовы платить 14, а продавцы согласились бы на 8; разница — квотная рента 18.",
+     "Чистые потери (мёртвый груз) — треугольник между спросом и предложением: DWL = 6."
+    ]
+   },
+   "en": {
+    "ans": "P = 14, quota rent 18",
+    "st": [
+     "Demand: P = 20 − 2q; supply: P = 5 + 1q.",
+     "Equilibrium: set demand price equal to supply price — q* = 5, P* = 10.",
+     "Consumer surplus, the area between demand and price: CS = 25.",
+     "Producer surplus, the area between price and supply: PS = 12.5.",
+     "With a quota q = 3 buyers will pay 14 while sellers would accept 8; the gap is the quota rent 18.",
+     "Deadweight loss, the triangle between demand and supply: DWL = 6."
+    ]
+   }
+  },
+  {
+   "topic": "sd",
+   "id": "sbenz",
+   "inp": {
+    "D": "q = 19000000 - 100000P",
+    "S": "q = 100000P - 1000000",
+    "iv": "tax",
+    "v": "4"
+   },
+   "res": {
+    "D": {
+     "kind": "lin",
+     "a": 190,
+     "b": -0.00001
+    },
+    "S": {
+     "kind": "lin",
+     "a": 10,
+     "b": 0.00001
+    },
+    "E": {
+     "q": 9000000,
+     "P": 99.99999999999999
+    },
+    "CS": 405000000.00000006,
+    "PS": 404999999.9999998,
+    "W": 809999999.9999999,
+    "gone": false,
+    "q2": 8800000,
+    "Pb": 101.99999999999999,
+    "Ps": 97.99999999999999,
+    "S2": {
+     "kind": "lin",
+     "a": 14,
+     "b": 0.00001
+    },
+    "rev": 35200000,
+    "CS2": 387200000.00000006,
+    "PS2": 387199999.9999998,
+    "W2": 809599999.9999999,
+    "DWL": 400000,
+    "shareB": 0.5,
+    "shareS": 0.5,
+    "iv": "tax",
+    "v": 4
+   },
+   "ru": {
+    "ans": "q = 8800000, P_пок = 102, P_прод = 98",
+    "st": [
+     "Спрос: P = 190 − 0q; предложение: P = 10 + 0q.",
+     "Равновесие: приравниваем цены спроса и предложения — q* = 9000000, P* = 100.",
+     "Выигрыш потребителей — площадь между спросом и ценой: CS = 405000000.",
+     "Выигрыш производителей — площадь между ценой и предложением: PS = 405000000.",
+     "Потоварный налог t = 4 сдвигает предложение вверх на t: P = 14 + 0q.",
+     "Новое равновесие: q = 8800000; цена покупателя 102, цена продавца 98 (разница — налог).",
+     "Налоговые поступления: t·q = 35200000.",
+     "Распределение бремени: покупатели платят на 2 больше, продавцы получают на 2 меньше — 50% и 50%. Бремя тяжелее для менее эластичной стороны.",
+     "Чистые потери (мёртвый груз) — треугольник между спросом и предложением: DWL = 400000."
+    ]
+   },
+   "en": {
+    "ans": "q = 8800000, P_b = 102, P_s = 98",
+    "st": [
+     "Demand: P = 190 − 0q; supply: P = 10 + 0q.",
+     "Equilibrium: set demand price equal to supply price — q* = 9000000, P* = 100.",
+     "Consumer surplus, the area between demand and price: CS = 405000000.",
+     "Producer surplus, the area between price and supply: PS = 405000000.",
+     "A per-unit tax t = 4 shifts supply up by t: P = 14 + 0q.",
+     "New equilibrium: q = 8800000; buyers pay 102, sellers receive 98 (the gap is the tax).",
+     "Tax revenue: t·q = 35200000.",
+     "Incidence: buyers pay 2 more, sellers receive 2 less — 50% and 50%. The less elastic side bears more.",
+     "Deadweight loss, the triangle between demand and supply: DWL = 400000."
+    ]
+   }
+  },
+  {
+   "topic": "el",
+   "id": "e10",
+   "inp": {
+    "D": "P = 50 - q/2",
+    "em": "find",
+    "P1": "",
+    "P2": "",
+    "Ev": "1",
+    "q1": "",
+    "q2": "",
+    "x1": "",
+    "x2": "",
+    "ek": "price"
+   },
+   "res": {
+    "em": "find",
+    "D": {
+     "kind": "lin",
+     "a": 50,
+     "b": -0.5
+    },
+    "a": 50,
+    "b": -0.5,
+    "qmax": 100,
+    "Pmid": 25,
+    "qmid": 50,
+    "TRmax": 1250,
+    "Ev": 1,
+    "P": 25,
+    "q": 50,
+    "E": -1
+   },
+   "ru": {
+    "ans": "P = 25, q = 50",
+    "st": [
+     "Спрос P = 50 − 0,5q; на прямой dq/dP постоянна и равна 2.",
+     "На линейном спросе |E| = P/(a − P); из |E| = 1 получаем P = a·|E|/(1 + |E|) = 25, q = 50.",
+     "|E| = 1 в середине прямой спроса: P = 25, q = 50; выручка там максимальна: TR = 1250."
+    ]
+   },
+   "en": {
+    "ans": "P = 25, q = 50",
+    "st": [
+     "Demand P = 50 − 0.5q; on a line dq/dP is constant: 2.",
+     "On linear demand |E| = P/(a − P); from |E| = 1, P = a·|E|/(1 + |E|) = 25, q = 50.",
+     "|E| = 1 at the midpoint of the demand line: P = 25, q = 50; revenue peaks there: TR = 1250."
+    ]
+   }
+  },
+  {
+   "topic": "el",
+   "id": "ept",
+   "inp": {
+    "D": "P = 50 - q/2",
+    "em": "pt",
+    "P1": "40",
+    "P2": "",
+    "Ev": "",
+    "q1": "",
+    "q2": "",
+    "x1": "",
+    "x2": "",
+    "ek": "price"
+   },
+   "res": {
+    "em": "pt",
+    "D": {
+     "kind": "lin",
+     "a": 50,
+     "b": -0.5
+    },
+    "a": 50,
+    "b": -0.5,
+    "qmax": 100,
+    "Pmid": 25,
+    "qmid": 50,
+    "TRmax": 1250,
+    "P": 40,
+    "q": 20,
+    "E": -4
+   },
+   "ru": {
+    "ans": "E = −4",
+    "st": [
+     "Спрос P = 50 − 0,5q; на прямой dq/dP постоянна и равна 2.",
+     "Точечная эластичность: E = (dq/dP)·(P/q), при P = 40 q = 20: E = −4.",
+     "Спрос эластичен: снижение цены увеличивает выручку.",
+     "|E| = 1 в середине прямой спроса: P = 25, q = 50; выручка там максимальна: TR = 1250."
+    ]
+   },
+   "en": {
+    "ans": "E = −4",
+    "st": [
+     "Demand P = 50 − 0.5q; on a line dq/dP is constant: 2.",
+     "Point elasticity: E = (dq/dP)·(P/q); at P = 40, q = 20: E = −4.",
+     "Elastic: a lower price raises revenue.",
+     "|E| = 1 at the midpoint of the demand line: P = 25, q = 50; revenue peaks there: TR = 1250."
+    ]
+   }
+  },
+  {
+   "topic": "el",
+   "id": "earc",
+   "inp": {
+    "D": "P = 50 - q/2",
+    "em": "arc",
+    "P1": "20",
+    "P2": "30",
+    "Ev": "",
+    "q1": "",
+    "q2": "",
+    "x1": "",
+    "x2": "",
+    "ek": "price"
+   },
+   "res": {
+    "em": "arc",
+    "D": {
+     "kind": "lin",
+     "a": 50,
+     "b": -0.5
+    },
+    "a": 50,
+    "b": -0.5,
+    "qmax": 100,
+    "Pmid": 25,
+    "qmid": 50,
+    "TRmax": 1250,
+    "p1": 20,
+    "p2": 30,
+    "q1": 60,
+    "q2": 40,
+    "Earc": -1,
+    "E1": -0.6666666666666666,
+    "E2": -1.5,
+    "TR1": 1200,
+    "TR2": 1200
+   },
+   "ru": {
+    "ans": "E = −1",
+    "st": [
+     "Спрос P = 50 − 0,5q; на прямой dq/dP постоянна и равна 2.",
+     "Точки на спросе: (60; 20) и (40; 30).",
+     "E = ((40 − 60)/50) / ((30 − 20)/25) = −1",
+     "Единичная эластичность: выручка максимальна.",
+     "Выручка: TR₁ = 1200, TR₂ = 1200.",
+     "|E| = 1 в середине прямой спроса: P = 25, q = 50; выручка там максимальна: TR = 1250."
+    ]
+   },
+   "en": {
+    "ans": "E = −1",
+    "st": [
+     "Demand P = 50 − 0.5q; on a line dq/dP is constant: 2.",
+     "Points on demand: (60; 20) and (40; 30).",
+     "E = ((40 − 60)/50) / ((30 − 20)/25) = −1",
+     "Unit elastic: revenue is at its maximum.",
+     "Revenue: TR₁ = 1200, TR₂ = 1200.",
+     "|E| = 1 at the midpoint of the demand line: P = 25, q = 50; revenue peaks there: TR = 1250."
+    ]
+   }
+  },
+  {
+   "topic": "el",
+   "id": "etv",
+   "inp": {
+    "D": "P = 50 - q/2",
+    "em": "pts",
+    "P1": "",
+    "P2": "",
+    "Ev": "",
+    "q1": "10",
+    "q2": "15",
+    "x1": "10000",
+    "x2": "8000",
+    "ek": "price"
+   },
+   "res": {
+    "em": "pts",
+    "ek": "price",
+    "q1": 10,
+    "q2": 15,
+    "x1": 10000,
+    "x2": 8000,
+    "E": -1.8000000000000003
+   },
+   "ru": {
+    "ans": "E = −1,8",
+    "st": [
+     "Дуговая эластичность по цене — по формуле средней точки: E = (Δq / q̄) / (Δx / x̄).",
+     "E = ((15 − 10)/12,5) / ((8000 − 10000)/9000) = −1,8",
+     "|E| > 1: спрос эластичен."
+    ]
+   },
+   "en": {
+    "ans": "E = −1.8",
+    "st": [
+     "Arc price elasticity by the midpoint formula: E = (Δq / q̄) / (Δx / x̄).",
+     "E = ((15 − 10)/12.5) / ((8000 − 10000)/9000) = −1.8",
+     "|E| > 1: elastic demand."
+    ]
+   }
+  },
+  {
+   "topic": "el",
+   "id": "einc",
+   "inp": {
+    "D": "P = 50 - q/2",
+    "em": "pts",
+    "P1": "",
+    "P2": "",
+    "Ev": "",
+    "q1": "20",
+    "q2": "22",
+    "x1": "1000",
+    "x2": "1200",
+    "ek": "inc"
+   },
+   "res": {
+    "em": "pts",
+    "ek": "inc",
+    "q1": 20,
+    "q2": 22,
+    "x1": 1000,
+    "x2": 1200,
+    "E": 0.5238095238095237
+   },
+   "ru": {
+    "ans": "E = 0,5238",
+    "st": [
+     "Дуговая эластичность по доходу — по формуле средней точки: E = (Δq / q̄) / (Δx / x̄).",
+     "E = ((22 − 20)/21) / ((1200 − 1000)/1100) = 0,5238",
+     "0 < E < 1: нормальное благо первой необходимости."
+    ]
+   },
+   "en": {
+    "ans": "E = 0.5238",
+    "st": [
+     "Arc income elasticity by the midpoint formula: E = (Δq / q̄) / (Δx / x̄).",
+     "E = ((22 − 20)/21) / ((1200 − 1000)/1100) = 0.5238",
+     "0 < E < 1: normal necessity."
+    ]
+   }
+  },
+  {
+   "topic": "el",
+   "id": "ecr",
+   "inp": {
+    "D": "P = 50 - q/2",
+    "em": "pts",
+    "P1": "",
+    "P2": "",
+    "Ev": "",
+    "q1": "100",
+    "q2": "120",
+    "x1": "50",
+    "x2": "60",
+    "ek": "cross"
+   },
+   "res": {
+    "em": "pts",
+    "ek": "cross",
+    "q1": 100,
+    "q2": 120,
+    "x1": 50,
+    "x2": 60,
+    "E": 1
+   },
+   "ru": {
+    "ans": "E = 1",
+    "st": [
+     "Дуговая эластичность перекрёстная — по формуле средней точки: E = (Δq / q̄) / (Δx / x̄).",
+     "E = ((120 − 100)/110) / ((60 − 50)/55) = 1",
+     "E > 0: товары — заменители."
+    ]
+   },
+   "en": {
+    "ans": "E = 1",
+    "st": [
+     "Arc cross elasticity by the midpoint formula: E = (Δq / q̄) / (Δx / x̄).",
+     "E = ((120 − 100)/110) / ((60 − 50)/55) = 1",
+     "E > 0: substitutes."
+    ]
+   }
+  },
+  {
+   "topic": "cons",
+   "id": "ccd",
+   "inp": {
+    "ut": "cd",
+    "al": "1",
+    "be": "1",
+    "I": "100",
+    "px": "2",
+    "py": "5",
+    "px2": "4"
+   },
+   "res": {
+    "t": "cd",
+    "al": 1,
+    "be": 1,
+    "I": 100,
+    "px": 2,
+    "py": 5,
+    "A": {
+     "x": 25,
+     "y": 10,
+     "U": 250
+    },
+    "px2": 4,
+    "B": {
+     "x": 12.5,
+     "y": 10,
+     "U": 125
+    },
+    "H": {
+     "x": 17.67766952966369,
+     "y": 14.142135623730951,
+     "I": 141.4213562373095
+    },
+    "Sl": {
+     "x": 18.75,
+     "y": 15,
+     "U": 281.25
+    },
+    "Is": 150,
+    "subH": -7.322330470336311,
+    "incH": -5.177669529663689,
+    "subS": -6.25,
+    "incS": -6.25,
+    "CV": 41.42135623730951,
+    "MRS": 0.4
+   },
+   "ru": {
+    "ans": "Δx = −12,5 = −7,3223 − 5,1777",
+    "st": [
+     "Полезность U = x^1·y^1 (Кобб–Дуглас).",
+     "Бюджетное ограничение: 2x + 5y = 100.",
+     "Оптимум: MRS = MUₓ/MUᵧ = (a·y)/(b·x) = Pₓ/Pᵧ. Для Кобба–Дугласа на X тратится доля a/(a + b) дохода: x = a/(a + b)·I/Pₓ, y = b/(a + b)·I/Pᵧ.",
+     "Оптимальный набор A: x = 25, y = 10, U = 250.",
+     "Проверка: MRS = 0,4 = Pₓ/Pᵧ = 0,4.",
+     "При новой цене Pₓ = 4 оптимум B: x = 12,5, y = 10.",
+     "По Хиксу: набор C на прежней кривой безразличия при новых ценах — x = 17,6777, y = 14,1421; нужный доход 141,4214.",
+     "Эффект замещения A → C: −7,3223; эффект дохода C → B: −5,1777; общее изменение −12,5.",
+     "По Слуцкому (доход, позволяющий купить прежний набор: 150): x = 18,75, эффект замещения −6,25, дохода −6,25."
+    ]
+   },
+   "en": {
+    "ans": "Δx = −12.5 = −7.3223 − 5.1777",
+    "st": [
+     "Utility U = x^1·y^1 (Cobb–Douglas).",
+     "Budget constraint: 2x + 5y = 100.",
+     "Optimum: MRS = MUₓ/MUᵧ = (a·y)/(b·x) = Pₓ/Pᵧ. With Cobb–Douglas the share a/(a + b) of income goes to X: x = a/(a + b)·I/Pₓ, y = b/(a + b)·I/Pᵧ.",
+     "Optimal bundle A: x = 25, y = 10, U = 250.",
+     "Check: MRS = 0.4 = Pₓ/Pᵧ = 0.4.",
+     "At the new price Pₓ = 4 the optimum is B: x = 12.5, y = 10.",
+     "Hicks: bundle C on the original indifference curve at the new prices — x = 17.6777, y = 14.1421; income needed 141.4214.",
+     "Substitution effect A → C: −7.3223; income effect C → B: −5.1777; total change −12.5.",
+     "Slutsky (income that buys the old bundle: 150): x = 18.75, substitution −6.25, income −6.25."
+    ]
+   }
+  },
+  {
+   "topic": "cons",
+   "id": "ccd2",
+   "inp": {
+    "ut": "cd",
+    "al": "0,3",
+    "be": "0,7",
+    "I": "200",
+    "px": "4",
+    "py": "2",
+    "px2": "2"
+   },
+   "res": {
+    "t": "cd",
+    "al": 0.3,
+    "be": 0.7,
+    "I": 200,
+    "px": 4,
+    "py": 2,
+    "A": {
+     "x": 15,
+     "y": 70,
+     "U": 44.09567608846649
+    },
+    "px2": 2,
+    "B": {
+     "x": 30,
+     "y": 70,
+     "U": 54.28814526898253
+    },
+    "H": {
+     "x": 24.367571890687064,
+     "y": 56.857667744936485,
+     "I": 162.4504792712471
+    },
+    "Sl": {
+     "x": 25.5,
+     "y": 59.49999999999999,
+     "U": 46.14492347863515
+    },
+    "Is": 170,
+    "subH": 9.367571890687064,
+    "incH": 5.6324281093129365,
+    "subS": 10.5,
+    "incS": 4.5,
+    "CV": -37.549520728752896,
+    "MRS": 2
+   },
+   "ru": {
+    "ans": "Δx = 15 = 9,3676 + 5,6324",
+    "st": [
+     "Полезность U = x^0,3·y^0,7 (Кобб–Дуглас).",
+     "Бюджетное ограничение: 4x + 2y = 200.",
+     "Оптимум: MRS = MUₓ/MUᵧ = (a·y)/(b·x) = Pₓ/Pᵧ. Для Кобба–Дугласа на X тратится доля a/(a + b) дохода: x = a/(a + b)·I/Pₓ, y = b/(a + b)·I/Pᵧ.",
+     "Оптимальный набор A: x = 15, y = 70, U = 44,0957.",
+     "Проверка: MRS = 2 = Pₓ/Pᵧ = 2.",
+     "При новой цене Pₓ = 2 оптимум B: x = 30, y = 70.",
+     "По Хиксу: набор C на прежней кривой безразличия при новых ценах — x = 24,3676, y = 56,8577; нужный доход 162,4505.",
+     "Эффект замещения A → C: 9,3676; эффект дохода C → B: 5,6324; общее изменение 15.",
+     "По Слуцкому (доход, позволяющий купить прежний набор: 170): x = 25,5, эффект замещения 10,5, дохода 4,5."
+    ]
+   },
+   "en": {
+    "ans": "Δx = 15 = 9.3676 + 5.6324",
+    "st": [
+     "Utility U = x^0.3·y^0.7 (Cobb–Douglas).",
+     "Budget constraint: 4x + 2y = 200.",
+     "Optimum: MRS = MUₓ/MUᵧ = (a·y)/(b·x) = Pₓ/Pᵧ. With Cobb–Douglas the share a/(a + b) of income goes to X: x = a/(a + b)·I/Pₓ, y = b/(a + b)·I/Pᵧ.",
+     "Optimal bundle A: x = 15, y = 70, U = 44.0957.",
+     "Check: MRS = 2 = Pₓ/Pᵧ = 2.",
+     "At the new price Pₓ = 2 the optimum is B: x = 30, y = 70.",
+     "Hicks: bundle C on the original indifference curve at the new prices — x = 24.3676, y = 56.8577; income needed 162.4505.",
+     "Substitution effect A → C: 9.3676; income effect C → B: 5.6324; total change 15.",
+     "Slutsky (income that buys the old bundle: 170): x = 25.5, substitution 10.5, income 4.5."
+    ]
+   }
+  },
+  {
+   "topic": "cons",
+   "id": "csub",
+   "inp": {
+    "ut": "sub",
+    "al": "2",
+    "be": "1",
+    "I": "60",
+    "px": "3",
+    "py": "2",
+    "px2": "5"
+   },
+   "res": {
+    "t": "sub",
+    "al": 2,
+    "be": 1,
+    "I": 60,
+    "px": 3,
+    "py": 2,
+    "A": {
+     "x": 20,
+     "y": 0,
+     "U": 40
+    },
+    "px2": 5,
+    "B": {
+     "x": 0,
+     "y": 30,
+     "U": 30
+    },
+    "H": {
+     "x": 0,
+     "y": 40,
+     "I": 80
+    },
+    "Sl": {
+     "x": 0,
+     "y": 50,
+     "U": 50
+    },
+    "Is": 100,
+    "subH": -20,
+    "incH": 0,
+    "subS": -20,
+    "incS": 0,
+    "CV": 20,
+    "MRS": 2
+   },
+   "ru": {
+    "ans": "Δx = −20 = −20 + 0",
+    "st": [
+     "Полезность U = 2x + 1y: совершенные заменители.",
+     "Бюджетное ограничение: 3x + 2y = 60.",
+     "Сравниваем полезность на рубль: a/Pₓ = 0,6667, b/Pᵧ = 0,5 — весь доход идёт на благо с большей величиной (угловое решение).",
+     "Оптимальный набор A: x = 20, y = 0, U = 40.",
+     "При новой цене Pₓ = 5 оптимум B: x = 0, y = 30.",
+     "По Хиксу: набор C на прежней кривой безразличия при новых ценах — x = 0, y = 40; нужный доход 80.",
+     "Эффект замещения A → C: −20; эффект дохода C → B: 0; общее изменение −20.",
+     "По Слуцкому (доход, позволяющий купить прежний набор: 100): x = 0, эффект замещения −20, дохода 0."
+    ]
+   },
+   "en": {
+    "ans": "Δx = −20 = −20 + 0",
+    "st": [
+     "Utility U = 2x + 1y: perfect substitutes.",
+     "Budget constraint: 3x + 2y = 60.",
+     "Compare utility per unit of money: a/Pₓ = 0.6667, b/Pᵧ = 0.5 — all income goes to the higher one (corner solution).",
+     "Optimal bundle A: x = 20, y = 0, U = 40.",
+     "At the new price Pₓ = 5 the optimum is B: x = 0, y = 30.",
+     "Hicks: bundle C on the original indifference curve at the new prices — x = 0, y = 40; income needed 80.",
+     "Substitution effect A → C: −20; income effect C → B: 0; total change −20.",
+     "Slutsky (income that buys the old bundle: 100): x = 0, substitution −20, income 0."
+    ]
+   }
+  },
+  {
+   "topic": "cons",
+   "id": "ccomp",
+   "inp": {
+    "ut": "comp",
+    "al": "1",
+    "be": "2",
+    "I": "120",
+    "px": "2",
+    "py": "4",
+    "px2": "4"
+   },
+   "res": {
+    "t": "comp",
+    "al": 1,
+    "be": 2,
+    "I": 120,
+    "px": 2,
+    "py": 4,
+    "A": {
+     "x": 30,
+     "y": 15,
+     "U": 30
+    },
+    "px2": 4,
+    "B": {
+     "x": 20,
+     "y": 10,
+     "U": 20
+    },
+    "H": {
+     "x": 30,
+     "y": 15,
+     "I": 180
+    },
+    "Sl": {
+     "x": 30,
+     "y": 15,
+     "U": 30
+    },
+    "Is": 180,
+    "subH": 0,
+    "incH": -10,
+    "subS": 0,
+    "incS": -10,
+    "CV": 60,
+    "MRS": "NaN"
+   },
+   "ru": {
+    "ans": "Δx = −10 = 0 − 10",
+    "st": [
+     "Полезность U = min(1x, 2y): совершенные дополнители.",
+     "Бюджетное ограничение: 2x + 4y = 120.",
+     "Блага потребляются в фиксированной пропорции: a·x = b·y, вершина «уголка» лежит на бюджетной линии.",
+     "Оптимальный набор A: x = 30, y = 15, U = 30.",
+     "При новой цене Pₓ = 4 оптимум B: x = 20, y = 10.",
+     "По Хиксу: набор C на прежней кривой безразличия при новых ценах — x = 30, y = 15; нужный доход 180.",
+     "Эффект замещения A → C: 0; эффект дохода C → B: −10; общее изменение −10.",
+     "По Слуцкому (доход, позволяющий купить прежний набор: 180): x = 30, эффект замещения 0, дохода −10."
+    ]
+   },
+   "en": {
+    "ans": "Δx = −10 = 0 − 10",
+    "st": [
+     "Utility U = min(1x, 2y): perfect complements.",
+     "Budget constraint: 2x + 4y = 120.",
+     "Goods are consumed in fixed proportion: a·x = b·y, the corner of the “L” lies on the budget line.",
+     "Optimal bundle A: x = 30, y = 15, U = 30.",
+     "At the new price Pₓ = 4 the optimum is B: x = 20, y = 10.",
+     "Hicks: bundle C on the original indifference curve at the new prices — x = 30, y = 15; income needed 180.",
+     "Substitution effect A → C: 0; income effect C → B: −10; total change −10.",
+     "Slutsky (income that buys the old bundle: 180): x = 30, substitution 0, income −10."
+    ]
+   }
+  },
+  {
+   "topic": "prod",
+   "id": "f81",
+   "inp": {
+    "prm": "short",
+    "f": "L^0.5*K^0.5",
+    "K": "16",
+    "Lmax": "40",
+    "w": "",
+    "r": "",
+    "C": "",
+    "q0": ""
+   },
+   "res": {
+    "pm": "short",
+    "K": 16,
+    "Lmax": 40,
+    "apMax": 0.01,
+    "apMaxV": 40,
+    "mpZero": null
+   },
+   "ru": {
+    "ans": "AP, MP убывают",
+    "st": [
+     "Короткий период: капитал фиксирован, K = 16; меняется только труд.",
+     "Средний продукт убывает при любом L: максимум AP только у нуля, стадии роста AP нет (типично для q = AL^α при α < 1).",
+     "Закон убывающей отдачи: с ростом L при неизменном K предельный продукт в конце концов снижается.",
+     "<div class=\"tw\"><table class=\"tab\"><tr><th>L</th><th>TP</th><th>AP</th><th>MP</th></tr><tr><td>2,5</td><td>6,325</td><td>2,53</td><td>1,265</td></tr><tr><td>5</td><td>8,944</td><td>1,789</td><td>0,894</td></tr><tr><td>10</td><td>12,649</td><td>1,265</td><td>0,632</td></tr><tr><td>20</td><td>17,889</td><td>0,894</td><td>0,447</td></tr></table></div>"
+    ]
+   },
+   "en": {
+    "ans": "AP, MP decrease",
+    "st": [
+     "Short run: capital is fixed, K = 16; only labor varies.",
+     "The average product falls for every L: AP peaks only at zero, there is no stage of rising AP (typical for q = AL^α with α < 1).",
+     "Diminishing returns: as L grows with K fixed, the marginal product eventually falls.",
+     "<div class=\"tw\"><table class=\"tab\"><tr><th>L</th><th>TP</th><th>AP</th><th>MP</th></tr><tr><td>2.5</td><td>6.325</td><td>2.53</td><td>1.265</td></tr><tr><td>5</td><td>8.944</td><td>1.789</td><td>0.894</td></tr><tr><td>10</td><td>12.649</td><td>1.265</td><td>0.632</td></tr><tr><td>20</td><td>17.889</td><td>0.894</td><td>0.447</td></tr></table></div>"
+    ]
+   }
+  },
+  {
+   "topic": "prod",
+   "id": "f148",
+   "inp": {
+    "prm": "short",
+    "f": "30L - L^2",
+    "K": "1",
+    "Lmax": "30",
+    "w": "",
+    "r": "",
+    "C": "",
+    "q0": ""
+   },
+   "res": {
+    "pm": "short",
+    "K": 1,
+    "Lmax": 30,
+    "apMax": 0.0075,
+    "apMaxV": 29.992499999999996,
+    "mpZero": 14.999999999733156
+   },
+   "ru": {
+    "ans": "MP = 0: L = 15",
+    "st": [
+     "Короткий период: капитал фиксирован, K = 1; меняется только труд.",
+     "Средний продукт убывает при любом L: максимум AP только у нуля, стадии роста AP нет (типично для q = AL^α при α < 1).",
+     "MP = 0 при L = 15: дальше TP падает (максимум TP = 225).",
+     "Закон убывающей отдачи: с ростом L при неизменном K предельный продукт в конце концов снижается.",
+     "<div class=\"tw\"><table class=\"tab\"><tr><th>L</th><th>TP</th><th>AP</th><th>MP</th></tr><tr><td>1,875</td><td>52,734</td><td>28,125</td><td>26,25</td></tr><tr><td>3,75</td><td>98,438</td><td>26,25</td><td>22,5</td></tr><tr><td>7,5</td><td>168,75</td><td>22,5</td><td>15</td></tr><tr><td>15</td><td>225</td><td>15</td><td>0</td></tr></table></div>"
+    ]
+   },
+   "en": {
+    "ans": "MP = 0: L = 15",
+    "st": [
+     "Short run: capital is fixed, K = 1; only labor varies.",
+     "The average product falls for every L: AP peaks only at zero, there is no stage of rising AP (typical for q = AL^α with α < 1).",
+     "MP = 0 at L = 15: TP falls beyond (max TP = 225).",
+     "Diminishing returns: as L grows with K fixed, the marginal product eventually falls.",
+     "<div class=\"tw\"><table class=\"tab\"><tr><th>L</th><th>TP</th><th>AP</th><th>MP</th></tr><tr><td>1.875</td><td>52.734</td><td>28.125</td><td>26.25</td></tr><tr><td>3.75</td><td>98.438</td><td>26.25</td><td>22.5</td></tr><tr><td>7.5</td><td>168.75</td><td>22.5</td><td>15</td></tr><tr><td>15</td><td>225</td><td>15</td><td>0</td></tr></table></div>"
+    ]
+   }
+  },
+  {
+   "topic": "prod",
+   "id": "f920",
+   "inp": {
+    "prm": "long",
+    "f": "L^0.5*K^0.5",
+    "K": "",
+    "Lmax": "",
+    "w": "4",
+    "r": "6",
+    "C": "24",
+    "q0": ""
+   },
+   "res": {
+    "pm": "long",
+    "w": 4,
+    "r": 6,
+    "C": 24,
+    "L": 2.9999999766968193,
+    "K": 2.000000015535454,
+    "q": 2.4494897427831783,
+    "MPL": 0.40824829367772447,
+    "MPK": 0.6123724308920807,
+    "MRTS": 0.6666666771445018,
+    "rts": 2
+   },
+   "ru": {
+    "ans": "L = 3, K = 2, q = 2,4495",
+    "st": [
+     "Изокоста: 4L + 6K = 24.",
+     "Оптимум производителя — касание изокванты и изокосты: MRTS = MPL/MPK = w/r.",
+     "L = 3, K = 2, q = 2,4495; MRTS = 0,6667 = w/r = 0,6667.",
+     "Отдача от масштаба: при удвоении L и K выпуск растёт в 2 раза (постоянная)."
+    ]
+   },
+   "en": {
+    "ans": "L = 3, K = 2, q = 2.4495",
+    "st": [
+     "Isocost: 4L + 6K = 24.",
+     "The producer optimum is where the isoquant touches the isocost: MRTS = MPL/MPK = w/r.",
+     "L = 3, K = 2, q = 2.4495; MRTS = 0.6667 = w/r = 0.6667.",
+     "Returns to scale: doubling L and K multiplies output by 2 (constant)."
+    ]
+   }
+  },
+  {
+   "topic": "prod",
+   "id": "f918",
+   "inp": {
+    "prm": "long",
+    "f": "L*K/(L+K)",
+    "K": "",
+    "Lmax": "",
+    "w": "25",
+    "r": "9",
+    "C": "80",
+    "q0": ""
+   },
+   "res": {
+    "pm": "long",
+    "w": 25,
+    "r": 9,
+    "C": 80,
+    "L": 1.9999999891377023,
+    "K": 3.333333363506382,
+    "q": 1.25,
+    "MPL": 0.3906250042439337,
+    "MPK": 0.1406249974394432,
+    "MRTS": 2.777777858535763,
+    "rts": 2
+   },
+   "ru": {
+    "ans": "L = 2, K = 3,3333, q = 1,25",
+    "st": [
+     "Изокоста: 25L + 9K = 80.",
+     "Оптимум производителя — касание изокванты и изокосты: MRTS = MPL/MPK = w/r.",
+     "L = 2, K = 3,3333, q = 1,25; MRTS = 2,7778 = w/r = 2,7778.",
+     "Отдача от масштаба: при удвоении L и K выпуск растёт в 2 раза (постоянная)."
+    ]
+   },
+   "en": {
+    "ans": "L = 2, K = 3.3333, q = 1.25",
+    "st": [
+     "Isocost: 25L + 9K = 80.",
+     "The producer optimum is where the isoquant touches the isocost: MRTS = MPL/MPK = w/r.",
+     "L = 2, K = 3.3333, q = 1.25; MRTS = 2.7778 = w/r = 2.7778.",
+     "Returns to scale: doubling L and K multiplies output by 2 (constant)."
+    ]
+   }
+  },
+  {
+   "topic": "prod",
+   "id": "fmc",
+   "inp": {
+    "prm": "mincost",
+    "f": "L^0.5*K^0.5",
+    "K": "",
+    "Lmax": "",
+    "w": "4",
+    "r": "1,5",
+    "C": "",
+    "q0": "2,4495"
+   },
+   "res": {
+    "pm": "mincost",
+    "w": 4,
+    "r": 1.5,
+    "q0": 2.4495,
+    "L": 1.5000062940177907,
+    "K": 4.000016715882417,
+    "C": 12.000050249894787
+   },
+   "ru": {
+    "ans": "TC = 12,0001",
+    "st": [
+     "Нужен выпуск q = 2,4495 при w = 4, r = 1,5: ищем точку изокванты с минимальными затратами.",
+     "L = 1,5, K = 4, минимальные затраты TC = 12,0001."
+    ]
+   },
+   "en": {
+    "ans": "TC = 12.0001",
+    "st": [
+     "Output q = 2.4495 is needed at w = 4, r = 1.5: find the cheapest point on the isoquant.",
+     "L = 1.5, K = 4, minimum cost TC = 12.0001."
+    ]
+   }
+  },
+  {
+   "topic": "cost",
+   "id": "c9",
+   "inp": {
+    "FC": "0",
+    "VC": "2q^3 - 20q^2 + 60q",
+    "qmax": "10"
+   },
+   "res": {
+    "C": {
+     "FC": 0
+    },
+    "FC": 0,
+    "qmax": 10,
+    "mAVC": {
+     "q": 4.999999979587097,
+     "v": 10
+    },
+    "mAC": {
+     "q": 4.999999979587097,
+     "v": 10
+    },
+    "mMC": {
+     "q": 3.333335117478417,
+     "v": -6.666666668798293
+    },
+    "edgeAC": false,
+    "edgeAVC": false
+   },
+   "ru": {
+    "ans": "min AVC = 10, min AC = 10",
+    "st": [
+     "TC = FC + VC, FC = 0; AC = TC/q, AVC = VC/q, AFC = FC/q, MC = dTC/dq.",
+     "Минимум AVC при q = 5: AVC = 10 (здесь MC = AVC).",
+     "Минимум AC при q = 5: AC = 10 (здесь MC = AC).",
+     "Кривая MC пересекает AVC и AC в точках их минимума.",
+     "<div class=\"tw\"><table class=\"tab\"><tr><th>q</th><th>TC</th><th>VC</th><th>AC</th><th>AVC</th><th>MC</th></tr><tr><td>1</td><td>42</td><td>42</td><td>42</td><td>42</td><td>26</td></tr><tr><td>2</td><td>56</td><td>56</td><td>28</td><td>28</td><td>4</td></tr><tr><td>5</td><td>50</td><td>50</td><td>10</td><td>10</td><td>10</td></tr><tr><td>5</td><td>50</td><td>50</td><td>10</td><td>10</td><td>10</td></tr><tr><td>5</td><td>50</td><td>50</td><td>10</td><td>10</td><td>10</td></tr></table></div>"
+    ]
+   },
+   "en": {
+    "ans": "min AVC = 10, min AC = 10",
+    "st": [
+     "TC = FC + VC, FC = 0; AC = TC/q, AVC = VC/q, AFC = FC/q, MC = dTC/dq.",
+     "Minimum AVC at q = 5: AVC = 10 (MC = AVC here).",
+     "Minimum AC at q = 5: AC = 10 (MC = AC here).",
+     "MC crosses AVC and AC at their minima.",
+     "<div class=\"tw\"><table class=\"tab\"><tr><th>q</th><th>TC</th><th>VC</th><th>AC</th><th>AVC</th><th>MC</th></tr><tr><td>1</td><td>42</td><td>42</td><td>42</td><td>42</td><td>26</td></tr><tr><td>2</td><td>56</td><td>56</td><td>28</td><td>28</td><td>4</td></tr><tr><td>5</td><td>50</td><td>50</td><td>10</td><td>10</td><td>10</td></tr><tr><td>5</td><td>50</td><td>50</td><td>10</td><td>10</td><td>10</td></tr><tr><td>5</td><td>50</td><td>50</td><td>10</td><td>10</td><td>10</td></tr></table></div>"
+    ]
+   }
+  },
+  {
+   "topic": "cost",
+   "id": "c10",
+   "inp": {
+    "FC": "4",
+    "VC": "q^3 - 3q^2 + 8q",
+    "qmax": "5"
+   },
+   "res": {
+    "C": {
+     "FC": 4
+    },
+    "FC": 4,
+    "qmax": 5,
+    "mAVC": {
+     "q": 1.5000000014077703,
+     "v": 5.750000000000001
+    },
+    "mAC": {
+     "q": 2.0000000465478394,
+     "v": 8.000000000000004
+    },
+    "mMC": {
+     "q": 1.0000015854118933,
+     "v": 5.000000000222045
+    },
+    "edgeAC": false,
+    "edgeAVC": false
+   },
+   "ru": {
+    "ans": "min AVC = 5,75, min AC = 8",
+    "st": [
+     "TC = FC + VC, FC = 4; AC = TC/q, AVC = VC/q, AFC = FC/q, MC = dTC/dq.",
+     "Минимум AVC при q = 1,5: AVC = 5,75 (здесь MC = AVC).",
+     "Минимум AC при q = 2: AC = 8 (здесь MC = AC).",
+     "Кривая MC пересекает AVC и AC в точках их минимума.",
+     "<div class=\"tw\"><table class=\"tab\"><tr><th>q</th><th>TC</th><th>VC</th><th>AC</th><th>AVC</th><th>MC</th></tr><tr><td>0,5</td><td>7,375</td><td>3,375</td><td>14,75</td><td>6,75</td><td>5,75</td></tr><tr><td>1</td><td>10</td><td>6</td><td>10</td><td>6</td><td>5</td></tr><tr><td>1,5</td><td>12,625</td><td>8,625</td><td>8,417</td><td>5,75</td><td>5,75</td></tr><tr><td>2</td><td>16</td><td>12</td><td>8</td><td>6</td><td>8</td></tr><tr><td>2,5</td><td>20,875</td><td>16,875</td><td>8,35</td><td>6,75</td><td>11,75</td></tr></table></div>"
+    ]
+   },
+   "en": {
+    "ans": "min AVC = 5.75, min AC = 8",
+    "st": [
+     "TC = FC + VC, FC = 4; AC = TC/q, AVC = VC/q, AFC = FC/q, MC = dTC/dq.",
+     "Minimum AVC at q = 1.5: AVC = 5.75 (MC = AVC here).",
+     "Minimum AC at q = 2: AC = 8 (MC = AC here).",
+     "MC crosses AVC and AC at their minima.",
+     "<div class=\"tw\"><table class=\"tab\"><tr><th>q</th><th>TC</th><th>VC</th><th>AC</th><th>AVC</th><th>MC</th></tr><tr><td>0.5</td><td>7.375</td><td>3.375</td><td>14.75</td><td>6.75</td><td>5.75</td></tr><tr><td>1</td><td>10</td><td>6</td><td>10</td><td>6</td><td>5</td></tr><tr><td>1.5</td><td>12.625</td><td>8.625</td><td>8.417</td><td>5.75</td><td>5.75</td></tr><tr><td>2</td><td>16</td><td>12</td><td>8</td><td>6</td><td>8</td></tr><tr><td>2.5</td><td>20.875</td><td>16.875</td><td>8.35</td><td>6.75</td><td>11.75</td></tr></table></div>"
+    ]
+   }
+  },
+  {
+   "topic": "cost",
+   "id": "c8",
+   "inp": {
+    "FC": "1000",
+    "VC": "2q^2",
+    "qmax": "60"
+   },
+   "res": {
+    "C": {
+     "FC": 1000
+    },
+    "FC": 1000,
+    "qmax": 60,
+    "mAVC": {
+     "q": 1.0000001226847325e-9,
+     "v": 2.000000245369465e-9
+    },
+    "mAC": {
+     "q": 22.360680046314613,
+     "v": 89.44271909999159
+    },
+    "mMC": {
+     "q": 1.0000001226847325e-9,
+     "v": 0.0000020020000002453694
+    },
+    "edgeAC": false,
+    "edgeAVC": false
+   },
+   "ru": {
+    "ans": "min AVC = 0, min AC = 89,4427",
+    "st": [
+     "TC = FC + VC, FC = 1000; AC = TC/q, AVC = VC/q, AFC = FC/q, MC = dTC/dq.",
+     "Минимум AVC при q = 0: AVC = 0 (здесь MC = AVC).",
+     "Минимум AC при q = 22,3607: AC = 89,4427 (здесь MC = AC).",
+     "Кривая MC пересекает AVC и AC в точках их минимума.",
+     "<div class=\"tw\"><table class=\"tab\"><tr><th>q</th><th>TC</th><th>VC</th><th>AC</th><th>AVC</th><th>MC</th></tr><tr><td>0</td><td>1000</td><td>0</td><td>999999877315,282</td><td>0</td><td>0</td></tr><tr><td>6</td><td>1072</td><td>72</td><td>178,667</td><td>12</td><td>24</td></tr><tr><td>12</td><td>1288</td><td>288</td><td>107,333</td><td>24</td><td>48</td></tr><tr><td>22,361</td><td>2000</td><td>1000</td><td>89,443</td><td>44,721</td><td>89,443</td></tr><tr><td>30</td><td>2800</td><td>1800</td><td>93,333</td><td>60</td><td>120</td></tr></table></div>"
+    ]
+   },
+   "en": {
+    "ans": "min AVC = 0, min AC = 89.4427",
+    "st": [
+     "TC = FC + VC, FC = 1000; AC = TC/q, AVC = VC/q, AFC = FC/q, MC = dTC/dq.",
+     "Minimum AVC at q = 0: AVC = 0 (MC = AVC here).",
+     "Minimum AC at q = 22.3607: AC = 89.4427 (MC = AC here).",
+     "MC crosses AVC and AC at their minima.",
+     "<div class=\"tw\"><table class=\"tab\"><tr><th>q</th><th>TC</th><th>VC</th><th>AC</th><th>AVC</th><th>MC</th></tr><tr><td>0</td><td>1000</td><td>0</td><td>999999877315.282</td><td>0</td><td>0</td></tr><tr><td>6</td><td>1072</td><td>72</td><td>178.667</td><td>12</td><td>24</td></tr><tr><td>12</td><td>1288</td><td>288</td><td>107.333</td><td>24</td><td>48</td></tr><tr><td>22.361</td><td>2000</td><td>1000</td><td>89.443</td><td>44.721</td><td>89.443</td></tr><tr><td>30</td><td>2800</td><td>1800</td><td>93.333</td><td>60</td><td>120</td></tr></table></div>"
+    ]
+   }
+  },
+  {
+   "topic": "cost",
+   "id": "cfix",
+   "inp": {
+    "FC": "100",
+    "VC": "10q + q^2/4",
+    "qmax": "60"
+   },
+   "res": {
+    "C": {
+     "FC": 100
+    },
+    "FC": 100,
+    "qmax": 60,
+    "mAVC": {
+     "q": 1.000011144302498e-9,
+     "v": 10.000000000250003
+    },
+    "mAC": {
+     "q": 20.00000037288622,
+     "v": 20.000000000000004
+    },
+    "mMC": {
+     "q": 1.000014243529704e-9,
+     "v": 10.000000250250002
+    },
+    "edgeAC": false,
+    "edgeAVC": false
+   },
+   "ru": {
+    "ans": "min AVC = 10, min AC = 20",
+    "st": [
+     "TC = FC + VC, FC = 100; AC = TC/q, AVC = VC/q, AFC = FC/q, MC = dTC/dq.",
+     "Минимум AVC при q = 0: AVC = 10 (здесь MC = AVC).",
+     "Минимум AC при q = 20: AC = 20 (здесь MC = AC).",
+     "Кривая MC пересекает AVC и AC в точках их минимума.",
+     "<div class=\"tw\"><table class=\"tab\"><tr><th>q</th><th>TC</th><th>VC</th><th>AC</th><th>AVC</th><th>MC</th></tr><tr><td>0</td><td>100</td><td>0</td><td>99998885592,17</td><td>10</td><td>10</td></tr><tr><td>6</td><td>169</td><td>69</td><td>28,167</td><td>11,5</td><td>13</td></tr><tr><td>12</td><td>256</td><td>156</td><td>21,333</td><td>13</td><td>16</td></tr><tr><td>20</td><td>400</td><td>300</td><td>20</td><td>15</td><td>20</td></tr><tr><td>30</td><td>625</td><td>525</td><td>20,833</td><td>17,5</td><td>25</td></tr></table></div>"
+    ]
+   },
+   "en": {
+    "ans": "min AVC = 10, min AC = 20",
+    "st": [
+     "TC = FC + VC, FC = 100; AC = TC/q, AVC = VC/q, AFC = FC/q, MC = dTC/dq.",
+     "Minimum AVC at q = 0: AVC = 10 (MC = AVC here).",
+     "Minimum AC at q = 20: AC = 20 (MC = AC here).",
+     "MC crosses AVC and AC at their minima.",
+     "<div class=\"tw\"><table class=\"tab\"><tr><th>q</th><th>TC</th><th>VC</th><th>AC</th><th>AVC</th><th>MC</th></tr><tr><td>0</td><td>100</td><td>0</td><td>99998885592.17</td><td>10</td><td>10</td></tr><tr><td>6</td><td>169</td><td>69</td><td>28.167</td><td>11.5</td><td>13</td></tr><tr><td>12</td><td>256</td><td>156</td><td>21.333</td><td>13</td><td>16</td></tr><tr><td>20</td><td>400</td><td>300</td><td>20</td><td>15</td><td>20</td></tr><tr><td>30</td><td>625</td><td>525</td><td>20.833</td><td>17.5</td><td>25</td></tr></table></div>"
+    ]
+   }
+  },
+  {
+   "topic": "comp",
+   "id": "k1",
+   "inp": {
+    "P": "4",
+    "FC": "24",
+    "VC": "2q",
+    "qmax": "30"
+   },
+   "res": {
+    "P": 4,
+    "FC": 24,
+    "qmax": 30,
+    "C": {
+     "FC": 24
+    },
+    "q": 30,
+    "profit": 36,
+    "shut": false,
+    "cap": true,
+    "minAVC": {
+     "q": 0.014999999999999937,
+     "v": 2
+    },
+    "minAC": {
+     "q": 30,
+     "v": 2.8
+    },
+    "breakEven": false,
+    "beQ": [
+     12
+    ],
+    "AC": 2.8,
+    "TR": 120,
+    "TC": 84
+   },
+   "ru": {
+    "ans": "q* = 30, Прибыль 36",
+    "st": [
+     "Конкурентная фирма принимает цену: P = MR. Максимум прибыли — где P = MC на возрастающем участке MC, если P не ниже минимума AVC.",
+     "Цена 4 выше MC при любом выпуске: прибыль растёт с каждой единицей, поэтому выпуск ограничен только мощностью — q = 30 (верхняя граница «q до»).",
+     "Прибыль = TR − TC = 120 − 84 = 36.",
+     "Прибыль неотрицательна — фирма работает.",
+     "Точка закрытия: P = min AVC = 2; точка безубыточности: P = min AC = 2,8. Кривая предложения фирмы — участок MC выше min AVC.",
+     "Выпуски, при которых TR = TC: 12."
+    ]
+   },
+   "en": {
+    "ans": "q* = 30, Profit 36",
+    "st": [
+     "A competitive firm takes the price: P = MR. Profit peaks where P = MC on the rising part of MC, if P is not below minimum AVC.",
+     "The price 4 exceeds MC at every output: each unit adds profit, so output is limited only by capacity — q = 30 (the “q up to” bound).",
+     "Profit = TR − TC = 120 − 84 = 36.",
+     "Profit is non-negative: the firm operates.",
+     "Shutdown point: P = min AVC = 2; break-even point: P = min AC = 2.8. The firm’s supply curve is MC above min AVC.",
+     "Outputs where TR = TC: 12."
+    ]
+   }
+  },
+  {
+   "topic": "comp",
+   "id": "k7",
+   "inp": {
+    "P": "8",
+    "FC": "12",
+    "VC": "q^2",
+    "qmax": "10"
+   },
+   "res": {
+    "P": 8,
+    "FC": 12,
+    "qmax": 10,
+    "C": {
+     "FC": 12
+    },
+    "q": 3.9999999999557563,
+    "profit": 4,
+    "shut": false,
+    "cap": false,
+    "minAVC": {
+     "q": 1.0000000204474521e-9,
+     "v": 1.0000000204474521e-9
+    },
+    "minAC": {
+     "q": 3.4641016732438565,
+     "v": 6.9282032302755105
+    },
+    "breakEven": false,
+    "beQ": [
+     2,
+     5.999999999999998
+    ],
+    "AC": 6.999999999988939,
+    "TR": 31.99999999964605,
+    "TC": 27.99999999964605
+   },
+   "ru": {
+    "ans": "q* = 4, Прибыль 4",
+    "st": [
+     "Конкурентная фирма принимает цену: P = MR. Максимум прибыли — где P = MC на возрастающем участке MC, если P не ниже минимума AVC.",
+     "P = MC при q* = 4.",
+     "Прибыль = TR − TC = 32 − 28 = 4.",
+     "Прибыль неотрицательна — фирма работает.",
+     "Точка закрытия: P = min AVC = 0; точка безубыточности: P = min AC = 6,9282. Кривая предложения фирмы — участок MC выше min AVC.",
+     "Выпуски, при которых TR = TC: 2, 6."
+    ]
+   },
+   "en": {
+    "ans": "q* = 4, Profit 4",
+    "st": [
+     "A competitive firm takes the price: P = MR. Profit peaks where P = MC on the rising part of MC, if P is not below minimum AVC.",
+     "P = MC at q* = 4.",
+     "Profit = TR − TC = 32 − 28 = 4.",
+     "Profit is non-negative: the firm operates.",
+     "Shutdown point: P = min AVC = 0; break-even point: P = min AC = 6.9282. The firm’s supply curve is MC above min AVC.",
+     "Outputs where TR = TC: 2, 6."
+    ]
+   }
+  },
+  {
+   "topic": "comp",
+   "id": "k8",
+   "inp": {
+    "P": "100",
+    "FC": "1000",
+    "VC": "2q^2",
+    "qmax": "40"
+   },
+   "res": {
+    "P": 100,
+    "FC": 1000,
+    "qmax": 40,
+    "C": {
+     "FC": 1000
+    },
+    "q": 25.000000000320625,
+    "profit": 250,
+    "shut": false,
+    "cap": false,
+    "minAVC": {
+     "q": 1.0000000817898203e-9,
+     "v": 2.0000001635796407e-9
+    },
+    "minAC": {
+     "q": 22.360680046314613,
+     "v": 89.44271909999159
+    },
+    "breakEven": false,
+    "beQ": [
+     13.819660112501051,
+     36.180339887498945
+    ],
+    "AC": 90.00000000012824,
+    "TR": 2500.0000000320624,
+    "TC": 2250.0000000320624
+   },
+   "ru": {
+    "ans": "q* = 25, Прибыль 250",
+    "st": [
+     "Конкурентная фирма принимает цену: P = MR. Максимум прибыли — где P = MC на возрастающем участке MC, если P не ниже минимума AVC.",
+     "P = MC при q* = 25.",
+     "Прибыль = TR − TC = 2500 − 2250 = 250.",
+     "Прибыль неотрицательна — фирма работает.",
+     "Точка закрытия: P = min AVC = 0; точка безубыточности: P = min AC = 89,4427. Кривая предложения фирмы — участок MC выше min AVC.",
+     "Выпуски, при которых TR = TC: 13,8197, 36,1803."
+    ]
+   },
+   "en": {
+    "ans": "q* = 25, Profit 250",
+    "st": [
+     "A competitive firm takes the price: P = MR. Profit peaks where P = MC on the rising part of MC, if P is not below minimum AVC.",
+     "P = MC at q* = 25.",
+     "Profit = TR − TC = 2500 − 2250 = 250.",
+     "Profit is non-negative: the firm operates.",
+     "Shutdown point: P = min AVC = 0; break-even point: P = min AC = 89.4427. The firm’s supply curve is MC above min AVC.",
+     "Outputs where TR = TC: 13.8197, 36.1803."
+    ]
+   }
+  },
+  {
+   "topic": "comp",
+   "id": "k8b",
+   "inp": {
+    "P": "80",
+    "FC": "1000",
+    "VC": "2q^2",
+    "qmax": "40"
+   },
+   "res": {
+    "P": 80,
+    "FC": 1000,
+    "qmax": 40,
+    "C": {
+     "FC": 1000
+    },
+    "q": 20.000000000500002,
+    "profit": -200,
+    "shut": false,
+    "cap": false,
+    "minAVC": {
+     "q": 1.0000000817898203e-9,
+     "v": 2.0000001635796407e-9
+    },
+    "minAC": {
+     "q": 22.360680046314613,
+     "v": 89.44271909999159
+    },
+    "breakEven": false,
+    "beQ": [],
+    "AC": 89.99999999974999,
+    "TR": 1600.00000004,
+    "TC": 1800.00000004
+   },
+   "ru": {
+    "ans": "q* = 20, Прибыль −200",
+    "st": [
+     "Конкурентная фирма принимает цену: P = MR. Максимум прибыли — где P = MC на возрастающем участке MC, если P не ниже минимума AVC.",
+     "P = MC при q* = 20.",
+     "Прибыль = TR − TC = 1600 − 1800 = −200.",
+     "Убыток, но меньше постоянных затрат 1000: в коротком периоде фирме выгодно продолжать работу.",
+     "Точка закрытия: P = min AVC = 0; точка безубыточности: P = min AC = 89,4427. Кривая предложения фирмы — участок MC выше min AVC."
+    ]
+   },
+   "en": {
+    "ans": "q* = 20, Profit −200",
+    "st": [
+     "A competitive firm takes the price: P = MR. Profit peaks where P = MC on the rising part of MC, if P is not below minimum AVC.",
+     "P = MC at q* = 20.",
+     "Profit = TR − TC = 1600 − 1800 = −200.",
+     "A loss, but smaller than fixed cost 1000: the firm keeps operating in the short run.",
+     "Shutdown point: P = min AVC = 0; break-even point: P = min AC = 89.4427. The firm’s supply curve is MC above min AVC."
+    ]
+   }
+  },
+  {
+   "topic": "comp",
+   "id": "k9",
+   "inp": {
+    "P": "9",
+    "FC": "20",
+    "VC": "2q^3 - 20q^2 + 60q",
+    "qmax": "10"
+   },
+   "res": {
+    "P": 9,
+    "FC": 20,
+    "qmax": 10,
+    "C": {
+     "FC": 20
+    },
+    "q": 0,
+    "profit": -20,
+    "shut": true,
+    "cap": false,
+    "minAVC": {
+     "q": 4.999999979587097,
+     "v": 10
+    },
+    "minAC": {
+     "q": 5.185916923819848,
+     "v": 13.9257288151293
+    },
+    "breakEven": false,
+    "beQ": [],
+    "AC": "NaN",
+    "TR": 0,
+    "TC": 20
+   },
+   "ru": {
+    "ans": "q = 0, Прибыль −20",
+    "st": [
+     "Конкурентная фирма принимает цену: P = MR. Максимум прибыли — где P = MC на возрастающем участке MC, если P не ниже минимума AVC.",
+     "P = 9 ниже минимума AVC = 10: фирме выгоднее закрыться в коротком периоде.",
+     "Убыток при закрытии равен постоянным затратам: 20.",
+     "Точка закрытия: P = min AVC = 10; точка безубыточности: P = min AC = 13,9257. Кривая предложения фирмы — участок MC выше min AVC."
+    ]
+   },
+   "en": {
+    "ans": "q = 0, Profit −20",
+    "st": [
+     "A competitive firm takes the price: P = MR. Profit peaks where P = MC on the rising part of MC, if P is not below minimum AVC.",
+     "P = 9 is below minimum AVC = 10: the firm shuts down in the short run.",
+     "The loss when shut equals fixed cost: 20.",
+     "Shutdown point: P = min AVC = 10; break-even point: P = min AC = 13.9257. The firm’s supply curve is MC above min AVC."
+    ]
+   }
+  },
+  {
+   "topic": "comp",
+   "id": "k9b",
+   "inp": {
+    "P": "40",
+    "FC": "20",
+    "VC": "2q^3 - 20q^2 + 60q",
+    "qmax": "10"
+   },
+   "res": {
+    "P": 40,
+    "FC": 20,
+    "qmax": 10,
+    "C": {
+     "FC": 20
+    },
+    "q": 6.122200088506563,
+    "profit": 148.2462249739041,
+    "shut": false,
+    "cap": false,
+    "minAVC": {
+     "q": 4.999999979587097,
+     "v": 10
+    },
+    "minAC": {
+     "q": 5.185916923819848,
+     "v": 13.9257288151293
+    },
+    "breakEven": false,
+    "beQ": [
+     1.8859140374770056,
+     8.722025979067642
+    ],
+    "AC": 15.785465546574944,
+    "TR": 244.88800354026253,
+    "TC": 96.64177856635843
+   },
+   "ru": {
+    "ans": "q* = 6,1222, Прибыль 148,2462",
+    "st": [
+     "Конкурентная фирма принимает цену: P = MR. Максимум прибыли — где P = MC на возрастающем участке MC, если P не ниже минимума AVC.",
+     "P = MC при q* = 6,1222.",
+     "Прибыль = TR − TC = 244,888 − 96,6418 = 148,2462.",
+     "Прибыль неотрицательна — фирма работает.",
+     "Точка закрытия: P = min AVC = 10; точка безубыточности: P = min AC = 13,9257. Кривая предложения фирмы — участок MC выше min AVC.",
+     "Выпуски, при которых TR = TC: 1,8859, 8,722."
+    ]
+   },
+   "en": {
+    "ans": "q* = 6.1222, Profit 148.2462",
+    "st": [
+     "A competitive firm takes the price: P = MR. Profit peaks where P = MC on the rising part of MC, if P is not below minimum AVC.",
+     "P = MC at q* = 6.1222.",
+     "Profit = TR − TC = 244.888 − 96.6418 = 148.2462.",
+     "Profit is non-negative: the firm operates.",
+     "Shutdown point: P = min AVC = 10; break-even point: P = min AC = 13.9257. The firm’s supply curve is MC above min AVC.",
+     "Outputs where TR = TC: 1.8859, 8.722."
+    ]
+   }
+  },
+  {
+   "topic": "mono",
+   "id": "m8",
+   "inp": {
+    "dm": "one",
+    "D": "P = 240 - 4q",
+    "FC": "2000",
+    "VC": "2q^2",
+    "qmax": "60",
+    "D2": "",
+    "c": ""
+   },
+   "res": {
+    "dm": "one",
+    "D": {
+     "kind": "lin",
+     "a": 240,
+     "b": -4
+    },
+    "FC": 2000,
+    "qmax": 60,
+    "C": {
+     "FC": 2000
+    },
+    "q": 20,
+    "P": 160,
+    "profit": 400,
+    "MRq": 80,
+    "MCq": 80,
+    "qc": 29.999999999774325,
+    "Pc": 120.0000000009027,
+    "DWL": 399.9999999996062,
+    "E": -2,
+    "lerner": 0.5,
+    "CS": 800,
+    "shutdown": false,
+    "AC": 140
+   },
+   "ru": {
+    "ans": "q = 20, P = 160, Прибыль 400",
+    "st": [
+     "Спрос P = 240 − 4q; выручка TR = P·q, предельная выручка MR = 240 − 8q (наклон вдвое круче спроса).",
+     "MR = MC при q = 20 (MC = 80).",
+     "Цену берём со спроса: P = 160; AC = 140; прибыль 400.",
+     "Индекс Лернера L = (P − MC)/P = 0,5; эластичность спроса в точке E = −2, 1/|E| = 0,5.",
+     "В конкуренции было бы P = MC: q = 30, P = 120. Мёртвый груз монополии: 400."
+    ]
+   },
+   "en": {
+    "ans": "q = 20, P = 160, Profit 400",
+    "st": [
+     "Demand P = 240 − 4q; revenue TR = P·q, marginal revenue MR = 240 − 8q (twice as steep as demand).",
+     "MR = MC at q = 20 (MC = 80).",
+     "The price comes from demand: P = 160; AC = 140; profit 400.",
+     "Lerner index L = (P − MC)/P = 0.5; demand elasticity at the point E = −2, 1/|E| = 0.5.",
+     "Under competition P = MC: q = 30, P = 120. Deadweight loss of monopoly: 400."
+    ]
+   }
+  },
+  {
+   "topic": "mono",
+   "id": "m8b",
+   "inp": {
+    "dm": "one",
+    "D": "P = 216 - 4q",
+    "FC": "2000",
+    "VC": "2q^2",
+    "qmax": "60",
+    "D2": "",
+    "c": ""
+   },
+   "res": {
+    "dm": "one",
+    "D": {
+     "kind": "lin",
+     "a": 216,
+     "b": -4
+    },
+    "FC": 2000,
+    "qmax": 60,
+    "C": {
+     "FC": 2000
+    },
+    "q": 18.000000000153015,
+    "P": 143.99999999938794,
+    "profit": -56,
+    "MRq": 71.99999999877588,
+    "MCq": 72.00000000157898,
+    "qc": 27.000000000131557,
+    "Pc": 107.99999999947377,
+    "DWL": 323.9999999891605,
+    "E": -1.9999999999744975,
+    "lerner": 0.49999999998690964,
+    "CS": 648.0000000110172,
+    "shutdown": false,
+    "AC": 147.1111111104726
+   },
+   "ru": {
+    "ans": "q = 18, P = 144, Прибыль −56",
+    "st": [
+     "Спрос P = 216 − 4q; выручка TR = P·q, предельная выручка MR = 216 − 8q (наклон вдвое круче спроса).",
+     "MR = MC при q = 18 (MC = 72).",
+     "Цену берём со спроса: P = 144; AC = 147,1111; прибыль −56.",
+     "Индекс Лернера L = (P − MC)/P = 0,5; эластичность спроса в точке E = −2, 1/|E| = 0,5.",
+     "В конкуренции было бы P = MC: q = 27, P = 108. Мёртвый груз монополии: 324.",
+     "Убыток меньше постоянных затрат 2000: в коротком периоде монополист продолжает работу."
+    ]
+   },
+   "en": {
+    "ans": "q = 18, P = 144, Profit −56",
+    "st": [
+     "Demand P = 216 − 4q; revenue TR = P·q, marginal revenue MR = 216 − 8q (twice as steep as demand).",
+     "MR = MC at q = 18 (MC = 72).",
+     "The price comes from demand: P = 144; AC = 147.1111; profit −56.",
+     "Lerner index L = (P − MC)/P = 0.5; demand elasticity at the point E = −2, 1/|E| = 0.5.",
+     "Under competition P = MC: q = 27, P = 108. Deadweight loss of monopoly: 324.",
+     "The loss is below fixed cost 2000: the monopolist keeps operating in the short run."
+    ]
+   }
+  },
+  {
+   "topic": "mono",
+   "id": "m11",
+   "inp": {
+    "dm": "one",
+    "D": "P = 10 - q",
+    "FC": "0",
+    "VC": "2q",
+    "qmax": "10",
+    "D2": "",
+    "c": ""
+   },
+   "res": {
+    "dm": "one",
+    "D": {
+     "kind": "lin",
+     "a": 10,
+     "b": -1
+    },
+    "FC": 0,
+    "qmax": 10,
+    "C": {
+     "FC": 0
+    },
+    "q": 4,
+    "P": 6,
+    "profit": 16,
+    "MRq": 2,
+    "MCq": 2,
+    "qc": 8,
+    "Pc": 2,
+    "DWL": 8,
+    "E": -1.5,
+    "lerner": 0.6666666666666666,
+    "CS": 8,
+    "shutdown": false,
+    "AC": 2
+   },
+   "ru": {
+    "ans": "q = 4, P = 6, Прибыль 16",
+    "st": [
+     "Спрос P = 10 − 1q; выручка TR = P·q, предельная выручка MR = 10 − 2q (наклон вдвое круче спроса).",
+     "MR = MC при q = 4 (MC = 2).",
+     "Цену берём со спроса: P = 6; AC = 2; прибыль 16.",
+     "Индекс Лернера L = (P − MC)/P = 0,6667; эластичность спроса в точке E = −1,5, 1/|E| = 0,6667.",
+     "В конкуренции было бы P = MC: q = 8, P = 2. Мёртвый груз монополии: 8."
+    ]
+   },
+   "en": {
+    "ans": "q = 4, P = 6, Profit 16",
+    "st": [
+     "Demand P = 10 − 1q; revenue TR = P·q, marginal revenue MR = 10 − 2q (twice as steep as demand).",
+     "MR = MC at q = 4 (MC = 2).",
+     "The price comes from demand: P = 6; AC = 2; profit 16.",
+     "Lerner index L = (P − MC)/P = 0.6667; demand elasticity at the point E = −1.5, 1/|E| = 0.6667.",
+     "Under competition P = MC: q = 8, P = 2. Deadweight loss of monopoly: 8."
+    ]
+   }
+  },
+  {
+   "topic": "mono",
+   "id": "m15",
+   "inp": {
+    "dm": "one",
+    "D": "q = 6000 - 50P",
+    "FC": "0",
+    "VC": "q^2/200",
+    "qmax": "6000",
+    "D2": "",
+    "c": ""
+   },
+   "res": {
+    "dm": "one",
+    "D": {
+     "kind": "lin",
+     "a": 120,
+     "b": -0.02
+    },
+    "FC": 0,
+    "qmax": 6000,
+    "C": {
+     "FC": 0
+    },
+    "q": 2399.9999999884494,
+    "P": 72.00000000023101,
+    "profit": 144000,
+    "MRq": 24.000000000462023,
+    "MCq": 23.99999999924209,
+    "qc": 3999.999999999969,
+    "Pc": 40.00000000000061,
+    "DWL": 38400.00000056622,
+    "E": -1.500000000012032,
+    "lerner": 0.6666666666782627,
+    "CS": 57599.99999944557,
+    "shutdown": false,
+    "AC": 11.999999999942247
+   },
+   "ru": {
+    "ans": "q = 2400, P = 72, Прибыль 144000",
+    "st": [
+     "Спрос P = 120 − 0,02q; выручка TR = P·q, предельная выручка MR = 120 − 0,04q (наклон вдвое круче спроса).",
+     "MR = MC при q = 2400 (MC = 24).",
+     "Цену берём со спроса: P = 72; AC = 12; прибыль 144000.",
+     "Индекс Лернера L = (P − MC)/P = 0,6667; эластичность спроса в точке E = −1,5, 1/|E| = 0,6667.",
+     "В конкуренции было бы P = MC: q = 4000, P = 40. Мёртвый груз монополии: 38400."
+    ]
+   },
+   "en": {
+    "ans": "q = 2400, P = 72, Profit 144000",
+    "st": [
+     "Demand P = 120 − 0.02q; revenue TR = P·q, marginal revenue MR = 120 − 0.04q (twice as steep as demand).",
+     "MR = MC at q = 2400 (MC = 24).",
+     "The price comes from demand: P = 72; AC = 12; profit 144000.",
+     "Lerner index L = (P − MC)/P = 0.6667; demand elasticity at the point E = −1.5, 1/|E| = 0.6667.",
+     "Under competition P = MC: q = 4000, P = 40. Deadweight loss of monopoly: 38400."
+    ]
+   }
+  },
+  {
+   "topic": "mono",
+   "id": "m14",
+   "inp": {
+    "dm": "disc",
+    "D": "q = 1000 - P",
+    "FC": "",
+    "VC": "",
+    "qmax": "",
+    "D2": "q = 1200 - 5P",
+    "c": "100"
+   },
+   "res": {
+    "dm": "disc",
+    "D": {
+     "kind": "lin",
+     "a": 1000,
+     "b": -1
+    },
+    "D2": {
+     "kind": "lin",
+     "a": 240,
+     "b": -0.2
+    },
+    "c": 100,
+    "r1": {
+     "q": 450,
+     "P": 550
+    },
+    "r2": {
+     "q": 350,
+     "P": 170
+    },
+    "pr1": 202500,
+    "pr2": 24500,
+    "Pu": 549.9999961853027,
+    "Qu": 450.00000381469727,
+    "pru": 202500,
+    "naive": {
+     "P": 233.33333333333334,
+     "Q": 800,
+     "pr": 106666.66666666667
+    }
+   },
+   "ru": {
+    "ans": "P₁ = 550, P₂ = 170",
+    "st": [
+     "Монополист назначает каждой группе свою цену: MR₁ = MR₂ = MC = 100.",
+     "Группа 1 (P = 1000 − 1q): q = 450, P = 550, прибыль 202500.",
+     "Группа 2 (P = 240 − 0,2q): q = 350, P = 170, прибыль 24500.",
+     "Общая прибыль при дискриминации: 227000.",
+     "Если сложить спрос обеих групп и приравнять MR = MC, получится P = 233,3333, Q = 800, прибыль 106666,6667.",
+     "Но наилучшая единая цена — P = 550, Q = 450, прибыль 202500.",
+     "Выгоднее вообще не обслуживать группу с низкой готовностью платить: суммарный спрос имеет излом, и решение MR = MC на нижнем участке — не глобальный максимум."
+    ]
+   },
+   "en": {
+    "ans": "P₁ = 550, P₂ = 170",
+    "st": [
+     "The monopolist sets a price for each group: MR₁ = MR₂ = MC = 100.",
+     "Group 1 (P = 1000 − 1q): q = 450, P = 550, profit 202500.",
+     "Group 2 (P = 240 − 0.2q): q = 350, P = 170, profit 24500.",
+     "Total profit with discrimination: 227000.",
+     "Adding the two demands and setting MR = MC gives P = 233.3333, Q = 800, profit 106666.6667.",
+     "But the best single price is P = 550, Q = 450, profit 202500.",
+     "It pays not to serve the low-willingness group at all: the summed demand has a kink, and MR = MC on the lower part isn’t the global maximum."
+    ]
+   }
+  },
+  {
+   "topic": "mc",
+   "id": "mc123",
+   "inp": {
+    "D": "P = 10 - 0,5q",
+    "LTC": "q^2 - 2q + 24,01",
+    "qmax": "20"
+   },
+   "res": {
+    "D": {
+     "kind": "lin",
+     "a": 10,
+     "b": -0.5
+    },
+    "C": {
+     "FC": 0
+    },
+    "qmax": 20,
+    "q": 3.9999999999466036,
+    "P": 8.000000000026699,
+    "AC": 8.002500000026732,
+    "profit": -0.00999999999999801,
+    "mAC": {
+     "q": 4.900000003638574,
+     "v": 7.800000000000001
+    },
+    "excess": 0.9000000036919706,
+    "lr": true
+   },
+   "ru": {
+    "ans": "q = 4, P = 8, Избыточная мощность 0,9",
+    "st": [
+     "Фирма в монополистической конкуренции ведёт себя как монополист на своей кривой спроса: MR = MC.",
+     "MR = MC при q = 4 (MC = 6).",
+     "Цена со спроса P = 8; LAC = 8,0025; прибыль −0,01.",
+     "P ≈ LAC: прибыль нулевая — долгосрочное равновесие (кривая спроса касается LAC).",
+     "Минимум LAC при q = 4,9 (LAC = 7,8). Избыточная мощность: 0,9 — фирма производит меньше эффективного объёма."
+    ]
+   },
+   "en": {
+    "ans": "q = 4, P = 8, Excess capacity 0.9",
+    "st": [
+     "A monopolistically competitive firm acts as a monopolist on its own demand: MR = MC.",
+     "MR = MC at q = 4 (MC = 6).",
+     "Price from demand P = 8; LAC = 8.0025; profit −0.01.",
+     "P ≈ LAC: zero profit — long-run equilibrium (demand is tangent to LAC).",
+     "Minimum LAC at q = 4.9 (LAC = 7.8). Excess capacity: 0.9 — the firm produces less than the efficient scale."
+    ]
+   }
+  },
+  {
+   "topic": "mc",
+   "id": "mcsr",
+   "inp": {
+    "D": "P = 20 - q",
+    "LTC": "q^2/2 + 2q + 20",
+    "qmax": "20"
+   },
+   "res": {
+    "D": {
+     "kind": "lin",
+     "a": 20,
+     "b": -1
+    },
+    "C": {
+     "FC": 0
+    },
+    "qmax": 20,
+    "q": 6,
+    "P": 14,
+    "AC": 8.333333333333334,
+    "profit": 34,
+    "mAC": {
+     "q": 6.324555347079418,
+     "v": 8.32455532033676
+    },
+    "excess": 0.3245553470794178,
+    "lr": false
+   },
+   "ru": {
+    "ans": "q = 6, P = 14, Избыточная мощность 0,3246",
+    "st": [
+     "Фирма в монополистической конкуренции ведёт себя как монополист на своей кривой спроса: MR = MC.",
+     "MR = MC при q = 6 (MC = 8).",
+     "Цена со спроса P = 14; LAC = 8,3333; прибыль 34.",
+     "Прибыль положительна: в длительном периоде в отрасль войдут новые фирмы, спрос на продукт фирмы снизится.",
+     "Минимум LAC при q = 6,3246 (LAC = 8,3246). Избыточная мощность: 0,3246 — фирма производит меньше эффективного объёма."
+    ]
+   },
+   "en": {
+    "ans": "q = 6, P = 14, Excess capacity 0.3246",
+    "st": [
+     "A monopolistically competitive firm acts as a monopolist on its own demand: MR = MC.",
+     "MR = MC at q = 6 (MC = 8).",
+     "Price from demand P = 14; LAC = 8.3333; profit 34.",
+     "Positive profit: new firms enter in the long run and the firm’s demand falls.",
+     "Minimum LAC at q = 6.3246 (LAC = 8.3246). Excess capacity: 0.3246 — the firm produces less than the efficient scale."
+    ]
+   }
+  },
+  {
+   "topic": "olig",
+   "id": "o136",
+   "inp": {
+    "om": "cour",
+    "a": "9,6",
+    "b": "1",
+    "c1": "0",
+    "d1": "1",
+    "c2": "0",
+    "d2": "1,5",
+    "sh": ""
+   },
+   "res": {
+    "om": "cour",
+    "a": 9.6,
+    "b": 1,
+    "c1": 0,
+    "d1": 1,
+    "c2": 0,
+    "d2": 1.5,
+    "cour": {
+     "q": [
+      2.0210526315789474,
+      1.5157894736842104
+     ],
+     "P": 6.063157894736841,
+     "pi": [
+      8.169307479224376,
+      5.744044321329639
+     ]
+    },
+    "stack": {
+     "q": [
+      2.1333333333333333,
+      1.4933333333333334
+     ],
+     "P": 5.973333333333333,
+     "pi": [
+      8.192,
+      5.575111111111109
+     ],
+     "deter": false
+    },
+    "cart": {
+     "q": [
+      1.7999999999999998,
+      1.2
+     ],
+     "P": 6.6,
+     "pi": [
+      8.64,
+      5.76
+     ]
+    },
+    "sel": {
+     "q": [
+      2.0210526315789474,
+      1.5157894736842104
+     ],
+     "P": 6.063157894736841,
+     "pi": [
+      8.169307479224376,
+      5.744044321329639
+     ]
+    }
+   },
+   "ru": {
+    "ans": "q₁ = 2,0211, q₂ = 1,5158, P = 6,0632",
+    "st": [
+     "Спрос P = 9,6 − 1Q; затраты TC₁ = 0q₁ + 1q₁², TC₂ = 0q₂ + 1,5q₂².",
+     "Функция реакции фирмы i из условия ∂πᵢ/∂qᵢ = 0: qᵢ = (a − cᵢ − b·qⱼ)/(2b + 2dᵢ). Равновесие Курно — пересечение функций реакции.",
+     "Курно: q₁ = 2,0211, q₂ = 1,5158, P = 6,0632, π₁ = 8,1693, π₂ = 5,744",
+     "Сравнение моделей:<div class=\"tw\"><table class=\"tab\"><tr><th></th><th>q₁</th><th>q₂</th><th>P</th><th>π₁ + π₂</th></tr><tr><td style=\"text-align:left\">Курно</td><td>2,021</td><td>1,516</td><td>6,063</td><td>13,913</td></tr><tr><td style=\"text-align:left\">Штакельберг</td><td>2,133</td><td>1,493</td><td>5,973</td><td>13,767</td></tr><tr><td style=\"text-align:left\">Картель</td><td>1,8</td><td>1,2</td><td>6,6</td><td>14,4</td></tr></table></div>"
+    ]
+   },
+   "en": {
+    "ans": "q₁ = 2.0211, q₂ = 1.5158, P = 6.0632",
+    "st": [
+     "Demand P = 9.6 − 1Q; costs TC₁ = 0q₁ + 1q₁², TC₂ = 0q₂ + 1.5q₂².",
+     "Firm i’s reaction function from ∂πᵢ/∂qᵢ = 0: qᵢ = (a − cᵢ − b·qⱼ)/(2b + 2dᵢ). The Cournot equilibrium is where they cross.",
+     "Cournot: q₁ = 2.0211, q₂ = 1.5158, P = 6.0632, π₁ = 8.1693, π₂ = 5.744",
+     "Comparing models:<div class=\"tw\"><table class=\"tab\"><tr><th></th><th>q₁</th><th>q₂</th><th>P</th><th>π₁ + π₂</th></tr><tr><td style=\"text-align:left\">Cournot</td><td>2.021</td><td>1.516</td><td>6.063</td><td>13.913</td></tr><tr><td style=\"text-align:left\">Stackelberg</td><td>2.133</td><td>1.493</td><td>5.973</td><td>13.767</td></tr><tr><td style=\"text-align:left\">Cartel</td><td>1.8</td><td>1.2</td><td>6.6</td><td>14.4</td></tr></table></div>"
+    ]
+   }
+  },
+  {
+   "topic": "olig",
+   "id": "o136s",
+   "inp": {
+    "om": "stack",
+    "a": "9,6",
+    "b": "1",
+    "c1": "0",
+    "d1": "1",
+    "c2": "0",
+    "d2": "1,5",
+    "sh": ""
+   },
+   "res": {
+    "om": "stack",
+    "a": 9.6,
+    "b": 1,
+    "c1": 0,
+    "d1": 1,
+    "c2": 0,
+    "d2": 1.5,
+    "cour": {
+     "q": [
+      2.0210526315789474,
+      1.5157894736842104
+     ],
+     "P": 6.063157894736841,
+     "pi": [
+      8.169307479224376,
+      5.744044321329639
+     ]
+    },
+    "stack": {
+     "q": [
+      2.1333333333333333,
+      1.4933333333333334
+     ],
+     "P": 5.973333333333333,
+     "pi": [
+      8.192,
+      5.575111111111109
+     ],
+     "deter": false
+    },
+    "cart": {
+     "q": [
+      1.7999999999999998,
+      1.2
+     ],
+     "P": 6.6,
+     "pi": [
+      8.64,
+      5.76
+     ]
+    },
+    "sel": {
+     "q": [
+      2.1333333333333333,
+      1.4933333333333334
+     ],
+     "P": 5.973333333333333,
+     "pi": [
+      8.192,
+      5.575111111111109
+     ],
+     "deter": false
+    }
+   },
+   "ru": {
+    "ans": "q₁ = 2,1333, q₂ = 1,4933, P = 5,9733",
+    "st": [
+     "Спрос P = 9,6 − 1Q; затраты TC₁ = 0q₁ + 1q₁², TC₂ = 0q₂ + 1,5q₂².",
+     "Функция реакции фирмы i из условия ∂πᵢ/∂qᵢ = 0: qᵢ = (a − cᵢ − b·qⱼ)/(2b + 2dᵢ). Равновесие Курно — пересечение функций реакции.",
+     "Лидер подставляет функцию реакции последователя в свою прибыль и максимизирует её.",
+     "Штакельберг: q₁ = 2,1333, q₂ = 1,4933, P = 5,9733, π₁ = 8,192, π₂ = 5,5751",
+     "Сравнение моделей:<div class=\"tw\"><table class=\"tab\"><tr><th></th><th>q₁</th><th>q₂</th><th>P</th><th>π₁ + π₂</th></tr><tr><td style=\"text-align:left\">Курно</td><td>2,021</td><td>1,516</td><td>6,063</td><td>13,913</td></tr><tr><td style=\"text-align:left\">Штакельберг</td><td>2,133</td><td>1,493</td><td>5,973</td><td>13,767</td></tr><tr><td style=\"text-align:left\">Картель</td><td>1,8</td><td>1,2</td><td>6,6</td><td>14,4</td></tr></table></div>"
+    ]
+   },
+   "en": {
+    "ans": "q₁ = 2.1333, q₂ = 1.4933, P = 5.9733",
+    "st": [
+     "Demand P = 9.6 − 1Q; costs TC₁ = 0q₁ + 1q₁², TC₂ = 0q₂ + 1.5q₂².",
+     "Firm i’s reaction function from ∂πᵢ/∂qᵢ = 0: qᵢ = (a − cᵢ − b·qⱼ)/(2b + 2dᵢ). The Cournot equilibrium is where they cross.",
+     "The leader plugs the follower’s reaction into its profit and maximizes.",
+     "Stackelberg: q₁ = 2.1333, q₂ = 1.4933, P = 5.9733, π₁ = 8.192, π₂ = 5.5751",
+     "Comparing models:<div class=\"tw\"><table class=\"tab\"><tr><th></th><th>q₁</th><th>q₂</th><th>P</th><th>π₁ + π₂</th></tr><tr><td style=\"text-align:left\">Cournot</td><td>2.021</td><td>1.516</td><td>6.063</td><td>13.913</td></tr><tr><td style=\"text-align:left\">Stackelberg</td><td>2.133</td><td>1.493</td><td>5.973</td><td>13.767</td></tr><tr><td style=\"text-align:left\">Cartel</td><td>1.8</td><td>1.2</td><td>6.6</td><td>14.4</td></tr></table></div>"
+    ]
+   }
+  },
+  {
+   "topic": "olig",
+   "id": "o136c",
+   "inp": {
+    "om": "cart",
+    "a": "9,6",
+    "b": "1",
+    "c1": "0",
+    "d1": "1",
+    "c2": "0",
+    "d2": "1,5",
+    "sh": ""
+   },
+   "res": {
+    "om": "cart",
+    "a": 9.6,
+    "b": 1,
+    "c1": 0,
+    "d1": 1,
+    "c2": 0,
+    "d2": 1.5,
+    "cour": {
+     "q": [
+      2.0210526315789474,
+      1.5157894736842104
+     ],
+     "P": 6.063157894736841,
+     "pi": [
+      8.169307479224376,
+      5.744044321329639
+     ]
+    },
+    "stack": {
+     "q": [
+      2.1333333333333333,
+      1.4933333333333334
+     ],
+     "P": 5.973333333333333,
+     "pi": [
+      8.192,
+      5.575111111111109
+     ],
+     "deter": false
+    },
+    "cart": {
+     "q": [
+      1.7999999999999998,
+      1.2
+     ],
+     "P": 6.6,
+     "pi": [
+      8.64,
+      5.76
+     ]
+    },
+    "sel": {
+     "q": [
+      1.7999999999999998,
+      1.2
+     ],
+     "P": 6.6,
+     "pi": [
+      8.64,
+      5.76
+     ]
+    }
+   },
+   "ru": {
+    "ans": "q₁ = 1,8, q₂ = 1,2, P = 6,6",
+    "st": [
+     "Спрос P = 9,6 − 1Q; затраты TC₁ = 0q₁ + 1q₁², TC₂ = 0q₂ + 1,5q₂².",
+     "Функция реакции фирмы i из условия ∂πᵢ/∂qᵢ = 0: qᵢ = (a − cᵢ − b·qⱼ)/(2b + 2dᵢ). Равновесие Курно — пересечение функций реакции.",
+     "Картель максимизирует общую прибыль: MR(Q) = MC₁ = MC₂.",
+     "Картель: q₁ = 1,8, q₂ = 1,2, P = 6,6, π₁ = 8,64, π₂ = 5,76",
+     "Сравнение моделей:<div class=\"tw\"><table class=\"tab\"><tr><th></th><th>q₁</th><th>q₂</th><th>P</th><th>π₁ + π₂</th></tr><tr><td style=\"text-align:left\">Курно</td><td>2,021</td><td>1,516</td><td>6,063</td><td>13,913</td></tr><tr><td style=\"text-align:left\">Штакельберг</td><td>2,133</td><td>1,493</td><td>5,973</td><td>13,767</td></tr><tr><td style=\"text-align:left\">Картель</td><td>1,8</td><td>1,2</td><td>6,6</td><td>14,4</td></tr></table></div>",
+     "Картель неустойчив: при квоте партнёра фирме 1 выгодно выпускать 2,1 вместо 1,8."
+    ]
+   },
+   "en": {
+    "ans": "q₁ = 1.8, q₂ = 1.2, P = 6.6",
+    "st": [
+     "Demand P = 9.6 − 1Q; costs TC₁ = 0q₁ + 1q₁², TC₂ = 0q₂ + 1.5q₂².",
+     "Firm i’s reaction function from ∂πᵢ/∂qᵢ = 0: qᵢ = (a − cᵢ − b·qⱼ)/(2b + 2dᵢ). The Cournot equilibrium is where they cross.",
+     "A cartel maximizes joint profit: MR(Q) = MC₁ = MC₂.",
+     "Cartel: q₁ = 1.8, q₂ = 1.2, P = 6.6, π₁ = 8.64, π₂ = 5.76",
+     "Comparing models:<div class=\"tw\"><table class=\"tab\"><tr><th></th><th>q₁</th><th>q₂</th><th>P</th><th>π₁ + π₂</th></tr><tr><td style=\"text-align:left\">Cournot</td><td>2.021</td><td>1.516</td><td>6.063</td><td>13.913</td></tr><tr><td style=\"text-align:left\">Stackelberg</td><td>2.133</td><td>1.493</td><td>5.973</td><td>13.767</td></tr><tr><td style=\"text-align:left\">Cartel</td><td>1.8</td><td>1.2</td><td>6.6</td><td>14.4</td></tr></table></div>",
+     "The cartel is unstable: given the partner’s quota, firm 1 would rather produce 2.1 instead of 1.8."
+    ]
+   }
+  },
+  {
+   "topic": "olig",
+   "id": "olin",
+   "inp": {
+    "om": "cour",
+    "a": "10",
+    "b": "1",
+    "c1": "1",
+    "d1": "0",
+    "c2": "1",
+    "d2": "0",
+    "sh": ""
+   },
+   "res": {
+    "om": "cour",
+    "a": 10,
+    "b": 1,
+    "c1": 1,
+    "d1": 0,
+    "c2": 1,
+    "d2": 0,
+    "cour": {
+     "q": [
+      3,
+      3
+     ],
+     "P": 4,
+     "pi": [
+      9,
+      9
+     ]
+    },
+    "stack": {
+     "q": [
+      4.5,
+      2.25
+     ],
+     "P": 3.25,
+     "pi": [
+      10.125,
+      5.0625
+     ],
+     "deter": false
+    },
+    "cart": {
+     "q": [
+      4.5,
+      0
+     ],
+     "P": 5.5,
+     "pi": [
+      20.25,
+      0
+     ]
+    },
+    "sel": {
+     "q": [
+      3,
+      3
+     ],
+     "P": 4,
+     "pi": [
+      9,
+      9
+     ]
+    }
+   },
+   "ru": {
+    "ans": "q₁ = 3, q₂ = 3, P = 4",
+    "st": [
+     "Спрос P = 10 − 1Q; затраты TC₁ = 1q₁ + 0q₁², TC₂ = 1q₂ + 0q₂².",
+     "Функция реакции фирмы i из условия ∂πᵢ/∂qᵢ = 0: qᵢ = (a − cᵢ − b·qⱼ)/(2b + 2dᵢ). Равновесие Курно — пересечение функций реакции.",
+     "Курно: q₁ = 3, q₂ = 3, P = 4, π₁ = 9, π₂ = 9",
+     "Сравнение моделей:<div class=\"tw\"><table class=\"tab\"><tr><th></th><th>q₁</th><th>q₂</th><th>P</th><th>π₁ + π₂</th></tr><tr><td style=\"text-align:left\">Курно</td><td>3</td><td>3</td><td>4</td><td>18</td></tr><tr><td style=\"text-align:left\">Штакельберг</td><td>4,5</td><td>2,25</td><td>3,25</td><td>15,188</td></tr><tr><td style=\"text-align:left\">Картель</td><td>4,5</td><td>0</td><td>5,5</td><td>20,25</td></tr></table></div>"
+    ]
+   },
+   "en": {
+    "ans": "q₁ = 3, q₂ = 3, P = 4",
+    "st": [
+     "Demand P = 10 − 1Q; costs TC₁ = 1q₁ + 0q₁², TC₂ = 1q₂ + 0q₂².",
+     "Firm i’s reaction function from ∂πᵢ/∂qᵢ = 0: qᵢ = (a − cᵢ − b·qⱼ)/(2b + 2dᵢ). The Cournot equilibrium is where they cross.",
+     "Cournot: q₁ = 3, q₂ = 3, P = 4, π₁ = 9, π₂ = 9",
+     "Comparing models:<div class=\"tw\"><table class=\"tab\"><tr><th></th><th>q₁</th><th>q₂</th><th>P</th><th>π₁ + π₂</th></tr><tr><td style=\"text-align:left\">Cournot</td><td>3</td><td>3</td><td>4</td><td>18</td></tr><tr><td style=\"text-align:left\">Stackelberg</td><td>4.5</td><td>2.25</td><td>3.25</td><td>15.188</td></tr><tr><td style=\"text-align:left\">Cartel</td><td>4.5</td><td>0</td><td>5.5</td><td>20.25</td></tr></table></div>"
+    ]
+   }
+  },
+  {
+   "topic": "olig",
+   "id": "ohhi",
+   "inp": {
+    "om": "hhi",
+    "a": "",
+    "b": "",
+    "c1": "",
+    "d1": "",
+    "c2": "",
+    "d2": "",
+    "sh": "40 30 20 10"
+   },
+   "res": {
+    "om": "hhi",
+    "s": [
+     40,
+     30,
+     20,
+     10
+    ],
+    "H": 3000
+   },
+   "ru": {
+    "ans": "HHI = 3000",
+    "st": [
+     "HHI = 40² + 30² + 20² + 10² = 3000.",
+     "HHI ⩾ 1800: высококонцентрированный рынок."
+    ]
+   },
+   "en": {
+    "ans": "HHI = 3000",
+    "st": [
+     "HHI = 40² + 30² + 20² + 10² = 3000.",
+     "HHI ⩾ 1800: highly concentrated."
+    ]
+   }
+  },
+  {
+   "topic": "labor",
+   "id": "l148",
+   "inp": {
+    "lm": "firm",
+    "f": "30L - L^2",
+    "p": "5",
+    "w": "50",
+    "Lmax": "30",
+    "Dl": "",
+    "Sl": "",
+    "wm": ""
+   },
+   "res": {
+    "lm": "firm",
+    "p": 5,
+    "w": 50,
+    "Lmax": 30,
+    "L": 10.000000000073857,
+    "q": 200.00000000073857,
+    "cap": false
+   },
+   "ru": {
+    "ans": "L = 10",
+    "st": [
+     "Конкурентная фирма нанимает труд, пока MRP = p·MP_L не сравняется с зарплатой: MRP = w.",
+     "p = 5, w = 50: L = 10, выпуск q = 200."
+    ]
+   },
+   "en": {
+    "ans": "L = 10",
+    "st": [
+     "A competitive firm hires until MRP = p·MP_L equals the wage: MRP = w.",
+     "p = 5, w = 50: L = 10, output q = 200."
+    ]
+   }
+  },
+  {
+   "topic": "labor",
+   "id": "l148b",
+   "inp": {
+    "lm": "firm",
+    "f": "30L - L^2",
+    "p": "5",
+    "w": "100",
+    "Lmax": "30",
+    "Dl": "",
+    "Sl": "",
+    "wm": ""
+   },
+   "res": {
+    "lm": "firm",
+    "p": 5,
+    "w": 100,
+    "Lmax": 30,
+    "L": 5.000000000081323,
+    "q": 125.00000000162646,
+    "cap": false
+   },
+   "ru": {
+    "ans": "L = 5",
+    "st": [
+     "Конкурентная фирма нанимает труд, пока MRP = p·MP_L не сравняется с зарплатой: MRP = w.",
+     "p = 5, w = 100: L = 5, выпуск q = 125."
+    ]
+   },
+   "en": {
+    "ans": "L = 5",
+    "st": [
+     "A competitive firm hires until MRP = p·MP_L equals the wage: MRP = w.",
+     "p = 5, w = 100: L = 5, output q = 125."
+    ]
+   }
+  },
+  {
+   "topic": "labor",
+   "id": "l147",
+   "inp": {
+    "lm": "firm",
+    "f": "sqrt(900L)",
+    "p": "100",
+    "w": "30",
+    "Lmax": "5000",
+    "Dl": "",
+    "Sl": "",
+    "wm": ""
+   },
+   "res": {
+    "lm": "firm",
+    "p": 100,
+    "w": 30,
+    "Lmax": 5000,
+    "L": 2500.0000002815586,
+    "q": 1500.0000000844675,
+    "cap": false
+   },
+   "ru": {
+    "ans": "L = 2500",
+    "st": [
+     "Конкурентная фирма нанимает труд, пока MRP = p·MP_L не сравняется с зарплатой: MRP = w.",
+     "p = 100, w = 30: L = 2500, выпуск q = 1500."
+    ]
+   },
+   "en": {
+    "ans": "L = 2500",
+    "st": [
+     "A competitive firm hires until MRP = p·MP_L equals the wage: MRP = w.",
+     "p = 100, w = 30: L = 2500, output q = 1500."
+    ]
+   }
+  },
+  {
+   "topic": "labor",
+   "id": "l1410",
+   "inp": {
+    "lm": "mkt",
+    "f": "",
+    "p": "",
+    "w": "",
+    "Lmax": "",
+    "Dl": "w = 20 - 0,002L",
+    "Sl": "w = 11 + 0,001L",
+    "wm": ""
+   },
+   "res": {
+    "lm": "mkt",
+    "Dl": {
+     "kind": "lin",
+     "a": 20,
+     "b": -0.0019999999999988916
+    },
+    "Sl": {
+     "kind": "lin",
+     "a": 11,
+     "b": 0.0009999999999994458
+    },
+    "E": {
+     "q": 3000.0000000016626,
+     "P": 14
+    },
+    "rent": 4500.000000002495,
+    "wb": 42000.000000023276
+   },
+   "ru": {
+    "ans": "L = 3000, w = 14, Экономическая рента 4500",
+    "st": [
+     "Равновесие на рынке труда: L = 3000, w = 14.",
+     "Экономическая рента работников — площадь между зарплатой и предложением труда: 4500 (фонд оплаты 42000)."
+    ]
+   },
+   "en": {
+    "ans": "L = 3000, w = 14, Economic rent 4500",
+    "st": [
+     "Labor market equilibrium: L = 3000, w = 14.",
+     "Workers’ economic rent, the area between the wage and labor supply: 4500 (wage bill 42000)."
+    ]
+   }
+  },
+  {
+   "topic": "labor",
+   "id": "lmon",
+   "inp": {
+    "lm": "mon",
+    "f": "",
+    "p": "",
+    "w": "",
+    "Lmax": "",
+    "Dl": "w = 100 - L",
+    "Sl": "w = 10 + L",
+    "wm": ""
+   },
+   "res": {
+    "lm": "mon",
+    "Dl": {
+     "kind": "lin",
+     "a": 100,
+     "b": -1
+    },
+    "Sl": {
+     "kind": "lin",
+     "a": 10,
+     "b": 1
+    },
+    "comp": {
+     "q": 45,
+     "P": 55
+    },
+    "L": 30,
+    "w": 40,
+    "mrp": 70,
+    "exp": 30,
+    "mw": null
+   },
+   "ru": {
+    "ans": "L = 30, w = 40",
+    "st": [
+     "Монопсонист сталкивается с кривой предложения P = 10 + 1q; предельные затраты на труд MRC вдвое круче.",
+     "MRC = MRP при L = 30; зарплата со стороны предложения w = 40 ниже MRP = 70 на 30 (монопсоническая эксплуатация).",
+     "В конкуренции было бы L = 45, w = 55."
+    ]
+   },
+   "en": {
+    "ans": "L = 30, w = 40",
+    "st": [
+     "The monopsonist faces supply P = 10 + 1q; the marginal cost of labor MRC is twice as steep.",
+     "MRC = MRP at L = 30; the wage from supply w = 40 is below MRP = 70 by 30 (monopsonistic exploitation).",
+     "Under competition L = 45, w = 55."
+    ]
+   }
+  },
+  {
+   "topic": "labor",
+   "id": "lmw",
+   "inp": {
+    "lm": "mon",
+    "f": "",
+    "p": "",
+    "w": "",
+    "Lmax": "",
+    "Dl": "w = 100 - L",
+    "Sl": "w = 10 + L",
+    "wm": "50"
+   },
+   "res": {
+    "lm": "mon",
+    "Dl": {
+     "kind": "lin",
+     "a": 100,
+     "b": -1
+    },
+    "Sl": {
+     "kind": "lin",
+     "a": 10,
+     "b": 1
+    },
+    "comp": {
+     "q": 45,
+     "P": 55
+    },
+    "L": 30,
+    "w": 40,
+    "mrp": 70,
+    "exp": 30,
+    "mw": {
+     "w": 50,
+     "L": 40,
+     "Ls": 40,
+     "Ld": 50,
+     "unemp": 0,
+     "nobind": false
+    }
+   },
+   "ru": {
+    "ans": "L = 40 (мин. зарплата 50)",
+    "st": [
+     "Монопсонист сталкивается с кривой предложения P = 10 + 1q; предельные затраты на труд MRC вдвое круче.",
+     "MRC = MRP при L = 30; зарплата со стороны предложения w = 40 ниже MRP = 70 на 30 (монопсоническая эксплуатация).",
+     "В конкуренции было бы L = 45, w = 55.",
+     "Минимальная зарплата 50: занятость 40. Между монопсонической и конкурентной зарплатой минимум зарплаты увеличивает занятость."
+    ]
+   },
+   "en": {
+    "ans": "L = 40 (min. wage 50)",
+    "st": [
+     "The monopsonist faces supply P = 10 + 1q; the marginal cost of labor MRC is twice as steep.",
+     "MRC = MRP at L = 30; the wage from supply w = 40 is below MRP = 70 by 30 (monopsonistic exploitation).",
+     "Under competition L = 45, w = 55.",
+     "Minimum wage 50: employment 40. Between the monopsony and competitive wage, a minimum wage raises employment."
+    ]
+   }
+  },
+  {
+   "topic": "cap",
+   "id": "k151",
+   "inp": {
+    "km": "fv",
+    "pm": "1000",
+    "i": "9%",
+    "n": "20",
+    "pv": "",
+    "fl": ""
+   },
+   "res": {
+    "km": "fv",
+    "i": 0.09,
+    "pm": 1000,
+    "n": 20,
+    "v": 51160.11964198112
+   },
+   "ru": {
+    "ans": "51160,1196",
+    "st": [
+     "БС аннуитета: FV = PMT·((1 + i)ⁿ − 1)/i = 1000·((1 + 9%)^20 − 1)/9% = 51160,1196."
+    ]
+   },
+   "en": {
+    "ans": "51160.1196",
+    "st": [
+     "Annuity FV = PMT·((1 + i)ⁿ − 1)/i = 1000·((1 + 9%)^20 − 1)/9% = 51160.1196."
+    ]
+   }
+  },
+  {
+   "topic": "cap",
+   "id": "k152",
+   "inp": {
+    "km": "pv",
+    "pm": "1000",
+    "i": "9%",
+    "n": "10",
+    "pv": "",
+    "fl": ""
+   },
+   "res": {
+    "km": "pv",
+    "i": 0.09,
+    "pm": 1000,
+    "n": 10,
+    "v": 6417.6577011590125
+   },
+   "ru": {
+    "ans": "6417,6577",
+    "st": [
+     "ПС аннуитета: PV = PMT·(1 − (1 + i)⁻ⁿ)/i при PMT = 1000, i = 9%, n = 10: 6417,6577."
+    ]
+   },
+   "en": {
+    "ans": "6417.6577",
+    "st": [
+     "Annuity PV = PMT·(1 − (1 + i)⁻ⁿ)/i with PMT = 1000, i = 9%, n = 10: 6417.6577."
+    ]
+   }
+  },
+  {
+   "topic": "cap",
+   "id": "k153",
+   "inp": {
+    "km": "pmt",
+    "pm": "",
+    "i": "12%",
+    "n": "25",
+    "pv": "100000",
+    "fl": ""
+   },
+   "res": {
+    "km": "pmt",
+    "i": 0.12,
+    "pv": 100000,
+    "n": 25,
+    "v": 12749.996980950777
+   },
+   "ru": {
+    "ans": "12749,997",
+    "st": [
+     "ПЛТ: PMT = PV·i/(1 − (1 + i)⁻ⁿ) при PV = 100000, i = 12%, n = 25: 12749,997 в год."
+    ]
+   },
+   "en": {
+    "ans": "12749.997",
+    "st": [
+     "PMT = PV·i/(1 − (1 + i)⁻ⁿ) with PV = 100000, i = 12%, n = 25: 12749.997 a year."
+    ]
+   }
+  },
+  {
+   "topic": "cap",
+   "id": "k154",
+   "inp": {
+    "km": "nper",
+    "pm": "20000",
+    "i": "12%",
+    "n": "",
+    "pv": "100000",
+    "fl": ""
+   },
+   "res": {
+    "km": "nper",
+    "i": 0.12,
+    "pv": 100000,
+    "pm": 20000,
+    "v": 8.0852498146604
+   },
+   "ru": {
+    "ans": "8,0852",
+    "st": [
+     "КПЕР: n = −ln(1 − PV·i/PMT)/ln(1 + i) при PV = 100000, i = 12%, PMT = 20000: n = 8,0852 лет."
+    ]
+   },
+   "en": {
+    "ans": "8.0852",
+    "st": [
+     "NPER: n = −ln(1 − PV·i/PMT)/ln(1 + i) with PV = 100000, i = 12%, PMT = 20000: n = 8.0852 years."
+    ]
+   }
+  },
+  {
+   "topic": "cap",
+   "id": "knpv",
+   "inp": {
+    "km": "npv",
+    "pm": "",
+    "i": "10%",
+    "n": "",
+    "pv": "",
+    "fl": "-100 30 40 50"
+   },
+   "res": {
+    "km": "npv",
+    "i": 0.1,
+    "fl": [
+     -100,
+     30,
+     40,
+     50
+    ],
+    "v": -2.10368144252444,
+    "irr": 0.08896339469335002
+   },
+   "ru": {
+    "ans": "NPV = −2,1037",
+    "st": [
+     "NPV = Σ CFₜ/(1 + i)ᵗ для потоков −100; 30; 40; 50 при i = 10%: −2,1037.",
+     "IRR (ставка, при которой NPV = 0): 8,896%.",
+     "NPV < 0: проект невыгоден."
+    ]
+   },
+   "en": {
+    "ans": "NPV = −2.1037",
+    "st": [
+     "NPV = Σ CFₜ/(1 + i)ᵗ for flows −100; 30; 40; 50 at i = 10%: −2.1037.",
+     "IRR (the rate where NPV = 0): 8.896%.",
+     "NPV < 0: the project doesn’t pay."
+    ]
+   }
+  },
+  {
+   "topic": "cap",
+   "id": "k1514",
+   "inp": {
+    "km": "land",
+    "pm": "",
+    "i": "9%",
+    "n": "",
+    "pv": "",
+    "fl": "T = 1800 - 3P; 1500"
+   },
+   "res": {
+    "km": "land",
+    "i": 0.09,
+    "D": {
+     "kind": "lin",
+     "a": 600,
+     "b": -0.3333333333333333
+    },
+    "Ts": 1500,
+    "R": 100,
+    "v": 1111.111111111111
+   },
+   "ru": {
+    "ans": "R = 100, цена земли 1111,1111",
+    "st": [
+     "Предложение земли фиксировано: T = 1500. Рента со спроса R = 100. Цена земли — капитализированная рента: R/i = 100/9% = 1111,1111."
+    ]
+   },
+   "en": {
+    "ans": "R = 100, land price 1111.1111",
+    "st": [
+     "Land supply is fixed: T = 1500. Rent from demand R = 100. Land price is capitalized rent: R/i = 100/9% = 1111.1111."
+    ]
+   }
+  },
+  {
+   "topic": "ext",
+   "id": "x162",
+   "inp": {
+    "D": "P = 40 - 2q",
+    "S": "P = 28 + q",
+    "e": "3"
+   },
+   "res": {
+    "D": {
+     "kind": "lin",
+     "a": 40,
+     "b": -2
+    },
+    "S": {
+     "kind": "lin",
+     "a": 28,
+     "b": 1
+    },
+    "e": 3,
+    "m": {
+     "q": 4,
+     "P": 32
+    },
+    "s": {
+     "q": 3,
+     "P": 34
+    },
+    "Ss": {
+     "kind": "lin",
+     "a": 31,
+     "b": 1
+    },
+    "damage": 12,
+    "DWL": 1.5,
+    "tax": 3
+   },
+   "ru": {
+    "ans": "q: 4 → 3, DWL = 1,5",
+    "st": [
+     "Рынок без вмешательства: q = 4, P = 32.",
+     "Общественные предельные издержки SMC = PMC + 3: P = 31 + 1q. Оптимум: q = 3, P = 34.",
+     "Внешний ущерб при рыночном выпуске: 12; потери мёртвого груза: 1,5.",
+     "Налог Пигу t = 3 на единицу интернализирует внешние издержки: рынок сам придёт к оптимуму."
+    ]
+   },
+   "en": {
+    "ans": "q: 4 → 3, DWL = 1.5",
+    "st": [
+     "Unregulated market: q = 4, P = 32.",
+     "Social marginal cost SMC = PMC + 3: P = 31 + 1q. Optimum: q = 3, P = 34.",
+     "External damage at market output: 12; deadweight loss: 1.5.",
+     "A Pigouvian tax t = 3 per unit internalizes the external cost: the market reaches the optimum itself."
+    ]
+   }
+  },
+  {
+   "topic": "ext",
+   "id": "x163",
+   "inp": {
+    "D": "q = 19000000 - 100000P",
+    "S": "q = 100000P - 1000000",
+    "e": "4"
+   },
+   "res": {
+    "D": {
+     "kind": "lin",
+     "a": 190,
+     "b": -0.00001
+    },
+    "S": {
+     "kind": "lin",
+     "a": 10,
+     "b": 0.00001
+    },
+    "e": 4,
+    "m": {
+     "q": 9000000,
+     "P": 99.99999999999999
+    },
+    "s": {
+     "q": 8800000,
+     "P": 101.99999999999999
+    },
+    "Ss": {
+     "kind": "lin",
+     "a": 14,
+     "b": 0.00001
+    },
+    "damage": 36000000,
+    "DWL": 400000,
+    "tax": 4
+   },
+   "ru": {
+    "ans": "q: 9000000 → 8800000, DWL = 400000",
+    "st": [
+     "Рынок без вмешательства: q = 9000000, P = 100.",
+     "Общественные предельные издержки SMC = PMC + 4: P = 14 + 0q. Оптимум: q = 8800000, P = 102.",
+     "Внешний ущерб при рыночном выпуске: 36000000; потери мёртвого груза: 400000.",
+     "Налог Пигу t = 4 на единицу интернализирует внешние издержки: рынок сам придёт к оптимуму."
+    ]
+   },
+   "en": {
+    "ans": "q: 9000000 → 8800000, DWL = 400000",
+    "st": [
+     "Unregulated market: q = 9000000, P = 100.",
+     "Social marginal cost SMC = PMC + 4: P = 14 + 0q. Optimum: q = 8800000, P = 102.",
+     "External damage at market output: 36000000; deadweight loss: 400000.",
+     "A Pigouvian tax t = 4 per unit internalizes the external cost: the market reaches the optimum itself."
+    ]
+   }
+  },
+  {
+   "topic": "pg",
+   "id": "g168",
+   "inp": {
+    "list": "50: P = 1 - 0,1q\n49: P = 2 - 0,2q",
+    "MC": "P = 74"
+   },
+   "res": {
+    "list": [
+     {
+      "n": 50,
+      "L": {
+       "kind": "lin",
+       "a": 1,
+       "b": -0.09999999999999998
+      }
+     },
+     {
+      "n": 49,
+      "L": {
+       "kind": "lin",
+       "a": 2,
+       "b": -0.19999999999999996
+      }
+     }
+    ],
+    "MC": {
+     "kind": "horiz",
+     "P0": 74
+    },
+    "qPub": 5,
+    "qmax": 10.000000000000002,
+    "PPriv": null
+   },
+   "ru": {
+    "ans": "q* = 5",
+    "st": [
+     "Общественное благо потребляют все одновременно, поэтому общая готовность платить — сумма индивидуальных цен спроса (вертикальное суммирование).",
+     "ΣMB(q) = 50·(P = 1 − 0,1q) + 49·(P = 2 − 0,2q).",
+     "Оптимум: ΣMB = MC (P = 74): q* = 5.",
+     "Каждый в отдельности готов платить меньше MC — без государства благо недопроизводится (проблема безбилетника)."
+    ]
+   },
+   "en": {
+    "ans": "q* = 5",
+    "st": [
+     "Everyone consumes a public good at once, so total willingness to pay is the sum of individual demand prices (vertical summation).",
+     "ΣMB(q) = 50·(P = 1 − 0.1q) + 49·(P = 2 − 0.2q).",
+     "Optimum: ΣMB = MC (P = 74): q* = 5.",
+     "Each person alone values it below MC — without the state the good is underprovided (the free-rider problem)."
+    ]
+   }
+  },
+  {
+   "topic": "pg",
+   "id": "g3",
+   "inp": {
+    "list": "1: P = 10 - q\n1: P = 8 - q\n1: P = 6 - q",
+    "MC": "P = 12"
+   },
+   "res": {
+    "list": [
+     {
+      "n": 1,
+      "L": {
+       "kind": "lin",
+       "a": 10,
+       "b": -1
+      }
+     },
+     {
+      "n": 1,
+      "L": {
+       "kind": "lin",
+       "a": 8,
+       "b": -1
+      }
+     },
+     {
+      "n": 1,
+      "L": {
+       "kind": "lin",
+       "a": 6,
+       "b": -1
+      }
+     }
+    ],
+    "MC": {
+     "kind": "horiz",
+     "P0": 12
+    },
+    "qPub": 3.999999999999999,
+    "qmax": 10,
+    "PPriv": null
+   },
+   "ru": {
+    "ans": "q* = 4",
+    "st": [
+     "Общественное благо потребляют все одновременно, поэтому общая готовность платить — сумма индивидуальных цен спроса (вертикальное суммирование).",
+     "ΣMB(q) = 1·(P = 10 − 1q) + 1·(P = 8 − 1q) + 1·(P = 6 − 1q).",
+     "Оптимум: ΣMB = MC (P = 12): q* = 4.",
+     "Каждый в отдельности готов платить меньше MC — без государства благо недопроизводится (проблема безбилетника)."
+    ]
+   },
+   "en": {
+    "ans": "q* = 4",
+    "st": [
+     "Everyone consumes a public good at once, so total willingness to pay is the sum of individual demand prices (vertical summation).",
+     "ΣMB(q) = 1·(P = 10 − 1q) + 1·(P = 8 − 1q) + 1·(P = 6 − 1q).",
+     "Optimum: ΣMB = MC (P = 12): q* = 4.",
+     "Each person alone values it below MC — without the state the good is underprovided (the free-rider problem)."
+    ]
+   }
+  }
+ ]
+}

@@ -1,0 +1,685 @@
+export const TERMS = [
+  {
+    id: 'scheme',
+    ru: [
+      'Схема Бернулли',
+      'биномиальная схема',
+      '<p>Последовательность испытаний, в которой: 1) у каждого испытания два исхода — «успех» A и «неудача» Ā; 2) испытания независимы; 3) вероятность успеха одна и та же, <span class="m">P(A) = p</span>, <span class="m">q = 1 − p</span>.</p><p>Примеры: подбрасывания монеты, выстрелы с одинаковой меткостью, проверка деталей при одинаковой доле брака.</p>',
+    ],
+    en: [
+      'Bernoulli scheme',
+      'binomial scheme',
+      '<p>A sequence of trials where: 1) each trial has two outcomes, “success” A and “failure” Ā; 2) trials are independent; 3) the success probability is the same, <span class="m">P(A) = p</span>, <span class="m">q = 1 − p</span>.</p><p>Examples: coin tosses, shots with equal accuracy, checking parts with a constant defect rate.</p>',
+    ],
+  },
+  {
+    id: 'bernoulli',
+    ru: [
+      'Формула Бернулли',
+      'Pₙ(k)',
+      '<p>Вероятность ровно k успехов в n испытаниях: <span class="m">Pₙ(k) = Cₙᵏ pᵏ qⁿ⁻ᵏ</span>. Множитель <span class="m">Cₙᵏ</span> считает, сколькими способами можно выбрать, в каких именно испытаниях будут успехи.</p><p>Для «хотя бы одного» удобнее перейти к противоположному событию: <span class="m">Pₙ(k ⩾ 1) = 1 − qⁿ</span>. Пример 9: монета 5 раз, ровно три орла — <span class="m">C₅³/2⁵ = 5/16</span>.</p>',
+    ],
+    en: [
+      'Bernoulli formula',
+      'Pₙ(k)',
+      '<p>The probability of exactly k successes in n trials: <span class="m">Pₙ(k) = Cₙᵏ pᵏ qⁿ⁻ᵏ</span>. The factor <span class="m">Cₙᵏ</span> counts the ways to choose which trials are successes.</p><p>For “at least once”, switch to the complement: <span class="m">Pₙ(k ⩾ 1) = 1 − qⁿ</span>. Example 9: a coin 5 times, exactly three heads — <span class="m">C₅³/2⁵ = 5/16</span>.</p>',
+    ],
+  },
+  {
+    id: 'kstar',
+    ru: [
+      'Наивероятнейшее число',
+      'k*',
+      '<p>Число успехов k*, вероятность которого больше, чем у любого другого. Оно лежит между <span class="m">np − q ⩽ k* ⩽ np + p</span>. Отрезок имеет длину 1, поэтому в нём одно целое число или два (когда np − q целое).</p><p>На графике это самый высокий столбик.</p>',
+    ],
+    en: [
+      'Most probable number',
+      'k*',
+      '<p>The number of successes k* with the highest probability. It lies in <span class="m">np − q ⩽ k* ⩽ np + p</span>. The interval has length 1, so it holds one integer or two (when np − q is an integer).</p><p>On the chart it is the tallest bar.</p>',
+    ],
+  },
+  {
+    id: 'poisson',
+    ru: [
+      'Формула Пуассона',
+      'редкие события',
+      '<p>При большом n и малом p: <span class="m">Pₙ(k) ≈ λᵏe^(−λ)/k!</span>, где <span class="m">λ = np</span>. В задачнике её применяют при <span class="m">λ ⩽ 10</span>.</p><p>Типичные задачи — опечатки в тексте, брак в большой партии, звонки на станцию: событий в среднем немного, а испытаний очень много.</p>',
+    ],
+    en: [
+      'Poisson formula',
+      'rare events',
+      '<p>For large n and small p: <span class="m">Pₙ(k) ≈ λᵏe^(−λ)/k!</span>, where <span class="m">λ = np</span>. The book uses it when <span class="m">λ ⩽ 10</span>.</p><p>Typical problems: typos in a text, defects in a large batch, calls to an exchange — few events on average, very many trials.</p>',
+    ],
+  },
+  {
+    id: 'mlLocal',
+    ru: [
+      'Локальная теорема Муавра–Лапласа',
+      'одно значение k',
+      '<p>При <span class="m">npq &gt; 10</span>: <span class="m">Pₙ(k) ≈ φ(x)/√(npq)</span>, <span class="m">x = (k − np)/√(npq)</span>. Биномиальные столбики при больших n ложатся на колокол нормальной плотности.</p><p>Пример 10: 600 бросков кости, ровно 205 раз выпало кратное трём: <span class="m">x = 0,43</span>, <span class="m">P ≈ 0,3637/11,5 ≈ 0,03</span>.</p>',
+    ],
+    en: [
+      'Local de Moivre–Laplace theorem',
+      'a single k',
+      '<p>For <span class="m">npq &gt; 10</span>: <span class="m">Pₙ(k) ≈ φ(x)/√(npq)</span>, <span class="m">x = (k − np)/√(npq)</span>. For large n the binomial bars lie on the normal bell.</p><p>Example 10: 600 die rolls, exactly 205 multiples of three: <span class="m">x = 0.43</span>, <span class="m">P ≈ 0.3637/11.5 ≈ 0.03</span>.</p>',
+    ],
+  },
+  {
+    id: 'mlInt',
+    ru: [
+      'Интегральная теорема Муавра–Лапласа',
+      'от k₁ до k₂',
+      '<p>При <span class="m">npq &gt; 10</span>: <span class="m">Pₙ(k₁ ⩽ k ⩽ k₂) ≈ Φ(x₂) − Φ(x₁)</span>, <span class="m">xᵢ = (kᵢ − np)/√(npq)</span>. Сумму многих столбиков заменяем площадью под колоколом.</p><p>«Не более k» — это промежуток от 0 до k, «не менее k» — от k до n.</p>',
+    ],
+    en: [
+      'Integral de Moivre–Laplace theorem',
+      'from k₁ to k₂',
+      '<p>For <span class="m">npq &gt; 10</span>: <span class="m">Pₙ(k₁ ⩽ k ⩽ k₂) ≈ Φ(x₂) − Φ(x₁)</span>, <span class="m">xᵢ = (kᵢ − np)/√(npq)</span>. The sum of many bars is replaced by the area under the bell.</p><p>“At most k” is the range from 0 to k, “at least k” from k to n.</p>',
+    ],
+  },
+  {
+    id: 'phi',
+    ru: [
+      'Функция Гаусса φ(x)',
+      'плотность N(0; 1)',
+      '<p><span class="m">φ(x) = e^(−x²/2)/√(2π)</span> — плотность стандартного нормального распределения. Чётная: <span class="m">φ(−x) = φ(x)</span>, максимум <span class="m">φ(0) ≈ 0,3989</span>. Её значения даны в таблице 1 приложения.</p>',
+    ],
+    en: [
+      'Gauss function φ(x)',
+      'density of N(0; 1)',
+      '<p><span class="m">φ(x) = e^(−x²/2)/√(2π)</span> is the standard normal density. It is even: <span class="m">φ(−x) = φ(x)</span>, maximum <span class="m">φ(0) ≈ 0.3989</span>. Its values are in Table 1 of the appendix.</p>',
+    ],
+  },
+  {
+    id: 'Phi',
+    ru: [
+      'Функция Лапласа Φ(x)',
+      'как в задачнике ВАВТ',
+      '<p>В задачнике <span class="m">Φ(x) = ∫ φ(t)dt</span> от −∞ до x — это <b>вся функция распределения</b> стандартной нормальной величины, значения от 0 до 1, <span class="m">Φ(0) = 0,5</span>, <span class="m">Φ(−x) = 1 − Φ(x)</span>.</p><p>Внимание: в других учебниках «функцией Лапласа» часто называют <span class="m">Φ₀(x)</span> — интеграл от 0 до x со значениями до 0,5. Они связаны так: <span class="m">Φ(x) = 0,5 + Φ₀(x)</span>. Приложение считает по варианту задачника.</p>',
+    ],
+    en: [
+      'Laplace function Φ(x)',
+      'as in the VAVT book',
+      '<p>In the book <span class="m">Φ(x) = ∫ φ(t)dt</span> from −∞ to x is the <b>whole distribution function</b> of the standard normal, with values from 0 to 1, <span class="m">Φ(0) = 0.5</span>, <span class="m">Φ(−x) = 1 − Φ(x)</span>.</p><p>Note: other books often call <span class="m">Φ₀(x)</span>, the integral from 0 to x with values up to 0.5, the “Laplace function”. They are related by <span class="m">Φ(x) = 0.5 + Φ₀(x)</span>. The app follows the book.</p>',
+    ],
+  },
+  {
+    id: 'rv',
+    ru: [
+      'Случайная величина',
+      'дискретная и непрерывная',
+      '<p>Число, которое принимает то или иное значение в зависимости от исхода опыта. <b>Дискретная</b> принимает отдельные значения (число успехов, очки на кости), <b>непрерывная</b> — любые значения из промежутка (время ожидания, рост).</p>',
+    ],
+    en: [
+      'Random variable',
+      'discrete and continuous',
+      '<p>A number whose value depends on the outcome of an experiment. A <b>discrete</b> one takes separate values (number of successes, points on a die), a <b>continuous</b> one any value in an interval (waiting time, height).</p>',
+    ],
+  },
+  {
+    id: 'series',
+    ru: [
+      'Ряд распределения',
+      'закон распределения ДСВ',
+      '<p>Таблица: значения <span class="m">x₁ &lt; x₂ &lt; …</span> и их вероятности <span class="m">p₁, p₂, …</span>. Обязательно <span class="m">Σpᵢ = 1</span> — так находят неизвестную вероятность (задача 6.33).</p><p>Многоугольник распределения — ломаная через точки <span class="m">(xᵢ; pᵢ)</span>.</p>',
+    ],
+    en: [
+      'Distribution table',
+      'law of a discrete RV',
+      '<p>A table: values <span class="m">x₁ &lt; x₂ &lt; …</span> and their probabilities <span class="m">p₁, p₂, …</span>. Always <span class="m">Σpᵢ = 1</span> — that is how an unknown probability is found (problem 6.33).</p><p>The distribution polygon is the broken line through the points <span class="m">(xᵢ; pᵢ)</span>.</p>',
+    ],
+  },
+  {
+    id: 'cdf',
+    ru: [
+      'Функция распределения',
+      'F(x) = P(X < x)',
+      '<p>Вероятность того, что величина окажется левее x. Не убывает, от 0 до 1. У дискретной величины F(x) ступенчатая: в каждой точке xᵢ подскакивает на <span class="m">pᵢ</span>, и значение в самой точке берётся слева (строгое неравенство).</p><p><span class="m">P(a ⩽ X &lt; b) = F(b) − F(a)</span>.</p>',
+    ],
+    en: [
+      'Distribution function',
+      'F(x) = P(X < x)',
+      '<p>The probability that the variable is to the left of x. Non-decreasing, from 0 to 1. For a discrete variable F(x) is a step function: at each xᵢ it jumps by <span class="m">pᵢ</span>, and the value at the point is taken from the left (strict inequality).</p><p><span class="m">P(a ⩽ X &lt; b) = F(b) − F(a)</span>.</p>',
+    ],
+  },
+  {
+    id: 'expect',
+    ru: [
+      'Математическое ожидание',
+      'M(X), среднее',
+      '<p>Для дискретной величины <span class="m">M(X) = Σ xᵢpᵢ</span>, для непрерывной <span class="m">M(X) = ∫ x f(x)dx</span>. Это «центр тяжести» распределения: если повесить грузы pᵢ в точках xᵢ, равновесие будет в M(X).</p><p>Свойства: <span class="m">M(C) = C</span>, <span class="m">M(CX) = C·M(X)</span>, <span class="m">M(X + Y) = M(X) + M(Y)</span>, для независимых <span class="m">M(XY) = M(X)M(Y)</span>.</p>',
+    ],
+    en: [
+      'Expectation',
+      'M(X), mean',
+      '<p>For a discrete variable <span class="m">M(X) = Σ xᵢpᵢ</span>, for a continuous one <span class="m">M(X) = ∫ x f(x)dx</span>. It is the “centre of mass”: hang weights pᵢ at points xᵢ, and the balance point is M(X).</p><p>Properties: <span class="m">M(C) = C</span>, <span class="m">M(CX) = C·M(X)</span>, <span class="m">M(X + Y) = M(X) + M(Y)</span>, for independent <span class="m">M(XY) = M(X)M(Y)</span>.</p>',
+    ],
+  },
+  {
+    id: 'variance',
+    ru: [
+      'Дисперсия и σ',
+      'D(X), σ(X)',
+      '<p>Средний квадрат отклонения от среднего: <span class="m">D(X) = M(X − M(X))² = M(X²) − M²(X)</span>; второй вариант — «упрощённая формула», им и считают. <span class="m">σ(X) = √D(X)</span> — в тех же единицах, что и X.</p><p>Свойства: <span class="m">D(C) = 0</span>, <span class="m">D(CX) = C²D(X)</span>, для независимых <span class="m">D(X ± Y) = D(X) + D(Y)</span>. Пример 12: <span class="m">D(X − 2Y + 10) = D(X) + 4D(Y) = 17</span>.</p>',
+    ],
+    en: [
+      'Variance and σ',
+      'D(X), σ(X)',
+      '<p>The mean squared deviation from the mean: <span class="m">D(X) = M(X − M(X))² = M(X²) − M²(X)</span>; the second form is the “shortcut formula” used in practice. <span class="m">σ(X) = √D(X)</span>, in the same units as X.</p><p>Properties: <span class="m">D(C) = 0</span>, <span class="m">D(CX) = C²D(X)</span>, for independent <span class="m">D(X ± Y) = D(X) + D(Y)</span>. Example 12: <span class="m">D(X − 2Y + 10) = D(X) + 4D(Y) = 17</span>.</p>',
+    ],
+  },
+  {
+    id: 'binomial',
+    ru: [
+      'Биномиальное распределение',
+      'число успехов',
+      '<p>Число успехов в схеме Бернулли: <span class="m">P(X = k) = Cₙᵏpᵏqⁿ⁻ᵏ</span>, <span class="m">M(X) = np</span>, <span class="m">D(X) = npq</span>. Задачи 6.1–6.4, 6.8.</p>',
+    ],
+    en: [
+      'Binomial distribution',
+      'number of successes',
+      '<p>The number of successes in a Bernoulli scheme: <span class="m">P(X = k) = Cₙᵏpᵏqⁿ⁻ᵏ</span>, <span class="m">M(X) = np</span>, <span class="m">D(X) = npq</span>. Problems 6.1–6.4, 6.8.</p>',
+    ],
+  },
+  {
+    id: 'hyper',
+    ru: [
+      'Гипергеометрическое распределение',
+      'урновая схема',
+      '<p>Из N предметов, среди которых M «отмеченных», берут n без возвращения. Число отмеченных среди взятых: <span class="m">P(X = k) = C_Mᵏ·C_(N−M)ⁿ⁻ᵏ / C_Nⁿ</span>.</p><p>Задачи 6.6, 6.13, 6.20: детали, шары, билеты.</p>',
+    ],
+    en: [
+      'Hypergeometric distribution',
+      'urn scheme',
+      '<p>From N items, M of them “marked”, draw n without replacement. The number of marked among those drawn: <span class="m">P(X = k) = C_Mᵏ·C_(N−M)ⁿ⁻ᵏ / C_Nⁿ</span>.</p><p>Problems 6.6, 6.13, 6.20: parts, balls, tickets.</p>',
+    ],
+  },
+  {
+    id: 'geom',
+    ru: [
+      'До первого успеха',
+      'геометрическое, с ограничением',
+      '<p>Стреляют до первого попадания, но зарядов всего n: <span class="m">P(X = k) = q^(k−1)p</span> для k &lt; n, а <span class="m">P(X = n) = q^(n−1)</span> — последний выстрел делается в любом случае. Задачи 6.23, 6.25.</p>',
+    ],
+    en: [
+      'Until the first success',
+      'geometric, truncated',
+      '<p>Shoot until the first hit, but with only n charges: <span class="m">P(X = k) = q^(k−1)p</span> for k &lt; n, and <span class="m">P(X = n) = q^(n−1)</span> — the last shot happens anyway. Problems 6.23, 6.25.</p>',
+    ],
+  },
+  {
+    id: 'joint',
+    ru: [
+      'Совместный закон распределения',
+      'двумерная ДСВ',
+      '<p>Таблица <span class="m">pᵢⱼ = P(X = xᵢ, Y = yⱼ)</span>. Сумма всех клеток равна 1. Из неё получают всё остальное: частные законы, условные распределения, распределение любой функции Z = g(X, Y) (пример 13).</p>',
+    ],
+    en: [
+      'Joint distribution',
+      'bivariate discrete RV',
+      '<p>A table <span class="m">pᵢⱼ = P(X = xᵢ, Y = yⱼ)</span>. All cells add up to 1. Everything else comes from it: marginal laws, conditional laws, the law of any function Z = g(X, Y) (example 13).</p>',
+    ],
+  },
+  {
+    id: 'marginal',
+    ru: [
+      'Частные законы',
+      'маргинальные распределения',
+      '<p>Закон X — суммы по строкам: <span class="m">P(X = xᵢ) = Σⱼ pᵢⱼ</span>; закон Y — суммы по столбцам. На сцене они нарисованы справа и снизу таблицы.</p>',
+    ],
+    en: [
+      'Marginal laws',
+      'marginal distributions',
+      '<p>The law of X is the row sums: <span class="m">P(X = xᵢ) = Σⱼ pᵢⱼ</span>; the law of Y is the column sums. On the scene they are drawn to the right of and below the table.</p>',
+    ],
+  },
+  {
+    id: 'indep',
+    ru: [
+      'Независимость случайных величин',
+      'pᵢⱼ = pᵢ·pⱼ',
+      '<p>X и Y независимы, если для всех клеток <span class="m">P(X = xᵢ, Y = yⱼ) = P(X = xᵢ)·P(Y = yⱼ)</span>. Достаточно одной клетки, где равенство нарушено, чтобы величины были зависимыми.</p><p>Из независимости следует <span class="m">cov = 0</span>, но не наоборот.</p>',
+    ],
+    en: [
+      'Independence of random variables',
+      'pᵢⱼ = pᵢ·pⱼ',
+      '<p>X and Y are independent if for every cell <span class="m">P(X = xᵢ, Y = yⱼ) = P(X = xᵢ)·P(Y = yⱼ)</span>. One violating cell is enough for dependence.</p><p>Independence implies <span class="m">cov = 0</span>, but not the other way round.</p>',
+    ],
+  },
+  {
+    id: 'conditional',
+    ru: [
+      'Условное распределение',
+      'P(Y = yⱼ | X = xᵢ)',
+      '<p>Берём строку таблицы при X = xᵢ и делим на её сумму: <span class="m">P(Y = yⱼ | X = xᵢ) = pᵢⱼ / P(X = xᵢ)</span>. Условное математическое ожидание <span class="m">M(Y | X = xᵢ) = Σ yⱼ P(yⱼ | xᵢ)</span>. Пример 14: <span class="m">M(Y | X = 1) = 0</span>.</p>',
+    ],
+    en: [
+      'Conditional distribution',
+      'P(Y = yⱼ | X = xᵢ)',
+      '<p>Take the row X = xᵢ and divide by its sum: <span class="m">P(Y = yⱼ | X = xᵢ) = pᵢⱼ / P(X = xᵢ)</span>. Conditional expectation <span class="m">M(Y | X = xᵢ) = Σ yⱼ P(yⱼ | xᵢ)</span>. Example 14: <span class="m">M(Y | X = 1) = 0</span>.</p>',
+    ],
+  },
+  {
+    id: 'cov',
+    ru: [
+      'Ковариация и корреляция',
+      'cov(X, Y), r(X, Y)',
+      '<p><span class="m">cov(X, Y) = M(XY) − M(X)M(Y)</span> — показывает, вместе ли растут величины. <span class="m">r = cov/(σₓσᵧ)</span> — то же, но без единиц измерения, <span class="m">−1 ⩽ r ⩽ 1</span>; |r| = 1 — линейная зависимость.</p><p>Дисперсия суммы: <span class="m">D(aX + bY) = a²D(X) + b²D(Y) + 2ab·cov(X, Y)</span> (задача 7.12).</p>',
+    ],
+    en: [
+      'Covariance and correlation',
+      'cov(X, Y), r(X, Y)',
+      '<p><span class="m">cov(X, Y) = M(XY) − M(X)M(Y)</span> shows whether the variables grow together. <span class="m">r = cov/(σₓσᵧ)</span> is the same without units, <span class="m">−1 ⩽ r ⩽ 1</span>; |r| = 1 means a linear relationship.</p><p>Variance of a sum: <span class="m">D(aX + bY) = a²D(X) + b²D(Y) + 2ab·cov(X, Y)</span> (problem 7.12).</p>',
+    ],
+  },
+  {
+    id: 'density',
+    ru: [
+      'Плотность распределения',
+      'f(x)',
+      '<p>Для непрерывной величины вероятность попасть в точку равна нулю, поэтому говорят о плотности: <span class="m">P(α &lt; X &lt; β) = ∫ f(x)dx</span> от α до β — площадь под графиком. Плотность неотрицательна и <span class="m">∫ f(x)dx = 1</span> по всей прямой — отсюда находят константу C (пример 15).</p><p><span class="m">f(x) = F′(x)</span>, <span class="m">F(x) = ∫ f(t)dt</span> от −∞ до x.</p>',
+    ],
+    en: [
+      'Probability density',
+      'f(x)',
+      '<p>For a continuous variable the probability of a single point is zero, so we use a density: <span class="m">P(α &lt; X &lt; β) = ∫ f(x)dx</span> from α to β, the area under the graph. A density is non-negative and <span class="m">∫ f(x)dx = 1</span> over the whole line; that is how the constant C is found (example 15).</p><p><span class="m">f(x) = F′(x)</span>, <span class="m">F(x) = ∫ f(t)dt</span> from −∞ to x.</p>',
+    ],
+  },
+  {
+    id: 'uniform',
+    ru: [
+      'Равномерное распределение',
+      'на [a; b]',
+      '<p><span class="m">f(x) = 1/(b − a)</span> на отрезке и 0 вне его; <span class="m">F(x) = (x − a)/(b − a)</span>; <span class="m">M = (a + b)/2</span>, <span class="m">D = (b − a)²/12</span>. Время ожидания автобуса, идущего с постоянным интервалом (задача 8.8).</p>',
+    ],
+    en: [
+      'Uniform distribution',
+      'on [a; b]',
+      '<p><span class="m">f(x) = 1/(b − a)</span> on the interval and 0 outside; <span class="m">F(x) = (x − a)/(b − a)</span>; <span class="m">M = (a + b)/2</span>, <span class="m">D = (b − a)²/12</span>. Waiting time for a bus running at fixed intervals (problem 8.8).</p>',
+    ],
+  },
+  {
+    id: 'expon',
+    ru: [
+      'Показательное распределение',
+      'с параметром λ',
+      '<p><span class="m">f(x) = λe^(−λx)</span> при x ⩾ 0, <span class="m">F(x) = 1 − e^(−λx)</span>, <span class="m">M = σ = 1/λ</span>, <span class="m">D = 1/λ²</span>. Время безотказной работы, время ремонта (задачи 8.11–8.14).</p>',
+    ],
+    en: [
+      'Exponential distribution',
+      'with rate λ',
+      '<p><span class="m">f(x) = λe^(−λx)</span> for x ⩾ 0, <span class="m">F(x) = 1 − e^(−λx)</span>, <span class="m">M = σ = 1/λ</span>, <span class="m">D = 1/λ²</span>. Time to failure, repair time (problems 8.11–8.14).</p>',
+    ],
+  },
+  {
+    id: 'modemed',
+    ru: [
+      'Мода, медиана, квантиль',
+      'x_mod, x_med, x_p',
+      '<p><b>Мода</b> — точка максимума плотности (у дискретной — самое вероятное значение). <b>Медиана</b> делит площадь пополам: <span class="m">F(x_med) = 0,5</span>. <b>Квантиль уровня p</b> — такое <span class="m">x_p</span>, что <span class="m">F(x_p) = p</span>; медиана — квантиль уровня 0,5.</p>',
+    ],
+    en: [
+      'Mode, median, quantile',
+      'x_mod, x_med, x_p',
+      '<p>The <b>mode</b> is the maximum point of the density (for a discrete variable, the most probable value). The <b>median</b> splits the area in half: <span class="m">F(x_med) = 0.5</span>. The <b>quantile of level p</b> is <span class="m">x_p</span> with <span class="m">F(x_p) = p</span>; the median is the 0.5 quantile.</p>',
+    ],
+  },
+  {
+    id: 'normal',
+    ru: [
+      'Нормальное распределение',
+      'N(m; σ²)',
+      '<p>Плотность-колокол <span class="m">f(x) = e^(−(x−m)²/(2σ²))/(σ√(2π))</span>; <span class="m">M = m</span>, <span class="m">D = σ²</span>. Обратите внимание: в записи N(m; σ²) второй параметр — дисперсия. В примере 17 <span class="m">N(2; 9)</span> означает σ = 3.</p><p><span class="m">F(x) = Φ((x − m)/σ)</span>, <span class="m">P(a ⩽ X ⩽ b) = Φ((b − m)/σ) − Φ((a − m)/σ)</span>.</p>',
+    ],
+    en: [
+      'Normal distribution',
+      'N(m; σ²)',
+      '<p>The bell density <span class="m">f(x) = e^(−(x−m)²/(2σ²))/(σ√(2π))</span>; <span class="m">M = m</span>, <span class="m">D = σ²</span>. Note: in N(m; σ²) the second parameter is the variance. In example 17, <span class="m">N(2; 9)</span> means σ = 3.</p><p><span class="m">F(x) = Φ((x − m)/σ)</span>, <span class="m">P(a ⩽ X ⩽ b) = Φ((b − m)/σ) − Φ((a − m)/σ)</span>.</p>',
+    ],
+  },
+  {
+    id: 'three',
+    ru: [
+      'Правило трёх сигм',
+      'm ± 3σ',
+      '<p><span class="m">P(|X − m| &lt; σ) ≈ 0,6827</span>, <span class="m">P(|X − m| &lt; 2σ) ≈ 0,9545</span>, <span class="m">P(|X − m| &lt; 3σ) ≈ 0,9973</span>. Практически все значения нормальной величины лежат в промежутке <span class="m">(m − 3σ; m + 3σ)</span>. В общем виде <span class="m">P(|X − m| &lt; δ) = 2Φ(δ/σ) − 1</span>.</p>',
+    ],
+    en: [
+      'Three-sigma rule',
+      'm ± 3σ',
+      '<p><span class="m">P(|X − m| &lt; σ) ≈ 0.6827</span>, <span class="m">P(|X − m| &lt; 2σ) ≈ 0.9545</span>, <span class="m">P(|X − m| &lt; 3σ) ≈ 0.9973</span>. Practically all values of a normal variable lie in <span class="m">(m − 3σ; m + 3σ)</span>. In general <span class="m">P(|X − m| &lt; δ) = 2Φ(δ/σ) − 1</span>.</p>',
+    ],
+  },
+  {
+    id: 'zq',
+    ru: [
+      'Квантили нормального распределения',
+      'z_p, обратные задачи',
+      '<p><span class="m">z_p</span> — квантиль стандартного нормального: <span class="m">Φ(z_p) = p</span> (таблица 3 приложения), <span class="m">z₀,₀₅ = −1,64</span>, <span class="m">z₀,₉₇₅ = 1,96</span>. Для N(m; σ²): <span class="m">x_p = m + σz_p</span>.</p><p>Обратные задачи 9.16–9.24: по известной вероятности находят z_p, а из него — неизвестное m или σ. Пример 18: из двух квантилей получается система для m и σ.</p>',
+    ],
+    en: [
+      'Normal quantiles',
+      'z_p, inverse problems',
+      '<p><span class="m">z_p</span> is the standard normal quantile: <span class="m">Φ(z_p) = p</span> (Table 3 of the appendix), <span class="m">z₀.₀₅ = −1.64</span>, <span class="m">z₀.₉₇₅ = 1.96</span>. For N(m; σ²): <span class="m">x_p = m + σz_p</span>.</p><p>Inverse problems 9.16–9.24: from a known probability find z_p, then the unknown m or σ. Example 18: two quantiles give a system for m and σ.</p>',
+    ],
+  },
+];
+export const FORMAL = {
+  Phi: {
+    ru: '<p><b>Связь вариантов.</b> <span class="m">Φ(x) = 1/√(2π)·∫₋∞ˣ e^(−t²/2)dt</span>, <span class="m">Φ₀(x) = 1/√(2π)·∫₀ˣ e^(−t²/2)dt</span>, <span class="m">Φ(x) = 0,5 + Φ₀(x)</span>.</p><p>Тогда <span class="m">P(a ⩽ X ⩽ b) = Φ(β) − Φ(α) = Φ₀(β) − Φ₀(α)</span> — для разности не важно, какую функцию взять, а для одиночного значения важно.</p>',
+    en: '<p><b>The two versions.</b> <span class="m">Φ(x) = 1/√(2π)·∫₋∞ˣ e^(−t²/2)dt</span>, <span class="m">Φ₀(x) = 1/√(2π)·∫₀ˣ e^(−t²/2)dt</span>, <span class="m">Φ(x) = 0.5 + Φ₀(x)</span>.</p><p>So <span class="m">P(a ⩽ X ⩽ b) = Φ(β) − Φ(α) = Φ₀(β) − Φ₀(α)</span>: for a difference it doesn’t matter which is used, for a single value it does.</p>',
+  },
+  variance: {
+    ru: '<p><b>Вывод упрощённой формулы.</b> <span class="m">D(X) = M(X − m)² = M(X² − 2mX + m²) = M(X²) − 2m·M(X) + m² = M(X²) − m²</span>, где <span class="m">m = M(X)</span>.</p><p>Пример 11: <span class="m">M(X) = 0</span>, <span class="m">M(X²) = 0,2</span>, <span class="m">D = 0,2</span>.</p>',
+    en: '<p><b>Deriving the shortcut.</b> <span class="m">D(X) = M(X − m)² = M(X² − 2mX + m²) = M(X²) − 2m·M(X) + m² = M(X²) − m²</span>, where <span class="m">m = M(X)</span>.</p><p>Example 11: <span class="m">M(X) = 0</span>, <span class="m">M(X²) = 0.2</span>, <span class="m">D = 0.2</span>.</p>',
+  },
+  density: {
+    ru: '<p><b>Пример 15.</b> <span class="m">f(x) = Cx²</span> на [0; 1]: <span class="m">∫₀¹ Cx²dx = C/3 = 1</span>, C = 3. <span class="m">M(X) = ∫₀¹ 3x³dx = 3/4</span>, <span class="m">D(X) = ∫₀¹ 3x⁴dx − 9/16 = 3/5 − 9/16 = 3/80</span>.</p>',
+    en: '<p><b>Example 15.</b> <span class="m">f(x) = Cx²</span> on [0; 1]: <span class="m">∫₀¹ Cx²dx = C/3 = 1</span>, C = 3. <span class="m">M(X) = ∫₀¹ 3x³dx = 3/4</span>, <span class="m">D(X) = ∫₀¹ 3x⁴dx − 9/16 = 3/5 − 9/16 = 3/80</span>.</p>',
+  },
+};
+export const REL = {
+  scheme: ['bernoulli', 'binomial'],
+  bernoulli: ['kstar', 'poisson', 'mlLocal'],
+  kstar: ['bernoulli'],
+  poisson: ['bernoulli', 'mlLocal'],
+  mlLocal: ['mlInt', 'phi'],
+  mlInt: ['Phi', 'mlLocal'],
+  phi: ['Phi', 'normal'],
+  Phi: ['phi', 'normal', 'zq'],
+  rv: ['series', 'density'],
+  series: ['cdf', 'expect'],
+  cdf: ['series', 'density'],
+  expect: ['variance'],
+  variance: ['expect', 'cov'],
+  binomial: ['scheme', 'hyper'],
+  hyper: ['binomial'],
+  geom: ['series'],
+  joint: ['marginal', 'conditional'],
+  marginal: ['joint', 'indep'],
+  indep: ['cov', 'marginal'],
+  conditional: ['joint'],
+  cov: ['variance', 'indep'],
+  density: ['cdf', 'modemed', 'uniform'],
+  uniform: ['expon', 'density'],
+  expon: ['uniform'],
+  modemed: ['zq', 'density'],
+  normal: ['Phi', 'three', 'zq'],
+  three: ['normal'],
+  zq: ['Phi', 'modemed'],
+};
+export const CHAP = [
+  {
+    ru: '5. Повторные испытания',
+    en: '5. Repeated trials',
+    ids: ['scheme', 'bernoulli', 'kstar', 'poisson', 'mlLocal', 'mlInt', 'phi', 'Phi'],
+  },
+  {
+    ru: '6. Дискретные случайные величины',
+    en: '6. Discrete random variables',
+    ids: ['rv', 'series', 'cdf', 'expect', 'variance', 'binomial', 'hyper', 'geom'],
+  },
+  {
+    ru: '7. Двумерные случайные величины',
+    en: '7. Bivariate random variables',
+    ids: ['joint', 'marginal', 'indep', 'conditional', 'cov'],
+  },
+  {
+    ru: '8. Непрерывные случайные величины',
+    en: '8. Continuous random variables',
+    ids: ['density', 'uniform', 'expon', 'modemed'],
+  },
+  { ru: '9. Нормальное распределение', en: '9. Normal distribution', ids: ['normal', 'three', 'zq'] },
+];
+export const DEMOS = {
+  scheme: { p: 'b9' },
+  bernoulli: { p: 'b9' },
+  kstar: { p: 'b537' },
+  poisson: { p: 'b65' },
+  mlLocal: { p: 'b10a' },
+  mlInt: { p: 'b10b' },
+  phi: { p: 'b10a' },
+  Phi: { p: 'n17' },
+  rv: { p: 'd11' },
+  series: { p: 'd633' },
+  cdf: { p: 'd11' },
+  expect: { p: 'd11' },
+  variance: { p: 'd11' },
+  binomial: { p: 'd64' },
+  hyper: { p: 'd66' },
+  geom: { p: 'd625' },
+  joint: { p: 'j13' },
+  marginal: { p: 'j13' },
+  indep: { p: 'j13' },
+  conditional: { p: 'j14' },
+  cov: { p: 'j13' },
+  density: { p: 'c15' },
+  uniform: { p: 'c16' },
+  expon: { p: 'c811' },
+  modemed: { p: 'c817' },
+  normal: { p: 'n91' },
+  three: { p: 'n3s' },
+  zq: { p: 'n17q' },
+};
+export const ILL = {
+  bernoulli: { k: 'bars', v: [1, 5, 10, 10, 5, 1].map((c) => c / 32), sel: [3] },
+  poisson: {
+    k: 'bars',
+    v: [0, 1, 2, 3, 4, 5, 6, 7].map(
+      (k) => (Math.exp(-2) * Math.pow(2, k)) / [1, 1, 2, 6, 24, 120, 720, 5040][k]
+    ),
+    curve: true,
+  },
+  mlInt: { k: 'bell', a: -0.6, b: 1.3 },
+  phi: { k: 'bell' },
+  Phi: { k: 'bell', a: -9, b: 0.8, F: true },
+  density: { k: 'dens', f: (x) => 3 * x * x, x0: 0, x1: 1, a: 0.5, b: 1 },
+  uniform: { k: 'dens', f: () => 0.25, x0: 2, x1: 6, a: 2, b: 5, ext: [1, 7] },
+  expon: { k: 'dens', f: (x) => 2 * Math.exp(-2 * x), x0: 0, x1: 3, a: 0.4, b: 1 },
+  normal: { k: 'bell', a: -1, b: 1 },
+  three: { k: 'bell', a: -3, b: 3, sig: true },
+  series: { k: 'bars', v: [0.1, 0.8, 0.1], poly: true },
+  cdf: { k: 'steps', v: [0.1, 0.8, 0.1] },
+  joint: {
+    k: 'grid',
+    P: [
+      [0.1, 0.2, 0.2],
+      [0.2, 0.1, 0.2],
+    ],
+  },
+  cov: { k: 'scatter' },
+  modemed: { k: 'dens', f: (x) => 0.5 * (x - 2), x0: 2, x1: 4, a: 2, b: 3.41 },
+};
+// разделы и термины ТВ дополняют общие таблицы
+TERMS.push(
+  {
+    id: 'perm',
+    ru: [
+      'Перестановки',
+      'Pₙ = n!',
+      '<p>Сколькими способами можно упорядочить n разных предметов: на первое место n вариантов, на второе n − 1, … Итого <span class="m">Pₙ = n! = 1·2·…·n</span>. Пример 1: 5 книг на полке — <span class="m">5! = 120</span>.</p>',
+    ],
+    en: [
+      'Permutations',
+      'Pₙ = n!',
+      '<p>The number of ways to order n different items: n options for the first place, n − 1 for the second, … In total <span class="m">Pₙ = n! = 1·2·…·n</span>. Example 1: 5 books on a shelf — <span class="m">5! = 120</span>.</p>',
+    ],
+  },
+  {
+    id: 'arr',
+    ru: [
+      'Размещения',
+      'Aₙᵏ, порядок важен',
+      '<p>Упорядоченный выбор k предметов из n: <span class="m">Aₙᵏ = n!/(n − k)! = n(n − 1)…(n − k + 1)</span>. Пример 2: трёх студентов на 10 мест — <span class="m">10·9·8 = 720</span>.</p><p>С повторениями (каждый раз любой из n): <span class="m">nᵏ</span>.</p>',
+    ],
+    en: [
+      'Arrangements',
+      'Aₙᵏ, order matters',
+      '<p>An ordered choice of k items from n: <span class="m">Aₙᵏ = n!/(n − k)! = n(n − 1)…(n − k + 1)</span>. Example 2: three students on 10 seats — <span class="m">10·9·8 = 720</span>.</p><p>With repetition (any of n each time): <span class="m">nᵏ</span>.</p>',
+    ],
+  },
+  {
+    id: 'combs',
+    ru: [
+      'Сочетания',
+      'Cₙᵏ, порядок не важен',
+      '<p>Неупорядоченный выбор k предметов из n: <span class="m">Cₙᵏ = n!/(k!(n − k)!)</span>. Это размещения, делённые на k!: каждый набор при упорядочивании даёт k! размещений. Свойства: <span class="m">Cₙ⁰ = Cₙⁿ = 1</span>, <span class="m">Cₙᵏ = Cₙⁿ⁻ᵏ</span>, <span class="m">Cₙ² = n(n − 1)/2</span>.</p><p>С повторениями: <span class="m">C̄ₙᵏ = Cₙ₊ₖ₋₁ᵏ</span> (задача 1.17б).</p>',
+    ],
+    en: [
+      'Combinations',
+      'Cₙᵏ, order doesn’t matter',
+      '<p>An unordered choice of k items from n: <span class="m">Cₙᵏ = n!/(k!(n − k)!)</span>. They are arrangements divided by k!: ordering a set gives k! arrangements. Properties: <span class="m">Cₙ⁰ = Cₙⁿ = 1</span>, <span class="m">Cₙᵏ = Cₙⁿ⁻ᵏ</span>, <span class="m">Cₙ² = n(n − 1)/2</span>.</p><p>With repetition: <span class="m">C̄ₙᵏ = Cₙ₊ₖ₋₁ᵏ</span> (problem 1.17b).</p>',
+    ],
+  },
+  {
+    id: 'mult',
+    ru: [
+      'Правило умножения',
+      'комбинаторный принцип',
+      '<p>Если k действий выполняются одно за другим, первое — n₁ способами, второе — n₂, …, то всех вариантов <span class="m">N = n₁·n₂·…·nₖ</span>. На нём основаны все формулы комбинаторики. Перестановки с повторениями: <span class="m">n!/(n₁!·n₂!·…)</span> — 1.16б: 10 фруктов в ряд, <span class="m">10!/(5!3!2!) = 2520</span>.</p>',
+    ],
+    en: [
+      'Multiplication rule',
+      'counting principle',
+      '<p>If k actions are done in turn, the first in n₁ ways, the second in n₂, …, there are <span class="m">N = n₁·n₂·…·nₖ</span> options. All combinatorics formulas rest on it. Permutations with repetition: <span class="m">n!/(n₁!·n₂!·…)</span> — 1.16b: 10 fruits in a row, <span class="m">10!/(5!3!2!) = 2520</span>.</p>',
+    ],
+  },
+  {
+    id: 'classic',
+    ru: [
+      'Классическое определение вероятности',
+      'P(A) = m/n',
+      '<p>Если все n исходов опыта равновозможны и m из них благоприятствуют событию A, то <span class="m">P(A) = m/n</span>. Свойства: <span class="m">0 ⩽ P(A) ⩽ 1</span>, <span class="m">P(Ω) = 1</span>, для несовместных <span class="m">P(A + B) = P(A) + P(B)</span>.</p><p>Пример 4: две бубновые из 36 — <span class="m">C₉²/C₃₆² = 36/630 = 2/35</span>.</p>',
+    ],
+    en: [
+      'Classical definition of probability',
+      'P(A) = m/n',
+      '<p>If all n outcomes are equally likely and m of them favor event A, then <span class="m">P(A) = m/n</span>. Properties: <span class="m">0 ⩽ P(A) ⩽ 1</span>, <span class="m">P(Ω) = 1</span>, for disjoint events <span class="m">P(A + B) = P(A) + P(B)</span>.</p><p>Example 4: two diamonds of 36 — <span class="m">C₉²/C₃₆² = 36/630 = 2/35</span>.</p>',
+    ],
+  },
+  {
+    id: 'urn',
+    ru: [
+      'Урновая схема',
+      'выбор без возвращения',
+      '<p>В урне шары нескольких цветов, берут n без возвращения. Вероятность получить ровно kᵢ шаров каждого цвета: <span class="m">P = C_{a₁}^{k₁}·C_{a₂}^{k₂}·… / C_N^n</span>. К этой схеме сводятся карты, лотерейные билеты, детали, экзаменационные вопросы.</p>',
+    ],
+    en: [
+      'Urn scheme',
+      'drawing without replacement',
+      '<p>An urn holds balls of several colors; n are drawn without replacement. The probability of exactly kᵢ balls of each color: <span class="m">P = C_{a₁}^{k₁}·C_{a₂}^{k₂}·… / C_N^n</span>. Cards, lottery tickets, parts and exam questions all reduce to it.</p>',
+    ],
+  },
+  {
+    id: 'addth',
+    ru: [
+      'Теорема сложения',
+      'P(A + B)',
+      '<p>Для любых событий <span class="m">P(A + B) = P(A) + P(B) − P(AB)</span>: при сложении площадей двух кругов общая часть посчитана дважды. Для несовместных <span class="m">P(AB) = 0</span>. Пример 5: кратно 2 или 3 — <span class="m">3/6 + 2/6 − 1/6 = 2/3</span>.</p>',
+    ],
+    en: [
+      'Addition theorem',
+      'P(A + B)',
+      '<p>For any events <span class="m">P(A + B) = P(A) + P(B) − P(AB)</span>: adding the areas of two circles counts the overlap twice. For disjoint events <span class="m">P(AB) = 0</span>. Example 5: a multiple of 2 or 3 — <span class="m">3/6 + 2/6 − 1/6 = 2/3</span>.</p>',
+    ],
+  },
+  {
+    id: 'multh',
+    ru: [
+      'Теорема умножения и условная вероятность',
+      'P(AB), P(A | B)',
+      '<p>Условная вероятность <span class="m">P(A | B) = P(AB)/P(B)</span> — вероятность A, если известно, что B произошло. Теорема умножения: <span class="m">P(AB) = P(A)·P(B | A) = P(B)·P(A | B)</span>. Пример 6: <span class="m">9/36·8/35 = 2/35</span>.</p><p>События независимы, если <span class="m">P(AB) = P(A)·P(B)</span>.</p>',
+    ],
+    en: [
+      'Multiplication theorem and conditional probability',
+      'P(AB), P(A | B)',
+      '<p>The conditional probability <span class="m">P(A | B) = P(AB)/P(B)</span> is the probability of A once B is known to have happened. Multiplication theorem: <span class="m">P(AB) = P(A)·P(B | A) = P(B)·P(A | B)</span>. Example 6: <span class="m">9/36·8/35 = 2/35</span>.</p><p>Events are independent if <span class="m">P(AB) = P(A)·P(B)</span>.</p>',
+    ],
+  },
+  {
+    id: 'atleast',
+    ru: [
+      'Хотя бы одно событие',
+      'через противоположное',
+      '<p>Для независимых событий с вероятностями pᵢ вероятность того, что произойдёт хотя бы одно: <span class="m">1 − q₁q₂…qₙ</span>, где <span class="m">qᵢ = 1 − pᵢ</span>. Ровно одно: <span class="m">p₁q₂q₃ + q₁p₂q₃ + q₁q₂p₃</span>. Задача 3.20: 0,188 и 0,976.</p><p>Удобный инструмент — производящая функция <span class="m">(q₁ + p₁z)(q₂ + p₂z)…</span>: коэффициент при zᵏ — вероятность ровно k событий.</p>',
+    ],
+    en: [
+      'At least one event',
+      'via the complement',
+      '<p>For independent events with probabilities pᵢ, the probability that at least one happens is <span class="m">1 − q₁q₂…qₙ</span>, where <span class="m">qᵢ = 1 − pᵢ</span>. Exactly one: <span class="m">p₁q₂q₃ + q₁p₂q₃ + q₁q₂p₃</span>. Problem 3.20: 0.188 and 0.976.</p><p>A handy tool is the generating function <span class="m">(q₁ + p₁z)(q₂ + p₂z)…</span>: the coefficient of zᵏ is the probability of exactly k events.</p>',
+    ],
+  },
+  {
+    id: 'total',
+    ru: [
+      'Формула полной вероятности',
+      'гипотезы H₁, …, Hₙ',
+      '<p>Если гипотезы H₁, …, Hₙ несовместны и образуют полную группу (<span class="m">ΣP(Hᵢ) = 1</span>), то <span class="m">P(A) = Σ P(Hᵢ)·P(A | Hᵢ)</span>. Пример 7: <span class="m">3/5·1/2 + 2/5·1/4 = 2/5</span>.</p><p>На сцене это площадь закрашенной части квадрата: ширины полос — P(Hᵢ), высоты — P(A | Hᵢ).</p>',
+    ],
+    en: [
+      'Total probability formula',
+      'hypotheses H₁, …, Hₙ',
+      '<p>If hypotheses H₁, …, Hₙ are disjoint and form a complete group (<span class="m">ΣP(Hᵢ) = 1</span>), then <span class="m">P(A) = Σ P(Hᵢ)·P(A | Hᵢ)</span>. Example 7: <span class="m">3/5·1/2 + 2/5·1/4 = 2/5</span>.</p><p>On the scene it is the filled area of the square: strip widths are P(Hᵢ), heights P(A | Hᵢ).</p>',
+    ],
+  },
+  {
+    id: 'bayes',
+    ru: [
+      'Формула Байеса',
+      'переоценка гипотез',
+      '<p>После того как A произошло: <span class="m">P(Hᵢ | A) = P(Hᵢ)·P(A | Hᵢ)/P(A)</span> — доля закрашенной площади, приходящаяся на гипотезу Hᵢ. Пример 8: <span class="m">9/22</span>.</p><p>Задача 4.38 про тест на болезнь: при P(болезни) = 0,01 и ошибке теста 0,01 положительный результат даёт лишь <span class="m">0,5</span> — здоровых намного больше, и их ложные срабатывания сравнимы с истинными.</p>',
+    ],
+    en: [
+      'Bayes formula',
+      'updating hypotheses',
+      '<p>Once A has happened: <span class="m">P(Hᵢ | A) = P(Hᵢ)·P(A | Hᵢ)/P(A)</span>, the share of the filled area belonging to Hᵢ. Example 8: <span class="m">9/22</span>.</p><p>Problem 4.38, a disease test: with P(disease) = 0.01 and test error 0.01, a positive result gives only <span class="m">0.5</span> — there are far more healthy people, and their false positives rival the true ones.</p>',
+    ],
+  }
+);
+// разделы и термины ТВ дополняют общие таблицы
+CHAP.unshift(
+  { ru: '1. Комбинаторика', en: '1. Combinatorics', ids: ['perm', 'arr', 'combs', 'mult'] },
+  { ru: '2. Классическая вероятность', en: '2. Classical probability', ids: ['classic', 'urn'] },
+  { ru: '3. Сложение и умножение', en: '3. Addition and multiplication', ids: ['addth', 'multh', 'atleast'] },
+  { ru: '4. Полная вероятность и Байес', en: '4. Total probability and Bayes', ids: ['total', 'bayes'] }
+);
+// разделы и термины ТВ дополняют общие таблицы
+Object.assign(DEMOS, {
+  perm: { p: 'c1' },
+  arr: { p: 'c2' },
+  combs: { p: 'c113' },
+  mult: { p: 'c116' },
+  classic: { p: 'k4' },
+  urn: { p: 'k216' },
+  addth: { p: 'o5' },
+  multh: { p: 'o6' },
+  atleast: { p: 'o320b' },
+  total: { p: 'h7' },
+  bayes: { p: 'h438' },
+});
+// разделы и термины ТВ дополняют общие таблицы
+Object.assign(REL, {
+  perm: ['arr', 'mult'],
+  arr: ['perm', 'combs'],
+  combs: ['arr', 'classic'],
+  mult: ['perm'],
+  classic: ['urn', 'combs'],
+  urn: ['hyper', 'classic'],
+  addth: ['multh'],
+  multh: ['addth', 'atleast', 'indep'],
+  atleast: ['multh', 'bernoulli'],
+  total: ['bayes'],
+  bayes: ['total'],
+});
+// разделы и термины ТВ дополняют общие таблицы
+Object.assign(ILL, {
+  combs: { k: 'bars', v: [1, 4, 6, 4, 1].map((c) => c / 16), sel: [2] },
+  total: {
+    k: 'grid',
+    P: [
+      [0.3, 0.1],
+      [0.2, 0.4],
+    ],
+  },
+  addth: { k: 'scatter' },
+});
