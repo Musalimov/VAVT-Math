@@ -60,6 +60,7 @@ src/
     state.js         pub(): состояние интерфейса в <body data-*>
     dom.js           $, clone, setOn (класс .on + aria-pressed)
     toast.js  drawers.js  panels.js  glossary.js  keys.js  settings.js
+    home.js          стрелка «← на главную»: ./ на сайте, адрес сайта для файла с диска
     export.js        PNG, копирование, видео (по желанию тренажёра)
     esc.js           экранирование текста пользователя для HTML
     econ/            общее для макро, микро, игр и ТВ

@@ -3,6 +3,7 @@ import { createKeys } from '../keys.js';
 import { createExport } from '../export.js';
 import { createPanels } from '../panels.js';
 import { initDrawers } from '../drawers.js';
+import { initHome } from '../home.js';
 import { createGlossary } from '../glossary.js';
 import { toast } from '../toast.js';
 import { $, clone } from '../dom.js';
@@ -343,6 +344,7 @@ export function createEconApp(AP) {
   const { termTitle, renderGloss, rerenderGloss, openTerm } = gloss;
   gloss.init();
   initDrawers();
+  initHome();
   const keysUi = createKeys({ T: AP.T, keys: AP.KEYS });
   const { renderKeys, openKeys } = keysUi;
   keysUi.init();

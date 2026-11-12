@@ -3,6 +3,7 @@ import { createKeys, onShortcut } from '../../shared/keys.js';
 import { createExport } from '../../shared/export.js';
 import { createGlossary } from '../../shared/glossary.js';
 import { initDrawers } from '../../shared/drawers.js';
+import { initHome } from '../../shared/home.js';
 import { createPanels } from '../../shared/panels.js';
 import { loadPrefs, makeSaver } from '../../shared/prefs.js';
 import { $, clone } from '../../shared/dom.js';
@@ -2315,6 +2316,7 @@ import { lang, langFrom } from '../../shared/i18n.js';
   const { termTitle, renderGloss, rerenderGloss, openTerm } = gloss;
   gloss.init();
   initDrawers();
+  initHome();
 
   function illSvg(id) {
     const sp = ILL[id];
