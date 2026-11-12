@@ -118,10 +118,45 @@ header {
   margin: 0;
 }
 .grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
-  gap: 1.1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
   margin-top: 2rem;
+}
+.group h2 {
+  font-family: 'Source Serif 4', Georgia, serif;
+  font-weight: 600;
+  font-size: 1.05rem;
+  color: var(--muted);
+  margin: 0 0 0.8rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid var(--line);
+}
+/* Широкий экран: сетка на 4 колонки во всех группах — карточки одной ширины (4 + 3). */
+.cards {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 1.1rem;
+}
+/* Планшет: по две в ряд; непарная последняя — по центру, той же ширины. */
+@media (max-width: 1000px) {
+  .cards {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .cards > .card:last-child:nth-child(odd) {
+    grid-column: 1 / -1;
+    justify-self: center;
+    width: calc(50% - 0.55rem);
+  }
+}
+/* Телефон: в одну колонку. */
+@media (max-width: 600px) {
+  .cards {
+    grid-template-columns: 1fr;
+  }
+  .cards > .card:last-child:nth-child(odd) {
+    width: 100%;
+  }
 }
 .card {
   background: var(--card);
@@ -147,7 +182,7 @@ header {
   gap: 0.55rem;
   flex: 1;
 }
-.card h2 {
+.card h3 {
   font-family: 'Source Serif 4', Georgia, serif;
   font-weight: 600;
   font-size: 1.25rem;

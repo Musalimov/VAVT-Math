@@ -2,6 +2,7 @@
   const APPS = [
     {
       f: 'linear-algebra.html',
+      g: 'math',
       img: 'screenshots/linear-algebra.png',
       ru: [
         'Линейная алгебра',
@@ -16,6 +17,7 @@
     },
     {
       f: 'integrals.html',
+      g: 'math',
       img: 'screenshots/integrals.png',
       ru: [
         'Интегралы',
@@ -30,6 +32,7 @@
     },
     {
       f: 'optimization.html',
+      g: 'math',
       img: 'screenshots/optimization.png',
       ru: [
         'Методы оптимальных решений',
@@ -44,6 +47,7 @@
     },
     {
       f: 'probability.html',
+      g: 'math',
       img: 'screenshots/probability.png',
       ru: [
         'Теория вероятностей',
@@ -58,6 +62,7 @@
     },
     {
       f: 'microeconomics.html',
+      g: 'econ',
       img: 'screenshots/microeconomics.png',
       ru: [
         'Микроэкономика',
@@ -72,6 +77,7 @@
     },
     {
       f: 'macroeconomics.html',
+      g: 'econ',
       img: 'screenshots/macroeconomics.png',
       ru: [
         'Макроэкономика',
@@ -86,6 +92,7 @@
     },
     {
       f: 'game-theory.html',
+      g: 'econ',
       img: 'screenshots/game-theory.png',
       ru: [
         'Теория игр',
@@ -106,6 +113,8 @@
       brand: 'Математика <i>наглядно</i>',
       h1: 'Интерактивные тренажёры для студентов ВАВТ',
       lead: 'Графики можно тянуть руками, каждая задача решается по шагам, а справочник объясняет понятия интуитивно и строго. Работает в браузере, без регистрации.',
+      gMath: 'Математика',
+      gEcon: 'Экономика',
       open: 'Открыть',
       dl: 'Скачать',
       dlT: 'Скачать файл, чтобы пользоваться без интернета',
@@ -115,7 +124,7 @@
       i2: 'Задачи, обозначения и алгоритмы взяты из учебников и задачников ВАВТ, ответы сверены со сборниками.',
       i3h: 'Ничего не собирается',
       i3: 'Настройки и отметки «прочитано» хранятся только в вашем браузере. Никаких аккаунтов и аналитики.',
-      foot: 'Нашли ошибку или есть идея? Напишите в <a href="https://github.com/Musalimov/vavt-math/issues">Issues на GitHub</a>. Исходники: <a href="https://github.com/Musalimov/vavt-math">github.com/Musalimov/vavt-math</a>.',
+      foot: 'Нашли ошибку или есть идея? Напишите в <a href="https://github.com/Musalimov/VAVT-Math/issues">Issues на GitHub</a>. Исходники: <a href="https://github.com/Musalimov/VAVT-Math">github.com/Musalimov/VAVT-Math</a>.',
     },
     en: {
       lt: 'Light theme',
@@ -123,6 +132,8 @@
       brand: 'Math <i>visually</i>',
       h1: 'Interactive trainers for VAVT students',
       lead: 'Drag the graphs by hand, see every problem solved step by step, and read a glossary that explains concepts both intuitively and formally. Runs in the browser, no sign-up.',
+      gMath: 'Mathematics',
+      gEcon: 'Economics',
       open: 'Open',
       dl: 'Download',
       dlT: 'Download the file to use it offline',
@@ -132,7 +143,7 @@
       i2: 'Problems, notation and algorithms follow VAVT textbooks and problem books; answers are checked against them.',
       i3h: 'Nothing is collected',
       i3: 'Settings and “read” marks stay in your browser only. No accounts, no analytics.',
-      foot: 'Found a mistake or have an idea? Open an <a href="https://github.com/Musalimov/vavt-math/issues">issue on GitHub</a>. Source: <a href="https://github.com/Musalimov/vavt-math">github.com/Musalimov/vavt-math</a>.',
+      foot: 'Found a mistake or have an idea? Open an <a href="https://github.com/Musalimov/VAVT-Math/issues">issue on GitHub</a>. Source: <a href="https://github.com/Musalimov/VAVT-Math">github.com/Musalimov/VAVT-Math</a>.',
     },
   };
   let theme = 'dark';
@@ -174,10 +185,19 @@
     });
     applyTheme();
     document.querySelectorAll('#lang button').forEach((b) => b.classList.toggle('on', b.dataset.l === lang));
-    document.getElementById('grid').innerHTML = APPS.map((a) => {
+    const card = (a) => {
       const [t, d, tags] = a[lang];
-      return `<article class="card"><a href="${a.f}" tabindex="-1" aria-hidden="true"><img src="${a.img}" alt="" loading="lazy"></a><div class="cb"><h2>${t}</h2><p>${d}</p><div class="tags">${tags.map((x) => `<span>${x}</span>`).join('')}</div><div class="acts"><a class="btn primary" href="${a.f}">${L.open}</a><a class="btn" href="${a.f}" download title="${L.dlT}">⤓ ${L.dl}</a></div></div></article>`;
-    }).join('');
+      return `<article class="card"><a href="${a.f}" tabindex="-1" aria-hidden="true"><img src="${a.img}" alt="" loading="lazy"></a><div class="cb"><h3>${t}</h3><p>${d}</p><div class="tags">${tags.map((x) => `<span>${x}</span>`).join('')}</div><div class="acts"><a class="btn primary" href="${a.f}">${L.open}</a><a class="btn" href="${a.f}" download title="${L.dlT}">⤓ ${L.dl}</a></div></div></article>`;
+    };
+    document.getElementById('grid').innerHTML = [
+      ['math', L.gMath],
+      ['econ', L.gEcon],
+    ]
+      .map(([g, title]) => {
+        const items = APPS.filter((a) => a.g === g);
+        return `<div class="group" data-g="${g}"><h2>${title}</h2><div class="cards">${items.map(card).join('')}</div></div>`;
+      })
+      .join('');
   }
   document.querySelectorAll('#lang button').forEach(
     (b) =>
