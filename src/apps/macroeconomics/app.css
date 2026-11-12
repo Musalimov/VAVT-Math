@@ -1727,3 +1727,16 @@ table.fac td:nth-child(2) {
   color: var(--muted);
   font-size: 0.78rem;
 }
+
+/* Стрелка «на главную» слева от названия тренажёра */
+.btn.home {
+  text-decoration: none;
+  flex: none;
+  padding-left: 0.5rem;
+  padding-right: 0.5rem;
+  margin-right: -0.2rem;
+}
+.btn.home .ic {
+  font-family: system-ui, sans-serif;
+  font-size: 1.25rem;
+}

@@ -212,6 +212,9 @@ export function createSettings({
   return { buildSettings, buildPal, syncSettings, effDock, applyDock, applyPrefs, init };
 }
 
+/** Адрес лендинга — для файла, открытого офлайн. */
+export const HOME_URL = 'https://musalimov.github.io/VAVT-Math/';
+
 /**
  * Тексты интерфейса из словаря L: [data-i] — текст, [data-ih] — HTML,
  * [data-it] — подсказка и aria-label, [data-ia] — только aria-label.
@@ -232,4 +235,7 @@ export function applyTexts(L) {
   document.querySelectorAll('[data-ia]').forEach((e) => {
     e.setAttribute('aria-label', L[/** @type {HTMLElement} */ (e).dataset.ia]);
   });
+  // Скачанный файл открыт с диска: рядом лендинга нет — стрелка ведёт на сайт.
+  const home = document.getElementById('homeLink');
+  if (home && location.protocol === 'file:') home.setAttribute('href', HOME_URL);
 }
